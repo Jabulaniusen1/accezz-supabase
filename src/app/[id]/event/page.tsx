@@ -11,12 +11,9 @@ import Footer from '@/app/components/layout/Footer';
 
 const EventHeroSection = React.lazy(() => import('./components/EventHeroSection').then(module => ({ default: module.EventHeroSection })));
 const EventHostSection = React.lazy(() => import('./components/EventHostSection').then(module => ({ default: module.EventHostSection })));
-const EventLocationSection = React.lazy(() => import('./components/EventLocation').then(module => ({ default: module.EventLocationSection })));
 const EventTicketsSection = React.lazy(() => import('./components/TicketCard').then(module => ({ default: module.EventTicketsSection })));
-const ShareEventSection = React.lazy(() => import('./components/ShareEventSec').then(module => ({ default: module.ShareEventSection })));
 const EventGallerySection = React.lazy(() => import('./components/EventGallerySection'));
 const TicketTypeForm = React.lazy(() => import('../../components/TicketTypeForm'));
-const WhatsAppPurchaseModal = React.lazy(() => import('../../components/WhatsAppPurchaseModal'));
 const OtherEventsYouMayLike = React.lazy(() => import('@/app/components/home/OtherEventsYouMayLike'));
 
 type ToastType = {
@@ -29,7 +26,6 @@ const EventDetail = () => {
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<ToastType>(null);
   const [showTicketForm, setShowTicketForm] = useState(false);
-  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [event, setEvent] = useState<Event | null>(null);
@@ -42,7 +38,7 @@ const EventDetail = () => {
   // Memoized handlers
   const handleGetTicket = useCallback((ticket: Ticket) => {
     setSelectedTicket(ticket);
-    setShowWhatsAppModal(true);
+    setShowTicketForm(true);
   }, []);
 
   const closeTicketForm = useCallback(() => {
@@ -50,14 +46,7 @@ const EventDetail = () => {
     setSelectedTicket(null);
   }, []);
 
-  const closeWhatsAppModal = useCallback(() => {
-    setShowWhatsAppModal(false);
-    setSelectedTicket(null);
-  }, []);
 
-  const handleWebsitePurchase = useCallback(() => {
-    setShowTicketForm(true);
-  }, []);
 
   const scrollToTickets = useCallback(() => {
     ticketsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -116,29 +105,30 @@ const EventDetail = () => {
   }
 
   return (
-    <div className="event-page-container text-gray-900 dark:text-gray-100  dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Global components */}
       <Header />
       {toast && <Toast {...toast} onClose={() => setToast(null)} />}
 
-      <div className="event-page-main dark:bg-gray-900">
+      <div className="event-page-main">
         {event && (
           <React.Suspense fallback={<Loader />}>
             {/* Breadcrumb Navigation */}
-            <div className="lg:py-10 py-5 px-4 sm:px-6 lg:px-48">
-              <nav className="mx-auto">
-                <div className="flex items-center space-x-1 text-sm">
-                  <span className="text-gray-500 dark:text-gray-400">Explore</span>
-                  <span className="text-gray-400 dark:text-gray-500">/</span>
-                  <span className="text-gray-900 dark:text-white font-medium">{event.title}</span>
-                </div>
-              </nav>
+            <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+              <div className="mx-auto lg:px-32 px-4 sm:px-6 py-4">
+                <nav className="flex items-center space-x-2 text-sm">
+                  <a href="/" className="text-gray-500 hover:text-[#f54502] transition-colors">Home</a>
+                  <span className="text-gray-400">/</span>
+                  <a href="/#events" className="text-gray-500 hover:text-[#f54502] transition-colors">Events</a>
+                  <span className="text-gray-400">/</span>
+                  <span className="text-[#f54502] font-medium truncate">{event.title}</span>
+                </nav>
+              </div>
             </div>
             
             {/* Event sections with lazy loading */}
             <EventHeroSection event={event} scrollToTickets={scrollToTickets} />
             <EventHostSection event={event} />
-            <EventLocationSection event={event} />
             
             <div ref={ticketsSectionRef}>
               <EventTicketsSection 
@@ -148,7 +138,6 @@ const EventDetail = () => {
               />
             </div>
             
-            <ShareEventSection eventSlug={eventSlug as string} setToast={showToast} />
             <EventGallerySection event={event} />
           </React.Suspense>
         )}
@@ -157,18 +146,6 @@ const EventDetail = () => {
           <OtherEventsYouMayLike />
         </React.Suspense>
 
-        {/* WhatsApp Purchase Modal */}
-        {showWhatsAppModal && selectedTicket && event && (
-          <React.Suspense fallback={<Loader />}>
-            <WhatsAppPurchaseModal
-              isOpen={showWhatsAppModal}
-              onClose={closeWhatsAppModal}
-              onWebsitePurchase={handleWebsitePurchase}
-              ticket={selectedTicket}
-              eventTitle={event.title}
-            />
-          </React.Suspense>
-        )}
 
         {/* Ticket Form Modal */}
         {showTicketForm && (

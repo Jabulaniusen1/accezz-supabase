@@ -25,12 +25,11 @@ const Hero = () => {
   const pathname = usePathname();
 
   const navItems = [
-    { name: "Home", href: "/" },
-    { name: "Events", href: "/#events" },
-    // { name: "Trending", href: "/#trending" },
+    { name: "Discover events", href: "/#events" },
+    { name: "How Accezz Works", href: "/#tutorial" },
+    { name: "About", href: "/about" },
+    { name: "Blog", href: "/blog" },
     { name: "Pricing", href: "/pricing" },
-    { name: "How It Works", href: "/#tutorial" },
-    // { name: "QR Scanner", href: "/qr-code-scanner" },
   ];
 
   useEffect(() => {
@@ -100,7 +99,7 @@ const Hero = () => {
   };
 
   return (
-    <section className="relative min-h-[90vh] bg-gray-900 overflow-hidden">
+    <section className="relative min-h-screen bg-gray-900 overflow-hidden ">
       {isLoading && <Loader />}
       {loading && <Loader />}
       {toast && (
@@ -111,45 +110,53 @@ const Hero = () => {
         />
       )}
       
-      {/* Dark overlay with background image */}
+      {/* Simple background with image */}
       <div className="absolute inset-0 bg-black z-0">
         <div 
-          className="absolute inset-0 bg-[url('https://cdn.pixabay.com/photo/2015/01/21/13/28/silhouette-606701_1280.jpg')] bg-cover bg-center opacity-30"
+          className="absolute inset-0 bg-[url('/accezz-hc.jpg')] bg-cover bg-center opacity-40"
           style={{ backgroundPosition: 'center 30%' }}
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
       </div>
 
-      <header className="w-full z-50 top-0 bg-white/10 backdrop-blur-md border-b border-white/20 rounded-b-xl">
-        <div className="mx-auto px-4 sm:px-6 lg:px-48">
-          <div className="flex items-center justify-between h-16 px-4">
+      <header className="w-full z-50 top-0 bg-black/20 backdrop-blur-md">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+          <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link
               href="/"
               className="flex items-center space-x-2 group"
             >
-              <FaTicketAlt className="w-6 h-6 text-[#f54502] group-hover:text-[#f54502]/80 transition-colors" />
-              <span className="text-xl font-bold dark:text-white text-[#f54502] group-hover:text-[#f54502] transition-colors">
-                Accezz
-              </span>
+              <Image 
+                src="/accezz logo.png" 
+                alt="Accezz Logo" 
+                width={180}
+                height={130}
+                className="h-14 w-auto"
+              />
             </Link>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
-              <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-8">
                 {navItems.map((item) => (
                   <Link
                     key={item.name}
                     href={item.href}
-                    className="text-sm font-medium dark:text-white/90 text-gray-400 hover:text-white transition-colors duration-200 relative"
+                    className="text-sm font-medium text-white hover:text-white/80 transition-colors duration-200"
                   >
                     {item.name}
-                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#f54502] transition-all duration-300 group-hover:w-full"></span>
                   </Link>
                 ))}
               </div>
 
-              <div className="flex items-center space-x-4 pl-4 border-l border-white/20">
-                <ToggleMode />
+              <div className="flex items-center space-x-6">
+                {/* Search Icon */}
+                <button className="text-white hover:text-white/80 transition-colors">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </button>
                 
                 {isLoggedIn ? (
                   <>
@@ -170,18 +177,18 @@ const Hero = () => {
                   </>
                 ) : (
                   <>
-                    <button
-                      onClick={() => handleRedirect("/auth/login")}
-                      className="px-6 py-2 text-sm font-medium text-[#f54502] hover:bg-[#f54502]/10 rounded-xl hover:scale-105 transition-all transform"
+                    <Link
+                      href="/auth/login"
+                      className="text-sm font-medium text-white hover:text-white/80 transition-colors "
                     >
-                      Sign In
-                    </button>
-                    <button
-                      onClick={() => handleRedirect("/auth/signup")}
-                      className="px-6 py-2 flex items-center justify-center gap-3 bg-[#f54502] hover:bg-[#f54502]/90 text-white text-sm font-medium rounded-xl transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
+                      Login
+                    </Link>
+                    <Link
+                      href="/auth/signup"
+                      className="px-10 py-3 text-sm font-medium text-white border border-white rounded-lg hover:bg-white/10 transition-colors rounded-xl" 
                     >
                       Sign Up
-                    </button>
+                    </Link>
                   </>
                 )}
               </div>
@@ -189,7 +196,6 @@ const Hero = () => {
 
             {/* Mobile Menu Button */}
             <div className="flex items-center md:hidden space-x-4">
-              <ToggleMode />
               <button
                 className="p-2 rounded-lg text-white/90 hover:text-white hover:bg-white/10 transition-colors"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -284,11 +290,11 @@ const Hero = () => {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[90vh] flex items-center z-10 mt-10">
         <div className="max-w-4xl text-center mx-auto">
           <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight my-8">
-            Create <span className="text-[#f54502]">unforgettable</span> memories
+            Find the Vibes. Live the Moment.
           </h1>
           
           <p className="text-gray-300 mb-8 max-w-2xl mx-auto text-lg lg:text-xl leading-relaxed">
-            Find events and make memories that last a lifetime. Your next great experience is just a click away.
+            Discover concerts, parties, and experiences that create memories you'll talk about forever — your next big moment is just a click away.
           </p>
 
           <div className="flex flex-col lg:flex-row lg:items-center justify-center gap-4 mb-12">
@@ -296,49 +302,15 @@ const Hero = () => {
               onClick={handleGetStarted}
               className="flex items-center justify-center gap-3 px-8 py-4 bg-[#f54502] hover:bg-[#f54502]/90 text-white text-base font-medium rounded-xl transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
-              Start Creating Magic
+              Get Started
             </button>
             
             <a
               href="#events"
               className="flex items-center justify-center gap-3 px-8 py-4 bg-white/10 hover:bg-white/20 text-white text-base font-medium rounded-xl transition-all border border-white/20 hover:border-white/30 backdrop-blur-sm"
             >
-              Explore
+              Discover Events
             </a>
-          </div>
-
-          {/* Social proof */}
-          <div className="text-gray-300">
-            {/* <p className="text-base mb-4 opacity-90">Trusted by creators around the world</p> */}
-            <div className="flex items-center justify-center gap-1">
-              {/* User avatars */}
-              <div className="flex -space-x-3">
-                <div className="w-10 h-10 rounded-full border-2 border-white/20 overflow-hidden bg-gray-600 relative">
-                  <Image 
-                    src="/images/Airsplash.jpeg" 
-                    alt="User avatar" 
-                    fill
-                    className="object-cover"
-                    sizes="40px"
-                  />
-                </div>
-                <div className="w-10 h-10 rounded-full border-2 border-white/20 overflow-hidden bg-gray-600 relative">
-                  <Image 
-                    src="/images/daddy-yard.jpeg" 
-                    alt="User avatar" 
-                    fill
-                    className="object-cover"
-                    sizes="40px"
-                  />
-                </div>
-                <div className="w-10 h-10 z-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 border-2 border-white/20 flex items-center justify-center text-white font-semibold text-xs">
-                  +2
-                </div>
-              </div>
-              <div className="ml-3 text-sm opacity-80">
-                <span className="text-[#f54502] font-medium">100+</span> event organizers
-              </div>
-            </div>
           </div>
         </div>
       </div>

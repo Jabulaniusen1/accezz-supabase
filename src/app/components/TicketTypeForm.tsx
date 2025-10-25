@@ -280,7 +280,7 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast }: TicketTypeF
                     <div key={step} className="flex items-center gap-1">
                       <div className={`flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 text-sm ${
                         index <= activeStep 
-                          ? 'bg-blue-600 border-blue-600 text-white' 
+                          ? 'bg-[#f54502] border-[#f54502] text-white' 
                           : 'border-gray-300 text-gray-500'
                       }`}>
                         {index < activeStep ? (
@@ -292,7 +292,7 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast }: TicketTypeF
                         )}
                       </div>
                       <span className={`lg:ml-2 text-xs sm:text-sm font-medium ${
-                        index <= activeStep ? 'text-blue-600' : 'text-gray-500'
+                        index <= activeStep ? 'text-[#f54502]' : 'text-gray-500'
                       }`}>
                         {step}
                       </span>

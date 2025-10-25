@@ -1,9 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiMenu, FiX, FiLogOut, FiUser } from "react-icons/fi";
-import { FaTicketAlt } from "react-icons/fa";
 import { MdSpaceDashboard } from "react-icons/md";
 import ToggleMode from "../../../components/ui/mode/toggleMode";
 import Loader from "@/components/ui/loader/Loader";
@@ -24,12 +24,11 @@ const Header = () => {
   const pathname = usePathname();
 
   const navItems = [
-    { name: "Home", href: "/" },
-    { name: "Events", href: "/#events" },
-    { name: "Trending", href: "/#trending" },
+    { name: "Discover events", href: "/#events" },
+    { name: "How Accezz Works", href: "/#tutorial" },
+    { name: "About", href: "/about" },
+    { name: "Blog", href: "/blog" },
     { name: "Pricing", href: "/pricing" },
-    { name: "How It Works", href: "/#tutorial" },
-    // { name: "QR Scanner", href: "/qr-code-scanner" },
   ];
 
   useEffect(() => {
@@ -90,17 +89,20 @@ const Header = () => {
         />
       )}
       <header className=" w-full z-50">
-        <div className=" mx-auto lg:py-5 py-2 sm:px-6 lg:px-48">
+        <div className=" mx-auto lg:py-5 py-2 sm:px-6 lg:px-32">
           <div className="flex items-center justify-between h-16 px-4">
             {/* Logo */}
             <Link
               href="/"
               className="flex items-center space-x-2 group"
             >
-              <FaTicketAlt className="w-6 h-6 text-[#f54502] group-hover:text-[#f54502]/80 transition-colors" />
-              <span className="text-xl font-bold text-gray-700 dark:text-gray-300 group-hover:text-[#f54502] transition-colors">
-                Accezz
-              </span>
+              <Image 
+                src="/accezz logo c.png" 
+                alt="Accezz Logo" 
+                width={180}
+                height={130}
+                className="h-10 sm:h-12 lg:h-14 w-auto"
+              />
             </Link>
 
             {/* Desktop Navigation */}
@@ -110,7 +112,7 @@ const Header = () => {
                   <Link
                     key={item.name}
                     href={item.href}
-                    className="text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors duration-200 relative"
+                    className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors duration-200 relative"
                   >
                     {item.name}
                     <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#f54502] transition-all duration-300 group-hover:w-full"></span>
@@ -118,21 +120,26 @@ const Header = () => {
                 ))}
               </div>
 
-              <div className="flex items-center space-x-4 pl-4 border-l border-white/20">
-                <ToggleMode />
+              <div className="flex items-center space-x-6">
+                {/* Search Icon */}
+                <button className="text-gray-700 dark:text-gray-300 hover:text-[#f54502] transition-colors">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </button>
                 
                 {isLoggedIn ? (
                   <>
                     <button
                       onClick={() => handleRedirect("/dashboard")}
-                      className="flex items-center justify-center p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/10 transition-colors"
+                      className="flex items-center justify-center p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                       title="Dashboard"
                     >
                       <MdSpaceDashboard className="w-5 h-5" />
                     </button>
                     <button
                       onClick={handleLogout}
-                      className="flex items-center justify-center p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-white/10 transition-colors"
+                      className="flex items-center justify-center p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                       title="Logout"
                     >
                       <FiLogOut className="w-5 h-5" />
@@ -140,18 +147,21 @@ const Header = () => {
                   </>
                 ) : (
                   <>
-                    <button
-                      onClick={() => handleRedirect("/auth/login")}
-                      className="px-6 py-2 text-sm font-medium text-[#f54502] hover:bg-[#f54502]/10 rounded-xl hover:scale-105 transition-all transform"
+                    <Link
+                      href="/auth/login"
+                      className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-[#f54502] transition-colors"
                     >
-                      Sign In
-                    </button>
-                    <button
-                      onClick={() => handleRedirect("/auth/signup")}
-                      className="px-6 py-2 flex items-center justify-center gap-3 bg-[#f54502] hover:bg-[#f54502]/90 text-white text-sm font-medium rounded-xl transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
+                      Login
+                    </Link>
+                    <Link
+                      href="/auth/signup"
+                      className="px-10 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                      style={{
+                        borderRadius: '10px'
+                      }}
                     >
                       Sign Up
-                    </button>
+                    </Link>
                   </>
                 )}
               </div>

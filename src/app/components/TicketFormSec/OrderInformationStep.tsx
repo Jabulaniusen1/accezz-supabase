@@ -55,10 +55,10 @@ const OrderInformationStep = ({
   return (
     <div className="mb-4 space-y-8 overflow-y-scroll max-h-[60vh] pr-4 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
       {/* Primary Ticket Holder */}
-      <div className="p-6 bg-gradient-to-br from-blue-50 to-white dark:from-gray-800 dark:to-gray-900 rounded-xl border border-blue-200 dark:border-gray-700 shadow-md hover:shadow-lg transition-shadow duration-300">
+      <div className="p-6 bg-gradient-to-br from-[#f54502]/10 to-white dark:from-gray-800 dark:to-gray-900 rounded-xl border border-[#f54502]/20 dark:border-gray-700 shadow-md hover:shadow-lg transition-shadow duration-300">
         <div className="flex items-center space-x-2 mb-4">
           <svg
-            className="w-5 h-5 text-blue-600 dark:text-blue-400"
+            className="w-5 h-5 text-[#f54502] dark:text-[#f54502]"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -83,7 +83,7 @@ const OrderInformationStep = ({
               onChange={(e) => setFullName(e.target.value)}
               required
               placeholder="Full Name"
-              className="w-full px-4 py-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-md rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:outline-none"
+              className="w-full px-4 py-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-md rounded-lg focus:ring-2 focus:ring-[#f54502] dark:focus:ring-[#f54502] focus:outline-none"
               style={{ boxShadow: '0 2px 3px 2px rgba(19, 19, 19, 0.26))', borderRadius: '0.5rem' }}
             />
           </div>
@@ -94,7 +94,7 @@ const OrderInformationStep = ({
               onChange={handlePrimaryEmailChange}
               required
               placeholder="Email Address"
-              className={`w-full px-4 py-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-md rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:outline-none ${
+              className={`w-full px-4 py-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-md rounded-lg focus:ring-2 focus:ring-[#f54502] dark:focus:ring-[#f54502] focus:outline-none ${
                 primaryEmailError ? 'border-2 border-red-500' : ''
               }`}
               style={{ boxShadow: '0 2px 3px 2px rgba(19, 19, 19, 0.26))', borderRadius: '0.5rem' }}
@@ -110,7 +110,7 @@ const OrderInformationStep = ({
               onChange={(e) => setPhoneNumber(e.target.value)}
               required
               placeholder="Phone Number"
-              className="w-full px-4 py-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-md rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:outline-none"
+              className="w-full px-4 py-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-md rounded-lg focus:ring-2 focus:ring-[#f54502] dark:focus:ring-[#f54502] focus:outline-none"
               style={{ boxShadow: '0 2px 3px 2px rgba(19, 19, 19, 0.26))', borderRadius: '0.5rem' }}
             />
           </div>
@@ -156,7 +156,7 @@ const OrderInformationStep = ({
                   onChange={(e) =>
                     handleAdditionalTicketHolderChange(index, 'name', e.target.value)
                   }
-                  className="w-full px-4 py-2 bg-white dark:bg-gray-900/50 text-gray-800 dark:text-white border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:outline-none"
+                  className="w-full px-4 py-2 bg-white dark:bg-gray-900/50 text-gray-800 dark:text-white border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:ring-2 focus:ring-[#f54502] dark:focus:ring-[#f54502] focus:outline-none"
                 />
                 <div>
                   <input
@@ -166,7 +166,7 @@ const OrderInformationStep = ({
                     onChange={(e) =>
                       handleAdditionalEmailChange(index, e.target.value)
                     }
-                    className={`w-full px-4 py-2 bg-white dark:bg-gray-900/50 text-gray-800 dark:text-white border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:outline-none ${
+                    className={`w-full px-4 py-2 bg-white dark:bg-gray-900/50 text-gray-800 dark:text-white border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:ring-2 focus:ring-[#f54502] dark:focus:ring-[#f54502] focus:outline-none ${
                       emailErrors[index] ? 'border-2 border-red-500' : ''
                     }`}
                   />

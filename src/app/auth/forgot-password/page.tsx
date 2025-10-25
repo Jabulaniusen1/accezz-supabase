@@ -85,68 +85,93 @@ function ForgotPassword() {
     };
 
     return (
-    <div
-      className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white px-4 py-8"
-      style={{
-      backgroundImage: `url("/bg-back.avif")`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat',
-      }}
-    >
-      <ToastContainer />
-
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 space-y-6">
-      <div className="text-center">
-        <Image
-        src="/accezz logo.png"
-        alt="Accezz Logo"
-        width={120}
-        height={120}
-        className="mx-auto mb-4"
-        />
-        <h1 className="text-3xl font-semibold text-gray-900">Forgot Password</h1>
-        <p className="text-gray-500 mt-2">
-        Enter your email to reset your password.
-        </p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        {/* Animated Background Shapes */}
+        <div className="absolute top-20 left-10 w-32 h-32 bg-[#f54502]/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-40 right-20 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute bottom-20 left-1/4 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute bottom-40 right-10 w-28 h-28 bg-orange-500/10 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '3s' }}></div>
+        
+        {/* Grid Pattern */}
+        <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
       </div>
 
-      <form className="space-y-6" onSubmit={handleSubmit}>
-        <div>
-        <label
-          htmlFor="email"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Email Address
-        </label>
-        <input
-          type="email"
-          id="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="mt-2 w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none text-gray-800"
-          placeholder="Enter your email"
-        />
-        </div>
+      {/* Main Content */}
+      <div className="relative z-10 flex items-center justify-center min-h-screen p-4 sm:p-8">
+        <ToastContainer />
 
-        <button
-        type="submit"
-        disabled={loading}
-        className={`w-full py-2 rounded-md text-white ${
-          loading ? 'bg-gray-500' : 'bg-blue-600 hover:bg-blue-700'
-        } focus:outline-none focus:ring-2 focus:ring-blue-400`}
-        >
-        {loading ? (
-          <div className="flex items-center justify-center">
-          <div className="w-5 h-5 border-t-2 border-white rounded-full animate-spin mr-2" />
-          Verifying...
+        {/* Form Container */}
+        <div className="w-full max-w-md">
+          {/* Header Section */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-[#f54502] rounded-2xl mb-4 shadow-lg">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+              </svg>
+            </div>
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">Reset Password</h1>
+            <p className="text-gray-600 text-lg">Enter your email to get a new password</p>
           </div>
-        ) : (
-          'Verify Email'
-        )}
-        </button>
-      </form>
+
+          {/* Form Card */}
+          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 animate-fadeIn">
+            <form className="space-y-6" onSubmit={handleSubmit}>
+              <div className="space-y-2">
+                <label htmlFor="email" className="text-sm font-medium text-gray-700">
+                  Email Address
+                </label>
+                <div className="relative group">
+                  <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#f54502] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                  </svg>
+                  <input
+                    type="email"
+                    id="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-transparent text-gray-900 placeholder-gray-400 transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                    placeholder="Enter your email"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className={`w-full px-6 py-4 flex items-center justify-center rounded-2xl font-semibold text-lg transition-all duration-300 transform
+                ${
+                  loading
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 text-white shadow-lg hover:shadow-xl hover:scale-105"
+                }`}
+              >
+                {loading ? (
+                  <div className="flex items-center">
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
+                    Verifying...
+                  </div>
+                ) : (
+                  "Reset Password"
+                )}
+              </button>
+            </form>
+
+            <div className="text-center mt-6">
+              <p className="text-gray-600">
+                Remember your password?{" "}
+                <a
+                  href="/auth/login"
+                  className="text-[#f54502] hover:underline font-semibold transition-colors"
+                >
+                  Sign in
+                </a>
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     );

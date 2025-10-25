@@ -12,7 +12,7 @@ import Footer from "./components/layout/Footer";
 // Use lazy loading instead of dynamic for better performance
 const EventCalendar = lazy(() => import('@/components/Calendar/EventCalendar'));
 // const FeaturedEvent = lazy(() => import("./components/home/FeaturedEvent"));
-const LatestEvent = lazy(() => import("./components/home/LatestEvent"));
+// const LatestEvent = lazy(() => import("./components/home/LatestEvent"));
 const AllEvents = lazy(() => import("./components/home/AllEvents"));
 // const Trending = lazy(() => import("./components/home/Trending"));
 const Tutorial = lazy(() => import("./components/home/Tutorial"));
@@ -43,9 +43,9 @@ export default function Home() {
         <EventCalendar />
       </Suspense>
       
-      <Suspense fallback={<div>Loading latest event...</div>}>
+      {/* <Suspense fallback={<div>Loading latest event...</div>}>
         <LatestEvent />
-      </Suspense>
+      </Suspense> */}
       
       <Suspense fallback={<GridSkeleton />}>
         <AllEvents />

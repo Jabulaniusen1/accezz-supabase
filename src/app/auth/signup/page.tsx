@@ -121,9 +121,21 @@ function Signup() {
   };
 
   return (
-    <div className="min-h-screen flex bg-white">
-      {/* Left Side - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center  p-4 sm:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        {/* Animated Background Shapes */}
+        <div className="absolute top-20 left-10 w-32 h-32 bg-[#f54502]/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-40 right-20 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute bottom-20 left-1/4 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute bottom-40 right-10 w-28 h-28 bg-orange-500/10 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '3s' }}></div>
+        
+        {/* Grid Pattern */}
+        <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+      </div>
+
+      {/* Main Content */}
+      <div className="relative z-10 flex items-center justify-center min-h-screen p-4 sm:p-8">
         {/* Loading and Toast */}
         {loading && <Loader />}
         {showToast && (
@@ -140,177 +152,174 @@ function Signup() {
           </React.Suspense>
         )}
 
-        {/* Form Content */}
-        <div className="w-full max-w-md rounded-2xl  animate-fadeIn p-6 sm:p-8">
-          <div className="space-y-6">
-            <div className="text-center space-y-2">
-              <h1 className="text-3xl font-bold text-black">Join V-Tickets</h1>
-              <p className="text-gray-500">Start managing and booking events</p>
+        {/* Form Container */}
+        <div className="w-full max-w-md">
+          {/* Header Section */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-[#f54502] rounded-2xl mb-4 shadow-lg">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              </svg>
             </div>
-
-            <form onSubmit={handleSignup} className="space-y-5">
-              {/* Name Fields */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label htmlFor="firstName" className="text-sm  text-gray-500">
-                    First Name
-                  </label>
-                  <div className="relative">
-                    <FaUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-200" />
-                    <input
-                      type="text"
-                      id="firstName"
-                      name="firstName"
-                      placeholder="Femi"
-                      className="w-full pl-10 pr-4 py-2.5  border rounded-xl font-light focus:outline-none focus:ring-2 focus:ring-[#f54502] text-black placeholder-[#f54502]/50"
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label htmlFor="lastName" className="text-sm  text-gray-500">
-                    Last Name
-                  </label>
-                  <div className="relative">
-                    <FaUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-200" />
-                    <input
-                      type="text"
-                      id="lastName"
-                      name="lastName"
-                      placeholder="Bode"
-                      className="w-full pl-10 pr-4 py-2.5  border rounded-xl font-light focus:outline-none focus:ring-2 focus:ring-[#f54502] text-black placeholder-[#f54502]/50"
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Email Field */}
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-sm  text-gray-500">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <FaEnvelope className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-200" />
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    placeholder="you@example.com"
-                    className="w-full pl-10 pr-4 py-2.5  border rounded-xl font-light focus:outline-none focus:ring-2 focus:ring-blue-400 text-black placeholder-blue-200/50"
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Phone Field */}
-              <div className="space-y-2">
-                <label htmlFor="phone" className="text-sm  text-gray-500">
-                  Phone Number
-                </label>
-                <div className="relative">
-                  <FaPhone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-200" />
-                  <input
-                    type="tel"
-                    id="phone"
-                    name="phone"
-                    placeholder="+234 701 121 1312"
-                    className="w-full pl-10 pr-4 py-2.5  border rounded-xl font-light focus:outline-none focus:ring-2 focus:ring-blue-400 text-black placeholder-blue-200/50"
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Password Field */}
-              <div className="space-y-2">
-                <label htmlFor="password" className="text-sm  text-gray-500">
-                  Password
-                </label>
-                <div className="relative">
-                  <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-200" />
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    id="password"
-                    name="password"
-                    placeholder="••••••••"
-                    className="w-full pl-10 pr-12 py-2.5  border rounded-xl font-light focus:outline-none focus:ring-2 focus:ring-[#f54502] text-black placeholder-[#f54502]/30"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={togglePasswordVisibility}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-200 hover:text-black transition-colors"
-                  >
-                    {showPassword ? <FaEyeSlash /> : <FaEye />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="agreeTerms"
-                  checked={agreeTerms}
-                  onChange={(e) => setAgreeTerms(e.target.checked)}
-                  className="w-4 h-4 text-[#f54502] bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-[#f54502] dark:focus:ring-[#f54502]"
-                />
-                <label htmlFor="agreeTerms" className="text-sm text-gray-500 dark:text-gray-300">
-                  I agree to the{" "}
-                  <button
-                    type="button"
-                    onClick={() => setShowTermsPopup(true)}
-                    className="text-black dark:text-[#f54502] underline hover:text-[#f54502] dark:hover:text-[#f54502]/80"
-                  >
-                    Terms and Conditions
-                  </button>
-                </label>
-              </div>
-
-              <button
-                type="submit"
-                disabled={!agreeTerms}
-                className={`w-full px-5 py-3 flex items-center justify-center rounded-xl text-white text-sm font-medium 
-                transition-all duration-300 bg-[#f54502] hover:bg-[#f54502]/90
-                ${
-                  agreeTerms
-                    ? "  transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
-                    : "  opacity-50 cursor-not-allowed"
-                }`}
-              >
-                {loading ? "Creating Account..." : "Sign Up"}
-              </button>
-            </form>
-
-            <p className="text-center text-gray-500">
-              Already have an account?{" "}
-              <Link
-                href="/auth/login?verify==false"
-                className="text-[#f54502] hover:underline font-medium"
-              >
-                Log in
-              </Link>
-            </p>
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">Join Accezz</h1>
+            <p className="text-gray-600 text-lg">Create your account and start your journey</p>
           </div>
-        </div>
-      </div>
 
-      {/* Right Side - Image */}
-      <div className="hidden lg:block lg:w-1/2 relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#f54502]/20 to-[#d63a02]/20 dark:from-gray-900/40 dark:to-[#f54502]/40 z-10"></div>
-        <Image
-          src="/images/vtickets hero.jpg"
-          alt="Event Management"
-          fill
-          className="object-cover"
-          priority
-        />
-        <div className="absolute inset-0 bg-black/30 dark:bg-black/50 z-20"></div>
-        <div className="absolute inset-0 z-30 flex items-center justify-center">
-          <div className="text-center text-gray-100 p-8">
-            <h2 className="text-4xl font-bold mb-4">Welcome to V-Tickets</h2>
-            <p className="text-xl text-gray-300 max-w-md">
-              Your gateway to seamless event management and ticket booking
-            </p>
+          {/* Form Card */}
+          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 animate-fadeIn">
+            <div className="space-y-6">
+
+              <form onSubmit={handleSignup} className="space-y-6">
+                {/* Name Fields */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label htmlFor="firstName" className="text-sm font-medium text-gray-700">
+                      First Name
+                    </label>
+                    <div className="relative group">
+                      <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f54502] transition-colors" />
+                      <input
+                        type="text"
+                        id="firstName"
+                        name="firstName"
+                        placeholder="Femi"
+                        className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-transparent text-gray-900 placeholder-gray-400 transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="lastName" className="text-sm font-medium text-gray-700">
+                      Last Name
+                    </label>
+                    <div className="relative group">
+                      <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f54502] transition-colors" />
+                      <input
+                        type="text"
+                        id="lastName"
+                        name="lastName"
+                        placeholder="Bode"
+                        className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-transparent text-gray-900 placeholder-gray-400 transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Email Field */}
+                <div className="space-y-2">
+                  <label htmlFor="email" className="text-sm font-medium text-gray-700">
+                    Email Address
+                  </label>
+                  <div className="relative group">
+                    <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f54502] transition-colors" />
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      placeholder="you@example.com"
+                      className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-transparent text-gray-900 placeholder-gray-400 transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Phone Field */}
+                <div className="space-y-2">
+                  <label htmlFor="phone" className="text-sm font-medium text-gray-700">
+                    Phone Number
+                  </label>
+                  <div className="relative group">
+                    <FaPhone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f54502] transition-colors" />
+                    <input
+                      type="tel"
+                      id="phone"
+                      name="phone"
+                      placeholder="+234 701 121 1312"
+                      className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-transparent text-gray-900 placeholder-gray-400 transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Password Field */}
+                <div className="space-y-2">
+                  <label htmlFor="password" className="text-sm font-medium text-gray-700">
+                    Password
+                  </label>
+                  <div className="relative group">
+                    <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f54502] transition-colors" />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      id="password"
+                      name="password"
+                      placeholder="••••••••"
+                      className="w-full pl-12 pr-12 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-transparent text-gray-900 placeholder-gray-400 transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={togglePasswordVisibility}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#f54502] transition-colors"
+                    >
+                      {showPassword ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="checkbox"
+                    id="agreeTerms"
+                    checked={agreeTerms}
+                    onChange={(e) => setAgreeTerms(e.target.checked)}
+                    className="w-5 h-5 text-[#f54502] bg-white border-gray-300 rounded focus:ring-[#f54502] focus:ring-2"
+                  />
+                  <label htmlFor="agreeTerms" className="text-sm text-gray-600">
+                    I agree to the{" "}
+                    <button
+                      type="button"
+                      onClick={() => setShowTermsPopup(true)}
+                      className="text-[#f54502] underline hover:text-[#f54502]/80 font-medium"
+                    >
+                      Terms and Conditions
+                    </button>
+                  </label>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={!agreeTerms || loading}
+                  className={`w-full px-6 py-4 flex items-center justify-center rounded-2xl font-semibold text-lg transition-all duration-300 transform
+                  ${
+                    !agreeTerms || loading
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 text-white shadow-lg hover:shadow-xl hover:scale-105"
+                  }`}
+                >
+                  {loading ? (
+                    <div className="flex items-center">
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
+                      Creating Account...
+                    </div>
+                  ) : (
+                    "Create Account"
+                  )}
+                </button>
+              </form>
+
+              <div className="text-center">
+                <p className="text-gray-600">
+                  Already have an account?{" "}
+                  <Link
+                    href="/auth/login"
+                    className="text-[#f54502] hover:underline font-semibold transition-colors"
+                  >
+                    Sign in
+                  </Link>
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

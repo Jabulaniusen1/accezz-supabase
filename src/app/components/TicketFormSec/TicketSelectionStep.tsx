@@ -45,8 +45,8 @@ const TicketSelectionStep = ({
               }}
               className={`p-4 border rounded-xl transition-all duration-200 cursor-pointer
                 ${selectedTicket?.name === ticket.name 
-                  ? 'border-blue-500 bg-blue-50/30 dark:bg-blue-900/20' 
-                  : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-500'
+                  ? 'border-[#f54502] bg-[#f54502]/10 dark:bg-[#f54502]/20' 
+                  : 'border-gray-200 dark:border-gray-700 hover:border-[#f54502]/50 dark:hover:border-[#f54502]/50'
                 }
                 ${parseInt(ticket.quantity) === 0 ? 'opacity-60 cursor-not-allowed' : ''}
               `}
@@ -61,7 +61,7 @@ const TicketSelectionStep = ({
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                  <p className="text-lg font-bold text-[#f54502] dark:text-[#f54502]">
                     {formatPrice(Number(ticket.price), '₦')}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -100,7 +100,7 @@ const TicketSelectionStep = ({
                       className={`w-8 h-8 rounded-full flex items-center justify-center border transition-colors
                         ${quantity <= 1 
                           ? 'border-gray-200 text-gray-400 cursor-not-allowed' 
-                          : 'border-blue-500 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                          : 'border-[#f54502] text-[#f54502] hover:bg-[#f54502]/10 dark:hover:bg-[#f54502]/20'
                         }`}
                     >
                       <span className="text-lg">-</span>
@@ -117,7 +117,7 @@ const TicketSelectionStep = ({
                       className={`w-8 h-8 rounded-full flex items-center justify-center border transition-colors
                         ${quantity >= parseInt(selectedTicket.quantity) - parseInt(selectedTicket.sold)
                           ? 'border-gray-200 text-gray-400 cursor-not-allowed'
-                          : 'border-blue-500 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                          : 'border-[#f54502] text-[#f54502] hover:bg-[#f54502]/10 dark:hover:bg-[#f54502]/20'
                         }`}
                     >
                       <span className="text-lg">+</span>
@@ -138,7 +138,7 @@ const TicketSelectionStep = ({
                     <p className="font-medium text-gray-900 dark:text-white">
                       Total Amount
                     </p>
-                    <p className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                    <p className="text-xl font-bold text-[#f54502] dark:text-[#f54502]">
                       {formatPrice(totalPrice, '₦')}
                     </p>
                   </div>

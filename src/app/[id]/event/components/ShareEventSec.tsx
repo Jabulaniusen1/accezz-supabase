@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaShareAlt, FaCopy, FaLinkedin, FaTwitter, FaFacebook, FaLink } from 'react-icons/fa';
-import { SiWhatsapp, SiTelegram } from 'react-icons/si';
+import { SiTelegram } from 'react-icons/si';
 import { MdEmail } from 'react-icons/md';
 
 interface ShareEventSectionProps {
@@ -38,9 +38,6 @@ export const ShareEventSection: React.FC<ShareEventSectionProps> = ({ eventSlug,
                 break;
             case 'linkedin':
                 url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(eventUrl)}`;
-                break;
-            case 'whatsapp':
-                url = `https://wa.me/?text=${encodeURIComponent(`${text} ${eventUrl}`)}`;
                 break;
             case 'telegram':
                 url = `https://t.me/share/url?url=${encodeURIComponent(eventUrl)}&text=${encodeURIComponent(text)}`;
@@ -111,7 +108,6 @@ export const ShareEventSection: React.FC<ShareEventSectionProps> = ({ eventSlug,
                                 { icon: FaTwitter, name: 'Twitter', platform: 'twitter', color: 'text-blue-400' },
                                 { icon: FaFacebook, name: 'Facebook', platform: 'facebook', color: 'text-blue-600' },
                                 { icon: FaLinkedin, name: 'LinkedIn', platform: 'linkedin', color: 'text-blue-700' },
-                                { icon: SiWhatsapp, name: 'WhatsApp', platform: 'whatsapp', color: 'text-green-500' },
                                 { icon: SiTelegram, name: 'Telegram', platform: 'telegram', color: 'text-blue-500' },
                                 { icon: MdEmail, name: 'Email', platform: 'email', color: 'text-gray-600 dark:text-gray-300' },
                             ].map((item) => (

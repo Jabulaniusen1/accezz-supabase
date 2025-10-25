@@ -64,7 +64,7 @@ const PaymentStep = ({ selectedTicket, quantity, totalPrice, handlePurchase, isL
         className={`w-full py-3 px-6 rounded-lg font-medium transition-all ${
           isLoading
             ? 'bg-gray-400 text-white cursor-not-allowed'
-            : 'bg-blue-600 text-white hover:bg-blue-700 '
+            : 'bg-[#f54502] text-white hover:bg-[#f54502]/90 '
         }`}
         style={{ borderRadius: 12 }}
       >
