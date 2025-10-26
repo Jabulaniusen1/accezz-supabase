@@ -10,21 +10,22 @@ export const metadata: Metadata = {
   },
   description: 'Accezz is Nigeria\'s leading event ticketing platform. Create, manage, and sell tickets for concerts, conferences, workshops, and events. Secure payment processing, QR code validation, and real-time analytics. Start selling tickets in minutes!',
   keywords: [
-    'event ticketing',
-    'online ticket sales',
-    'Nigeria events',
-    'concert tickets',
-    'conference tickets',
-    'workshop tickets',
+    'event ticketing platform',
     'event management',
-    'ticket platform',
-    'QR code tickets',
-    'secure payments',
-    'event analytics',
+    'online ticket sales Nigeria',
+    'concert tickets Nigeria',
+    'conference tickets Nigeria',
+    'workshop tickets Nigeria',
+    'event organizers Nigeria',
     'ticket validation',
-    'event organizers',
-    'ticket booking',
-    'event registration'
+    'QR code tickets Nigeria',
+    'secure ticket payments',
+    'event registration platform',
+    'event ticketing solutions',
+    'event booking system',
+    'sell event tickets online',
+    'ticket sales platform Nigeria',
+    'real-time analytics for events'
   ],
   authors: [{ name: 'Accezz Team' }],
   creator: 'Accezz',
@@ -97,6 +98,7 @@ export const metadata: Metadata = {
     'msapplication-config': '/browserconfig.xml',
   },
 };
+
 
 export default function RootLayout({
   children,

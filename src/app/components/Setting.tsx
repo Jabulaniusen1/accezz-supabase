@@ -11,32 +11,32 @@ const Settings = () => {
   return (
     <div className='flex flex-col px-0 sm:px-10 h-full w-full sm:max-w-full'>
       
-      <h1 className='mb-6 text-lg lg:text-2xl font-bold text-gray-800 dark:text-gray-100 ml-0 sm:ml-2'>
-      Settings
-      </h1>
+      <div className="mb-8">
+        <h1 className='text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2'>
+          Settings
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400 text-sm lg:text-base">
+          Manage your account preferences and security settings
+        </p>
+      </div>
 
       {/* Improved Tab Navigation */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto mb-8">
         <div className="flex min-w-max border-b border-gray-200 dark:border-gray-700">
           {[
-        { name: 'Profile', id: 0 },
-        { name: 'Passwords', id: 1 },
-        { name: 'Account', id: 2 },
-        { name: 'Notifications', id: 3 },
+        { name: 'Passwords', id: 0 },
+        { name: 'Account', id: 1 },
+        { name: 'Notifications', id: 2 },
           ].map((tab) => (
         <button
           key={tab.id}
           className={`
-          py-2 px-3 lg:px-6 text-sm lg:text-base 
+          py-3 px-4 lg:px-8 text-sm lg:text-base 
           whitespace-nowrap
           rounded-t-lg font-medium transition-all duration-200
           ${activeTab === tab.id
-          ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border-b-2 border-blue-600'
-          : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-          }
-          ${activeTab === tab.id 
-          ? 'shadow-sm' 
-          : 'hover:bg-gray-50 dark:hover:bg-gray-700'
+          ? 'bg-white dark:bg-gray-800 text-[#f54502] dark:text-[#f54502] border-b-2 border-[#f54502] shadow-sm'
+          : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
           }
           `}
           onClick={() => setActiveTab(tab.id)}
@@ -48,11 +48,10 @@ const Settings = () => {
       </div>
 
       {/* Content Area */}
-      <div className='mt-6 p-0 sm:p-6'>
-      {activeTab === 0 && <Profile />}
-      {activeTab === 1 && <Password />}
-      {activeTab === 2 && <Account />}
-      {activeTab === 3 && <Notifications />}
+      <div className='flex-1'>
+      {activeTab === 0 && <Password />}
+      {activeTab === 1 && <Account />}
+      {activeTab === 2 && <Notifications />}
       </div>
     </div>
   );

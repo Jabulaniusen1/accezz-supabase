@@ -63,7 +63,7 @@ export const EventHeroSection = ({ event, scrollToTickets }: EventHeroSectionPro
                 <div className="bg-gray-50 dark:bg-gray-700 rounded-2xl p-4 sm:p-6 space-y-3 sm:space-y-4">
                   {/* Date */}
                   <div className="flex items-center space-x-3 sm:space-x-4 text-gray-700 dark:text-gray-300">
-                    <div className="p-1.5 sm:p-2 bg-[#f54502]/10 rounded-lg">
+                    <div className="p-1.5 sm:p-2 bg-[#f54502]/10 rounded-xl">
                       <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#f54502]" />
                     </div>
                     <div>
@@ -74,7 +74,7 @@ export const EventHeroSection = ({ event, scrollToTickets }: EventHeroSectionPro
 
                   {/* Time */}
                   <div className="flex items-center space-x-3 sm:space-x-4 text-gray-700 dark:text-gray-300">
-                    <div className="p-1.5 sm:p-2 bg-[#f54502]/10 rounded-lg">
+                    <div className="p-1.5 sm:p-2 bg-[#f54502]/10 rounded-xl">
                       <ClockIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#f54502]" />
                     </div>
                     <div>
@@ -85,7 +85,7 @@ export const EventHeroSection = ({ event, scrollToTickets }: EventHeroSectionPro
 
                   {/* Location */}
                   <div className="flex items-start space-x-3 sm:space-x-4 text-gray-700 dark:text-gray-300">
-                    <div className="p-1.5 sm:p-2 bg-[#f54502]/10 rounded-lg mt-0.5">
+                    <div className="p-1.5 sm:p-2 bg-[#f54502]/10 rounded-xl mt-0.5">
                       <MapPinIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#f54502]" />
                     </div>
                     <div>

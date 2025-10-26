@@ -233,72 +233,100 @@ const Account = () => {
   };
 
   return (
-    <div className="w-full sm:max-w-4xl p-2 sm:p-6 space-y-8 animate-fadeIn">
+    <div className="max-w-6xl mx-auto p-6 space-y-8">
       {loading && <Loader />}
       
-      <div className="flex flex-col gap-6 sm:flex-row sm:justify-between sm:items-center">
-        <div>
-          <h1 className="text-2xl font-bold mb-2">Payment Settings</h1>
-          <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
-           Manage your payment information and view transaction history
-          </p>
-        </div>
-        <div className="flex flex-col gap-3 w-full sm:flex-row sm:gap-4 sm:w-auto">
-          <div className="relative w-full sm:w-40">
-        <select
-          value={accountData.currency}
-          onChange={(e) => setAccountData(prev => ({ ...prev, currency: e.target.value }))}
-          className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 shadow-sm text-sm"
-        >
-          <option value="NGN">NGN - Naira</option>
-          <option value="NGN">USD - US Dollar</option>
-          <option value="EUR">EUR - Euro</option>
-          <option value="GBP">GBP - British Pound</option>
-        </select>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Payment Settings</h1>
+        <p className="text-gray-600 dark:text-gray-400 text-sm lg:text-base">
+          Manage your payment information, bank account details, and view transaction history
+        </p>
+      </div>
+      {/* Currency and Country Selectors */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Payment Preferences</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Currency
+            </label>
+            <select
+              value={accountData.currency}
+              onChange={(e) => setAccountData(prev => ({ ...prev, currency: e.target.value }))}
+              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-colors"
+            >
+              <option value="NGN">NGN - Nigerian Naira</option>
+              <option value="USD">USD - US Dollar</option>
+              <option value="EUR">EUR - Euro</option>
+              <option value="GBP">GBP - British Pound</option>
+            </select>
           </div>
-          <div className="relative w-full sm:w-40">
-        <select
-          value={accountData.country}
-          onChange={(e) => setAccountData(prev => ({ ...prev, country: e.target.value }))}
-          className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 shadow-sm text-sm"
-        >
-          <option value="nigeria">Nigeria</option>
-          <option value="ghana">Ghana</option>
-          <option value="south africa">South Africa</option>
-          <option value="kenya">Kenya</option>
-        </select>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Country
+            </label>
+            <select
+              value={accountData.country}
+              onChange={(e) => setAccountData(prev => ({ ...prev, country: e.target.value }))}
+              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-colors"
+            >
+              <option value="nigeria">Nigeria</option>
+              <option value="ghana">Ghana</option>
+              <option value="south africa">South Africa</option>
+              <option value="kenya">Kenya</option>
+            </select>
           </div>
         </div>
       </div>
 
+      {/* Account Card Display */}
       {hasExistingAccount && !showForm && (
-        <div className="relative group max-w-full sm:max-w-md mx-auto">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-tilt">
-            <div 
-              className="relative p-4 sm:p-6 rounded-2xl shadow-xl overflow-hidden flex flex-col gap-4"
-              style={{
-                background: `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://img.freepik.com/free-vector/gradient-blue-abstract-technology-background_23-2149213765.jpg')`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Current Account</h2>
+            <button
+              onClick={() => setShowForm(true)}
+              className="px-4 py-2 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white rounded-lg hover:from-[#f54502]/90 hover:to-[#d63a02]/90 transition-all duration-200 transform hover:scale-105 text-sm font-medium"
             >
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 sm:mb-4 gap-2">
-                <div className="space-y-2 sm:space-y-3">
-                  <h3 className="text-base sm:text-lg font-semibold text-white">{accountData.account_bank}</h3>
-                  <p className="text-gray-200 text-sm sm:text-base">****{accountData.account_number.slice(-4)}</p>
-                  <p className="text-xs sm:text-sm text-gray-300">{accountData.account_name}</p>
+              Edit Account
+            </button>
+          </div>
+          
+          <div className="relative group">
+            <div className="absolute inset-0 bg-gradient-to-r from-[#f54502] to-[#d63a02] rounded-xl blur opacity-20 group-hover:opacity-30 transition duration-300"></div>
+            <div className="relative bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-6 text-white overflow-hidden">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold">{accountData.account_bank}</h3>
+                  <p className="text-gray-300 text-sm">Bank Account</p>
                 </div>
-                <button
-                  onClick={() => setShowForm(true)}
-                  className="mt-2 sm:mt-0 text-white hover:text-blue-200 transition-colors bg-blue-500/30 px-3 py-1 rounded-lg text-sm"
-                >
-                  Edit
-                </button>
+                <div className="text-right">
+                  <p className="text-sm text-gray-300">Account Number</p>
+                  <p className="text-lg font-mono">****{accountData.account_number.slice(-4)}</p>
+                </div>
               </div>
-              <div className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 opacity-50">
-                <svg width="48" height="32" viewBox="0 0 60 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="30" cy="20" r="18" stroke="white" strokeWidth="2" strokeOpacity="0.5"/>
-                  <circle cx="40" cy="20" r="18" stroke="white" strokeWidth="2" strokeOpacity="0.5"/>
+              
+              <div className="mb-4">
+                <p className="text-sm text-gray-300">Account Holder</p>
+                <p className="text-lg font-medium">{accountData.account_name}</p>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-sm text-gray-300">Currency</p>
+                  <p className="font-medium">{accountData.currency}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-gray-300">Country</p>
+                  <p className="font-medium capitalize">{accountData.country}</p>
+                </div>
+              </div>
+              
+              {/* Decorative Elements */}
+              <div className="absolute top-4 right-4 opacity-20">
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                  <circle cx="20" cy="20" r="15" stroke="white" strokeWidth="2"/>
+                  <circle cx="20" cy="20" r="8" stroke="white" strokeWidth="1"/>
                 </svg>
               </div>
             </div>
@@ -306,126 +334,171 @@ const Account = () => {
         </div>
       )}
 
+      {/* Account Form */}
       {(!hasExistingAccount || showForm) && (
-        <form 
-          onSubmit={handleSubmit} 
-          className="space-y-6 bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-lg animate-slideUp max-w-full sm:max-w-md mx-auto"
-        >
-          <div className="grid grid-cols-1 gap-4 sm:gap-6">
-            <div>
-              <label className="block text-sm font-medium mb-2">Bank</label>
-              <select
-                value={accountData.bank_code}
-                onChange={handleBankChange}
-                className="w-full p-2 border rounded-lg bg-transparent text-sm"
-                required
-              >
-                <option value="">Select Bank</option>
-                {banks.map((bank) => (
-              <option key={bank.code} value={bank.code}>
-                {bank.name}
-              </option>
-                ))}
-              </select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-2">Account Number</label>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <input
-              type="text"
-              value={accountData.account_number}
-              onChange={(e) => setAccountData(prev => ({ ...prev, account_number: e.target.value }))}
-              className="flex-1 p-2 border rounded-lg bg-transparent text-sm"
-              required
-              inputMode="numeric"
-              pattern="[0-9]*"
-              maxLength={12}
-              minLength={6}
-              placeholder="Enter account number"
-                />
-                <button
-              type="button"
-              onClick={verifyAccount}
-              disabled={verifying}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-blue-300 text-sm"
-                >
-              {verifying ? 'Verifying...' : 'Verify'}
-                </button>
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-2">Account Name</label>
-              <input
-                type="text"
-                value={accountData.account_name}
-                onChange={(e) => setAccountData(prev => ({ ...prev, account_name: e.target.value }))}
-                className="w-full p-2 border rounded-lg bg-transparent text-sm"
-                required
-                readOnly={!!accountData.account_name}
-                placeholder="Account name will appear here"
-              />
-            </div>
-          </div>
-              
-          <div className="flex flex-col sm:flex-row justify-end items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 lg:p-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              {hasExistingAccount ? 'Edit Account Details' : 'Add Bank Account'}
+            </h2>
             {showForm && (
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors dark:text-gray-200 dark:hover:text-blue-400 text-sm"
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors dark:text-gray-200 dark:hover:text-gray-400 text-sm font-medium"
               >
                 Cancel
               </button>
             )}
-            <button
-              type="submit"
-              className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transform hover:scale-105 transition-all duration-200 text-sm"
-            >
-              {hasExistingAccount ? 'Update Account' : 'Add Account'}
-            </button>
           </div>
-        </form>
-      )}
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">Transaction History</h2>
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
-          {transactions.length === 0 ? (
-            <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-              No transactions found
+          
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Bank
+                </label>
+                <select
+                  value={accountData.bank_code}
+                  onChange={handleBankChange}
+                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-colors"
+                  required
+                >
+                  <option value="">Select Bank</option>
+                  {banks.map((bank) => (
+                    <option key={bank.code} value={bank.code}>
+                      {bank.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Account Number
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={accountData.account_number}
+                    onChange={(e) => setAccountData(prev => ({ ...prev, account_number: e.target.value }))}
+                    className="flex-1 p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-colors"
+                    required
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={12}
+                    minLength={6}
+                    placeholder="Enter account number"
+                  />
+                  <button
+                    type="button"
+                    onClick={verifyAccount}
+                    disabled={verifying}
+                    className="px-4 py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white rounded-lg hover:from-[#f54502]/90 hover:to-[#d63a02]/90 disabled:bg-[#f54502]/50 transition-all duration-200 text-sm font-medium whitespace-nowrap"
+                  >
+                    {verifying ? 'Verifying...' : 'Verify'}
+                  </button>
+                </div>
+              </div>
             </div>
-          ) : (
-            <div className="overflow-x-auto" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Account Name
+              </label>
+              <input
+                type="text"
+                value={accountData.account_name}
+                onChange={(e) => setAccountData(prev => ({ ...prev, account_name: e.target.value }))}
+                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-colors"
+                required
+                placeholder="Account name will appear here after verification"
+              />
+            </div>
+            
+            <div className="flex justify-end pt-4">
+              <button
+                type="submit"
+                className="px-8 py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white rounded-lg hover:from-[#f54502]/90 hover:to-[#d63a02]/90 transform hover:scale-105 transition-all duration-200 font-medium"
+              >
+                {hasExistingAccount ? 'Update Account' : 'Add Account'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+      {/* Transaction History */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Transaction History</h2>
+          <div className="text-sm text-gray-500 dark:text-gray-400">
+            {transactions.length} transaction{transactions.length !== 1 ? 's' : ''}
+          </div>
+        </div>
+        
+        {transactions.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No transactions yet</h3>
+            <p className="text-gray-500 dark:text-gray-400">Your transaction history will appear here once you start selling tickets.</p>
+          </div>
+        ) : (
+          <div className="overflow-hidden">
+            <div className="overflow-x-auto" style={{ maxHeight: '500px', overflowY: 'auto' }}>
               <table className="w-full">
                 <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Amount</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                      Date
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                      Description
+                    </th>
+                    <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                      Amount
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
-                  {transactions.map((transaction) => (
-                    <tr key={transaction.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                  {transactions.map((transaction, index) => (
+                    <tr key={transaction.id} className={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50/50 dark:bg-gray-700/50'}`}>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {new Date(transaction.date).toLocaleDateString('en-GB')}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="max-w-xs truncate" title={transaction.description}>
-                          {transaction.description}
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          {new Date(transaction.date).toLocaleDateString('en-GB')}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {new Date(transaction.date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                         </div>
                       </td>
-                      <td className={`px-6 py-4 font-medium ${transaction.type === 'credit' ? 'text-green-500' : 'text-red-500'}`}>
-                        {transaction.type === 'credit' ? '+' : '-'}{formatPrice(transaction.amount, accountData.currency)}
+                      <td className="px-6 py-4">
+                        <div className="max-w-xs">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white truncate" title={transaction.description}>
+                            {transaction.description}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            Ticket Sale
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className={`text-sm font-semibold ${transaction.type === 'credit' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                          {transaction.type === 'credit' ? '+' : '-'}{formatPrice(transaction.amount, accountData.currency)}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {transaction.type === 'credit' ? 'Credit' : 'Debit'}
+                        </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {showModal && (

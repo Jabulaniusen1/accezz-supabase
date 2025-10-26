@@ -203,13 +203,21 @@ const Earnings = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 sm:ml-[3.5rem] ml-0 w-[100%]">
+    <div className="max-w-7xl mx-auto">
       {/* Toast Notification */}
       {showToast && (
         <div className="fixed top-4 right-4 z-50 w-full max-w-sm">
           <Toast type={toastProps.type} message={toastProps.message} onClose={() => setShowToast(false)} />
         </div>
       )}
+
+      {/* Header Section */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Earnings Dashboard</h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-2">
+          Track your revenue and ticket sales performance
+        </p>
+      </div>
 
       {/* Loading State */}
       {isLoading ? (

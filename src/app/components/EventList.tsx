@@ -270,12 +270,23 @@ const EventList: React.FC = () => {
   }
 
   return (
-    <div className="px-0 sm:px-0 lg:px-6 py-8 sm:ml-[3.5rem] ml-0">
+    <div className="max-w-7xl mx-auto">
+      {/* Header Section */}
       <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Your Events</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-2">
-          Manage, edit, and track all your events in one place
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Your Events</h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-2">
+              Manage, edit, and track all your events in one place
+            </p>
+          </div>
+          <div className="hidden sm:flex items-center space-x-4">
+            <div className="text-right">
+              <p className="text-sm text-gray-500 dark:text-gray-400">Total Events</p>
+              <p className="text-2xl font-bold text-[#f54502]">{formattedEvents.length}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <motion.div 

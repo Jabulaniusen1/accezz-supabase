@@ -237,7 +237,7 @@ const Profile = () => {
 
 
   return (
-    <div className="sm:max-w-4xl mt-2 p-2 sm:p-6 w-full">
+    <div className="max-w-4xl mx-auto p-6">
       {loading && <Loader />}
       {showToast && (
         <Toast
@@ -246,13 +246,17 @@ const Profile = () => {
           onClose={() => setShowToast(false)}
         />
       )}
-      <h1 className="text-2xl font-bold mb-2">Profile Account</h1>
-      <p className="text-gray-600 mb-6">
-        Manage your Virtual Ticket account. All changes will be applied to your events and account settings.
-      </p>
+      
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Profile Settings</h1>
+        <p className="text-gray-600 dark:text-gray-400 text-sm lg:text-base">
+          Manage your personal information and account details
+        </p>
+      </div>
 
       {/* ===================== && •FORM SECTION• && ======================== */}
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 lg:p-8">
+        <form onSubmit={handleSubmit} className="space-y-6">
         {/* ===================== && •PROFILE SETUP SECTION• && =========================== */}
         {/* <div className="flex items-center space-x-4">
           <div className="relative">
@@ -286,7 +290,7 @@ const Profile = () => {
               name="fullName"
               value={userData?.fullName}
               onChange={handleChange}
-              className="w-full border border-gray-300 dark:border-none shadow-md dark:shadow-gray-500/50 bg-transparent dark:bg-gray-800 rounded-lg px-3 py-2"
+              className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-colors"
               placeholder="Enter your full name"
             />
             {errorMessages.fullName && (
@@ -300,7 +304,7 @@ const Profile = () => {
               name="businessName"
               value={userData?.businessName}
               onChange={handleChange}
-              className="w-full border border-gray-300 dark:border-none shadow-md dark:shadow-gray-500/50 bg-transparent dark:bg-gray-800 rounded-lg px-3 py-2"
+              className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-colors"
               placeholder="Enter your business name"
             />
           </div>
@@ -330,7 +334,7 @@ const Profile = () => {
               name="phone"
               value={userData?.phone}
               onChange={handleChange}
-              className="w-full border border-gray-300 dark:border-none shadow-md dark:shadow-gray-500/50 bg-transparent dark:bg-gray-800 rounded-lg px-3 py-2"
+              className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-colors"
               placeholder="Enter your phone number"
             />
             {errorMessages.phone && (
@@ -347,7 +351,7 @@ const Profile = () => {
               name="companyWebsite"
               value={userData?.companyWebsite}
               onChange={handleChange}
-              className="w-full border border-gray-300 dark:border-none shadow-md dark:shadow-gray-500/50 bg-transparent dark:bg-gray-800 rounded-lg px-3 py-2"
+              className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-colors"
               placeholder="Enter your company website "
             />
             {errorMessages.companyWebsite && (
@@ -362,7 +366,7 @@ const Profile = () => {
               name="address"
               value={userData?.address}
               onChange={handleChange}
-              className="w-full border border-gray-300 dark:border-none shadow-md dark:shadow-gray-500/50 bg-transparent dark:bg-gray-800 rounded-lg px-3 py-2"
+              className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-colors"
               placeholder="Enter your address"
             />
             {errorMessages.address && (
@@ -378,7 +382,7 @@ const Profile = () => {
               name="timeZone"
               value={userData?.timeZone}
               onChange={handleChange}
-              className="w-full border border-gray-300 dark:border-none shadow-md dark:shadow-gray-500/50 bg-transparent dark:bg-gray-800 rounded-lg px-3 py-2"
+              className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-colors"
             >
               <option value="">Select your time zone</option>
               <option value="UTC-12:00">UTC-12:00</option>
@@ -396,7 +400,7 @@ const Profile = () => {
               name="eventCategory"
               value={userData?.eventCategory}
               onChange={handleChange}
-              className="w-full border border-gray-300 dark:border-none shadow-md dark:shadow-gray-500/50 bg-transparent dark:bg-gray-800 rounded-lg px-3 py-2"
+              className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-colors"
             >
               <option value="">Select an event category</option>
               <option value="Music">Music</option>
@@ -411,12 +415,13 @@ const Profile = () => {
         <div>
           <button
             type="submit"
-            className="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg shadow hover:bg-blue-600 transition"
+            className="bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white font-semibold py-3 px-6 rounded-lg shadow hover:from-[#f54502]/90 hover:to-[#d63a02]/90 transition-all duration-200 transform hover:scale-105"
           >
             Update Profile
           </button>
         </div>
-      </form>
+        </form>
+      </div>
 
       {showModal && (
         <SuccessModal

@@ -6,6 +6,7 @@ import EventList from "../components/EventList";
 import Earnings from "../components/Earning";
 import Notifications from "../components/Notifications";
 import Setting from "../components/Setting";
+import Profile from "../components/settings/Profile";
 import ToggleMode from "../../components/ui/mode/toggleMode";
 import Loader from "@/components/ui/loader/Loader";
 import { BiMenuAltLeft, BiX, BiCalendar } from "react-icons/bi";
@@ -17,7 +18,7 @@ import axios, { AxiosError } from "axios";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import EventTypeModal from "@/components/Modal/EventType";
 import Link from "next/link";
-import { FaTicketAlt } from "react-icons/fa";
+import Image from "next/image";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState(0);
@@ -173,11 +174,8 @@ const Dashboard = () => {
   // ];
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-white text-gray-900 dark:bg-gray-900 dark:text-white transition-colors duration-300">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       {isLoading && <Loader />}
-      <header className="fixed top-0 right-0 p-4 z-20">
-        <ToggleMode />
-      </header>
 
       <EventTypeModal 
         isOpen={showEventTypeModal}
@@ -185,188 +183,169 @@ const Dashboard = () => {
         onSelectType={handleEventType}
       />
 
-      {/* ========================= && •SIDEBAR• && =================== */}
-      <aside
-        className={`fixed inset-y-0 left-0 z-30 p-4 transform bg-white dark:bg-gray-900 border-r border-gray-300 dark:border-gray-600
-          ${
-            isSidebarOpen
-              ? "translate-x-0"
-              : "-translate-x-full md:translate-x-0 md:hover:w-64"
-          }
-          ${isSidebarOpen ? "w-64 " : "w-16"}
-          transition-transform sm:duration-300 sm:ease-linear lg:duration-[400ms] lg:ease-in-out`}
-        onMouseEnter={() => !isSidebarOpen && setIsSidebarOpen(true)}
-        onMouseLeave={() => setIsSidebarOpen(false)}
-      >
-        <div className="flex items-center justify-center mb-6">
-          <span
-            className={`text-xl font-semibold truncate ${
-              isSidebarOpen ? "block" : "hidden md:block"
-            }`}
-          >
-            {isSidebarOpen ? <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link
-              href="/"
-              className="flex items-center space-x-2 group"
-            >
-              <FaTicketAlt className="w-6 h-6 text-[#f54502] dark:text-[#f54502] group-hover:text-[#f54502]/80 dark:group-hover:text-[#f54502]/80 transition-colors" />
-              <span className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-[#f54502] dark:group-hover:text-[#f54502] transition-colors">
-                Accezz
-              </span>
-            </Link>
-            </div> : <span className="ml-2"> T </span>}
-          </span>
+      {/* ========================= && •HEADER• && =================== */}
+      <header className="sticky top-0 z-40 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="flex items-center justify-between px-4 py-0">
+          {/* Mobile Menu Button */}
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="text-gray-500 dark:text-gray-300 md:hidden"
+            className="md:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             {isSidebarOpen ? <BiX size={24} /> : <BiMenuAltLeft size={24} />}
           </button>
-        </div>
 
-        {/* ========================= && •TABS• && =================== */}
-        <nav className="flex flex-col space-y-2 center">
+          {/* Logo */}
+          <Link
+            href="/"
+            className="flex items-center justify-center space-x-3 group"
+          >
+            <div className="relative">
+              <Image
+                src="/accezz logo c.png"
+                alt="Accezz Logo"
+                width={80}
+                height={80}
+                className="object-contain group-hover:scale-105 w-24 h-24 transition-transform duration-200"
+                priority
+              />
+            </div>
+          </Link>
+
+          {/* Theme Toggle */}
+          <ToggleMode />
+        </div>
+      </header>
+
+      <div className="flex">
+        {/* ========================= && •SIDEBAR• && =================== */}
+        <aside
+          className={`fixed inset-y-0 left-0 z-30 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform transition-transform duration-300 ease-in-out ${
+            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } md:translate-x-0`}
+        >
+          <div className="flex flex-col h-full pt-20">
+            {/* Navigation */}
+            <nav className="flex-1 px-4 py-6 space-y-2">
           <button
-            className={`relative group flex items-center space-x-2 py-2 px-4 transition-all duration-300 rounded-lg ${
+                className={`w-full flex items-center space-x-3 px-4 py-3 transition-all duration-200 ${
               activeTab === 0
-                ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502]"
-                : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300"
+                    ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
+                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
             }`}
+                style={{ borderRadius: '5px' }}
             onClick={() => setActiveTab(0)}
           >
-            {isSidebarOpen ? (
-              <span className="flex items-center space-x-2">
-                <BiCalendar size={24} className="inline text-[#f54502]" />
-                <span>Events</span>
-              </span>
-            ) : (
-              <span className="flex items-center justify-center ml-[-.7rem]">
-                <BiCalendar size={24} className="text-blue-500" />
-              </span>
-            )}
+                <BiCalendar size={20} />
+                <span className="font-medium">Events</span>
           </button>
 
           <button
-            className={`relative group flex items-center space-x-2 py-2 px-4 transition-all duration-300 rounded-lg ${
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
               activeTab === 1
-                ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502]"
-                : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300"
+                    ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
+                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
             }`}
+            style={{ borderRadius: '5px' }}
             onClick={() => setActiveTab(1)}
           >
-            {isSidebarOpen ? (
-              <span className="flex items-center space-x-2">
-                <span className="inline text-[#f54502] text-[20px]">₦ </span>
-                <span>Earnings</span>
-              </span>
-            ) : (
-              <span className="flex items-center justify-center ml-[-.57rem]">
-                <span className="inline text-[#f54502] text-[20px]">₦ </span>
-              </span>
-            )}
+                <span className="text-lg font-bold">₦</span>
+                <span className="font-medium">Earnings</span>
           </button>
 
           <button
-            className={`relative group flex items-center space-x-2 py-2 px-4 transition-all duration-300 rounded-lg ${
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
               activeTab === 2
-                ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502]"
-                : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300"
+                    ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
+                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
             }`}
+            style={{ borderRadius: '5px' }}
             onClick={() => setActiveTab(2)}
           >
-            {isSidebarOpen ? (
-              <span className="flex items-center space-x-2">
-                <FiBell size={22} className="inline text-[#f54502]" />
-                <span>Notifications</span>
-              </span>
-            ) : (
-              <span className="flex items-center justify-center ml-[-.7rem]">
-                <FiBell size={22} className="text-blue-500" />
-              </span>
-            )}
+                <FiBell size={20} />
+                <span className="font-medium">Notifications</span>
           </button>
 
           <button
-            className={`relative group flex items-center space-x-2 py-2 px-4 transition-all duration-300 rounded-lg ${
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
               activeTab === 3
-                ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502]"
-                : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300"
+                    ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
+                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
             }`}
+            style={{ borderRadius: '5px' }}
             onClick={() => setActiveTab(3)}
           >
-            {isSidebarOpen ? (
-              <span className="flex items-center space-x-2">
-                <FiSettings size={22} className="inline text-[#f54502]" />
-                <span>Settings</span>
-              </span>
-            ) : (
-              <span className="flex items-center justify-center ml-[-.7rem]">
-                <FiSettings size={22} className="text-blue-500" />
-              </span>
-            )}
-          </button>
+                <FiSettings size={20} />
+                <span className="font-medium">Settings</span>
+              </button>
+            </nav>
 
+            {/* Profile Button */}
+            <div className="px-4 pb-4">
+              <button
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                  activeTab === 4
+                    ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
+                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                }`}
+                style={{ borderRadius: '5px' }}
+                onClick={() => setActiveTab(4)}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span className="font-medium">Profile</span>
+          </button>
+            </div>
+
+            {/* Logout Button */}
+            <div className="p-4 border-t border-gray-200 dark:border-gray-700">
           <button
-            className="relative group flex items-center space-x-2 py-2 px-4 transition-all duration-300 rounded-lg"
+                className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200"
+                style={{ borderRadius: '5px' }}
             onClick={handleLogout}
           >
-            {isSidebarOpen ? (
-              <span className="flex items-center space-x-2">
-                <FiLogOut size={22} className="inline text-red-500" />
-                <span>Logout</span>
-              </span>
-            ) : (
-              <span className="flex items-center justify-center ml-[-.7rem]">
-                <FiLogOut size={22} className="text-red-500" />
-              </span>
-            )}
+                <FiLogOut size={20} />
+                <span className="font-medium">Logout</span>
           </button>
-        </nav>
+            </div>
+          </div>
       </aside>
 
       {/* ========================= && •MAIN CONTENT• && =================== */}
-      <main
-        className={`flex-grow p-6 transition-all duration-300 ${
-          isSidebarOpen ? "opacity-50 md:opacity-100" : ""
-        }`}
-        style={{
-          marginLeft: isSidebarOpen
-            ? windowWidth && windowWidth >= 768
-              ? "13rem"
-              : "0rem"
-            : windowWidth && windowWidth <= 767
-            ? "0rem"
-            : "0rem",
-        }}
-      >
-        <button
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="md:hidden fixed top-4 left-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white z-10"
-        >
-          {isSidebarOpen ? <BiX size={24} /> : <BiMenuAltLeft size={24} />}
-        </button>
+        <main className="flex-1 md:ml-64">
+          {/* Mobile Overlay */}
+          {isSidebarOpen && (
+            <div
+              className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden"
+              onClick={() => setIsSidebarOpen(false)}
+            />
+          )}
 
+          {/* Content Area */}
+          <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.4 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="p-6"
           >
-            {activeTab === 0 && <EventList />}
-            {activeTab === 1 && <Earnings />}
-            {activeTab === 2 && <Notifications />}
-            {activeTab === 3 && <Setting />}
+                {activeTab === 0 && <EventList />}
+                {activeTab === 1 && <Earnings />}
+                {activeTab === 2 && <Notifications />}
+                {activeTab === 3 && <Setting />}
+                {activeTab === 4 && <Profile />}
           </motion.div>
         </AnimatePresence>
+          </div>
 
         {/* Add Event Button */}
         <button
           onClick={handleAddEvent}
           disabled={isAddEventLoading}
-          className="fixed bottom-6 right-6 px-6 py-2 bg-[#f54502] text-white rounded-full shadow-lg hover:bg-[#f54502]/90 transition-all duration-300 disabled:opacity-50 flex items-center space-x-2"
+            className="fixed bottom-6 right-6 px-6 py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 flex items-center space-x-2 transform hover:scale-105"
         >
           {isAddEventLoading ? (
             <>
@@ -374,12 +353,14 @@ const Dashboard = () => {
               <span>Loading...</span>
             </>
           ) : (
-            <span>+ Add Event</span>
+              <>
+                <span className="text-lg">+</span>
+                <span>Add Event</span>
+              </>
           )}
         </button>
-
-
       </main>
+      </div>
 
       {/* Session Expiration Modal */}
       <ConfirmationModal

@@ -117,7 +117,7 @@ const Password = () => {
                 type="password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full px-4 py-2 mt-1 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="w-full px-4 py-3 mt-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-colors"
                 placeholder="Enter current password"
                 required
               />
@@ -130,7 +130,7 @@ const Password = () => {
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-4 py-2 mt-1 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="w-full px-4 py-3 mt-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-colors"
                 placeholder="Enter new password"
                 required
                 minLength={6}
@@ -144,7 +144,7 @@ const Password = () => {
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-4 py-2 mt-1 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="w-full px-4 py-3 mt-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-colors"
                 placeholder="Confirm new password"
                 required
                 minLength={6}
@@ -154,8 +154,8 @@ const Password = () => {
               type="submit"
               disabled={loading}
               className={`w-full ${
-                loading ? "bg-blue-400" : "bg-blue-500 hover:bg-blue-600"
-              } text-white py-2 px-4 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none flex items-center justify-center`}
+                loading ? "bg-[#f54502]/70" : "bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90"
+              } text-white py-3 px-6 rounded-lg focus:ring-2 focus:ring-[#f54502]/50 focus:outline-none flex items-center justify-center transition-all duration-200 transform hover:scale-105`}
             >
               {loading ? (
                 <span className="inline-block animate-spin rounded-full h-4 w-4 border-t-2 border-white mr-2" />
@@ -176,7 +176,7 @@ const Password = () => {
             device in addition to your password.
           </p>
           <a href="auth/twoFacAuth" target="_blank" rel="noopener noreferrer">
-            <button className="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 focus:ring-2 focus:ring-green-400 focus:outline-none">
+            <button className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-6 rounded-lg hover:from-green-600 hover:to-green-700 focus:ring-2 focus:ring-green-400 focus:outline-none transition-all duration-200 transform hover:scale-105">
               Set Up Two-Factor Authentication
             </button>
           </a>
@@ -191,7 +191,7 @@ const Password = () => {
             Forgot your password? Use the recovery option to reset it.
           </p>
           <Link href="/auth/forgot-password">
-            <button className="w-full bg-yellow-500 text-white py-2 px-4 rounded-lg hover:bg-yellow-600 focus:ring-2 focus:ring-yellow-400 focus:outline-none">
+            <button className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-white py-3 px-6 rounded-lg hover:from-yellow-600 hover:to-yellow-700 focus:ring-2 focus:ring-yellow-400 focus:outline-none transition-all duration-200 transform hover:scale-105">
               Send Recovery Email
             </button>
           </Link>

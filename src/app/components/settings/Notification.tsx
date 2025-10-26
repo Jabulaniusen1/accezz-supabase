@@ -121,7 +121,7 @@ const Notifications = () => {
                     className="sr-only peer"
                   />
                   <div
-                    className={`w-12 h-6 bg-gray-400 peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer-checked:bg-blue-600 transition-all duration-300`}
+                    className={`w-12 h-6 bg-gray-400 peer-focus:ring-2 peer-focus:ring-[#f54502]/50 rounded-full peer-checked:bg-gradient-to-r peer-checked:from-[#f54502] peer-checked:to-[#d63a02] transition-all duration-300`}
                   ></div>
                   <div
                     className={`absolute w-5 h-5 bg-white rounded-full shadow-lg transform transition-transform duration-300 translate-x-0 peer-checked:translate-x-6`}
@@ -135,7 +135,7 @@ const Notifications = () => {
 
       <button
         onClick={saveSettings}
-        className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+        className="w-full bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white py-3 px-6 rounded-lg hover:from-[#f54502]/90 hover:to-[#d63a02]/90 focus:ring-2 focus:ring-[#f54502]/50 focus:outline-none transition-all duration-200 transform hover:scale-105"
       >
         Save Notification Settings
       </button>
