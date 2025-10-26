@@ -227,7 +227,7 @@ const AccountSetupPopup = ({ onClose }: { onClose: () => void }) => {
         {/* Header with close button - stacked on mobile */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-4 sm:mb-6">
           <div className="flex-1">
-            <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-[#f54502] to-[#d63a02] bg-clip-text text-transparent">
               Set Up Your Bank Account
             </h2>
             <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mt-1">
@@ -387,7 +387,7 @@ const AccountSetupPopup = ({ onClose }: { onClose: () => void }) => {
                 loading
                   ? 'bg-blue-500'
                   : accountVerified
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
+                    ? 'bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90'
                     : 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
               }`}
               disabled={loading || !accountVerified}

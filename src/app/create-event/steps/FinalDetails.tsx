@@ -423,7 +423,7 @@ export default function FinalDetails({
           <button
             type="submit"
             disabled={isLoading}
-            className={`px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transform transition-all duration-200 shadow-lg hover:shadow-xl relative overflow-hidden ${
+            className={`px-6 py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white rounded-lg hover:from-[#f54502]/90 hover:to-[#d63a02]/90 transform transition-all duration-200 shadow-lg hover:shadow-xl relative overflow-hidden ${
               isLoading ? "opacity-75 cursor-not-allowed" : "hover:scale-[1.02]"
             }`}
           >
@@ -431,7 +431,7 @@ export default function FinalDetails({
               {isLoading ? "Creating Event..." : "Create Event"}
             </span>
             {isLoading && (
-              <span className="absolute inset-0 bg-gradient-to-r from-blue-700 to-purple-700 opacity-70"></span>
+              <span className="absolute inset-0 bg-gradient-to-r from-[#f54502]/80 to-[#d63a02]/80 opacity-70"></span>
             )}
           </button>
         </div>

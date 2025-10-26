@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { FaEye, FaEyeSlash, FaEnvelope, FaLock, FaRedo } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaEnvelope, FaLock, FaRedo, FaArrowLeft } from 'react-icons/fa';
 import Loader from '../../../components/ui/loader/Loader';
 import Toast from '../../../components/ui/Toast';
 import Link from 'next/link';
@@ -76,13 +76,26 @@ export default function Login() {
       let message = 'Login failed. Please try again.';
       
       if (axios.isAxiosError(error)) {
-        if (error.response?.status === 401) {
-          message = 'Invalid email or password';
+        // Check for specific error messages in the response
+        if (error.response?.data?.Error) {
+          // Handle specific error messages from backend
+          if (error.response.data.Error.toLowerCase().includes('invalid credentials') || 
+              error.response.data.Error.toLowerCase().includes('invalid email') ||
+              error.response.data.Error.toLowerCase().includes('invalid password')) {
+            message = 'Account not found. Please confirm if your email or password is correct';
+          } else {
+            message = error.response.data.Error;
+          }
+        } else if (error.response?.data?.message) {
+          message = error.response.data.message;
+        } else if (error.response?.status === 401) {
+          message = 'Account not found. Please confirm if your email or password is correct';
         } else if (error.response?.status === 400) {
           message = 'Please verify your email first';
           setShowVerificationNotice(true);
-        } else if (error.response?.data?.message) {
-          message = error.response.data.message;
+        } else if (error.response?.status === 403) {
+          message = 'Please verify your email first';
+          setShowVerificationNotice(true);
         }
       } else if (error instanceof Error) {
         message = 'Network error. Please check your connection.';
@@ -129,6 +142,15 @@ export default function Login() {
 
       {/* Main Content */}
       <div className="relative z-10 flex items-center justify-center min-h-screen p-4 sm:p-8">
+        {/* Back Button */}
+        <button
+          onClick={() => router.push('/')}
+          className="absolute top-6 left-6 flex items-center gap-2 text-gray-600 hover:text-[#f54502] transition-colors group"
+        >
+          <FaArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          <span className="text-sm font-medium">Back to Home</span>
+        </button>
+
         {/* Loading and Toast */}
         {loading && <Loader />}
         {showToast && (

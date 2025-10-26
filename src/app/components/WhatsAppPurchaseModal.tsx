@@ -196,7 +196,7 @@ Please confirm availability and provide payment instructions. Thank you! 🙏`;
           <div>
             <button
               onClick={handleWebsitePurchase}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded transition-all duration-300 text-sm"
+              className="w-full bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 text-white font-semibold py-2 px-4 rounded transition-all duration-300 text-sm"
             >
               Buy on Website
             </button>

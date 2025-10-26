@@ -187,8 +187,8 @@ const Trending = () => {
                       <button 
                         onClick={() => event.slug && getTicket(event.slug)}
                         disabled={navigating}
-                        className="w-full mt-4 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-lg 
-                                  hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-md hover:shadow-lg
+                        className="w-full mt-4 px-4 py-2.5 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white font-medium rounded-lg 
+                                  hover:from-[#f54502]/90 hover:to-[#d63a02]/90 transition-all duration-300 shadow-md hover:shadow-lg
                                   flex items-center justify-center gap-2 disabled:opacity-50"
                       >
                         {navigating ? (

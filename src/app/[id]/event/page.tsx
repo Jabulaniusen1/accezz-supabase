@@ -12,7 +12,6 @@ import Footer from '@/app/components/layout/Footer';
 const EventHeroSection = React.lazy(() => import('./components/EventHeroSection').then(module => ({ default: module.EventHeroSection })));
 const EventHostSection = React.lazy(() => import('./components/EventHostSection').then(module => ({ default: module.EventHostSection })));
 const EventTicketsSection = React.lazy(() => import('./components/TicketCard').then(module => ({ default: module.EventTicketsSection })));
-const EventGallerySection = React.lazy(() => import('./components/EventGallerySection'));
 const TicketTypeForm = React.lazy(() => import('../../components/TicketTypeForm'));
 const OtherEventsYouMayLike = React.lazy(() => import('@/app/components/home/OtherEventsYouMayLike'));
 
@@ -138,7 +137,6 @@ const EventDetail = () => {
               />
             </div>
             
-            <EventGallerySection event={event} />
           </React.Suspense>
         )}
 

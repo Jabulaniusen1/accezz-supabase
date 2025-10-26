@@ -244,7 +244,7 @@ export default function CreateEventPage() {
             <div className="flex items-center justify-between relative">
               <div className="absolute top-1/2 left-0 right-0 h-1 bg-gray-200 dark:bg-gray-700 -translate-y-1/2 z-0" />
               <div 
-                className="absolute top-1/2 left-0 h-1 bg-gradient-to-r from-blue-500 to-purple-500 -translate-y-1/2 z-10 transition-all duration-500"
+                className="absolute top-1/2 left-0 h-1 bg-gradient-to-r from-[#f54502] to-[#d63a02] -translate-y-1/2 z-10 transition-all duration-500"
                 style={{ width: `${((step - 1) / (STEPS.length - 1)) * 100}%` }}
               />
               
@@ -256,7 +256,7 @@ export default function CreateEventPage() {
                   >
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300
                       ${step === stepItem.number 
-                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg ring-4 ring-blue-200 dark:ring-blue-900/50 transform scale-110'
+                        ? 'bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white shadow-lg ring-4 ring-[#f54502]/20 dark:ring-[#f54502]/20 transform scale-110'
                         : step > stepItem.number
                         ? 'bg-green-500 text-white shadow-md'
                         : 'bg-white dark:bg-gray-700 text-gray-400 border-2 border-gray-300 dark:border-gray-600'}`}

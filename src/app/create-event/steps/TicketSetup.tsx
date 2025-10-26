@@ -119,7 +119,7 @@ const TicketSetup = memo(function TicketSetup({
           transition={{ type: "spring", stiffness: 200 }}
         >
           <FaTicketAlt className="mr-3 text-blue-500 animate-pulse" size={28} />
-          <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-[#f54502] to-[#d63a02] bg-clip-text text-transparent">
             Create Your Tickets
           </span>
         </motion.h2>
@@ -326,8 +326,8 @@ const NavigationButtons = memo(function NavigationButtons({
         whileHover={{ scale: 1.05, boxShadow: "0 5px 20px rgba(124, 58, 237, 0.4)" }}
         whileTap={{ scale: 0.98 }}
         onClick={onNext}
-        className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white
-                rounded-xl hover:from-blue-700 hover:to-purple-700
+        className="px-8 py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white
+                rounded-xl hover:from-[#f54502]/90 hover:to-[#d63a02]/90
                 transition-all duration-300 shadow-lg hover:shadow-xl
                 flex items-center justify-center"
       >

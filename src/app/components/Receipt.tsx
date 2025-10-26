@@ -506,7 +506,7 @@ const Receipt = ({ closeReceipt }: ReceiptProps) => {
             <div className="text-center">
               <button
                 onClick={downloadPDF}
-                className="bg-gradient-to-r from-[#667eea] to-[#764ba2] hover:from-[#764ba2] hover:to-[#667eea] text-white font-bold py-4 px-8 rounded-xl text-lg transition-all duration-200"
+                className="bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 text-white font-bold py-4 px-8 rounded-xl text-lg transition-all duration-200"
               >
                 Download Full Ticket PDF
               </button>

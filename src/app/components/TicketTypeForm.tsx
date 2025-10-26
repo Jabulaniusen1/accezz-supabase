@@ -350,7 +350,7 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast }: TicketTypeF
                     className={`px-4 py-2  rounded-xl hover:scale-105 shadow-lg hover:shadow-xl transition-colors ${
                       activeStep === 0
                         ? 'border-gray-300 text-gray-400 cursor-not-allowed'
-                        : 'border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                        : 'border-[#f54502] text-[#f54502] hover:bg-[#f54502]/10 dark:hover:bg-[#f54502]/20'
                     }`}
                   >
                     Back
@@ -362,7 +362,7 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast }: TicketTypeF
                     className={`px-4 py-2 rounded-xl hover:scale-105 shadow-lg hover:shadow-xl transition-colors ${
                       activeStep === 2
                         ? 'bg-gray-400 text-white cursor-not-allowed'
-                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                        : 'bg-[#f54502] text-white hover:bg-[#f54502]/90'
                     }`}
                   >
                     {activeStep === 2 ? ' ' : 'Next'}

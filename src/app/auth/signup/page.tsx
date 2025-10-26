@@ -8,6 +8,7 @@ import {
   FaEye,
   FaEyeSlash,
   FaPhone,
+  FaArrowLeft,
 } from "react-icons/fa";
 import Loader from "../../../components/ui/loader/Loader";
 import Toast from "../../../components/ui/Toast";
@@ -136,6 +137,15 @@ function Signup() {
 
       {/* Main Content */}
       <div className="relative z-10 flex items-center justify-center min-h-screen p-4 sm:p-8">
+        {/* Back Button */}
+        <button
+          onClick={() => router.push('/')}
+          className="absolute top-6 left-6 flex items-center gap-2 text-gray-600 hover:text-[#f54502] transition-colors group"
+        >
+          <FaArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          <span className="text-sm font-medium">Back to Home</span>
+        </button>
+
         {/* Loading and Toast */}
         {loading && <Loader />}
         {showToast && (

@@ -691,7 +691,7 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
       <div className="flex justify-end mt-8">
         <button
           onClick={() => validateForm() && onNext()}
-          className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transform hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl w-full md:w-auto"
+          className="px-6 py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white rounded-lg hover:from-[#f54502]/90 hover:to-[#d63a02]/90 transform hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl w-full md:w-auto"
         >
           Continue to Ticket Setup
         </button>
