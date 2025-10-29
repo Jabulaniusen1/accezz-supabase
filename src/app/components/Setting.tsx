@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import Profile from './settings/Profile';
 import Password from './settings/Password';
 import Notifications from './settings/Notification';
 // import Payment from './settings/Payment';

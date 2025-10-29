@@ -24,7 +24,6 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [showEventTypeModal, setShowEventTypeModal] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [windowWidth, setWindowWidth] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const notyfRef = useRef<Notyf | null>(null);
   const [showSessionModal, setShowSessionModal] = useState(false);
@@ -107,20 +106,7 @@ const Dashboard = () => {
     };
   }, [router]);
 
-  // Track window width
-  useEffect(() => {
-    const updateWidth = () => {
-      if (isMounted.current) {
-        setWindowWidth(window.innerWidth);
-      }
-    };
-
-    if (typeof window !== "undefined") {
-      updateWidth();
-      window.addEventListener("resize", updateWidth);
-      return () => window.removeEventListener("resize", updateWidth);
-    }
-  }, []);
+  // (removed unused window width tracking)
 
   const handleAddEvent = () => {
     setShowEventTypeModal(true);

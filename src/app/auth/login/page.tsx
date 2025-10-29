@@ -7,7 +7,6 @@ import Toast from '../../../components/ui/Toast';
 import Link from 'next/link';
 import axios from 'axios';
 import { BASE_URL } from '../../../../config';
-import Image from 'next/image';
 
 type FormData = {
   email: string;

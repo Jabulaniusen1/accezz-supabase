@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios, { AxiosError } from 'axios';
@@ -162,12 +162,12 @@ function ForgotPassword() {
             <div className="text-center mt-6">
               <p className="text-gray-600">
                 Remember your password?{" "}
-                <a
+                <Link
                   href="/auth/login"
                   className="text-[#f54502] hover:underline font-semibold transition-colors"
                 >
                   Sign in
-                </a>
+                </Link>
               </p>
             </div>
           </div>

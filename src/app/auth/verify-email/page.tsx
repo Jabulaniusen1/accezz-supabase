@@ -52,7 +52,7 @@ function VerifyEmail() {
               <FaEnvelope className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-4xl font-bold text-gray-900 mb-2">Check Your Email</h1>
-            <p className="text-gray-600 text-lg">We've sent you a verification link</p>
+            <p className="text-gray-600 text-lg">We&apos;ve sent you a verification link</p>
           </div>
 
           {/* Form Card */}
@@ -65,7 +65,7 @@ function VerifyEmail() {
             <div className="space-y-6">
               <div className="p-4 bg-gradient-to-r from-[#f54502]/10 to-[#f54502]/5 border border-[#f54502]/20 rounded-2xl">
                 <p className="text-gray-700 text-sm">
-                  We've sent a verification link to{' '}
+                  We&apos;ve sent a verification link to{' '}
                   <span className="font-semibold text-[#f54502]">{email}</span>.
                   Please click the link in the email to verify your account.
                 </p>
@@ -73,7 +73,7 @@ function VerifyEmail() {
 
               <div className="space-y-4">
                 <p className="text-gray-600 text-sm">
-                  Didn't receive the email? Check your spam folder or{' '}
+                  Didn&apos;t receive the email? Check your spam folder or{' '}
                   <button 
                     onClick={resendOtp}
                     className="text-[#f54502] underline hover:text-[#f54502]/80 font-medium"

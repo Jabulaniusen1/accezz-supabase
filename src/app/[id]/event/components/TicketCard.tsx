@@ -7,12 +7,11 @@ import { type Ticket } from '@/types/event';
 
 interface EventTicketsSectionProps {
     event: Event;
-    eventSlug: string;
     handleGetTicket: (ticket: Ticket) => void;
   }
 
 export const EventTicketsSection = forwardRef<HTMLDivElement, EventTicketsSectionProps>(
-    ({ event, eventSlug, handleGetTicket }, ref) => {
+    ({ event, handleGetTicket }, ref) => {
       return (
         <div 
           ref={ref} 

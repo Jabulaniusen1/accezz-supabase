@@ -1,6 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { FaFacebook, FaInstagram, FaTiktok } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
 
@@ -24,9 +25,16 @@ const Footer = () => {
           <div className="space-y-6">
             {/* Brand */}
             <div>
-              <h3 className="text-xl sm:text-2xl font-bold text-[#f54502] mb-2 sm:mb-3">
-                accezz.
-              </h3>
+              <div className="mb-2 sm:mb-3">
+                <Image
+                  src="/accezz logo c.png"
+                  alt="Accezz Logo"
+                  width={120}
+                  height={40}
+                  className="h-8 sm:h-10 w-auto"
+                  priority
+                />
+              </div>
               <p className="text-gray-700 text-xs sm:text-sm leading-relaxed mb-4 sm:mb-6">
                 Accezz is an event ticketing platform for memorable experiences in Africa.
               </p>

@@ -15,7 +15,6 @@ import Toast from "../../../components/ui/Toast";
 import axios from "axios";
 import { BASE_URL } from "../../../../config";
 import Link from "next/link";
-import Image from "next/image";
 
 const AgreeTerms = React.lazy(() => import("../../components/home/agreeTerms"));
 

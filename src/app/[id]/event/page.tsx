@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import axios from 'axios';
 import { BASE_URL } from '../../../../config';
 import { type Event, type Ticket } from '@/types/event';
@@ -116,9 +117,9 @@ const EventDetail = () => {
             <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
               <div className="mx-auto lg:px-32 px-4 sm:px-6 py-4">
                 <nav className="flex items-center space-x-2 text-sm">
-                  <a href="/" className="text-gray-500 hover:text-[#f54502] transition-colors">Home</a>
+                  <Link href="/" className="text-gray-500 hover:text-[#f54502] transition-colors">Home</Link>
                   <span className="text-gray-400">/</span>
-                  <a href="/#events" className="text-gray-500 hover:text-[#f54502] transition-colors">Events</a>
+                  <Link href="/#events" className="text-gray-500 hover:text-[#f54502] transition-colors">Events</Link>
                   <span className="text-gray-400">/</span>
                   <span className="text-[#f54502] font-medium truncate">{event.title}</span>
                 </nav>
@@ -132,7 +133,6 @@ const EventDetail = () => {
             <div ref={ticketsSectionRef}>
               <EventTicketsSection 
                 event={event} 
-                eventSlug={eventSlug as string} 
                 handleGetTicket={handleGetTicket} 
               />
             </div>

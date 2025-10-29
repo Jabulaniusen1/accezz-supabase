@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import jsPDF from 'jspdf';
 import axios from 'axios';
 import { BASE_URL } from '../../../config';
@@ -43,6 +44,7 @@ interface TicketData {
 }
 
 const Receipt = ({ closeReceipt, isModal = true }: ReceiptProps) => {
+  const router = useRouter();
   const [ticketData, setTicketData] = useState<TicketData | null>(null);
   const [eventData, setEventData] = useState<EventData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -348,7 +350,7 @@ const Receipt = ({ closeReceipt, isModal = true }: ReceiptProps) => {
               text: `Check out my ticket for ${eventData?.title || ticketData.ticketType}`,
               url: window.location.href,
             });
-          } catch (error) {
+          } catch {
             window.open(shareUrl, '_blank');
           }
         } else {
@@ -409,6 +411,19 @@ const Receipt = ({ closeReceipt, isModal = true }: ReceiptProps) => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
+        )}
+
+        {/* Back Button - Only show when not in modal mode */}
+        {!isModal && (
+          <button
+            onClick={() => router.back()}
+            className="absolute top-4 left-4 sm:top-6 sm:left-6 z-10 flex items-center gap-2 px-3 py-2 rounded-lg bg-white/90 hover:bg-white text-gray-600 hover:text-[#f54502] transition-all duration-200 shadow-sm hover:shadow-md"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            <span className="text-sm font-medium">Go Back</span>
+          </button>
         )}
 
         {/* Ticket Content */}

@@ -3,12 +3,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { FaTicketAlt } from 'react-icons/fa';
 import { FiMenu, FiX, FiLogOut, FiUser } from "react-icons/fi";
 import { MdSpaceDashboard } from "react-icons/md";
 import { motion, AnimatePresence } from "framer-motion";
 import Loader from '@/components/ui/loader/Loader';
-import ToggleMode from "../../../components/ui/mode/toggleMode";
 import Toast from "@/components/ui/Toast";
 
 const Hero = () => {
@@ -294,7 +292,7 @@ const Hero = () => {
           </h1>
           
           <p className="text-gray-300 mb-8 max-w-2xl mx-auto text-lg lg:text-xl leading-relaxed">
-            Discover concerts, parties, and experiences that create memories you'll talk about forever — your next big moment is just a click away.
+            Discover concerts, parties, and experiences that create memories you&apos;ll talk about forever — your next big moment is just a click away.
           </p>
 
           <div className="flex flex-col lg:flex-row lg:items-center justify-center gap-4 mb-12">
