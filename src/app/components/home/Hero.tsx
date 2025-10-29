@@ -97,7 +97,7 @@ const Hero = () => {
   };
 
   return (
-    <section className="relative min-h-screen bg-gray-900 overflow-hidden ">
+    <section className="relative min-h-[80vh] md:min-h-screen bg-gray-900 overflow-hidden ">
       {isLoading && <Loader />}
       {loading && <Loader />}
       {toast && (
@@ -285,7 +285,7 @@ const Hero = () => {
         </AnimatePresence>
       </header>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[90vh] flex items-center z-10 mt-10">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[80vh] md:h-[90vh] flex items-center z-10 mt-10">
         <div className="max-w-4xl text-center mx-auto">
           <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight my-8">
             Find the Vibes. Live the Moment.

@@ -101,16 +101,19 @@ const AllEvents = () => {
   const applyLocationFilter = () => {
     setFilters({ ...tempFilters });
     setShowLocationModal(false);
+    setCurrentPage(1); // Reset to first page when filter changes
   };
 
   const applyPriceFilter = () => {
     setFilters({ ...tempFilters });
     setShowPriceModal(false);
+    setCurrentPage(1); // Reset to first page when filter changes
   };
 
   const applyDateFilter = () => {
     setFilters({ ...tempFilters });
     setShowDateModal(false);
+    setCurrentPage(1); // Reset to first page when filter changes
   };
 
   const clearFilters = () => {
@@ -132,6 +135,7 @@ const AllEvents = () => {
       endDate: '',
       eventType: ''
     });
+    setCurrentPage(1); // Reset to first page when filters are cleared
   };
 
   const getActiveFilterCount = () => {
@@ -233,7 +237,7 @@ const AllEvents = () => {
       {/* Find an event in section */}
       <div className="max-w-7xl mx-auto mb-12">
         <div className="flex items-center gap-4 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Find an event in:</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Find an event in:</h2>
           <div className="relative">
             <select 
               value={filters.location || 'Nigeria'}
@@ -264,17 +268,17 @@ const AllEvents = () => {
         >
           <div 
             ref={scrollContentRef}
-            className="flex gap-6 min-w-max" 
+            className="flex gap-3 sm:gap-6 min-w-max" 
             id="scroll-content"
           >
             {currentEvents.slice(0, 5).map((event: Event, index: number) => (
               <div 
                 key={event.id || index}
-                className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer hover:border-[#f54502]/50 min-w-[300px] max-w-[300px]"
+                className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer hover:border-[#f54502]/50 min-w-[220px] max-w-[220px] sm:min-w-[300px] sm:max-w-[300px]"
                 onClick={() => event.slug && handleViewDetails(event.slug)}
               >
                 {/* Event Image with Overlay */}
-                <div className="relative h-[450px] w-full">
+                <div className="relative h-[280px] sm:h-[450px] w-full">
                   <Image
                     src={typeof event.image === 'string' ? event.image : '/placeholder.jpg'}
                     alt={event.title}
@@ -284,21 +288,21 @@ const AllEvents = () => {
                   
                   {/* Darkened overlay with event details */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/100 via-black/60 to-transparent">
-                    <div className="absolute top-4 left-4">
-                      <span className="bg-[#f54502] text-white text-xs font-bold px-3 py-1 rounded-full">
+                    <div className="absolute top-2 left-2 sm:top-4 sm:left-4">
+                      <span className="bg-[#f54502] text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 rounded-full">
                         FEATURED EVENT
                       </span>
                     </div>
                     
                     {/* Event details at bottom */}
-                    <div className="absolute bottom-0 left-0 right-0 p-6">
-                      <h3 className="text-xl font-bold text-white mb-2 line-clamp-2">
+                    <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-6">
+                      <h3 className="text-sm sm:text-lg md:text-xl font-bold text-white mb-2 line-clamp-2">
                         {event.title}
                       </h3>
                       
                       <div className="flex items-center text-white/90">
-                        <FaCalendarAlt className="text-white mr-2 flex-shrink-0" />
-                        <span className="text-sm">{formatEventDate(event.date)}</span>
+                        <FaCalendarAlt className="text-white mr-2 flex-shrink-0 w-3 h-3 sm:w-4 sm:h-4" />
+                        <span className="text-xs sm:text-sm">{formatEventDate(event.date)}</span>
                       </div>
                     </div>
                   </div>
@@ -313,8 +317,7 @@ const AllEvents = () => {
       <div className="max-w-7xl mx-auto mb-8">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div>
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">All Events</h1>
-            <p className="text-lg text-gray-600 dark:text-gray-400">{filteredEvents.length} events</p>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">All Events</h1>
           </div>
           
           {/* Filter buttons */}
@@ -453,7 +456,7 @@ const AllEvents = () => {
                     </div>
                   </div>
                   
-                  <div className="flex-shrink-0 w-36 h-36 object-cover border border-gray-200 dark:border-gray-600">
+                  <div className="flex-shrink-0 w-36 h-36 object-cover">
                     <Image
                       src={typeof event.image === 'string' ? event.image : '/placeholder.jpg'}
                       alt={event.title}
@@ -476,7 +479,7 @@ const AllEvents = () => {
           <div className="text-center py-16">
             <div className="max-w-md mx-auto">
               <div className="text-6xl mb-6">🔍</div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">No events found</h3>
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4">No events found</h3>
               <p className="text-gray-600 dark:text-gray-400 text-lg">
                 Try adjusting your search filters to find what you&apos;re looking for.
               </p>
@@ -485,19 +488,64 @@ const AllEvents = () => {
         )}
       </div>
 
-      {/* Load More Events */}
-      {filteredEvents.length > eventsPerPage && currentPage < totalPages && (
-        <div className="max-w-7xl mx-auto mt-12 flex flex-col items-center">
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="max-w-7xl mx-auto mt-12 flex items-center justify-center gap-2">
           <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            className="px-8 py-4 bg-[#f54502] hover:bg-[#f54502]/90 text-white text-lg font-semibold rounded-xl transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              currentPage === 1
+                ? 'bg-gray-200 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-600'
+                : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-300 hover:border-[#f54502] dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:border-[#f54502]'
+            }`}
+            style={{ borderRadius: '10px' }}
           >
-            See Events
+            Previous
           </button>
           
-          <div className="mt-4 text-sm text-gray-500 dark:text-gray-400 font-medium">
-            Showing {indexOfFirstEvent + 1}-{Math.min(indexOfLastEvent, filteredEvents.length)} of {filteredEvents.length} events
+          <div className="flex items-center gap-2">
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pageNum;
+              if (totalPages <= 5) {
+                pageNum = i + 1;
+              } else if (currentPage <= 3) {
+                pageNum = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                pageNum = totalPages - 4 + i;
+              } else {
+                pageNum = currentPage - 2 + i;
+              }
+              
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => handlePageChange(pageNum)}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                    currentPage === pageNum
+                      ? 'bg-[#f54502] text-white border-2 border-[#f54502]'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-300 hover:border-[#f54502] dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:border-[#f54502]'
+                  }`}
+                  style={{ borderRadius: '10px' }}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
           </div>
+          
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              currentPage === totalPages
+                ? 'bg-gray-200 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-600'
+                : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-300 hover:border-[#f54502] dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:border-[#f54502]'
+            }`}
+            style={{ borderRadius: '10px' }}
+          >
+            Next
+          </button>
         </div>
       )}
 
