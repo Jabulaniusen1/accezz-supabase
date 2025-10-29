@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
 import jsPDF from 'jspdf';
 import axios from 'axios';
 import { BASE_URL } from '../../../config';
@@ -10,12 +9,23 @@ import TicketLoader from '@/components/ui/loader/ticketLoader';
 import ErrorHandler from '@/components/ErrorHandler';
 
 type ReceiptProps = {
-  closeReceipt: () => void;
+  closeReceipt?: () => void;
+  isModal?: boolean;
 };
 
 interface Attendee {
   name: string;
   email: string;
+}
+
+interface EventData {
+  id: string;
+  title: string;
+  image: string;
+  date: string;
+  time: string;
+  venue: string;
+  location: string;
 }
 
 interface TicketData {
@@ -32,8 +42,9 @@ interface TicketData {
   attendees: Attendee[];
 }
 
-const Receipt = ({ closeReceipt }: ReceiptProps) => {
+const Receipt = ({ closeReceipt, isModal = true }: ReceiptProps) => {
   const [ticketData, setTicketData] = useState<TicketData | null>(null);
+  const [eventData, setEventData] = useState<EventData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -45,6 +56,17 @@ const Receipt = ({ closeReceipt }: ReceiptProps) => {
       if (!ticketId) throw new Error('No ticket information found in URL');
       const { data } = await axios.get(`${BASE_URL}api/v1/tickets/${ticketId}`);
       setTicketData(data.ticket);
+      
+      // Fetch event data if eventId is available
+      if (data.ticket?.eventId) {
+        try {
+          const eventResponse = await axios.get(`${BASE_URL}api/v1/events/${data.ticket.eventId}`);
+          setEventData(eventResponse.data.event);
+        } catch (eventErr) {
+          console.error('Error fetching event data:', eventErr);
+        }
+      }
+      
       setError(null);
     } catch (err) {
       setError('Failed to fetch ticket details');
@@ -70,7 +92,7 @@ const Receipt = ({ closeReceipt }: ReceiptProps) => {
   // SHOW LOADER WHILE FETCHING DATA
   if (loading) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50">
+      <div className={isModal ? "fixed inset-0 flex items-center justify-center bg-black/60 z-50" : "flex items-center justify-center py-20"}>
         <TicketLoader />
       </div>
     );
@@ -81,7 +103,7 @@ const Receipt = ({ closeReceipt }: ReceiptProps) => {
     return (
         <ErrorHandler
           error={error}
-          onClose={closeReceipt}
+          onClose={closeReceipt || (() => {})}
           retry={handleRetry}
     />
     );
@@ -91,129 +113,265 @@ const Receipt = ({ closeReceipt }: ReceiptProps) => {
     return (
       <ErrorHandler
       error="No ticket data available"
-      onClose={closeReceipt}
+      onClose={closeReceipt || (() => {})}
       retry={handleRetry}
     />
     );
   }
 
+  const generatePDF = async () => {
+    if (!ticketData) return null;
+  
+    const qrCodeBase64 = await fetchQRCodeAsBase64(ticketData.qrCode);
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+    
+    // White background matching the site
+    doc.setFillColor(255, 255, 255);
+    doc.rect(0, 0, 210, 297, 'F');
+  
+    // Top border accent (matching border-t-4 border-[#f54502])
+    doc.setFillColor(245, 69, 2);
+    doc.rect(0, 0, 210, 4, 'F');
+    
+    const pageWidth = 210;
+    const leftMargin = 20;
+    const rightMargin = 20;
+    const contentWidth = pageWidth - leftMargin - rightMargin;
+    let currentY = 25;
+    
+    // Event Title (matching site: font-bold text-xl/text-3xl)
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20); // Mobile-optimized size
+    doc.setTextColor(29, 29, 29); // text-gray-900
+    const title = eventData?.title || 'Event';
+    const titleLines = doc.splitTextToSize(title, contentWidth);
+    doc.text(titleLines, leftMargin, currentY);
+    currentY += titleLines.length * 8 + 20;
+    
+    // Event Details Section (matching site layout)
+    const sectionSpacing = 12;
+    let yPos = currentY;
+    
+    // Date section with icon background (bg-[#f54502]/10)
+    if (eventData?.date) {
+      const iconSize = 6;
+      const iconBgY = yPos - 2;
+      
+      // Icon background (light orange)
+      doc.setFillColor(255, 235, 230); // Approximate bg-[#f54502]/10
+      doc.roundedRect(leftMargin, iconBgY, iconSize, iconSize, 1, 1, 'F');
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.setTextColor(128, 128, 128); // text-gray-500
+      doc.text('Date', leftMargin + iconSize + 4, yPos);
+      
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(29, 29, 29); // text-gray-900
+      const dateText = new Date(eventData.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      const dateLines = doc.splitTextToSize(dateText, contentWidth - iconSize - 4);
+      doc.text(dateLines, leftMargin + iconSize + 4, yPos + 6);
+      yPos += Math.max(dateLines.length * 6, 12) + sectionSpacing;
+    }
+    
+    // Time section
+    if (eventData?.time) {
+      const iconSize = 6;
+      const iconBgY = yPos - 2;
+      
+      doc.setFillColor(255, 235, 230);
+      doc.roundedRect(leftMargin, iconBgY, iconSize, iconSize, 1, 1, 'F');
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.setTextColor(128, 128, 128);
+      doc.text('Time', leftMargin + iconSize + 4, yPos);
+      
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(29, 29, 29);
+      const timeLines = doc.splitTextToSize(eventData.time, contentWidth - iconSize - 4);
+      doc.text(timeLines, leftMargin + iconSize + 4, yPos + 6);
+      yPos += Math.max(timeLines.length * 6, 12) + sectionSpacing;
+    }
+    
+    // Venue section
+    if (eventData?.venue) {
+      const iconSize = 6;
+      const iconBgY = yPos - 2;
+      
+      doc.setFillColor(255, 235, 230);
+      doc.roundedRect(leftMargin, iconBgY, iconSize, iconSize, 1, 1, 'F');
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.setTextColor(128, 128, 128);
+      doc.text('Venue', leftMargin + iconSize + 4, yPos);
+      
+      doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+      doc.setTextColor(29, 29, 29);
+      const venueLines = doc.splitTextToSize(eventData.venue, contentWidth - iconSize - 4);
+      doc.text(venueLines, leftMargin + iconSize + 4, yPos + 6);
+      yPos += Math.max(venueLines.length * 6, 12) + sectionSpacing;
+    }
+    
+    // Ticket Type section (matching site: bg-[#f54502]/10 p-3 rounded-md border border-[#f54502]/20)
+    const ticketBoxY = yPos;
+    const ticketBoxHeight = 20;
+    const ticketBoxPadding = 5;
+    
+    // Background (light orange)
+    doc.setFillColor(255, 235, 230);
+    doc.roundedRect(leftMargin, ticketBoxY, contentWidth, ticketBoxHeight, 2, 2, 'F');
+    
+    // Border (lighter orange)
+    doc.setDrawColor(245, 200, 190); // Approximate border-[#f54502]/20
+    doc.setLineWidth(0.5);
+    doc.roundedRect(leftMargin, ticketBoxY, contentWidth, ticketBoxHeight, 2, 2, 'S');
+    
+    // Icon background (darker orange for icon)
+    doc.setFillColor(255, 220, 210);
+    doc.roundedRect(leftMargin + ticketBoxPadding, ticketBoxY + ticketBoxPadding, 5, 5, 1, 1, 'F');
+    
+    // Ticket Type label
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(128, 128, 128);
+    doc.text('Ticket Type', leftMargin + ticketBoxPadding + 7, ticketBoxY + 6);
+    
+    // Ticket Type value
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(245, 69, 2); // Primary color
+    const ticketTypeLines = doc.splitTextToSize(ticketData.ticketType, contentWidth - 70);
+    doc.text(ticketTypeLines, leftMargin + ticketBoxPadding + 7, ticketBoxY + 13);
+    
+    // Price on the right
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(128, 128, 128);
+    doc.text('Price', leftMargin + contentWidth - 50, ticketBoxY + 6);
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.setTextColor(245, 69, 2);
+    doc.text(`${ticketData.currency} ${ticketData.price}`, leftMargin + contentWidth - 50, ticketBoxY + 14);
+    
+    yPos += ticketBoxHeight + 25;
+    
+    // QR Code Section (centered, matching site design)
+    const qrSize = 70; // Mobile-optimized size
+    const qrX = (pageWidth - qrSize) / 2;
+    const qrY = yPos;
+    
+    // White background box with border (matching site)
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(qrX - 5, qrY - 5, qrSize + 10, qrSize + 10, 2, 2, 'F');
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.5);
+    doc.roundedRect(qrX - 5, qrY - 5, qrSize + 10, qrSize + 10, 2, 2, 'S');
+    
+    // QR Code
+    doc.addImage(qrCodeBase64, 'PNG', qrX, qrY, qrSize, qrSize);
+  
+    // QR Code label
+    yPos += qrSize + 10;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(128, 128, 128);
+    const qrLabel = 'Present this QR code at the event entrance for verification';
+    const qrLabelLines = doc.splitTextToSize(qrLabel, contentWidth);
+    doc.text(qrLabelLines, pageWidth / 2, yPos, { align: 'center' });
+    
+    yPos += qrLabelLines.length * 5 + 15;
+    
+    // Powered by Accezz section
+    const poweredByY = Math.min(280, yPos);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(128, 128, 128);
+    doc.text('Powered by', pageWidth / 2, poweredByY, { align: 'center' });
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(245, 69, 2);
+    doc.text('Accezz', pageWidth / 2, poweredByY + 6, { align: 'center' });
+    
+    return doc;
+  };
+
+  const sharePDF = async () => {
+    if (!ticketData) return;
+    
+    const doc = await generatePDF();
+    if (!doc) return;
+    
+    // Convert PDF to blob
+    const pdfBlob = doc.output('blob');
+    
+    // Create a shareable file
+    const fileName = eventData?.title 
+      ? `${eventData.title.replace(/[^a-z0-9]/gi, '_')}_Ticket.pdf`
+      : `${ticketData.fullName}_Ticket.pdf`;
+    const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
+    
+    // Check if Web Share API is available
+    if (navigator.share && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          title: 'My Event Ticket',
+          text: `Check out my ticket for ${eventData?.title || ticketData.ticketType}`,
+          files: [file],
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+        // Fallback to download if share fails
+        doc.save(fileName);
+      }
+    } else {
+      // Fallback: copy link or open share dialog
+      const shareUrl = `https://twitter.com/intent/tweet?text=Check out my ticket for ${encodeURIComponent(eventData?.title || ticketData.ticketType)}!&url=${encodeURIComponent(window.location.href)}`;
+      
+      // Try opening share options
+      if (window.innerWidth < 768) {
+        // Mobile: show native share sheet if available
+        if (navigator.share) {
+          try {
+            await navigator.share({
+              title: 'My Event Ticket',
+              text: `Check out my ticket for ${eventData?.title || ticketData.ticketType}`,
+              url: window.location.href,
+            });
+          } catch (error) {
+            window.open(shareUrl, '_blank');
+          }
+        } else {
+          window.open(shareUrl, '_blank');
+        }
+      } else {
+        // Desktop: open Twitter share
+        window.open(shareUrl, '_blank');
+      }
+    }
+  };
+
   const downloadPDF = async () => {
     if (!ticketData) return;
   
-    // Fetch the QR code image and convert it to base64
-    const qrCodeBase64 = await fetchQRCodeAsBase64(ticketData.qrCode);
-  
-    const doc = new jsPDF();
-  
-    // Set a professional background color
-    doc.setFillColor(245, 245, 245); // Light gray background
-    doc.rect(0, 0, 210, 297, 'F');
-  
-    // Header Section
-    doc.setFillColor(25, 103, 210); // Dark blue header
-    doc.rect(0, 0, 210, 50, 'F');
-  
-    // Add Accezz logo and text
-    const logoWidth = 20;
-    const logoHeight = 20;
-    const logoX = 15;
-    const logoY = 15;
-  
-    doc.addImage('/favicon.png', 'PNG', logoX, logoY, logoWidth, logoHeight);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.setTextColor(255, 255, 255); // White text
-    doc.text('Accezz', logoX + logoWidth + 5, logoY + logoHeight / 2 + 4);
-  
-    // Header Title
-    doc.setFontSize(24);
-    doc.text('Event Ticket', 105, 30, { align: 'center' });
-    doc.setFontSize(12);
-    doc.text('Official Receipt', 105, 40, { align: 'center' });
-  
-    // Decorative Line
-    doc.setDrawColor(200, 200, 200);
-    doc.setLineWidth(0.5);
-    doc.line(20, 55, 190, 55);
-  
-    // Main Content Section
-    const startY = 70;
-    const leftMargin = 20;
-    const lineHeight = 10;
-  
-    // Ticket holder details in a box
-    doc.setFillColor(255, 255, 255); // White background for the box
-    doc.roundedRect(leftMargin, startY - 5, 170, 75, 5, 5, 'F'); // Rounded corners
-  
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.setTextColor(25, 103, 210); // Dark blue text
-    doc.text('Ticket Details', leftMargin + 10, startY);
-  
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(0, 0, 0); // Black text
-    doc.text(`Name: ${ticketData.fullName}`, leftMargin + 10, startY + lineHeight);
-    doc.text(`Ticket Type: ${ticketData.ticketType}`, leftMargin + 10, startY + lineHeight * 2);
-    doc.text(`Date: ${new Date(ticketData.purchaseDate).toLocaleString()}`, leftMargin + 10, startY + lineHeight * 3);
-    doc.text(`Email: ${ticketData.email}`, leftMargin + 10, startY + lineHeight * 4);
-    doc.text(`Phone: ${ticketData.phone}`, leftMargin + 10, startY + lineHeight * 5);
-  
-    // Price section
-    doc.setFillColor(230, 240, 255); // Light blue background
-    doc.roundedRect(leftMargin, startY + 80, 170, 20, 5, 5, 'F');
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(25, 103, 210); // Dark blue text
-    doc.text(`Total Price: ${ticketData.currency} ${ticketData.price}`, leftMargin + 10, startY + 90);
-  
-    // Additional attendees
-    if (ticketData.attendees?.length > 0) {
-      const attendeesStartY = startY + 110;
-      doc.setFillColor(255, 255, 255); // White background for the box
-      doc.roundedRect(leftMargin, attendeesStartY - 5, 170, 10 + (ticketData.attendees.length * lineHeight), 5, 5, 'F');
-  
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(25, 103, 210); // Dark blue text
-      doc.text('Additional Attendees:', leftMargin + 10, attendeesStartY);
-  
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(0, 0, 0); // Black text
-      ticketData.attendees.forEach((attendee, index) => {
-        doc.text(
-          `${index + 1}. ${attendee.name} (${attendee.email})`,
-          leftMargin + 10,
-          attendeesStartY + 10 + (index * lineHeight)
-        );
-      });
-    }
-  
-    // QR Code Section
-    const qrSize = 60;
-    const qrX = 130;
-    const qrY = 180;
-  
-    doc.setFillColor(255, 255, 255); // White background for the QR code box
-    doc.roundedRect(qrX - 5, qrY - 5, qrSize + 10, qrSize + 10, 5, 5, 'F');
-    doc.addImage(qrCodeBase64, 'PNG', qrX, qrY, qrSize, qrSize);
-  
-    doc.setFontSize(10);
-    doc.setTextColor(128, 128, 128); // Gray text
-    doc.text('Scan QR Code at event entry', qrX + qrSize / 2, qrY + qrSize + 10, { align: 'center' });
-  
-    // Footer Section
-    const footerY = 270;
-    doc.setDrawColor(25, 103, 210); // Dark blue line
-    doc.setLineWidth(0.5);
-    doc.line(20, footerY, 190, footerY);
-  
-    doc.setFontSize(9);
-    doc.setTextColor(128, 128, 128); // Gray text
-    doc.text('This is an official ticket. Please present this document at the event.', 105, footerY + 10, { align: 'center' });
-    doc.text(`Generated on ${new Date().toLocaleString()}`, 105, footerY + 15, { align: 'center' });
+    const doc = await generatePDF();
+    if (!doc) return;
   
     // Save the PDF
-    const sanitizedName = ticketData.fullName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-    doc.save(`${sanitizedName}_Virtual_Ticket.pdf`);
+    const fileName = eventData?.title 
+      ? `${eventData.title.replace(/[^a-z0-9]/gi, '_')}_Ticket.pdf`
+      : `${ticketData.fullName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_Ticket.pdf`;
+    doc.save(fileName);
   };
 
   const fetchQRCodeAsBase64 = async (url: string): Promise<string> => {
@@ -232,90 +390,94 @@ const Receipt = ({ closeReceipt }: ReceiptProps) => {
     }
   };
 
+  const containerClasses = isModal 
+    ? "fixed inset-0 bg-white/60 backdrop-blur-lg flex items-center justify-center z-50 p-2 sm:p-4"
+    : "w-full flex items-center justify-center p-2 sm:p-4";
+
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      className="fixed inset-0 bg-white/60 backdrop-blur-lg flex items-center justify-center z-50 p-2 sm:p-4"
+    <div
+      className={containerClasses}
     >
-      <div className="relative w-full max-w-[350px] sm:max-w-[600px] md:max-w-[700px] max-h-auto sm:max-h-[90vh] overflow-visible sm:overflow-auto bg-gradient-to-br from-[#667eea] to-[#764ba2] rounded-2xl sm:rounded-[20px] p-0.5 sm:p-[3px] shadow-2xl">
-        {/* Close Button */}
+      <div className="relative w-full max-w-[350px] sm:max-w-[600px] md:max-w-[700px] max-h-auto sm:max-h-[90vh] overflow-visible sm:overflow-auto bg-white rounded-2xl sm:rounded-[20px] shadow-2xl border-2 border-[#f54502]/20">
+        {/* Close Button - Only show if modal mode and closeReceipt is provided */}
+        {isModal && closeReceipt && (
         <button
           onClick={closeReceipt}
-          className="absolute top-1 right-1 sm:top-2 sm:right-2 text-white bg-white/20 hover:bg-white/30 z-10 w-7 h-7 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-colors"
+            className="absolute top-1 right-1 sm:top-2 sm:right-2 text-gray-400 hover:text-[#f54502] z-10 w-7 h-7 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-colors"
         >
           <svg className="w-4 h-4 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
+        )}
 
         {/* Ticket Content */}
-        <div className="bg-white rounded-xl sm:rounded-[18px] p-4 sm:p-8 md:p-10 relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[3px] sm:before:h-1 before:bg-gradient-to-r before:from-[#667eea] before:via-[#764ba2] before:to-[#667eea]">
+        <div className="bg-white rounded-xl sm:rounded-[18px] p-4 sm:p-8 md:p-10 relative overflow-hidden border-t-4 border-[#f54502]">
           {/* Mobile Version - Compact Layout */}
           <div className="block sm:hidden">
-            {/* Compact Header */}
-            <div className="text-center mb-6">
-              <div className="flex items-center justify-center gap-2 mb-1">
+            {/* Event Image */}
+            {eventData?.image && (
+              <div className="mb-6 rounded-xl overflow-hidden">
                 <Image
-                  src="/favicon.png"
-                  alt="Accezz Logo"
-                  width={24}
-                  height={24}
-                  className="rounded-lg"
+                  src={eventData.image}
+                  alt={eventData.title || 'Event'}
+                  width={400}
+                  height={200}
+                  className="w-full h-48 object-cover"
                 />
-                <h2 className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#667eea] to-[#764ba2] text-lg">
-                  Accezz
-                </h2>
               </div>
-              {/* <h3 className="font-bold text-gray-800 text-sm">
-                Event Ticket
-              </h3> */}
-            </div>
+            )}
 
-            {/* Compact User Details */}
+            {/* Event Details */}
             <div className="mb-6">
-              <div className="mb-4">
-                <label className="text-gray-500 text-xs block mb-1">
-                  Name
-                </label>
-                <p className="font-semibold text-gray-800 text-sm break-words">
-                  {ticketData.fullName}
-                </p>
-              </div>
+              <h2 className="font-bold text-xl text-gray-900 mb-4">
+                {eventData?.title || 'Event'}
+              </h2>
               
-              <div className="mb-4">
-                <label className="text-gray-500 text-xs block mb-1">
-                  Email
-                </label>
-                <p className="font-semibold text-gray-800 text-sm break-all">
-                  {ticketData.email}
+              <div className="space-y-3">
+                {eventData?.date && (
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-[#f54502]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <p className="text-gray-700 text-sm font-medium">
+                      {new Date(eventData.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                 </p>
               </div>
-              
-              <div className="mb-4">
-                <label className="text-gray-500 text-xs block mb-1">
-                  Phone
-                </label>
-                <p className="font-semibold text-gray-800 text-sm">
-                  {ticketData.phone}
-                </p>
+                )}
+                
+                {eventData?.time && (
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-[#f54502]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="text-gray-700 text-sm font-medium">{eventData.time}</p>
               </div>
+                )}
+                
+                {eventData?.venue && (
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-[#f54502]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <p className="text-gray-700 text-sm font-medium">{eventData.venue}</p>
             </div>
-
-            {/* Compact Ticket Info */}
-            <div className="flex justify-between items-center mb-6 bg-gray-50 p-2 rounded-md">
-              <div>
-                <p className="text-gray-500 text-xs">
-                  {ticketData.ticketType}
-                </p>
-                <p className="font-semibold text-gray-800 text-xs">
-                  {new Date(ticketData.purchaseDate).toLocaleDateString()}
-                </p>
+                )}
+                
+                <div className="flex items-center gap-2 bg-[#f54502]/10 p-3 rounded-md border border-[#f54502]/20 mt-4">
+                  <svg className="w-4 h-4 text-[#f54502]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                  </svg>
+                  <div className="flex-1">
+                    <p className="text-gray-500 text-xs">Ticket Type</p>
+                    <p className="font-bold text-[#f54502] text-sm">{ticketData.ticketType}</p>
+                  </div>
+                  <p className="font-bold text-[#f54502] text-sm">
+                    {ticketData.currency} {ticketData.price}
+                  </p>
+                </div>
               </div>
-              <p className="font-bold text-[#667eea] text-sm">
-                {ticketData.currency} {ticketData.price}
-              </p>
             </div>
 
             {/* Compact QR Code */}
@@ -332,117 +494,106 @@ const Receipt = ({ closeReceipt }: ReceiptProps) => {
               </div>
             </div>
 
-            {/* Compact Success Message */}
-            <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-2 rounded-md text-center mb-6">
-              <p className="font-bold text-xs mb-1">
-                🎉 Ticket Purchased Successfully!
-              </p>
-              <p className="text-xs leading-tight">
-                Take a screenshot so you don&apos;t miss the event
-              </p>
-            </div>
-
-            {/* Compact Download Button */}
+            {/* Compact Action Buttons */}
+            <div className="flex gap-3">
             <button
               onClick={downloadPDF}
-              className="w-full bg-gradient-to-r from-[#667eea] to-[#764ba2] hover:from-[#764ba2] hover:to-[#667eea] text-white font-bold py-3 px-4 rounded-md text-xs transition-all duration-200"
-            >
-              Download Full PDF
+                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 px-4 rounded-md text-xs transition-all duration-200"
+              >
+                Download PDF
+              </button>
+              <button
+                onClick={sharePDF}
+                className="flex-1 bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 text-white font-bold py-3 px-4 rounded-md text-xs transition-all duration-200 flex items-center justify-center gap-1"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+                Share
             </button>
+            </div>
           </div>
 
           {/* Desktop Version - Detailed Layout */}
           <div className="hidden sm:block">
-            {/* Desktop Header */}
-            <div className="text-center mb-12">
-              <div className="flex items-center justify-center gap-3 mb-2">
+            {/* Event Image */}
+            {eventData?.image && (
+              <div className="mb-8 rounded-xl overflow-hidden">
                 <Image
-                  src="/favicon.png"
-                  alt="Accezz Logo"
-                  width={48}
-                  height={48}
-                  className="rounded-lg"
+                  src={eventData.image}
+                  alt={eventData.title || 'Event'}
+                  width={800}
+                  height={300}
+                  className="w-full h-64 object-cover"
                 />
-                <h1 className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#667eea] to-[#764ba2] text-4xl">
-                  Accezz
-                </h1>
               </div>
-              {/* <h2 className="font-bold text-gray-800 mb-1 text-2xl">
-                Event Ticket
-              </h2>
-              <p className="text-gray-500 text-base break-all">
-                Ticket ID: {ticketData.id}
-              </p> */}
-            </div>
+            )}
 
-            {/* Desktop Ticket Details Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-              {/* Left Column - User Details */}
-              <div>
-                <h3 className="font-bold text-gray-800 mb-4 pb-2 border-b-2 border-gray-200 text-xl">
-                  Ticket Holder
-                </h3>
+            {/* Event Details */}
+            <div className="mb-8">
+              <h1 className="font-bold text-3xl text-gray-900 mb-6">
+                {eventData?.title || 'Event'}
+              </h1>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {eventData?.date && (
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-[#f54502]/10 rounded-lg">
+                      <svg className="w-5 h-5 text-[#f54502]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                  <div>
+                      <p className="text-gray-500 text-sm">Date</p>
+                      <p className="text-gray-900 font-semibold">
+                        {new Date(eventData.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                      </p>
+                    </div>
+                  </div>
+                )}
                 
-                <div className="space-y-4">
+                {eventData?.time && (
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-[#f54502]/10 rounded-lg">
+                      <svg className="w-5 h-5 text-[#f54502]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
                   <div>
-                    <label className="text-gray-500 text-sm block mb-1">
-                      Full Name
-                    </label>
-                    <p className="font-semibold text-gray-800 text-lg break-words">
-                      {ticketData.fullName}
-                    </p>
+                      <p className="text-gray-500 text-sm">Time</p>
+                      <p className="text-gray-900 font-semibold">{eventData.time}</p>
+                    </div>
                   </div>
-                  
-                  <div>
-                    <label className="text-gray-500 text-sm block mb-1">
-                      Email Address
-                    </label>
-                    <p className="font-semibold text-gray-800 text-lg break-all">
-                      {ticketData.email}
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <label className="text-gray-500 text-sm block mb-1">
-                      Phone Number
-                    </label>
-                    <p className="font-semibold text-gray-800 text-lg">
-                      {ticketData.phone}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Column - Ticket Info */}
-              <div>
-                <h3 className="font-bold text-gray-800 mb-4 pb-2 border-b-2 border-gray-200 text-xl">
-                  Ticket Details
-                </h3>
+                )}
                 
-                <div className="space-y-4">
+                {eventData?.venue && (
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-[#f54502]/10 rounded-lg">
+                      <svg className="w-5 h-5 text-[#f54502]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    </div>
                   <div>
-                    <label className="text-gray-500 text-sm block mb-1">
-                      Ticket Type
-                    </label>
-                    <p className="font-semibold text-gray-800 text-lg">
-                      {ticketData.ticketType}
-                    </p>
+                      <p className="text-gray-500 text-sm">Venue</p>
+                      <p className="text-gray-900 font-semibold">{eventData.venue}</p>
+                    </div>
                   </div>
-                  
-                  <div>
-                    <label className="text-gray-500 text-sm block mb-1">
-                      Purchase Date
-                    </label>
-                    <p className="font-semibold text-gray-800 text-lg">
-                      {new Date(ticketData.purchaseDate).toLocaleDateString()}
-                    </p>
+                )}
+                
+                <div className="flex items-center gap-3 bg-[#f54502]/10 p-4 rounded-lg border border-[#f54502]/20">
+                  <div className="p-2 bg-[#f54502]/20 rounded-lg">
+                    <svg className="w-5 h-5 text-[#f54502]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                    </svg>
                   </div>
-                  
-                  <div>
-                    <label className="text-gray-500 text-sm block mb-1">
-                      Total Price
-                    </label>
-                    <p className="font-bold text-[#667eea] text-2xl">
+                  <div className="flex-1">
+                    <p className="text-gray-500 text-sm">Ticket Type</p>
+                    <p className="text-gray-900 font-bold text-lg">{ticketData.ticketType}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-gray-500 text-sm">Price</p>
+                    <p className="text-[#f54502] font-bold text-xl">
                       {ticketData.currency} {ticketData.price}
                     </p>
                   </div>
@@ -450,32 +601,8 @@ const Receipt = ({ closeReceipt }: ReceiptProps) => {
               </div>
             </div>
 
-            {/* Additional Attendees - Desktop */}
-          {ticketData.attendees?.length > 0 && (
-              <div className="mb-8">
-                <h3 className="font-bold text-gray-800 mb-4 pb-2 border-b-2 border-gray-200 text-xl">
-                  Additional Attendees
-                </h3>
-                <div className="flex flex-wrap gap-4">
-              {ticketData.attendees.map((attendee, index) => (
-                    <div
-                      key={index}
-                      className="bg-gray-100 p-4 rounded-xl min-w-[250px] flex-1"
-                    >
-                      <p className="font-semibold text-gray-800 text-base">
-                        {attendee.name}
-                      </p>
-                      <p className="text-gray-500 text-sm break-all">
-                        {attendee.email}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-            </div>
-          )}
-
             {/* Desktop QR Code Section */}
-            <div className="text-center bg-gray-50 p-10 rounded-2xl border-2 border-dashed border-gray-200 mb-8">
+            <div className="text-center bg-gray-50 p-10 rounded-2xl border-2 border-[#f54502]/20 mb-8">
               <div className="bg-white p-6 rounded-2xl inline-block shadow-lg">
             <Image
               src={ticketData.qrCode}
@@ -492,30 +619,28 @@ const Receipt = ({ closeReceipt }: ReceiptProps) => {
               </p>
             </div>
 
-            {/* Desktop Success Message */}
-            <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-xl text-center mb-8">
-              <h3 className="font-bold text-2xl mb-2">
-                🎉 Ticket Purchased Successfully!
-              </h3>
-                             <p className="text-lg leading-relaxed">
-                 Now, hurry and take a Screenshot, so you don&apos;t miss out on the event
-               </p>
-            </div>
-
-            {/* Desktop Download Button */}
-            <div className="text-center">
+            {/* Desktop Action Buttons */}
+            <div className="flex gap-4 justify-center">
               <button
                 onClick={downloadPDF}
-                className="bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 text-white font-bold py-4 px-8 rounded-xl text-lg transition-all duration-200"
+                className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-4 px-8 rounded-xl text-lg transition-all duration-200"
               >
-                Download Full Ticket PDF
+                Download PDF
+              </button>
+              <button
+                onClick={sharePDF}
+                className="bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 text-white font-bold py-4 px-8 rounded-xl text-lg transition-all duration-200 flex items-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+                Share Ticket
               </button>
             </div>
           </div>
         </div>
          </div>
-    </motion.div>
+    </div>
   );
-};
+};export default Receipt;
 
-export default Receipt;
