@@ -209,39 +209,84 @@ const Hero = () => {
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu - Full Screen Overlay */}
         <AnimatePresence>
           {isMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-              className="md:hidden bg-black/50 backdrop-blur-md border-t border-white/20 overflow-hidden rounded-b-xl"
-            >
-              <div className="px-4 py-2 space-y-2">
-                {navItems.map((item) => (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 md:hidden"
+                onClick={() => setIsMenuOpen(false)}
+              />
+              
+              {/* Menu Panel */}
+              <motion.div
+                initial={{ y: -100, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -100, opacity: 0 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="fixed top-0 left-0 right-0 bg-gray-900 z-50 md:hidden shadow-2xl"
+              >
+                {/* Menu Header */}
+                <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
                   <Link
-                    key={item.name}
-                    href={item.href}
-                    className="block px-3 py-3 text-base font-medium text-white/90 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                    href="/"
+                    className="flex items-center space-x-2"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    {item.name}
+                    <Image 
+                      src="/accezz logo.png" 
+                      alt="Accezz Logo" 
+                      width={120}
+                      height={80}
+                      className="h-10 w-auto"
+                    />
                   </Link>
-                ))}
+                  <button
+                    onClick={() => setIsMenuOpen(false)}
+                    className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+                  >
+                    <FiX className="w-6 h-6" />
+                  </button>
+                </div>
 
-                <div className="pt-2 border-t border-white/20">
+                {/* Menu Content */}
+                <div className="px-4 py-6 space-y-1 max-h-[calc(100vh-80px)] overflow-y-auto">
+                  {/* Navigation Items */}
+                  <div className="space-y-1 mb-6">
+                    {navItems.map((item) => (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        className="flex items-center justify-between px-4 py-4 text-lg font-medium text-white rounded-xl hover:bg-white/10 hover:text-[#f54502] transition-all duration-200 group"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <span>{item.name}</span>
+                        <svg className="w-5 h-5 text-white/40 group-hover:text-[#f54502] group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </Link>
+                    ))}
+                  </div>
+
+                  {/* Divider */}
+                  <div className="border-t border-white/10 my-6"></div>
+
+                  {/* Auth Section */}
                   {isLoggedIn ? (
-                    <>
+                    <div className="space-y-3">
                       <button
                         onClick={() => {
                           handleRedirect("/dashboard");
                           setIsMenuOpen(false);
                         }}
-                        className="flex items-center space-x-2 w-full px-3 py-3 text-base font-medium text-white/90 hover:text-white hover:bg-white/10 rounded-lg"
+                        className="flex items-center space-x-3 w-full px-4 py-4 text-lg font-semibold text-white bg-[#f54502] hover:bg-[#f54502]/90 rounded-xl transition-all shadow-lg"
                       >
-                        <MdSpaceDashboard className="w-5 h-5" />
+                        <MdSpaceDashboard className="w-6 h-6" />
                         <span>Dashboard</span>
                       </button>
                       <button
@@ -249,22 +294,22 @@ const Hero = () => {
                           handleLogout();
                           setIsMenuOpen(false);
                         }}
-                        className="flex items-center space-x-2 w-full px-3 py-3 text-base font-medium text-white/90 hover:text-white hover:bg-white/10 rounded-lg"
+                        className="flex items-center space-x-3 w-full px-4 py-4 text-lg font-medium text-white bg-white/10 hover:bg-white/20 rounded-xl transition-all"
                       >
-                        <FiLogOut className="w-5 h-5" />
+                        <FiLogOut className="w-6 h-6" />
                         <span>Logout</span>
                       </button>
-                    </>
+                    </div>
                   ) : (
-                    <>
+                    <div className="space-y-3">
                       <button
                         onClick={() => {
                           handleRedirect("/auth/login");
                           setIsMenuOpen(false);
                         }}
-                        className="flex items-center space-x-2 w-full px-3 py-3 text-base font-medium text-white/90 hover:text-white hover:bg-white/10 rounded-lg"
+                        className="flex items-center space-x-3 w-full px-4 py-4 text-lg font-medium text-white bg-white/10 hover:bg-white/20 rounded-xl transition-all"
                       >
-                        <FiUser className="w-5 h-5" />
+                        <FiUser className="w-6 h-6" />
                         <span>Sign In</span>
                       </button>
                       <button
@@ -272,15 +317,15 @@ const Hero = () => {
                           handleRedirect("/auth/signup");
                           setIsMenuOpen(false);
                         }}
-                        className="w-full px-3 py-3 text-base font-medium text-center text-white bg-[#f54502] hover:bg-[#f54502]/90 rounded-lg transition-colors mt-2"
+                        className="w-full px-4 py-4 text-lg font-semibold text-center text-white bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 rounded-xl transition-all shadow-lg"
                       >
                         Sign Up
                       </button>
-                    </>
+                    </div>
                   )}
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            </>
           )}
         </AnimatePresence>
       </header>

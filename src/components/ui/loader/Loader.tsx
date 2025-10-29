@@ -24,7 +24,7 @@ const Loader = () => {
           {/* Logo Container */}
           <div className="absolute inset-0 flex items-center justify-center">
             <Image
-              src="/accezz logo.png"
+              src="/accezz logo c.png"
               alt="Accezz Logo"
               width={48}
               height={48}
@@ -33,17 +33,6 @@ const Loader = () => {
             />
           </div>
         </div>
-
-        {/* Loading Text */}
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-800 mb-1">
-            Accezz
-          </h2>
-          <p className="text-gray-500 text-sm">
-            Loading...
-          </p>
-        </div>
-
         {/* Simple Loading Dots */}
         <div className="flex space-x-1">
           <div className="w-2 h-2 bg-[#f54502] rounded-full animate-bounce"></div>
