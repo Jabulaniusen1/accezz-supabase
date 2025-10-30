@@ -1,12 +1,11 @@
 'use client'
 import React, { useState } from 'react';
 import Image from 'next/image';
-import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useRouter } from 'next/navigation'
-import { BASE_URL } from '../../../../config';
 import Link from 'next/link';
+import { supabase } from '@/utils/supabaseClient';
 
 
 function PasswordReset() {
@@ -29,20 +28,12 @@ function PasswordReset() {
     }
 
     try {
-      const response = await axios.patch(
-        `${BASE_URL}api/v1/users/change-password`,
-        { newPassword },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      toast.success(response.data.message || "Password reset successful!");
-      setTimeout(() => router.push('/auth/login'), 2000);
-    } catch (error) {
-      console.error(error);
-      toast.error("An error occurred. Please try again later.");
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      toast.success("Password reset successful! You can now log in.");
+      setTimeout(() => router.push('/auth/login'), 1500);
+    } catch (error: any) {
+      toast.error(error?.message || "An error occurred. Please try again later.");
     } finally {
       setLoading(false);
     }

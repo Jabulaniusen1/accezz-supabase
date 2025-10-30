@@ -4,8 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import axios, { AxiosError } from 'axios';
-import { BASE_URL } from '../../../../config';
+import { supabase } from '@/utils/supabaseClient';
 
 
 function ForgotPassword() {
@@ -26,59 +25,12 @@ function ForgotPassword() {
     }
 
     try {
-      const response = await axios.patch(
-      `${BASE_URL}api/v1/users/password-recovery`,
-      { email },
-      { headers: { 'Content-Type': 'application/json' } }
-      );
-
-      const generatedPassword = response.data.password;
-      
-      // Show success message with password
-      toast.success(
-      <div>
-        <p>Temporary password generated!</p>
-        <div className="mt-2 p-2 bg-gray-100 rounded flex justify-between items-center">
-        <code className="text-sm text-gray-800">{generatedPassword}</code>
-        <button
-          onClick={() => {
-          navigator.clipboard.writeText(generatedPassword);
-          toast.info('Password copied! Redirecting to login...');
-          setTimeout(() => {
-            router.push('/auth/login');
-          }, 2000);
-          }}
-          className="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Copy
-        </button>
-        </div>
-      </div>,
-      { autoClose: false }
-      );
-
-    } catch (error) {
-      const axiosError = error as AxiosError<{ message?: string }>;
-      
-      if (!axiosError.response) {
-      toast.error('Network error! Please check your internet connection.');
-      } else {
-      const { status, data } = axiosError.response;
-
-      switch (status) {
-        case 404:
-        toast.error('Email not found. Please check and try again.');
-        break;
-        case 400:
-        toast.error(data?.message || 'Email not found. Please check and try again');
-        break;
-        case 500:
-        toast.error('Server error! Please try again later.');
-        break;
-        default:
-        toast.error(`Unexpected error. Please try again later.`);
-      }
-      }
+      const redirectTo = typeof window !== 'undefined' ? `${window.location.origin}/auth/password-reset` : undefined;
+      const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+      if (error) throw error;
+      toast.success('Password reset email sent. Check your inbox for the link.');
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to send reset email.');
     } finally {
       setLoading(false);
     }

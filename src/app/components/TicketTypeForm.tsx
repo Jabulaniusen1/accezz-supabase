@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import Receipt from './Receipt';
-import axios from 'axios';
 import TicketSelectionStep from './TicketFormSec/TicketSelectionStep';
 import OrderInformationStep from './TicketFormSec/OrderInformationStep';
 import PaymentStep from './TicketFormSec/PaymentStep';
-import { BASE_URL } from '../../../config';
+import { fetchEventBySlug } from '@/utils/eventUtils';
+import { createOrder, createFreeTickets, markOrderAsPaid, createTicketsForOrder } from '@/utils/paymentUtils';
 
 interface Ticket {
   id: string;
@@ -43,6 +43,7 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast }: TicketTypeF
   const [events, setEvent] = useState<Event | null>(null);
   const [isPurchased, setIsPurchased] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [orderId, setOrderId] = useState<string | null>(null);
   const [additionalTicketHolders, setAdditionalTicketHolders] = useState<Array<{
     name: string;
     email: string;
@@ -52,13 +53,13 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast }: TicketTypeF
 
   useEffect(() => {
     const fetchEvent = async () => {
-      if (!eventSlug) return;
+      if (!eventSlug || typeof eventSlug !== 'string') return;
 
       try {
-        const response = await axios.get(
-          `${BASE_URL}api/v1/events/slug/${eventSlug}`
-        );
-        setEvent(response.data.event);
+        const fetchedEvent = await fetchEventBySlug(eventSlug);
+        if (fetchedEvent) {
+          setEvent({ id: fetchedEvent.id || '', slug: fetchedEvent.slug || '' });
+        }
       } catch (err) {
         console.error('Failed to fetch event:', err);
       } 
@@ -93,63 +94,50 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast }: TicketTypeF
         })));
       }
 
-      if (Number(selectedTicket?.price.replace(/[^\d.-]/g, '')) === 0) {
+      if (!eventId || !selectedTicket) {
+        setToast({ type: 'error', message: 'Missing event or ticket information' });
+        return;
+      }
+
+      // Handle free tickets
+      if (Number(selectedTicket.price.replace(/[^\d.-]/g, '')) === 0) {
         setActiveStep(2);
         return;
       }
 
+      // Create order for paid tickets
       try {
         setIsLoading(true);
-        const ticketResponse = await axios.post(
-          `${BASE_URL}api/v1/payment/create-payment-link/${eventId}`,
-          {
-            ticketType: selectedTicket?.name,
-            currency: "NGN",
-            quantity: allAttendees.length, 
-            email: email,
-            phone: phoneNumber,
-            fullName: fullName,
-            attendees: additionalTicketHolders.length > 0 ? additionalTicketHolders : null,
-          }
-        );
+        const { orderId: createdOrderId } = await createOrder({
+          eventId: eventId,
+          ticketTypeName: selectedTicket.name,
+          quantity: allAttendees.length,
+          email: email,
+          phone: phoneNumber,
+          fullName: fullName,
+          attendees: additionalTicketHolders.length > 0 ? additionalTicketHolders : null,
+          currency: 'NGN',
+        });
 
-        if (ticketResponse.data?.link) {
-          const paymentInfo = {
-            paymentLink: ticketResponse.data.link,
-            ticketId: ticketResponse.data.ticketId,
-            eventId: eventId
-          };
-          localStorage.setItem('pendingPayment', JSON.stringify(paymentInfo));
-          localStorage.setItem('currentTicketId', ticketResponse.data.ticketId);
+        setOrderId(createdOrderId);
+        
+        // Store order info for payment processing
+        localStorage.setItem('pendingPayment', JSON.stringify({
+          orderId: createdOrderId,
+          eventId: eventId,
+        }));
 
-          setToast({
-            type: 'success',
-            message: 'Payment link generated. Click Complete Purchase to proceed with payment.'
-          });
-          setActiveStep(2);
-        } else {
-          throw new Error('Payment link not found in response');
-        }
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          if(error.response?.status === 400) {
-            setToast({
-              type: 'error',
-              message: 'This Event has Ended. Please check back for more events'
-            });
-          } else {
-            setToast({
-              type: 'error',
-              message: error.response?.data?.message || 'Failed to generate payment link'
-            });
-          }
-        } else {
-          setToast({
-            type: 'error',
-            message: 'An unexpected error occurred'
-          });
-          console.error('Unexpected error:', error);
-        }
+        setToast({
+          type: 'success',
+          message: 'Order created. Proceed to payment.'
+        });
+        setActiveStep(2);
+      } catch (error: any) {
+        console.error('Error creating order:', error);
+        setToast({
+          type: 'error',
+          message: error?.message || 'Failed to create order. Please try again.'
+        });
       } finally {
         setIsLoading(false);
       }
@@ -157,50 +145,66 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast }: TicketTypeF
   };
 
   const handlePurchase = async () => {
+    if (!eventId || !selectedTicket) {
+      setToast({ type: 'error', message: 'Missing information' });
+      return;
+    }
+
     const attendees = additionalTicketHolders.length > 0 ? additionalTicketHolders : null;
+    const ticketPrice = Number(selectedTicket.price.replace(/[^\d.-]/g, ''));
 
     try {
-      if (Number(selectedTicket?.price.replace(/[^\d.-]/g, '')) === 0) {
-        try {
-          const response = await axios.post(
-            `${BASE_URL}api/v1/payment/create-payment-link/${eventId}`,
-            {
-              ticketType: selectedTicket?.name,
-              currency: "NGN",
-              quantity: quantity,
-              email: email,
-              phone: phoneNumber,
-              fullName: fullName,
-              attendees: attendees,
-            }
-          );
+      setIsLoading(true);
 
-          const { ticketId } = response.data;
+      // Handle free tickets
+      if (ticketPrice === 0) {
+        try {
+          const { ticketId } = await createFreeTickets({
+            eventId: eventId,
+            ticketTypeName: selectedTicket.name,
+            quantity: quantity,
+            email: email,
+            phone: phoneNumber,
+            fullName: fullName,
+            attendees: attendees,
+            currency: 'NGN',
+          });
+
           window.location.href = `/success?ticketId=${ticketId}`;
           return;
-        } catch (error) {
+        } catch (error: any) {
           console.error('Error creating free ticket:', error);
-          setToast({ type: 'error', message: 'Error creating free ticket' });
+          setToast({ type: 'error', message: error?.message || 'Error creating free ticket' });
           return;
         }
       }
 
+      // For paid tickets, we need to handle payment
+      // Since we removed REST API, payment provider integration should be handled via:
+      // 1. Supabase Edge Functions
+      // 2. A separate payment service
+      // 3. Client-side payment SDK (e.g., Paystack Inline)
+      
+      // For now, we'll redirect to a payment page with order ID
+      // In production, integrate with your payment provider here
       const storedPayment = localStorage.getItem('pendingPayment');
-      if (!storedPayment) {
-        setToast({ type: 'error', message: 'Payment information not found' });
+      if (!storedPayment || !orderId) {
+        setToast({ type: 'error', message: 'Payment information not found. Please try again.' });
         return;
       }
 
-      const { paymentLink } = JSON.parse(storedPayment);
-      if (paymentLink) {
-        const updatedPaymentLink = `${paymentLink}`;
-        window.location.href = updatedPaymentLink;
-      } else {
-        setToast({ type: 'error', message: 'Payment link not found' });
-      }
-    } catch (error) {
+      const paymentInfo = JSON.parse(storedPayment);
+      
+      // TODO: Integrate payment provider (Paystack, Flutterwave, etc.)
+      // For now, redirect to payment page with order ID
+      // The payment page should handle payment verification and redirect to success
+      window.location.href = `/payment?orderId=${orderId}&amount=${totalPrice}`;
+      
+    } catch (error: any) {
       console.error('Error processing payment:', error);
-      setToast({ type: 'error', message: 'Error processing payment' });
+      setToast({ type: 'error', message: error?.message || 'Error processing payment' });
+    } finally {
+      setIsLoading(false);
     }
   };
 

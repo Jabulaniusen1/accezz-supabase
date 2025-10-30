@@ -3,8 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import axios from 'axios';
-import { BASE_URL } from '../../../config';
+import { supabase } from '@/utils/supabaseClient';
 import { Event, Ticket } from '@/types/event';
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
@@ -39,17 +38,21 @@ export default function EventForm({ eventId, onClose, onSuccess }: EventFormProp
     const loadEvent = async () => {
       try {
         setIsLoading(true);
-        const token = localStorage.getItem('token');
-        if (!token) throw new Error('Authentication required');
-        
-        const { data } = await axios.get(`${BASE_URL}api/v1/events/${eventId}`, {
-          headers: { Authorization: `Bearer ${token}` }
+        const { data, error } = await supabase
+          .from('events')
+          .select('*')
+          .eq('id', eventId)
+          .single();
+        if (error) throw error;
+        setFormData({
+          id: data.id,
+          title: data.title,
+          description: data.description,
+          date: data.date,
+          location: data.location,
+          isVirtual: data.is_virtual,
         });
-        
-        setFormData(data.event);
-        if (data.event.image) {
-          setImagePreview(data.event.image as string);
-        }
+        if (data.image_url) setImagePreview(data.image_url as string);
       } catch (error) {
         notyf.error('Failed to load event data');
         console.error('Error loading event:', error);
@@ -138,53 +141,85 @@ export default function EventForm({ eventId, onClose, onSuccess }: EventFormProp
     e.preventDefault();
     if (!validateForm()) return;
 
-    const token = localStorage.getItem('token');
-    if (!token) {
-      notyf.error('Authentication required');
-      router.push('/auth/login');
-      return;
-    }
+    // session-based guard happens at dashboard; proceed to create
 
     try {
       setIsLoading(true);
-      const formPayload = new FormData();
+      let imageUrl: string | undefined;
 
-      // Append basic fields
-      formPayload.append('title', formData.title || '');
-      formPayload.append('description', formData.description || '');
-      formPayload.append('date', formData.date || '');
-      formPayload.append('location', formData.location || '');
-      formPayload.append('isVirtual', String(formData.isVirtual || false));
-      
-      // Append ticket types
-      if (formData.ticketType) {
-        formPayload.append('ticketType', JSON.stringify(formData.ticketType));
-      }
-
-      // Append image if new one was selected
-      if (imageFile) {
-        formPayload.append('image', imageFile);
-      }
-
-      let response;
       if (eventId) {
-        response = await axios.put(`${BASE_URL}api/v1/events/${eventId}`, formPayload, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
-          }
-        });
+        const { error } = await supabase
+          .from('events')
+          .update({
+            title: formData.title,
+            description: formData.description,
+            date: formData.date,
+            location: formData.location,
+            is_virtual: !!formData.isVirtual,
+            image_url: imageUrl ?? undefined,
+          })
+          .eq('id', eventId);
+        if (error) throw error;
       } else {
-        response = await axios.post(`${BASE_URL}api/v1/events/create-event`, formPayload, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
-          }
-        });
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) throw new Error('Not authenticated');
+        const { data: ins, error } = await supabase
+          .from('events')
+          .insert({
+            user_id: session.user.id,
+            title: formData.title,
+            description: formData.description,
+            date: formData.date,
+            location: formData.location,
+            is_virtual: !!formData.isVirtual,
+            image_url: null,
+          })
+          .select('*')
+          .single();
+        if (error) throw error;
+
+        // Upload image if provided (scoped path) and update event
+        if (imageFile) {
+          const fileExt = imageFile.name.split('.').pop();
+          const filePath = `events/${session.user.id}/${ins.id}/main.${fileExt}`;
+          const { error: uploadError } = await supabase.storage.from('event-images').upload(filePath, imageFile, { upsert: false });
+          if (uploadError) throw uploadError;
+          const { data: pub } = supabase.storage.from('event-images').getPublicUrl(filePath);
+          imageUrl = pub.publicUrl;
+          const { error: updErr } = await supabase.from('events').update({ image_url: imageUrl }).eq('id', ins.id);
+          if (updErr) throw updErr;
+        }
+
+        // Insert ticket types
+        const tickets = (formData.ticketType || []).filter(t => t.name && t.price && t.quantity);
+        if (tickets.length) {
+          const rows = tickets.map(t => ({
+            event_id: ins.id,
+            name: t.name,
+            price: Number(t.price),
+            quantity: Number(t.quantity),
+            details: t.details || null,
+          }));
+          const { error: tErr } = await supabase.from('ticket_types').insert(rows);
+          if (tErr) throw tErr;
+        }
       }
 
       notyf.success(`Event ${eventId ? 'updated' : 'created'} successfully`);
-      onSuccess?.(response.data.event);
+      onSuccess?.({
+        id: eventId || '',
+        title: formData.title || '',
+        description: formData.description || '',
+        date: formData.date || '',
+        location: formData.location || '',
+        ticketType: formData.ticketType || [],
+        image: imageUrl || null,
+        gallery: [],
+        hostName: '',
+        time: '',
+        venue: '',
+        isVirtual: !!formData.isVirtual,
+      } as any);
       onClose();
     } catch (error) {
       console.error('Error saving event:', error);

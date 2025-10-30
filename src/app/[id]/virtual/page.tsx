@@ -3,9 +3,8 @@
 // CORE IMPORTS
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import axios from 'axios';
-import { BASE_URL } from '../../../../config';
 import { type Event } from '@/types/event';
+import { fetchEventBySlug } from '@/utils/eventUtils';
 
 // ALWAYS-LOADED COMPONENTS (NO LAZY LOAD)
 import Loader from '@/components/ui/loader/Loader';
@@ -49,32 +48,38 @@ export default function VirtualEventPage() {
 
   // DATA FETCHING WITH CLEANUP
   useEffect(() => {
-    const controller = new AbortController();
     let isMounted = true;
 
     const fetchEvent = async () => {
-      if (!eventSlug) return;
+      if (!eventSlug || typeof eventSlug !== 'string') return;
 
       try {
         setLoading(true);
-        // USE THE SAME ENDPOINT STRUCTURE AS EventDetail.tsx
-        const response = await axios.get(`${BASE_URL}api/v1/events/slug/${eventSlug}`, {
-          signal: controller.signal
-        });
+        const fetchedEvent = await fetchEventBySlug(eventSlug);
         
-        if (!response.data.event.isVirtual && isMounted) {
+        if (!fetchedEvent) {
+          if (isMounted) {
+            setToast({ 
+              type: 'error', 
+              message: 'Event not found' 
+            });
+          }
+          return;
+        }
+
+        if (!fetchedEvent.isVirtual && isMounted) {
           // REDIRECT TO REGULAR EVENT PAGE IF NOT VIRTUAL
           router.push(`/${eventSlug}`);
           return;
         }
 
-        if (isMounted) setEvent(response.data.event);
+        if (isMounted) setEvent(fetchedEvent);
       } catch (error) {
-        if (isMounted && !axios.isCancel(error)) {
+        if (isMounted) {
           console.error('Error fetching event:', error);
           setToast({ 
             type: 'error', 
-            message: (axios.isAxiosError(error) && error.response?.data?.message) || 'Failed to load virtual event' 
+            message: 'Failed to load virtual event' 
           });
         }
       } finally {
@@ -86,7 +91,6 @@ export default function VirtualEventPage() {
 
     return () => {
       isMounted = false;
-      controller.abort();
     };
   }, [eventSlug, router]);
 

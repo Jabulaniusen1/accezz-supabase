@@ -2,9 +2,8 @@
 
 import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import axios from 'axios';
 import { useRouter } from 'next/navigation';
-import { BASE_URL } from '../../../config';
+import { supabase } from '@/utils/supabaseClient';
 import { Event, Ticket } from '@/types/analytics';
 import Loader from '@/components/ui/loader/Loader';
 import Toast from '@/components/ui/Toast';
@@ -49,10 +48,35 @@ const EventAnalyticsContent = () => {
 
     try {
       setLoading(true);
-      const response = await axios.get(`${BASE_URL}api/v1/events/${eventId}`);
-      setEvent(response.data.event);
-      console.log('Omor event:', response.data.event);
-      console.log('Fetched event details:', response.data.event);
+      const { data: ev, error: evErr } = await supabase
+        .from('events')
+        .select('id, slug, title, description, image_url, date, time, location')
+        .eq('id', eventId)
+        .single();
+      if (evErr) throw evErr;
+
+      const { data: types, error: ttErr } = await supabase
+        .from('ticket_types')
+        .select('id, name, price, quantity, sold')
+        .eq('event_id', eventId);
+      if (ttErr) throw ttErr;
+
+      const e: Event = {
+        id: ev.id,
+        slug: ev.slug || ev.id,
+        title: ev.title,
+        description: ev.description,
+        image: ev.image_url,
+        date: ev.date,
+        location: ev.location || '',
+        ticketType: (types || []).map(t => ({
+          name: t.name,
+          sold: String(t.sold ?? '0'),
+          price: String(t.price ?? '0'),
+          quantity: String(t.quantity ?? '0'),
+        })),
+      } as any;
+      setEvent(e);
     } catch (err) {
       console.error(err);
       setToast({ type: 'error', message: 'Failed to load event details.' });
@@ -63,35 +87,60 @@ const EventAnalyticsContent = () => {
 
   const fetchTickets = useCallback(async (silent = false) => {
     if (!eventId) return;
-    const token = localStorage.getItem('token');
 
     try {
       if (!silent) setLoading(true);
-      // setRefreshing(true);
-      
-      const response = await axios.get<{ tickets: Ticket[] }>(
-        `${BASE_URL}api/v1/tickets/events/${eventId}/tickets`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      const validTickets = response.data.tickets.filter(t => t.validationStatus === "valid");
-      // const totalValidAttendees = validTickets.reduce(
-      //   (sum, ticket) => sum + 1 + ticket.attendees.length, 0
-      // );
+      const { data: tix, error: tErr } = await supabase
+        .from('tickets')
+        .select('id, order_id, ticket_type_id, attendee_name, attendee_email, price, currency, created_at, is_scanned, validation_status, qr_code_url')
+        .eq('event_id', eventId);
+      if (tErr) throw tErr;
 
-      setTickets(response.data.tickets);
+      const typeIds = Array.from(new Set((tix || []).map(t => t.ticket_type_id)));
+      const { data: typeRows } = await supabase
+        .from('ticket_types')
+        .select('id, name')
+        .in('id', typeIds.length ? typeIds : ['00000000-0000-0000-0000-000000000000']);
+      const typeMap = new Map<string, string>((typeRows || []).map(r => [r.id as string, r.name as string]));
+
+      const orderIds = Array.from(new Set((tix || []).map(t => t.order_id)));
+      const { data: orders } = await supabase
+        .from('orders')
+        .select('id, status, payment_reference, currency')
+        .in('id', orderIds.length ? orderIds : ['00000000-0000-0000-0000-000000000000']);
+      const orderMap = new Map<string, any>((orders || []).map(o => [o.id as string, o]));
+
+      const mapped: Ticket[] = (tix || []).map(t => {
+        const o = orderMap.get(t.order_id as string);
+        return {
+          id: t.id as string,
+          eventId: eventId,
+          email: (t.attendee_email as string) || '',
+          phone: '',
+          fullName: (t.attendee_name as string) || '',
+          ticketType: typeMap.get(t.ticket_type_id as string) || '',
+          price: Number(t.price || 0),
+          purchaseDate: t.created_at as string,
+          qrCode: (t.qr_code_url as string) || '',
+          paid: o ? o.status === 'paid' : false,
+          currency: (t.currency as string) || (o?.currency as string) || '',
+          flwRef: (o?.payment_reference as string) || '',
+          attendees: [],
+          validationStatus: (t.validation_status as string) || 'valid',
+          isScanned: !!t.is_scanned,
+          createdAt: t.created_at as string,
+          updatedAt: t.created_at as string,
+        };
+      });
+
+      const validTickets = mapped.filter(t => t.validationStatus === 'valid');
+
+      setTickets(mapped);
       setFilteredTickets(validTickets);
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (error.response?.status === 401) {
-          setToast({ type: 'error', message: 'Session Expired, Signing out...' });
-          setTimeout(() => router.push('/auth/login'), 1500);
-        } else {
-          setToast({ type: 'error', message: error.response?.data?.message || 'Failed to load ticket details.' });
-        }
-      }
+    } catch (error: any) {
+      setToast({ type: 'error', message: error?.message || 'Failed to load ticket details.' });
     } finally {
       setLoading(false);
-      // setRefreshing(false);
     }
   }, [eventId, router]);
 

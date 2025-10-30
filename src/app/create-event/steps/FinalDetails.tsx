@@ -11,8 +11,7 @@ import {
   FaPlus
 } from "react-icons/fa";
 import { Event, ToastProps } from '@/types/event';
-import axios from "axios";
-import { BASE_URL } from '../../../../config';
+import { supabase } from '@/utils/supabaseClient';
 import {useRouter} from "next/navigation";
 
 interface FinalDetailsProps {
@@ -96,19 +95,13 @@ export default function FinalDetails({
     setIsLoading(true);
     
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setToast({ 
-          type: "error", 
-          message: "Please login to create an event",
-          onClose: () => setToast(null)
-        });
-        router.push("/auth/login");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setToast({ type: "error", message: "Please login to create an event", onClose: () => setToast(null) });
+        router.push('/auth/login');
         return;
       }
-  
-      const submitFormData = new FormData();
-  
+
       if (!formData.image) {
         setToast({ 
           type: "error", 
@@ -119,128 +112,94 @@ export default function FinalDetails({
         return;
       }
   
-      submitFormData.append("gallery", formData.image);
-      
-      formData.gallery.forEach((file) => {
-        submitFormData.append("gallery", file);
-      });
-      // Append event details
-      submitFormData.append("title", formData.title.trim());
-      submitFormData.append("description", formData.description.trim());
-      submitFormData.append("date", new Date(formData.date).toISOString());
-      submitFormData.append("location", formData.location.trim());
-  
-      // Append ticket data
-      const ticketTypeData = formData.ticketType.map((ticket) => ({
-        name: ticket.name.trim(),
-        price: ticket.price.trim(),
-        quantity: ticket.quantity.trim(),
-        sold: "0",
-        details: ticket.details?.trim() || "",
-        attendees: ticket.attendees || [],
-      }));
-      submitFormData.append("ticketType", JSON.stringify(ticketTypeData));
-      
-      submitFormData.append("time", formatTime(formData.time));
-      submitFormData.append("venue", formData.venue.trim());
-      submitFormData.append("isVirtual", formData.isVirtual.toString());
-  
-      // Append social media links
-      submitFormData.append("socialMediaLinks", JSON.stringify({
-        twitter: formData.socialMediaLinks?.twitter?.trim() || "",
-        facebook: formData.socialMediaLinks?.facebook?.trim() || "",
-        instagram: formData.socialMediaLinks?.instagram?.trim() || "",
-      }));
-  
-      // Append virtual event details if applicable
-      if (formData.isVirtual && formData.virtualEventDetails) {
-        submitFormData.append(
-          "virtualEventDetails",
-          JSON.stringify({
-            platform: formData.virtualEventDetails.platform,
-            meetingId: formData.virtualEventDetails.meetingId,
-            meetingUrl: formData.virtualEventDetails.meetingUrl,
-            passcode: formData.virtualEventDetails.passcode,
-            requiresPassword: formData.virtualEventDetails.requiresPassword,
-            virtualPassword: formData.virtualEventDetails.virtualPassword,
-            enableWaitingRoom: formData.virtualEventDetails.enableWaitingRoom,
-            lockRoom: formData.virtualEventDetails.lockRoom
-          })
-        );
+      // Upload main image
+      let imageUrl: string | null = null;
+      if (formData.image && typeof formData.image !== 'string') {
+        const main = formData.image as File;
+        const ext = main.name.split('.').pop();
+      // Defer main upload until after event is created to scope by user/event id
+      // Temporary placeholder; will upload after insert
+      imageUrl = null;
+      } else if (typeof formData.image === 'string') {
+        imageUrl = formData.image;
       }
-  
-      // Debug logs
-      console.log("Submitting:", {
-        event: {
+
+      // Create event first (without image)
+      const { data: created, error: evErr } = await supabase.from('events')
+        .insert({
+          user_id: session.user.id,
           title: formData.title.trim(),
           description: formData.description.trim(),
           date: new Date(formData.date).toISOString(),
-          location: formData.location.trim(),
-          ticketType: ticketTypeData,
           time: formatTime(formData.time),
           venue: formData.venue.trim(),
-          isVirtual: formData.isVirtual,
-          socialMediaLinks: {
+          location: formData.location.trim(),
+          is_virtual: !!formData.isVirtual,
+          social_links: {
             twitter: formData.socialMediaLinks?.twitter?.trim() || "",
             facebook: formData.socialMediaLinks?.facebook?.trim() || "",
             instagram: formData.socialMediaLinks?.instagram?.trim() || "",
           },
-          virtualEventDetails: formData.isVirtual ? formData.virtualEventDetails : undefined
-        },
-        files: {
-          mainImage: typeof formData.image === "object" && "name" in formData.image ? formData.image.name : formData.image,
-          gallery: formData.gallery.map((f) => f.name),
-        }
-      });
-  
-      const response = await axios.post(
-        `${BASE_URL}api/v1/events/create-event`,
-        submitFormData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-  
-      if (response.status === 201 || response.status === 200) {
-        setToast({ 
-          type: "success", 
-          message: "Event created successfully!",
-          onClose: () => setToast(null)
-        });
-        router.push("/dashboard");
-      } else if (response.status === 401) {
-        setToast({ 
-          type: "error", 
-          message: "Session expired, redirecting to login...",
-          onClose: () => setToast(null)
-        });
-        router.push("/auth/login");
+          virtual_details: formData.isVirtual ? formData.virtualEventDetails : null,
+          image_url: null,
+        })
+        .select('*')
+        .single();
+      if (evErr) throw evErr;
+
+      // Now upload main image under user/event scoped path and update event
+      if (formData.image && typeof formData.image !== 'string') {
+        const main = formData.image as File;
+        const ext2 = main.name.split('.').pop();
+        const mainPath = `events/${session.user.id}/${created.id}/main.${ext2}`;
+        const { error: upErr2 } = await supabase.storage.from('event-images').upload(mainPath, main, { upsert: false });
+        if (upErr2) throw upErr2;
+        const { data: pub2 } = supabase.storage.from('event-images').getPublicUrl(mainPath);
+        imageUrl = pub2.publicUrl;
+        const { error: updErr } = await supabase.from('events').update({ image_url: imageUrl }).eq('id', created.id);
+        if (updErr) throw updErr;
+      } else if (typeof formData.image === 'string') {
+        imageUrl = formData.image;
+        const { error: updErr } = await supabase.from('events').update({ image_url: imageUrl }).eq('id', created.id);
+        if (updErr) throw updErr;
       }
+
+      // Upload gallery and insert records
+      if (formData.gallery.length) {
+        const galleryRows: { event_id: string; image_url: string; position: number }[] = [];
+        for (let i = 0; i < formData.gallery.length; i++) {
+          const file = formData.gallery[i];
+          const ext = file.name.split('.').pop();
+          const path = `events/${session.user.id}/${created.id}/gallery/${Date.now()}-${i}.${ext}`;
+          const { error: gErr } = await supabase.storage.from('event-gallery').upload(path, file, { upsert: false });
+          if (gErr) throw gErr;
+          const { data: pub } = supabase.storage.from('event-gallery').getPublicUrl(path);
+          galleryRows.push({ event_id: created.id, image_url: pub.publicUrl, position: i });
+        }
+        if (galleryRows.length) {
+          const { error: insGalErr } = await supabase.from('event_gallery').insert(galleryRows);
+          if (insGalErr) throw insGalErr;
+        }
+      }
+
+      // Insert ticket types
+      const tickets = formData.ticketType.map((t) => ({
+        event_id: created.id,
+        name: t.name.trim(),
+        price: Number(t.price),
+        quantity: Number(t.quantity),
+        details: t.details?.trim() || null,
+      }));
+      if (tickets.length) {
+        const { error: tErr } = await supabase.from('ticket_types').insert(tickets);
+        if (tErr) throw tErr;
+      }
+
+      setToast({ type: "success", message: "Event created successfully!", onClose: () => setToast(null) });
+      router.push('/dashboard');
     } catch (error) {
       console.error("Error creating event:", error);
-      
-      if (axios.isAxiosError(error)) {
-        console.error("API Error:", {
-          status: error.response?.status,
-          data: error.response?.data,
-          message: error.message,
-        });
-        setToast({
-          type: "error",
-          message: error.response?.data?.message || "Failed to create event",
-          onClose: () => setToast(null)
-        });
-      } else {
-        console.error("Unexpected error:", error);
-        setToast({
-          type: "error",
-          message: "An unexpected error occurred",
-          onClose: () => setToast(null)
-        });
-      }
+      setToast({ type: "error", message: (error as any)?.message || "Failed to create event", onClose: () => setToast(null) });
     } finally {
       setIsLoading(false);
     }

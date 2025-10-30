@@ -5,8 +5,7 @@ import { FaEye, FaEyeSlash, FaEnvelope, FaLock, FaRedo, FaArrowLeft } from 'reac
 import Loader from '../../../components/ui/loader/Loader';
 import Toast from '../../../components/ui/Toast';
 import Link from 'next/link';
-import axios from 'axios';
-import { BASE_URL } from '../../../../config';
+import { signInWithEmail, getSession } from '@/utils/supabaseAuth';
 
 type FormData = {
   email: string;
@@ -60,47 +59,28 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await axios.post(`${BASE_URL}api/v1/users/login`, formData);
-
-      if (response.status === 200) {
-        const { user, token } = response.data;
-        
-        localStorage.setItem('token', token);
-        localStorage.setItem('userEmail', user.email);
-        localStorage.setItem('user', JSON.stringify(user));
-
-        router.push('/dashboard');
+      await signInWithEmail(formData.email, formData.password);
+      // Back-compat: populate localStorage token/user so legacy guards don't redirect
+      const session = await getSession();
+      if (session) {
+        localStorage.setItem('token', session.access_token);
+        localStorage.setItem('userEmail', session.user.email || '');
+        localStorage.setItem('user', JSON.stringify({
+          email: session.user.email,
+          fullName: session.user.user_metadata?.full_name,
+          id: session.user.id,
+        }));
       }
-    } catch (error: unknown) {
-      let message = 'Login failed. Please try again.';
-      
-      if (axios.isAxiosError(error)) {
-        // Check for specific error messages in the response
-        if (error.response?.data?.Error) {
-          // Handle specific error messages from backend
-          if (error.response.data.Error.toLowerCase().includes('invalid credentials') || 
-              error.response.data.Error.toLowerCase().includes('invalid email') ||
-              error.response.data.Error.toLowerCase().includes('invalid password')) {
-            message = 'Account not found. Please confirm if your email or password is correct';
-          } else {
-            message = error.response.data.Error;
-          }
-        } else if (error.response?.data?.message) {
-          message = error.response.data.message;
-        } else if (error.response?.status === 401) {
-          message = 'Account not found. Please confirm if your email or password is correct';
-        } else if (error.response?.status === 400) {
-          message = 'Please verify your email first';
-          setShowVerificationNotice(true);
-        } else if (error.response?.status === 403) {
-          message = 'Please verify your email first';
-          setShowVerificationNotice(true);
-        }
-      } else if (error instanceof Error) {
-        message = 'Network error. Please check your connection.';
+      router.push('/dashboard');
+    } catch (error: any) {
+      const code = error?.status || error?.code;
+      if (code === 'email_not_confirmed' || code === '400') {
+        setShowVerificationNotice(true);
+        showToastMessage('error', 'Please verify your email first');
+      } else {
+        showToastMessage('error', error?.message || 'Login failed. Please try again.');
       }
-      
-      showToastMessage('error', message);
+    } finally {
       setLoading(false);
     }
   };
@@ -113,13 +93,9 @@ export default function Login() {
 
     setResendLoading(true);
     try {
-      await axios.post(`${BASE_URL}api/v1/users/resend-otp`, {
-        email: formData.email
-      });
-      showToastMessage('success', 'Verification email sent!');
+      // Supabase automatically sends verification on sign up; for resend, prompt user to re-signup flow or use Admin
+      showToastMessage('info', 'If you signed up, check your inbox for the verification email.');
       setShowVerificationNotice(false);
-    } catch {
-      showToastMessage('error', 'Failed to resend verification. Please try again.');
     } finally {
       setResendLoading(false);
     }

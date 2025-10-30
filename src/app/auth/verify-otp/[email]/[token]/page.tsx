@@ -4,9 +4,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { FaRedo, FaCheck } from 'react-icons/fa';
 import { motion } from 'framer-motion';
-import axios, { AxiosError } from 'axios';
 import Toast from '@/components/ui/Toast';
-import { BASE_URL } from '../../../../../../config';
+import { supabase } from '@/utils/supabaseClient';
 
 type ToastData = {
   type: 'success' | 'error' | 'warning' | 'info';
@@ -29,59 +28,17 @@ export default function VerifyOTP() {
   const email = decodeURIComponent(params?.email as string);
   const token = params?.token as string;
 
-  // VERIFY TOKEN FUNCTION
+  // VERIFY FUNCTION (Supabase verifies via magic link)
   const verifyToken = useCallback(async () => {
-    if (!token || !email) return;
-
     setLoading(true);
     try {
-      const response = await axios.post(`${BASE_URL}api/v1/users/verify-otp`, {
-        email,
-        secret: token
-      });
-
-      if (response.data?.message) {
-        setToastProps({
-          type: 'success',
-          message: response.data.message + ' Redirecting to login...'
-        });
-      } else {
-        setToastProps({
-          type: 'success',
-          message: 'Email verified successfully! Redirecting to login...'
-        });
-      }
+      setToastProps({ type: 'success', message: 'Check your inbox and click the verification link.' });
       setShowToast(true);
-
-      // Store verification status
-      const userData = localStorage.getItem('user');
-      if (userData) {
-        const user = JSON.parse(userData);
-        localStorage.setItem('user', JSON.stringify({
-          ...user,
-          emailVerified: true
-        }));
-      }
-
-      setTimeout(() => {
-        router.push('/auth/login');
-      }, 1500);
-    } catch (error) {
-      let errorMessage = 'Failed to verify email';
-      
-      if (error instanceof AxiosError) {
-        errorMessage = error.response?.data?.message || errorMessage;
-      }
-      
-      setToastProps({
-        type: 'error',
-        message: errorMessage
-      });
-      setShowToast(true);
+      setTimeout(() => router.push('/auth/login'), 1200);
     } finally {
       setLoading(false);
     }
-  }, [token, email, router]);
+  }, [router]);
 
   // AUTO-VERIFY ON MOUNT
   useEffect(() => {
@@ -96,7 +53,8 @@ export default function VerifyOTP() {
 
     setResendLoading(true);
     try {
-      await axios.post(`${BASE_URL}api/v1/users/resend-otp`, { email });
+      const { error } = await supabase.auth.resend({ type: 'signup', email });
+      if (error) throw error;
 
       setToastProps({
         type: 'success',
@@ -104,17 +62,8 @@ export default function VerifyOTP() {
       });
       setShowToast(true);
       setResendCooldown(30);
-    } catch (error) {
-      let errorMessage = 'Failed to resend verification link';
-      
-      if (error instanceof AxiosError) {
-        errorMessage = error.response?.data?.message || errorMessage;
-      }
-      
-      setToastProps({
-        type: 'error',
-        message: errorMessage
-      });
+    } catch (error: any) {
+      setToastProps({ type: 'error', message: error?.message || 'Failed to resend verification link' });
       setShowToast(true);
     } finally {
       setResendLoading(false);

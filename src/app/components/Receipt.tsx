@@ -4,10 +4,9 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import jsPDF from 'jspdf';
-import axios from 'axios';
-import { BASE_URL } from '../../../config';
 import TicketLoader from '@/components/ui/loader/ticketLoader';
 import ErrorHandler from '@/components/ErrorHandler';
+import { supabase } from '@/utils/supabaseClient';
 
 type ReceiptProps = {
   closeReceipt?: () => void;
@@ -50,29 +49,77 @@ const Receipt = ({ closeReceipt, isModal = true }: ReceiptProps) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Fetch ticket data from API
+  // Fetch ticket data from Supabase
   const fetchTicketData = async () => {
     try {
       const searchParams = new URLSearchParams(window.location.search);
       const ticketId = searchParams.get('ticketId');
       if (!ticketId) throw new Error('No ticket information found in URL');
-      const { data } = await axios.get(`${BASE_URL}api/v1/tickets/${ticketId}`);
-      setTicketData(data.ticket);
-      
-      // Fetch event data if eventId is available
-      if (data.ticket?.eventId) {
-        try {
-          const eventResponse = await axios.get(`${BASE_URL}api/v1/events/${data.ticket.eventId}`);
-          setEventData(eventResponse.data.event);
-        } catch (eventErr) {
-          console.error('Error fetching event data:', eventErr);
-        }
-      }
-      
+
+      // Fetch ticket with order and event details
+      const { data: ticket, error: ticketError } = await supabase
+        .from('tickets')
+        .select(`
+          *,
+          orders!inner(
+            buyer_email,
+            buyer_full_name,
+            buyer_phone,
+            currency,
+            total_amount,
+            meta
+          ),
+          events!inner(
+            id,
+            title,
+            image_url,
+            date,
+            time,
+            venue,
+            location
+          ),
+          ticket_types!inner(
+            name
+          )
+        `)
+        .eq('id', ticketId)
+        .single();
+
+      if (ticketError || !ticket) throw ticketError || new Error('Ticket not found');
+
+      // Map ticket data
+      const mappedTicketData: TicketData = {
+        id: ticket.id,
+        email: ticket.orders.buyer_email || '',
+        phone: ticket.orders.buyer_phone || '',
+        fullName: ticket.orders.buyer_full_name || '',
+        eventId: ticket.event_id,
+        ticketType: ticket.ticket_types.name,
+        price: Number(ticket.price),
+        purchaseDate: ticket.created_at,
+        qrCode: ticket.qr_code_url || '',
+        currency: ticket.currency || 'NGN',
+        attendees: ticket.orders.meta?.attendees || [],
+      };
+
+      setTicketData(mappedTicketData);
+
+      // Map event data
+      const mappedEventData: EventData = {
+        id: ticket.events.id,
+        title: ticket.events.title,
+        image: ticket.events.image_url || '',
+        date: ticket.events.date,
+        time: ticket.events.time || '',
+        venue: ticket.events.venue || '',
+        location: ticket.events.location || '',
+      };
+
+      setEventData(mappedEventData);
       setError(null);
-    } catch (err) {
+    } catch (err: any) {
       setError('Failed to fetch ticket details');
-      console.log(err);
+      console.error(err);
       setTicketData(null);
     } finally {
       setLoading(false);

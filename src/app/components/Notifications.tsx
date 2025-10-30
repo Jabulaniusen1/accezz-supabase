@@ -1,11 +1,10 @@
 import React, { useEffect, useState, useCallback } from "react";
-import axios from "axios";
 import { useRouter } from "next/navigation";
 import { Toast } from "./Toast";
 import { motion } from "framer-motion";
 import { IoMailUnreadOutline } from "react-icons/io5";
 import { MdDeleteOutline } from "react-icons/md";
-import { BASE_URL } from '../../../config';
+import { supabase } from '@/utils/supabaseClient';
 import ConfirmationModal from "@/components/ConfirmationModal";
 
 
@@ -46,37 +45,35 @@ const Notifications = () => {
 
   const fetchNotifications = useCallback(async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        toast("error", "Authentication token is missing. Please log in");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast("error", "Please log in to view notifications");
         router.push("/auth/login");
         return;
       }
 
-      // Add timeout and cancel token for better request handling
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+      const { data: notifs, error: notifErr } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false });
+      if (notifErr) throw notifErr;
 
-      const response = await axios.get(
-        `${BASE_URL}api/v1/notifications`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          signal: controller.signal,
-        }
-      );
+      const mapped: Notification[] = (notifs || []).map(n => ({
+        id: n.id as string,
+        title: n.title as string,
+        message: n.body as string,
+        isRead: !!n.read_at,
+        userId: n.user_id as string,
+        createdAt: n.created_at as string,
+        updatedAt: n.updated_at || n.created_at as string,
+      }));
 
-      clearTimeout(timeoutId);
-      setNotifications(response.data.notifications);
+      setNotifications(mapped);
       setLoading(false);
-    } catch (error) {
-      if (axios.isCancel(error)) {
-        toast("error", "Request timed out");
-      } else {
-        console.error("Error fetching notifications:", error);
-        toast("error", "Failed to fetch notifications");
-      }
+    } catch (error: any) {
+      console.error("Error fetching notifications:", error);
+      toast("error", error?.message || "Failed to fetch notifications");
       setLoading(false);
     }
   }, [router, toast]);
@@ -91,12 +88,6 @@ const Notifications = () => {
 
   const markAsRead = async (id: string) => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        toast("error", "No token found");
-        return;
-      }
-
       // Optimistic update
       setNotifications(prev =>
         prev.map(notification =>
@@ -104,18 +95,14 @@ const Notifications = () => {
         )
       );
 
-      await axios.patch(
-        `${BASE_URL}api/v1/notifications/read/${id}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const { error } = await supabase
+        .from('notifications')
+        .update({ read_at: new Date().toISOString() })
+        .eq('id', id);
+      if (error) throw error;
 
       toast("success", "Notification marked as read");
-    } catch (error) {
+    } catch (error: any) {
       // Revert on error
       console.log(error);
       setNotifications(prev =>
@@ -123,33 +110,28 @@ const Notifications = () => {
           notification.id === id ? { ...notification, isRead: false } : notification
         )
       );
-      toast("error", "Failed to mark notification as read");
+      toast("error", error?.message || "Failed to mark notification as read");
     }
   };
 
   const deleteNotification = async (id: string) => {
+    const prevNotifs = [...notifications];
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        toast("error", "No token found");
-        return;
-      }
-
       // Optimistic update
       setNotifications(prev => prev.filter(notification => notification.id !== id));
 
-      await axios.delete(`${BASE_URL}api/v1/notifications/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
 
       toast("success", "Notification deleted successfully");
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
-      
-      fetchNotifications();
-      toast("error", "Failed to delete notification");
+      // Revert on error
+      setNotifications(prevNotifs);
+      toast("error", error?.message || "Failed to delete notification");
     }
   };
 

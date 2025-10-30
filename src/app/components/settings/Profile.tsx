@@ -3,9 +3,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import SuccessModal from './modal/successModal';
 import Toast from '../../../components/ui/Toast';
 import Loader from '../../../components/ui/loader/Loaders';
-import axios, { AxiosError }  from 'axios';
 import { useRouter } from 'next/navigation';
-import { BASE_URL } from '../../../../config';
+import { supabase } from '@/utils/supabaseClient';
 
 
 type UserDataType = {
@@ -51,77 +50,47 @@ const Profile = () => {
     setShowToast(true);
   }, []);
 
-  const handleAxiosError = useCallback((error: AxiosError) => {
-    if (error.response) {
-      switch (error.response.status) {
-        case 400:
-          toast('error', 'Bad request. Please check your input.');
-          break;
-        case 401:
-          toast('error', 'Unauthorized. Please log in again.');
-          router.push('/auth/login');
-          break;
-        case 404:
-          toast('error', 'Endpoint not found.');
-          break;
-        case 500:
-          toast('error', 'Server error. Please try again later.');
-          break;
-        default:
-          toast('error', `An error occurred: ${error.response.statusText}`);
-      }
-    } else {
-      toast('error', 'Network error. Please check your connection.');
-    }
-  }, [router, toast]);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
           toast('error', 'Please login to view your profile');
           router.push('/auth/login');
           return;
         }
-        console.log(token);
 
-        const response = await axios.get(
-          `${BASE_URL}api/v1/users/profile`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          }
-        );
+        const { data: profile, error: profileErr } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .single();
 
-        const user = response.data.user;
-        if (user) {
-          setUserData({
-            profilePhoto: user.profilePic || '',
-            fullName: user.fullName || '',
-            businessName: user.businessName || '',
-            email: user.email || '',
-            phone: user.phone || '',
-            timeZone: user.timezone || '',
-            companyWebsite: user.companyWebsite || '',
-            address: user.address || '',
-            eventCategory: user.eventCategory || ''
-          });
+        if (profileErr && profileErr.code !== 'PGRST116') throw profileErr;
 
-          localStorage.setItem('user', JSON.stringify(user));
-        }
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          handleAxiosError(error);
-        } else {
-          toast('error', 'Failed to fetch profile data');
-        }
+        const user = session.user;
+        const metadata = user.user_metadata || {};
+
+        setUserData({
+          profilePhoto: profile?.avatar_url || '',
+          fullName: profile?.full_name || metadata.full_name || user.email?.split('@')[0] || '',
+          businessName: metadata.businessName || '',
+          email: user.email || '',
+          phone: profile?.phone || metadata.phone || '',
+          timeZone: metadata.timeZone || '',
+          companyWebsite: metadata.companyWebsite || '',
+          address: metadata.address || '',
+          eventCategory: metadata.eventCategory || ''
+        });
+      } catch (error: any) {
+        console.error('Error fetching profile:', error);
+        toast('error', error?.message || 'Failed to fetch profile data');
       }
     };
 
     fetchUserProfile();
-  }, [router, handleAxiosError, toast]);
+  }, [router, toast]);
 
   useEffect(() => {
     localStorage.setItem('profileData', JSON.stringify(userData));
@@ -201,34 +170,40 @@ const Profile = () => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        toast('error', 'You are not authenticated. Please log in and try again.');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast('error', 'Please login to update your profile');
         router.push('/auth/login');
         return;
       }
 
-      // Update user data
-      const response = await axios.patch(
-        `${BASE_URL}api/v1/users/profile`,
-        userData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      // Update profiles table
+      const { error: profileErr } = await supabase
+        .from('profiles')
+        .upsert({
+          user_id: session.user.id,
+          full_name: userData.fullName,
+          phone: userData.phone,
+          avatar_url: userData.profilePhoto || null,
+        }, { onConflict: 'user_id' });
+      if (profileErr) throw profileErr;
 
-      if (response.status === 200) {
-        localStorage.setItem('user', JSON.stringify(response.data.data));
-        toast('success', 'Profile updated successfully!');
-      }
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        handleAxiosError(error);
-      } else {
-        toast('error', 'An unexpected error occurred.');
-      }
+      // Update user metadata for extra fields
+      const { error: metaErr } = await supabase.auth.updateUser({
+        data: {
+          businessName: userData.businessName,
+          timeZone: userData.timeZone,
+          companyWebsite: userData.companyWebsite,
+          address: userData.address,
+          eventCategory: userData.eventCategory,
+        }
+      });
+      if (metaErr) throw metaErr;
+
+      toast('success', 'Profile updated successfully!');
+    } catch (error: any) {
+      console.error('Error updating profile:', error);
+      toast('error', error?.message || 'Failed to update profile');
     } finally {
       setLoading(false);
     }

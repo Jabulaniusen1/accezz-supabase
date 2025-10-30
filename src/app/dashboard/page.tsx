@@ -15,6 +15,7 @@ import { Notyf } from "notyf";
 import "notyf/notyf.min.css";
 import { useRouter, usePathname } from "next/navigation";
 import axios, { AxiosError } from "axios";
+import { getSession, signOut } from "@/utils/supabaseAuth";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import EventTypeModal from "@/components/Modal/EventType";
 import Link from "next/link";
@@ -55,27 +56,20 @@ const Dashboard = () => {
 
     const checkAuth = async () => {
       try {
-        const user = localStorage.getItem("user");
-        const token = localStorage.getItem("token");
-
-        if (!user || !token) {
+        const session = await getSession();
+        if (!session) {
           router.push("/auth/login");
           return;
         }
-
-        const parsedUser = JSON.parse(user);
         const welcomeShown = localStorage.getItem("welcomeShown");
-
-        if (parsedUser.fullName && welcomeShown !== "true") {
-          notyfRef.current?.success(`Welcome back, ${parsedUser.fullName}!`);
+        const displayName = session.user.user_metadata?.full_name || session.user.email;
+        if (displayName && welcomeShown !== "true") {
+          notyfRef.current?.success(`Welcome back, ${displayName}!`);
           localStorage.setItem("welcomeShown", "true");
         }
-
         setIsLoading(false);
       } catch (error) {
         console.error("Auth check failed:", error);
-        localStorage.removeItem("user");
-        localStorage.removeItem("welcomeShown");
         router.push("/auth/login");
       }
     };
@@ -122,13 +116,12 @@ const Dashboard = () => {
     setShowSessionModal(true);
   };
 
-  const confirmLogout = () => {
+  const confirmLogout = async () => {
     try {
       setIsLoading(true);
       localStorage.setItem("lastVisitedPath", pathname);
-      localStorage.removeItem("token");
-      localStorage.removeItem("user"); 
       localStorage.removeItem("welcomeShown");
+      await signOut();
       setShowSessionModal(false);
       setTimeout(() => router.push("/auth/login"), 500);
     } catch (error) {

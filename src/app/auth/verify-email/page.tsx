@@ -3,8 +3,7 @@ import React from 'react';
 import { FaEnvelope, FaArrowRight } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import axios from 'axios';
-import { BASE_URL } from '../../../../config';
+import { supabase } from '@/utils/supabaseClient';
 import Toast from '@/components/ui/Toast';
 
 function VerifyEmail() {
@@ -13,19 +12,14 @@ function VerifyEmail() {
   // RESEND OTP 
   const resendOtp = async () => {
     try {
-      const response = await axios.post(`${BASE_URL}api/v1/users/resend-otp`, {
-        email
-      });
-
-      // Handle success response
-      console.log('Resend OTP response:', response.data);
-      // alert('Verification email resent successfully!');
-    } catch (error) {
-      // Handle error response
-      console.error('Error resending OTP:', error);
-      Toast({ message: 'Failed to resend verification email. Please try again.', type: 'error', onClose: () => {} });
+      if (!email) return;
+      const { error } = await supabase.auth.resend({ type: 'signup', email });
+      if (error) throw error;
+      Toast({ message: 'Verification email resent. Check your inbox.', type: 'success', onClose: () => {} });
+    } catch (error: any) {
+      console.error('Error resending verification:', error);
+      Toast({ message: error?.message || 'Failed to resend verification email.', type: 'error', onClose: () => {} });
     }
-   
   };
 
   return (

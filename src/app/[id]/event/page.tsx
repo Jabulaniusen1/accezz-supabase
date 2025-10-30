@@ -2,13 +2,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import axios from 'axios';
-import { BASE_URL } from '../../../../config';
 import { type Event, type Ticket } from '@/types/event';
 import Loader from '../../../components/ui/loader/Loader';
 import Toast from '../../../components/ui/Toast';
 import Header from '@/app/components/layout/Header';
 import Footer from '@/app/components/layout/Footer';
+import { fetchEventBySlug } from '@/utils/eventUtils';
 
 const EventHeroSection = React.lazy(() => import('./components/EventHeroSection').then(module => ({ default: module.EventHeroSection })));
 const EventHostSection = React.lazy(() => import('./components/EventHostSection').then(module => ({ default: module.EventHostSection })));
@@ -61,26 +60,26 @@ const EventDetail = () => {
   }, []);
 
   useEffect(() => {
-    // CREATE AN ABORT CONTROLLER FOR CLEANUP
-    const controller = new AbortController();
     let isMounted = true;
 
     const fetchEvent = async () => {
-        if (!eventSlug) return;
+        if (!eventSlug || typeof eventSlug !== 'string') return;
 
         try {
             setLoading(true);
-            const response = await axios.get(`${BASE_URL}api/v1/events/slug/${eventSlug}`, {
-                signal: controller.signal // PASS THE ABORT SIGNAL
-            });
+            const fetchedEvent = await fetchEventBySlug(eventSlug);
             
             // ONLY UPDATE STATE IF COMPONENT IS STILL MOUNTED
             if (isMounted) {
-                setEvent(response.data.event);
+                if (fetchedEvent) {
+                    setEvent(fetchedEvent);
+                } else {
+                    showToast({ type: 'error', message: 'Event not found.' });
+                }
             }
         } catch (err) {
-            // CHECK IF THE ERROR IS FROM ABORTING
-            if (isMounted && !axios.isCancel(err)) {
+            // CHECK IF COMPONENT IS STILL MOUNTED
+            if (isMounted) {
                 console.error('Failed to fetch event:', err);
                 showToast({ type: 'error', message: 'Failed to load event details.' });
             }
@@ -96,7 +95,6 @@ const EventDetail = () => {
     // CLEANUP FUNCTION - THIS WILL RUN WHEN COMPONENT UNMOUNTS
     return () => {
         isMounted = false;
-        controller.abort(); // THIS WILL CANCEL ANY ONGOING REQUESTS
     };
   }, [eventSlug, showToast]);
 

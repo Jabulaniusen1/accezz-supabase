@@ -2,13 +2,13 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import axios from 'axios';
+import { supabase } from '@/utils/supabaseClient';
 import { useRouter } from 'next/navigation';
 import { Toast } from './Toast';
 import { motion, AnimatePresence } from 'framer-motion';
 // import Loader from '@/components/ui/loader/Loader';
 import { formatPrice } from '@/utils/formatPrice';
-import { BASE_URL } from '../../../config';
+// Removed REST API usage; using Supabase instead
 
 interface Event {
   id: string;
@@ -97,58 +97,68 @@ const EventList: React.FC = () => {
     setShowToast(true);
   }, []);
 
-  const handleAxiosError = useCallback((error: unknown, defaultMessage: string) => {
-    let errorMessage = defaultMessage;
-    if (axios.isAxiosError(error)) {
-      errorMessage = error.response?.data?.message || error.message;
-    } else if (error instanceof Error) {
-      errorMessage = error.message;
-    }
-    showToastMessage('error', errorMessage);
+  const handleError = useCallback((error: unknown, defaultMessage: string) => {
+    const message = error instanceof Error ? error.message : defaultMessage;
+    showToastMessage('error', message);
   }, [showToastMessage]);
 
   const fetchEvents = useCallback(async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        showToastMessage('error', 'Authentication token is missing. Please log in.');
-        return;
-      }
-
-      const response = await axios.get(`${BASE_URL}api/v1/events/my-events`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (response.status === 401) {
-        showToastMessage('error', 'Unauthorized. Please log in again.');
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
         router.push('/auth/login');
         return;
       }
+      const uid = sessionData.session.user.id;
 
-      const eventData = response.data?.events;
-      if (Array.isArray(eventData)) {
-        const sanitizedData = eventData.map((event) => {
-          let price = event.price;
-          if (typeof price === 'string') {
-            const numericPrice = parseFloat(price);
-            price = isNaN(numericPrice) || numericPrice < 0 ? '0' : numericPrice.toString();
-          }
-          return {
-            ...event,
-            price,
-          };
+      // Fetch user's events
+      const { data: eventsData, error: evErr } = await supabase
+        .from('events')
+        .select('id, slug, title, description, image_url, date, time, location')
+        .eq('user_id', uid)
+        .order('created_at', { ascending: false });
+      if (evErr) throw evErr;
+
+      const eventIds = (eventsData || []).map(e => e.id);
+      let ticketTypeMap = new Map<string, { price: string; name: string; quantity: string; sold: string }[]>();
+      if (eventIds.length) {
+        const { data: tickets, error: ttErr } = await supabase
+          .from('ticket_types')
+          .select('event_id, name, price, quantity, sold')
+          .in('event_id', eventIds);
+        if (ttErr) throw ttErr;
+        (tickets || []).forEach(t => {
+          const arr = ticketTypeMap.get(t.event_id as string) || [];
+          arr.push({
+            name: t.name as string,
+            price: String(t.price ?? '0'),
+            quantity: String(t.quantity ?? '0'),
+            sold: String(t.sold ?? '0'),
+          });
+          ticketTypeMap.set(t.event_id as string, arr);
         });
-        setEvents(sanitizedData);
-      } else {
-        throw new Error('Invalid response format');
       }
+
+      const list: Event[] = (eventsData || []).map(e => ({
+        id: e.id as string,
+        slug: (e.slug as string) || e.id as string,
+        title: e.title as string,
+        description: e.description as string,
+        image: (e.image_url as string) || '/images/placeholder.png',
+        date: e.date as string,
+        time: (e.time as string) || '',
+        location: (e.location as string) || '',
+        price: '0',
+        ticketType: ticketTypeMap.get(e.id as string) || [],
+      }));
+      setEvents(list);
     } catch (error) {
-      handleAxiosError(error, 'Failed to fetch events');
+      handleError(error, 'Failed to fetch events');
     } finally {
       setLoading(false);
     }
-  }, [handleAxiosError, router, showToastMessage]);
+  }, [handleError, router, showToastMessage]);
 
   useEffect(() => {
     fetchEvents();
@@ -166,32 +176,15 @@ const EventList: React.FC = () => {
   }, []);
 
   const deleteEvent = useCallback(async (eventID: string) => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      showToastMessage('error', 'Your session has expired. Please log in again.');
-      router.push('/auth/login');
-      return false;
-    }
-
     try {
-      const response = await axios.delete(`${BASE_URL}api/v1/events/${eventID}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return response.status === 200;
+      const { error } = await supabase.from('events').delete().eq('id', eventID);
+      if (error) throw error;
+      return true;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (error.response?.status === 401) {
-          showToastMessage('error', 'Unauthorized. Please log in again.');
-          router.push('/auth/login');
-        } else {
-          showToastMessage('error', error.response?.data?.message || 'An error occurred while deleting the event.');
-        }
-      } else {
-        showToastMessage('error', 'An unexpected error occurred. Please try again.');
-      }
+      handleError(error, 'An error occurred while deleting the event.');
       return false;
     }
-  }, [router, showToastMessage]);
+  }, [handleError]);
 
   const handleConfirmDelete = useCallback(async () => {
     if (!eventToDelete) return;
@@ -203,13 +196,13 @@ const EventList: React.FC = () => {
         showToastMessage('success', 'Event deleted successfully.');
       }
     } catch (error) {
-      handleAxiosError(error, 'Failed to delete event');
+      handleError(error, 'Failed to delete event');
     } finally {
       setDeleteModalOpen(false);
       setEventToDelete(null);
       setLoading(false);
     }
-  }, [eventToDelete, deleteEvent, handleAxiosError, showToastMessage]);
+  }, [eventToDelete, deleteEvent, handleError, showToastMessage]);
 
   const handleNavigation = useCallback((path: string) => {
     setIsNavigating(true);

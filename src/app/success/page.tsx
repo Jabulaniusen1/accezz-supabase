@@ -3,9 +3,9 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Receipt from "../components/Receipt"
-import axios from "axios";
-import { BASE_URL } from "../../../config";
 import Loader from "@/components/ui/loader/Loader";
+import { markOrderAsPaid, createTicketsForOrder } from "@/utils/paymentUtils";
+import { supabase } from "@/utils/supabaseClient";
 
 const SuccessContent = () => {
   const router = useRouter();
@@ -13,69 +13,111 @@ const SuccessContent = () => {
   const [isVerifying, setIsVerifying] = useState(true);
 
   useEffect(() => {
-
     const verifyPayment = async () => {
       const reference = searchParams.get('reference');
       const ticketId = searchParams.get('ticketId');
+      const orderId = searchParams.get('orderId');
       const status = searchParams.get('status');
     
       // Handle explicit failure cases
       if (status === 'failed' || status === 'cancelled') {
-        router.push(`/payment-failed?ticketId=${ticketId}`);
+        router.push(`/payment-failed${ticketId ? `?ticketId=${ticketId}` : ''}`);
         return;
       }
     
       // Handle pending payments
       if (status === 'pending') {
-        router.push(`/payment-pending?ticketId=${ticketId}`);
+        router.push(`/payment-pending${ticketId ? `?ticketId=${ticketId}` : ''}`);
         return;
       }
     
       try {
-        if (reference) {
-          const response = await axios.post(`${BASE_URL}api/v1/payment/verify`, { 
-            reference
-          });
-    
-          // Handle success (200/201) or already verified (400)
-          if (response.status === 200 || response.status === 201 || response.status === 400) {
-            setIsVerifying(false);
-            router.push(`/success?reference=${reference}${ticketId ? `&ticketId=${ticketId}` : ''}`);
-            return;
-          }
-          throw new Error('Payment not verified');
-        } 
-        else if (ticketId) {
+        // If ticketId exists, ticket is already created (free ticket)
+        if (ticketId) {
           setIsVerifying(false);
-          router.push(`/success?ticketId=${ticketId}`);
+          return;
+        }
+
+        // Verify payment with order ID
+        if (orderId && reference) {
+          // Mark order as paid
+          await markOrderAsPaid(orderId, reference, 'paystack');
+          
+          // Create tickets for the order
+          await createTicketsForOrder(orderId);
+
+          // Get the first ticket ID for redirect
+          const { data: tickets, error: ticketsError } = await supabase
+            .from('tickets')
+            .select('id')
+            .eq('order_id', orderId)
+            .limit(1);
+
+          if (ticketsError || !tickets || tickets.length === 0) {
+            throw new Error('Failed to retrieve tickets');
+          }
+
+          setIsVerifying(false);
+          router.push(`/success?ticketId=${tickets[0].id}`);
+          return;
+        }
+
+        // If only reference exists (legacy flow), try to find order by reference
+        if (reference) {
+          const { data: orders, error: orderError } = await supabase
+            .from('orders')
+            .select('id')
+            .eq('payment_reference', reference)
+            .limit(1);
+
+          if (orderError || !orders || orders.length === 0) {
+            throw new Error('Order not found');
+          }
+
+          const foundOrderId = orders[0].id;
+          
+          // Mark as paid if not already
+          const { data: order } = await supabase
+            .from('orders')
+            .select('status')
+            .eq('id', foundOrderId)
+            .single();
+
+          if (order?.status !== 'paid') {
+            await markOrderAsPaid(foundOrderId, reference, 'paystack');
+            await createTicketsForOrder(foundOrderId);
+          }
+
+          // Get ticket ID
+          const { data: tickets, error: ticketsError } = await supabase
+            .from('tickets')
+            .select('id')
+            .eq('order_id', foundOrderId)
+            .limit(1);
+
+          if (ticketsError || !tickets || tickets.length === 0) {
+            throw new Error('Failed to retrieve tickets');
+          }
+
+          setIsVerifying(false);
+          router.push(`/success?ticketId=${tickets[0].id}`);
           return;
         }
         
-        throw new Error('Missing reference or ticketId');
+        throw new Error('Missing reference, ticketId, or orderId');
       } catch (error: unknown) {
-        console.error('Payment error:', error);
+        console.error('Payment verification error:', error);
         setIsVerifying(false);
         
-        // Type-safe error handling
-        if (axios.isAxiosError(error)) {
-          // Handle Axios errors
-          if (error.response?.status === 400) {
-            router.push(`/success?reference=${reference}${ticketId ? `&ticketId=${ticketId}` : ''}`);
-          } else {
-            router.push(`/payment-failed${ticketId ? `?ticketId=${ticketId}` : ''}`);
-          }
-        } else if (error instanceof Error) {
-          // Handle native Errors
-          router.push(`/payment-failed${ticketId ? `?ticketId=${ticketId}` : ''}`);
-        } else {
-          // Handle unknown error types
-          router.push(`/payment-failed${ticketId ? `?ticketId=${ticketId}` : ''}`);
-        }
+        const errorMessage = error instanceof Error ? error.message : 'Payment verification failed';
+        
+        // Redirect to failure page
+        router.push(`/payment-failed${ticketId ? `?ticketId=${ticketId}` : ''}`);
       }
     };
 
     verifyPayment();
-}, [searchParams, router]);
+  }, [searchParams, router]);
 
 
 

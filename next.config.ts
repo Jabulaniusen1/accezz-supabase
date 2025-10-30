@@ -20,6 +20,12 @@ const remotePatterns: NonNullable<NextConfig['images']>['remotePatterns'] = [
     port: '',
     pathname: '/**',
   })),
+  {
+    protocol: 'https' as const,
+    hostname: '*.supabase.co',
+    port: '',
+    pathname: '/**',
+  },
 ];
 
 const nextConfig: NextConfig = {

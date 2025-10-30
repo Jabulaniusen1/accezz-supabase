@@ -12,8 +12,7 @@ import {
 } from "react-icons/fa";
 import Loader from "../../../components/ui/loader/Loader";
 import Toast from "../../../components/ui/Toast";
-import axios from "axios";
-import { BASE_URL } from "../../../../config";
+import { signUpWithEmail } from "@/utils/supabaseAuth";
 import Link from "next/link";
 
 const AgreeTerms = React.lazy(() => import("../../components/home/agreeTerms"));
@@ -68,54 +67,16 @@ function Signup() {
         return;
       }
 
-      const signupData = {
-        fullName: `${firstName} ${lastName}`,
-        email,
-        phone,
-        password,
-        country: "Nigeria", // Backend will detect actual location
-        currency: "NG", // Backend will detect actual currency
-      };
-
-      const response = await axios.post(
-        `${BASE_URL}api/v1/users/register`,
-        signupData
-      );
-
-      if (response.status === 201 || response.status === 200) {
-        localStorage.setItem("userEmail", email);
-        localStorage.setItem("user", JSON.stringify({
-          ...response.data.user,
-          emailVerified: false,
-        }));
-
-        if (response.data.token) {
-          localStorage.setItem("token", response.data.token);
-        }
-
-        toast("success", "Signup successful! Please check your email for verification.");
-
-        setTimeout(() => {
-          router.push("/auth/verify-email");
-        }, 1500);
-      }
-    } catch (error: unknown) {
-      let errorMessage = "Signup failed. Please try again.";
-    
-      if (axios.isAxiosError(error)) {
-        if (error.response?.status === 400) {
-          errorMessage = error.response.data.message || errorMessage;
-        } else if (error.response?.status === 409) {
-          errorMessage = "Email already exists. Please use a different email.";
-        } else if (error.response?.status === 500) {
-          errorMessage = "Server error. Please try again later.";
-        }
-      } else if (error instanceof Error && error.message === "Network Error") {
-        errorMessage = "Network error! Please check your internet connection.";
-      }
-    
+      await signUpWithEmail({ email, password, fullName: `${firstName} ${lastName}`, phone });
+      localStorage.setItem("userEmail", email);
+      toast("success", "Signup successful! Please check your email for verification.");
+      setTimeout(() => {
+        router.push("/auth/login?verify=true");
+      }, 1200);
+    } catch (error: any) {
+      const errorMessage = error?.message || "Signup failed. Please try again.";
       toast("error", errorMessage);
-    }finally {
+    } finally {
       setLoading(false);
     }
   };

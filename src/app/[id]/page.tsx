@@ -1,12 +1,11 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
-import axios from 'axios';
 import Loader from '@/components/ui/loader/Loader';
 import { CardSkeleton } from '@/components/ui/Skeleton';
 import dynamic from 'next/dynamic';
 import EventNotFound from '@/components/EventNotFound';
-import { BASE_URL } from '../../../config';
+import { fetchEventBySlug } from '@/utils/eventUtils';
 
 // Dynamically import the event pages to reduce initial bundle size
 const VirtualEventPage = dynamic(() => import('./virtual/page'), {
@@ -27,14 +26,17 @@ export default function EventRouterPage() {
   const eventSlug = params?.id;
 
   const fetchEventType = useCallback(async () => {
-    if (!eventSlug) return;
+    if (!eventSlug || typeof eventSlug !== 'string') return;
     setIsLoading(true);
     setError(false);
     try {
-      const response = await axios.get(`${BASE_URL}api/v1/events/slug/${eventSlug}`, {
-        timeout: 5000
-      });
-      setEventType(response.data.event.isVirtual ? 'virtual' : 'physical');
+      const event = await fetchEventBySlug(eventSlug);
+      if (event) {
+        setEventType(event.isVirtual ? 'virtual' : 'physical');
+      } else {
+        setError(true);
+        setEventType(null);
+      }
     } catch (error) {
       console.error('Error fetching event type:', error);
       setError(true);

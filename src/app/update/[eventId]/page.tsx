@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import axios, { AxiosError } from "axios";
 import { AnimatePresence, motion } from "framer-motion";
-import { BASE_URL } from "../../../../config";
+import { supabase } from "@/utils/supabaseClient";
 import { Event } from "../../../types/event";
 import Toast from "../../../components/ui/Toast";
 import Loader from "@/components/ui/loader/Loader";
@@ -44,31 +43,50 @@ function Update() {
     if (eventId) {
       const fetchEvent = async () => {
         try {
-          const response = await axios.get(`${BASE_URL}api/v1/events/${eventId}`);
-          const eventData = response.data.event;
-          setEvent(eventData);
-          
-          setFormData({
-            ...eventData,
-            ...(eventData.isVirtual && !eventData.virtualEventDetails && {
-              virtualEventDetails: {
+          const { data: ev, error: evErr } = await supabase
+            .from('events')
+            .select('*')
+            .eq('id', eventId)
+            .single();
+          if (evErr) throw evErr;
+
+          const { data: types, error: ttErr } = await supabase
+            .from('ticket_types')
+            .select('*')
+            .eq('event_id', eventId);
+          if (ttErr) throw ttErr;
+
+          const eventData: Event = {
+            id: ev.id,
+            slug: ev.slug || ev.id,
+            title: ev.title,
+            description: ev.description,
+            image: ev.image_url,
+            date: ev.date,
+            time: ev.time || '',
+            venue: ev.venue || '',
+            location: ev.location || '',
+            isVirtual: !!ev.is_virtual,
+            virtualEventDetails: ev.virtual_details || (ev.is_virtual ? {
                 platform: undefined,
                 requiresPassword: false,
                 virtualPassword: ""
-              }
-            })
-          });
-          
-          if (eventData.image) {
-            setImagePreview(eventData.image);
-          }
+            } : undefined),
+            socialMediaLinks: ev.social_links || {},
+            ticketType: (types || []).map(t => ({
+              name: t.name,
+              price: String(t.price || '0'),
+              quantity: String(t.quantity || '0'),
+              sold: String(t.sold || '0'),
+              details: t.details || undefined,
+            })),
+          } as any;
+
+          setEvent(eventData);
+          setFormData(eventData);
+          if (ev.image_url) setImagePreview(ev.image_url);
         } catch (error) {
-          const axiosError = error as AxiosError;
-          console.error("Error fetching event:", {
-            message: axiosError.message,
-            stack: axiosError.stack,
-            response: axiosError.response?.data || "No response data",
-          });
+          console.error("Error fetching event:", error);
           toast("error", "Failed to load event data");
         }
       };
@@ -87,95 +105,63 @@ function Update() {
     }
 
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        toast("error", "Authentication token is missing. Please log in.");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast("error", "Please login to update event.");
+        router.push('/auth/login');
         return;
       }
 
-      const updateFormData = new FormData();
-      updateFormData.append("title", formData.title);
-      updateFormData.append("description", formData.description);
-      updateFormData.append("date", new Date(formData.date).toISOString());
-      updateFormData.append("ticketType", JSON.stringify(formData.ticketType));
-      updateFormData.append("location", formData.location);
-      updateFormData.append("venue", formData.venue);
-      updateFormData.append("time", formData.time);
-      updateFormData.append("isVirtual", String(formData.isVirtual));
-      
-      if (formData.isVirtual && formData.virtualEventDetails) {
-        updateFormData.append("virtualEventDetails", JSON.stringify(formData.virtualEventDetails));
-      }
-
-      updateFormData.append(
-        "socialMediaLinks",
-        JSON.stringify(formData.socialMediaLinks || {})
-      );
-
+      let imageUrl: string | null = null;
       if (imageFile) {
-        const imageFormData = new FormData();
-        imageFormData.append("file", imageFile);
-
-        await axios.patch(
-          `${BASE_URL}api/v1/events/image/${eventId}`,
-          imageFormData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
+        const ext = imageFile.name.split('.').pop();
+        const path = `events/${session.user.id}/${eventId}/main.${ext}`;
+        const { error: upErr } = await supabase.storage.from('event-images').upload(path, imageFile, { upsert: true });
+        if (upErr) throw upErr;
+        const { data: pub } = supabase.storage.from('event-images').getPublicUrl(path);
+        imageUrl = pub.publicUrl;
       }
 
-      const response = await axios.patch(
-        `${BASE_URL}api/v1/events/${eventId}`,
-        updateFormData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      // Update event
+      const { error: evErr } = await supabase
+        .from('events')
+        .update({
+          title: formData.title,
+          description: formData.description,
+          date: new Date(formData.date).toISOString(),
+          time: formData.time || null,
+          venue: formData.venue || null,
+          location: formData.location,
+          is_virtual: !!formData.isVirtual,
+          virtual_details: formData.isVirtual && formData.virtualEventDetails ? formData.virtualEventDetails : null,
+          social_links: formData.socialMediaLinks || {},
+          image_url: imageUrl || undefined,
+        })
+        .eq('id', eventId);
+      if (evErr) throw evErr;
 
-      if (response.status === 200 && formData.isVirtual && formData.virtualEventDetails?.platform === 'whereby') {
-        try {
-          await axios.post(
-            `${BASE_URL}api/v1/events/${eventId}/create-whereby-room`,
-            {
-              enableWaitingRoom: formData.virtualEventDetails.enableWaitingRoom,
-              lockRoom: formData.virtualEventDetails.lockRoom
-            },
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-        } catch (wherebyError) {
-          console.error("Whereby room creation failed:", wherebyError);
-        }
+      // Handle ticket types: delete existing and insert new ones
+      const { error: delErr } = await supabase.from('ticket_types').delete().eq('event_id', eventId);
+      if (delErr) throw delErr;
+
+      if (formData.ticketType?.length) {
+        const ticketRows = formData.ticketType.map(t => ({
+          event_id: eventId,
+          name: t.name,
+          price: Number(t.price || 0),
+          quantity: Number(t.quantity || 0),
+          sold: Number(t.sold || 0),
+          details: t.details || null,
+        }));
+        const { error: insErr } = await supabase.from('ticket_types').insert(ticketRows);
+        if (insErr) throw insErr;
       }
 
       toast("success", "Event updated successfully!");
       setShouldRedirect(true);
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Error updating event:", error);
-        
-        if (error.response?.status === 401) {
-          toast("error", "Session expired. Redirecting to login...");
-          router.push("/auth/login");
-          return;
-        }
-
-        const errorMessage = error.response?.data?.message || "Failed to update event";
-        toast("error", errorMessage);
-      } else {
-        console.error("Unexpected error:", error);
-        toast("error", "An unexpected error occurred");
-      }
+    } catch (error: any) {
+      console.error("Error updating event:", error);
+      toast("error", error?.message || "Failed to update event");
     } finally {
       setIsLoading(false);
     }

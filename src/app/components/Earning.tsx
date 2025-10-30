@@ -6,9 +6,8 @@ import { BiMoneyWithdraw } from "react-icons/bi";
 import { Bar, Line, Pie } from "react-chartjs-2";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { Toast } from "./Toast";
-import { BASE_URL } from '../../../config';
+import { supabase } from '@/utils/supabaseClient';
 import { Event } from '@/types/event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
@@ -58,12 +57,7 @@ const Earnings = () => {
 
   // Error handler
   const handleError = useCallback((error: unknown, defaultMessage: string) => {
-    let errorMessage = defaultMessage;
-    if (axios.isAxiosError(error)) {
-      errorMessage = error.response?.data?.message || error.message;
-    } else if (error instanceof Error) {
-      errorMessage = error.message;
-    }
+    const errorMessage = error instanceof Error ? error.message : defaultMessage;
     showToastMessage('error', errorMessage);
   }, [showToastMessage]);
 
@@ -71,18 +65,53 @@ const Earnings = () => {
   const { data: events, isLoading } = useQuery<Event[]>({
     queryKey: ['userEvents'],
     queryFn: async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
         showToastMessage('error', "Please log in to view earnings");
         router.push("/auth/login");
         return [];
       }
 
       try {
-        const response = await axios.get(`${BASE_URL}api/v1/events/my-events`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        return response.data?.events || [];
+        const { data: evs, error: evErr } = await supabase
+          .from('events')
+          .select('id, slug, title, description, image_url, date, created_at')
+          .eq('user_id', session.user.id)
+          .order('created_at', { ascending: false });
+        if (evErr) throw evErr;
+
+        const eventIds = (evs || []).map(e => e.id);
+        let ticketMap = new Map<string, any[]>();
+        if (eventIds.length) {
+          const { data: tickets } = await supabase
+            .from('ticket_types')
+            .select('event_id, name, price, quantity, sold')
+            .in('event_id', eventIds);
+          (tickets || []).forEach(t => {
+            const arr = ticketMap.get(t.event_id as string) || [];
+            arr.push(t);
+            ticketMap.set(t.event_id as string, arr);
+          });
+        }
+
+        const list: Event[] = (evs || []).map(e => ({
+          id: e.id as string,
+          slug: (e.slug as string) || e.id as string,
+          title: e.title as string,
+          description: e.description as string,
+          image: (e.image_url as string) || '',
+          date: e.date as string,
+          createdAt: e.created_at as string,
+          ticketType: (ticketMap.get(e.id as string) || []).map(t => ({
+            name: t.name as string,
+            price: String(t.price ?? '0'),
+            quantity: String(t.quantity ?? '0'),
+            sold: String(t.sold ?? '0'),
+            details: undefined,
+          })),
+        } as any));
+
+        return list;
       } catch (err) {
         handleError(err, "Failed to fetch events");
         return [];
