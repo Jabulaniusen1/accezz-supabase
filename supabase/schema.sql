@@ -152,7 +152,7 @@ exception when duplicate_object then null; end $$;
 
 create table if not exists public.orders (
   id uuid primary key default gen_random_uuid(),
-  event_id uuid not null references public.events(id) on delete restrict,
+  event_id uuid not null references public.events(id) on delete cascade,
   buyer_user_id uuid references auth.users(id) on delete set null,
   buyer_full_name text,
   buyer_email text not null,
@@ -180,8 +180,8 @@ exception when duplicate_object then null; end $$;
 create table if not exists public.tickets (
   id uuid primary key default gen_random_uuid(),
   order_id uuid not null references public.orders(id) on delete cascade,
-  event_id uuid not null references public.events(id) on delete restrict,
-  ticket_type_id uuid not null references public.ticket_types(id) on delete restrict,
+  event_id uuid not null references public.events(id) on delete cascade,
+  ticket_type_id uuid not null references public.ticket_types(id) on delete cascade,
   ticket_code text unique not null,
   qr_code_url text,
   attendee_name text,
