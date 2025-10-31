@@ -498,6 +498,14 @@ for insert with check (
   )
 );
 
+drop policy if exists "tickets_update_for_validation" on public.tickets;
+create policy "tickets_update_for_validation" on public.tickets
+for update using (
+  true  -- Allow updates for validation (marking as scanned)
+) with check (
+  true  -- Allow any updates for validation purposes
+);
+
 -- payment_transactions policies
 drop policy if exists "payments_owner_read" on public.payment_transactions;
 create policy "payments_owner_read" on public.payment_transactions
@@ -683,6 +691,40 @@ do $$ begin
         bucket_id = 'event-gallery'
         and (name like ('events/' || auth.uid()::text || '/%'))
       );
+  end if;
+end $$;
+
+-- ticket-qr: public read (QR codes need to be accessible for scanning)
+do $$ begin
+  perform 1 from pg_policies where schemaname = 'storage' and tablename = 'objects' and policyname = 'ticket_qr_public_read';
+  if not found then
+    create policy "ticket_qr_public_read" on storage.objects
+      for select
+      using (bucket_id = 'ticket-qr');
+  end if;
+end $$;
+
+-- ticket-qr: allow inserts for ticket QR codes (authenticated or anyone creating tickets)
+do $$ begin
+  perform 1 from pg_policies where schemaname = 'storage' and tablename = 'objects' and policyname = 'ticket_qr_insert';
+  if not found then
+    create policy "ticket_qr_insert" on storage.objects
+      for insert
+      with check (bucket_id = 'ticket-qr');
+  end if;
+end $$;
+
+-- ticket-qr: allow updates and deletes (for authenticated users or service role)
+do $$ begin
+  perform 1 from pg_policies where schemaname = 'storage' and tablename = 'objects' and policyname = 'ticket_qr_update_delete';
+  if not found then
+    create policy "ticket_qr_update_delete" on storage.objects
+      for update
+      using (bucket_id = 'ticket-qr')
+      with check (bucket_id = 'ticket-qr');
+    create policy "ticket_qr_delete" on storage.objects
+      for delete
+      using (bucket_id = 'ticket-qr');
   end if;
 end $$;
 

@@ -35,12 +35,64 @@ function generateTicketCode(): string {
 }
 
 /**
- * Generate QR code URL (using a QR code service or generate locally)
+ * Generate QR code image and store in Supabase Storage
+ * Returns the public URL of the stored QR code
  */
-function generateQRCodeUrl(ticketCode: string): string {
-  // Using a QR code API service (you can replace with your preferred service)
-  const encodedCode = encodeURIComponent(ticketCode);
-  return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedCode}`;
+async function generateAndStoreQRCode(ticketId: string, ticketCode: string): Promise<string> {
+  try {
+    // Generate validation URL
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_BASE_URL || '';
+    const validateUrl = `${baseUrl}/validate-ticket?ticketId=${ticketId}&signature=${ticketCode}`;
+    
+    // Dynamically import QRCode
+    const qrcodeModule = await import('qrcode');
+    const QRCodeLib = qrcodeModule.default;
+    
+    // Generate QR code as data URL (PNG)
+    const qrCodeDataUrl = await QRCodeLib.toDataURL(validateUrl, {
+      width: 400,
+      margin: 2,
+      color: {
+        dark: '#000000',
+        light: '#FFFFFF',
+      },
+    });
+
+    // Convert data URL to blob
+    const response = await fetch(qrCodeDataUrl);
+    const blob = await response.blob();
+
+    // Get current session for user ID (if available, or use order info)
+    const { data: { session } } = await supabase.auth.getSession();
+    // For QR codes, we'll use a simpler path structure
+    // Path: tickets/{ticketId}/qr-code.png
+    const filePath = `tickets/${ticketId}/qr-code.png`;
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('ticket-qr')
+      .upload(filePath, blob, {
+        contentType: 'image/png',
+        upsert: true,
+      });
+
+    if (uploadError) {
+      console.error('Error uploading QR code:', uploadError);
+      // Fallback to data URL if upload fails
+      return qrCodeDataUrl;
+    }
+
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('ticket-qr')
+      .getPublicUrl(filePath);
+
+    return publicUrl;
+  } catch (error) {
+    console.error('Error generating QR code:', error);
+    // Fallback: return a QR code service URL
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_BASE_URL || '';
+    const encodedUrl = encodeURIComponent(`${baseUrl}/validate-ticket?ticketId=${ticketId}&signature=${ticketCode}`);
+    return `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodedUrl}`;
+  }
 }
 
 /**
@@ -175,52 +227,77 @@ export async function createTicketsForOrder(orderId: string): Promise<string[]> 
       throw new Error('Ticket type not found');
     }
 
-    // Create tickets
+    // Create tickets and generate QR codes
     const ticketCodes: string[] = [];
-    const ticketsToInsert = [];
-
+    
     // Primary attendee
     const primaryTicketCode = generateTicketCode();
     ticketCodes.push(primaryTicketCode);
-    ticketsToInsert.push({
-      order_id: orderId,
-      event_id: order.event_id,
-      ticket_type_id: ticketType.id,
-      ticket_code: primaryTicketCode,
-      qr_code_url: generateQRCodeUrl(primaryTicketCode),
-      attendee_name: order.buyer_full_name,
-      attendee_email: order.buyer_email,
-      price: ticketType.price,
-      currency: order.currency,
-      validation_status: 'valid',
-    });
+    
+    // Insert primary ticket first to get its ID for QR code generation
+    const { data: primaryTicket, error: primaryTicketError } = await supabase
+      .from('tickets')
+      .insert({
+        order_id: orderId,
+        event_id: order.event_id,
+        ticket_type_id: ticketType.id,
+        ticket_code: primaryTicketCode,
+        qr_code_url: '', // Will be updated after generation
+        attendee_name: order.buyer_full_name,
+        attendee_email: order.buyer_email,
+        price: ticketType.price,
+        currency: order.currency,
+        validation_status: 'valid',
+      })
+      .select('id')
+      .single();
+
+    if (primaryTicketError) throw primaryTicketError;
+
+    // Generate and store QR code for primary ticket
+    const primaryQRUrl = await generateAndStoreQRCode(primaryTicket.id, primaryTicketCode);
+    
+    // Update primary ticket with QR code URL
+    await supabase
+      .from('tickets')
+      .update({ qr_code_url: primaryQRUrl })
+      .eq('id', primaryTicket.id);
 
     // Additional attendees
     for (let i = 0; i < Math.min(attendees.length, quantity - 1); i++) {
       const attendee = attendees[i];
       const ticketCode = generateTicketCode();
       ticketCodes.push(ticketCode);
-      ticketsToInsert.push({
-        order_id: orderId,
-        event_id: order.event_id,
-        ticket_type_id: ticketType.id,
-        ticket_code: ticketCode,
-        qr_code_url: generateQRCodeUrl(ticketCode),
-        attendee_name: attendee.name,
-        attendee_email: attendee.email,
-        price: ticketType.price,
-        currency: order.currency,
-        validation_status: 'valid',
-      });
+      
+      // Insert ticket
+      const { data: additionalTicket, error: additionalTicketError } = await supabase
+        .from('tickets')
+        .insert({
+          order_id: orderId,
+          event_id: order.event_id,
+          ticket_type_id: ticketType.id,
+          ticket_code: ticketCode,
+          qr_code_url: '', // Will be updated after generation
+          attendee_name: attendee.name,
+          attendee_email: attendee.email,
+          price: ticketType.price,
+          currency: order.currency,
+          validation_status: 'valid',
+        })
+        .select('id')
+        .single();
+
+      if (additionalTicketError) throw additionalTicketError;
+
+      // Generate and store QR code
+      const additionalQRUrl = await generateAndStoreQRCode(additionalTicket.id, ticketCode);
+      
+      // Update ticket with QR code URL
+      await supabase
+        .from('tickets')
+        .update({ qr_code_url: additionalQRUrl })
+        .eq('id', additionalTicket.id);
     }
-
-    // Insert all tickets
-    const { data: tickets, error: ticketsError } = await supabase
-      .from('tickets')
-      .insert(ticketsToInsert)
-      .select('id');
-
-    if (ticketsError) throw ticketsError;
 
     // Update ticket type sold count (using the function from schema)
     // Note: The schema has a function `issue_tickets_and_update_inventory` but it requires order to be paid

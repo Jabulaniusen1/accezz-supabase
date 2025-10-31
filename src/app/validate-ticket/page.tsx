@@ -2,13 +2,12 @@
 
 import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import axios from 'axios';
-import { BASE_URL } from '../../../config';
 import { CircularProgress } from '@mui/material';
 import { motion } from 'framer-motion';
 import { formatPrice } from '../../utils/formatPrice';
 import Toast from '../../components/ui/Toast';
 import { FaTicketAlt } from "react-icons/fa";
+import { supabase } from '@/utils/supabaseClient';
 
 interface Event {
   id: string;
@@ -73,34 +72,153 @@ const ValidateContent = () => {
   const [event, setEvent] = useState<Event | undefined>();
 
   const handleValidate = async () => {
-    if (!ticketData || !signature || isScanned) return;
-   
+    if (!ticketData || !signature || !ticketId || isScanned) return;
 
     try {
-      const response = await axios.get(
-        `${BASE_URL}api/v1/tickets/validate-ticket?ticketId=${ticketId}&signature=${signature}`
-      );
+      // Verify signature matches ticket code
+      const { data: ticket, error: ticketError } = await supabase
+        .from('tickets')
+        .select('ticket_code, is_scanned, validation_status')
+        .eq('id', ticketId)
+        .single();
+
+      if (ticketError || !ticket) {
+        throw new Error('Ticket not found');
+      }
+
+      // Verify signature matches ticket code
+      if (ticket.ticket_code !== signature) {
+        throw new Error('Invalid ticket signature');
+      }
+
+      // Check if already scanned
+      if (ticket.is_scanned) {
+        setTicketData({ ...ticketData, isScanned: true });
+        setToast({ type: 'info', message: 'Ticket already validated' });
+        return;
+      }
+
+      // Get current session for scanner user ID
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      // Mark ticket as scanned
+      const { error: updateError } = await supabase
+        .from('tickets')
+        .update({
+          is_scanned: true,
+          scanned_at: new Date().toISOString(),
+          validation_status: 'valid',
+        })
+        .eq('id', ticketId);
+
+      if (updateError) throw updateError;
+
+      // Create ticket scan record (if user is authenticated)
+      if (session?.user?.id) {
+        const { error: scanError } = await supabase
+          .from('ticket_scans')
+          .insert({
+            ticket_id: ticketId,
+            scanned_by_user_id: session.user.id,
+            result: 'success',
+          });
+        
+        if (scanError) {
+          console.error('Error creating scan record:', scanError);
+        }
+      }
 
       setTicketData({ ...ticketData, isScanned: true });
-      console.log('Ticket validated:', response.data);
       setToast({ type: 'success', message: 'Ticket validated successfully!' });
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error validating ticket:', err);
-      setToast({ type: 'error', message: 'Failed to validate ticket' });
+      setToast({ type: 'error', message: err?.message || 'Failed to validate ticket' });
     }
   };
 
 
   useEffect(() => {
     const fetchTicketData = async () => {
-      try {
-        const response = await axios.get(
-          `${BASE_URL}api/v1/tickets/${ticketId}`
-        );
-
-        setTicketData(response.data.ticket);
+      if (!ticketId) {
+        setError('No ticket ID provided');
         setLoading(false);
-      } catch (err) {
+        return;
+      }
+
+      try {
+        // Fetch ticket with order and event details
+        const { data: ticket, error: ticketError } = await supabase
+          .from('tickets')
+          .select(`
+            *,
+            orders!inner(
+              buyer_email,
+              buyer_full_name,
+              buyer_phone,
+              currency,
+              total_amount,
+              meta
+            ),
+            events!inner(
+              id,
+              title,
+              image_url,
+              date,
+              time,
+              venue,
+              location
+            ),
+            ticket_types!inner(
+              name
+            )
+          `)
+          .eq('id', ticketId)
+          .single();
+
+        if (ticketError || !ticket) {
+          throw ticketError || new Error('Ticket not found');
+        }
+
+        // Map ticket data
+        const mappedTicketData: TicketData = {
+          id: ticket.id,
+          email: ticket.orders.buyer_email || '',
+          phone: ticket.orders.buyer_phone || '',
+          fullName: ticket.orders.buyer_full_name || '',
+          eventId: ticket.event_id,
+          ticketType: ticket.ticket_types.name,
+          price: Number(ticket.price),
+          purchaseDate: ticket.created_at,
+          qrCode: ticket.qr_code_url || '',
+          currency: ticket.currency || 'NGN',
+          attendees: ticket.orders.meta?.attendees || [],
+          isScanned: ticket.is_scanned || false,
+        };
+
+        setTicketData(mappedTicketData);
+        setLoading(false);
+
+        // Fetch event data
+        const { data: eventData, error: eventError } = await supabase
+          .from('events')
+          .select('id, title, image_url, date, time, venue, location')
+          .eq('id', ticket.event_id)
+          .single();
+
+        if (!eventError && eventData) {
+          const mappedEvent: Event = {
+            id: eventData.id,
+            title: eventData.title,
+            description: '',
+            time: eventData.time || '',
+            image: eventData.image_url || '',
+            date: eventData.date,
+            location: eventData.location || '',
+            ticketType: [],
+          };
+          setEvent(mappedEvent);
+        }
+      } catch (err: any) {
         setError('Failed to fetch ticket details');
         setLoading(false);
         console.error('Error fetching ticket:', err);
@@ -109,24 +227,6 @@ const ValidateContent = () => {
 
     fetchTicketData();
   }, [ticketId]);
-
-  useEffect(() => {
-    const fetchTicketEvent = async () => {
-      try {
-        const response = await axios.get(
-          `${BASE_URL}api/v1/events/${eventId}`
-        );
-
-        console.log('Event details:', response.data);
-        const eventData = response.data.event;
-        setEvent(eventData);
-      } catch (err) {
-        console.error('Error fetching event details:', err);
-      }
-    }
-
-    fetchTicketEvent();
-  }, [eventId]);
 
   if (loading) return <div className="flex justify-center items-center min-h-screen"><CircularProgress /></div>;
   if (error) return <div className="flex justify-center items-center min-h-screen text-red-500">{error}</div>;
