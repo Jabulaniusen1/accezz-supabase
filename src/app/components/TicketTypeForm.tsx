@@ -125,6 +125,9 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast }: TicketTypeF
         localStorage.setItem('pendingPayment', JSON.stringify({
           orderId: createdOrderId,
           eventId: eventId,
+          email,
+          amount: totalPrice,
+          currency: 'NGN'
         }));
 
         setToast({
@@ -132,11 +135,11 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast }: TicketTypeF
           message: 'Order created. Proceed to payment.'
         });
         setActiveStep(2);
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Error creating order:', error);
         setToast({
           type: 'error',
-          message: error?.message || 'Failed to create order. Please try again.'
+          message: (error instanceof Error ? error.message : 'Failed to create order. Please try again.')
         });
       } finally {
         setIsLoading(false);
@@ -172,9 +175,9 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast }: TicketTypeF
 
           window.location.href = `/success?ticketId=${ticketId}`;
           return;
-        } catch (error: any) {
+        } catch (error: unknown) {
           console.error('Error creating free ticket:', error);
-          setToast({ type: 'error', message: error?.message || 'Error creating free ticket' });
+          setToast({ type: 'error', message: (error instanceof Error ? error.message : 'Error creating free ticket') });
           return;
         }
       }
@@ -196,13 +199,12 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast }: TicketTypeF
       const paymentInfo = JSON.parse(storedPayment);
       
       // TODO: Integrate payment provider (Paystack, Flutterwave, etc.)
-      // For now, redirect to payment page with order ID
-      // The payment page should handle payment verification and redirect to success
-      window.location.href = `/payment?orderId=${orderId}&amount=${totalPrice}`;
+      // Redirect to payment page with order ID and buyer email
+      window.location.href = `/payment?orderId=${orderId}&amount=${totalPrice}&email=${encodeURIComponent(email)}`;
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error processing payment:', error);
-      setToast({ type: 'error', message: error?.message || 'Error processing payment' });
+      setToast({ type: 'error', message: (error instanceof Error ? error.message : 'Error processing payment') });
     } finally {
       setIsLoading(false);
     }
