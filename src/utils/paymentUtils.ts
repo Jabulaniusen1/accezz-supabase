@@ -1,5 +1,4 @@
 import { supabase } from './supabaseClient';
-import { fetchEventBySlug } from './eventUtils';
 
 interface CreateOrderParams {
   eventId: string;
@@ -12,15 +11,7 @@ interface CreateOrderParams {
   currency?: string;
 }
 
-interface TicketCreationData {
-  orderId: string;
-  eventId: string;
-  ticketTypeId: string;
-  attendeeName: string;
-  attendeeEmail: string;
-  price: number;
-  currency: string;
-}
+// Internal data shapes are inferred per-query; explicit TicketCreationData not needed
 
 /**
  * Generate a unique ticket code
@@ -62,12 +53,11 @@ async function generateAndStoreQRCode(ticketId: string, ticketCode: string): Pro
     const response = await fetch(qrCodeDataUrl);
     const blob = await response.blob();
 
-    // Get current session for user ID (if available, or use order info)
-    const { data: { session } } = await supabase.auth.getSession();
+    // Note: We don't need auth session for QR generation
     // For QR codes, we'll use a simpler path structure
     // Path: tickets/{ticketId}/qr-code.png
     const filePath = `tickets/${ticketId}/qr-code.png`;
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('ticket-qr')
       .upload(filePath, blob, {
         contentType: 'image/png',
@@ -161,7 +151,7 @@ export async function createOrder(params: CreateOrderParams): Promise<{ orderId:
       orderId: order.id,
       totalAmount: totalAmount,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating order:', error);
     throw error;
   }
@@ -210,7 +200,7 @@ export async function createTicketsForOrder(orderId: string): Promise<string[]> 
       Object.assign(order, updatedOrder);
     }
 
-    const meta = order.meta as any;
+    const meta = order.meta as { ticketTypeName?: string; quantity?: number; attendees?: Array<{ name: string; email: string }>; } | null;
     const ticketTypeName = meta?.ticketTypeName;
     const quantity = meta?.quantity || 1;
     const attendees = meta?.attendees || [];
@@ -313,7 +303,7 @@ export async function createTicketsForOrder(orderId: string): Promise<string[]> 
     }
 
     return ticketCodes;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating tickets:', error);
     throw error;
   }
@@ -335,7 +325,7 @@ export async function markOrderAsPaid(orderId: string, paymentReference?: string
       .eq('id', orderId);
 
     if (error) throw error;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error marking order as paid:', error);
     throw error;
   }
@@ -353,7 +343,7 @@ export async function createFreeTickets(params: CreateOrderParams): Promise<{ ti
     await markOrderAsPaid(orderId, `FREE-${orderId}`, 'free');
 
     // Create tickets
-    const ticketCodes = await createTicketsForOrder(orderId);
+    await createTicketsForOrder(orderId);
 
     // Return the first ticket ID
     const { data: ticket, error: ticketError } = await supabase
@@ -366,7 +356,7 @@ export async function createFreeTickets(params: CreateOrderParams): Promise<{ ti
     if (ticketError) throw ticketError;
 
     return { ticketId: ticket.id };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating free tickets:', error);
     throw error;
   }
