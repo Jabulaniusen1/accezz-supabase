@@ -14,7 +14,7 @@
 // }
 
 
-// export const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://v-ticket-backend-s7mql.ondigitalocean.app/';
+export const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://v-ticket-backend-s7mql.ondigitalocean.app/';
 // // export const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ;
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 // export const TELEGRAM_URL = process.env.NEXT_PUBLIC_TELEGRAM_URL || '';
