@@ -189,7 +189,7 @@ const ChatBot = () => {
         }
     }, [email]);
 
-    // Sync logout between V-Tickets and Chatbot
+    // Sync logout between Accezz and Chatbot
     useEffect(() => {
         const handleStorageChange = (event: StorageEvent) => {
             if (event.key === 'userEmail' && event.newValue === null) {
