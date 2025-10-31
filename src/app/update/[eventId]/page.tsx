@@ -66,6 +66,8 @@ function Update() {
             time: ev.time || '',
             venue: ev.venue || '',
             location: ev.location || '',
+            hostName: '',
+            gallery: [],
             isVirtual: !!ev.is_virtual,
             virtualEventDetails: ev.virtual_details || (ev.is_virtual ? {
                 platform: undefined,
