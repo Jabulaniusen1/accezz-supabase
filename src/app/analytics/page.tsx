@@ -75,7 +75,7 @@ const EventAnalyticsContent = () => {
           price: String(t.price ?? '0'),
           quantity: String(t.quantity ?? '0'),
         })),
-      } as any;
+      } ;
       setEvent(e);
     } catch (err) {
       console.error(err);
@@ -108,7 +108,8 @@ const EventAnalyticsContent = () => {
         .from('orders')
         .select('id, status, payment_reference, currency')
         .in('id', orderIds.length ? orderIds : ['00000000-0000-0000-0000-000000000000']);
-      const orderMap = new Map<string, any>((orders || []).map(o => [o.id as string, o]));
+      type OrderData = { id: string; status: string; payment_reference?: string | null; currency?: string | null };
+      const orderMap = new Map<string, OrderData>((orders || []).map(o => [o.id as string, { id: o.id as string, status: o.status as string, payment_reference: o.payment_reference as string | null | undefined, currency: o.currency as string | null | undefined }]));
 
       const mapped: Ticket[] = (tix || []).map(t => {
         const o = orderMap.get(t.order_id as string);
@@ -137,8 +138,9 @@ const EventAnalyticsContent = () => {
 
       setTickets(mapped);
       setFilteredTickets(validTickets);
-    } catch (error: any) {
-      setToast({ type: 'error', message: error?.message || 'Failed to load ticket details.' });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to load ticket details.';
+      setToast({ type: 'error', message });
     } finally {
       setLoading(false);
     }

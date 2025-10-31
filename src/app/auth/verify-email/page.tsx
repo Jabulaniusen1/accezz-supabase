@@ -16,9 +16,10 @@ function VerifyEmail() {
       const { error } = await supabase.auth.resend({ type: 'signup', email });
       if (error) throw error;
       Toast({ message: 'Verification email resent. Check your inbox.', type: 'success', onClose: () => {} });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error resending verification:', error);
-      Toast({ message: error?.message || 'Failed to resend verification email.', type: 'error', onClose: () => {} });
+      const message = error instanceof Error ? error.message : 'Failed to resend verification email.';
+      Toast({ message, type: 'error', onClose: () => {} });
     }
   };
 

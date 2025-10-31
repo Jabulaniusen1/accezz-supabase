@@ -219,7 +219,7 @@ export default function EventForm({ eventId, onClose, onSuccess }: EventFormProp
         time: '',
         venue: '',
         isVirtual: !!formData.isVirtual,
-      } as any);
+      });
       onClose();
     } catch (error) {
       console.error('Error saving event:', error);

@@ -121,7 +121,7 @@ const EventList: React.FC = () => {
       if (evErr) throw evErr;
 
       const eventIds = (eventsData || []).map(e => e.id);
-      let ticketTypeMap = new Map<string, { price: string; name: string; quantity: string; sold: string }[]>();
+      const ticketTypeMap = new Map<string, { price: string; name: string; quantity: string; sold: string }[]>();
       if (eventIds.length) {
         const { data: tickets, error: ttErr } = await supabase
           .from('ticket_types')

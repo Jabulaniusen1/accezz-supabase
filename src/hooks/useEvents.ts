@@ -41,11 +41,11 @@ const mapSupabaseEventToEvent = (supabaseEvent: SupabaseEventRow, ticketTypes: T
     id: supabaseEvent.id,
     title: supabaseEvent.title,
     slug: supabaseEvent.slug,
-    description: supabaseEvent.description,
+    description: supabaseEvent.description ?? '',
     date: supabaseEvent.date,
-    time: supabaseEvent.time || '',
-    venue: supabaseEvent.venue || '',
-    location: supabaseEvent.location || '',
+    time: supabaseEvent.time ?? '',
+    venue: supabaseEvent.venue ?? '',
+    location: supabaseEvent.location ?? '',
     hostName: '', // We'll need to fetch from profiles if needed
     image: supabaseEvent.image_url || null,
     gallery: [], // We'll fetch gallery separately if needed
@@ -60,10 +60,10 @@ const mapSupabaseEventToEvent = (supabaseEvent: SupabaseEventRow, ticketTypes: T
     userId: supabaseEvent.user_id,
     createdAt: supabaseEvent.created_at,
     updatedAt: supabaseEvent.updated_at,
-    country: supabaseEvent.country,
-    currency: supabaseEvent.currency,
-    isVirtual: supabaseEvent.is_virtual || false,
-    virtualEventDetails: supabaseEvent.virtual_details || undefined,
+    country: supabaseEvent.country ?? undefined,
+    currency: supabaseEvent.currency ?? undefined,
+    isVirtual: supabaseEvent.is_virtual ?? false,
+    virtualEventDetails: supabaseEvent.virtual_details ?? undefined,
   };
 };
 
@@ -142,7 +142,7 @@ export const useServerStatus = () => {
     
     const checkServerStatus = async () => {
       try {
-        const { error } = await supabase
+        await supabase
           .from('events')
           .select('id')
           .limit(1);
@@ -150,7 +150,7 @@ export const useServerStatus = () => {
         if (isMounted) {
           setIsServerDown(false);
         }
-      } catch (error) {
+      } catch {
         if (isMounted) {
           setIsServerDown(true);
         }

@@ -83,9 +83,10 @@ const Profile = () => {
           address: metadata.address || '',
           eventCategory: metadata.eventCategory || ''
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Error fetching profile:', error);
-        toast('error', error?.message || 'Failed to fetch profile data');
+        const message = error instanceof Error ? error.message : 'Failed to fetch profile data';
+        toast('error', message);
       }
     };
 
@@ -201,9 +202,10 @@ const Profile = () => {
       if (metaErr) throw metaErr;
 
       toast('success', 'Profile updated successfully!');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating profile:', error);
-      toast('error', error?.message || 'Failed to update profile');
+      const message = error instanceof Error ? error.message : 'Failed to update profile';
+      toast('error', message);
     } finally {
       setLoading(false);
     }

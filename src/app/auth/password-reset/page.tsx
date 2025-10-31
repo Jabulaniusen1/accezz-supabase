@@ -32,8 +32,9 @@ function PasswordReset() {
       if (error) throw error;
       toast.success("Password reset successful! You can now log in.");
       setTimeout(() => router.push('/auth/login'), 1500);
-    } catch (error: any) {
-      toast.error(error?.message || "An error occurred. Please try again later.");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "An error occurred. Please try again later.";
+      toast.error(message);
     } finally {
       setLoading(false);
     }

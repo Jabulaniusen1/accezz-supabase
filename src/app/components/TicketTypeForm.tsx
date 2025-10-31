@@ -4,7 +4,7 @@ import TicketSelectionStep from './TicketFormSec/TicketSelectionStep';
 import OrderInformationStep from './TicketFormSec/OrderInformationStep';
 import PaymentStep from './TicketFormSec/PaymentStep';
 import { fetchEventBySlug } from '@/utils/eventUtils';
-import { createOrder, createFreeTickets, markOrderAsPaid, createTicketsForOrder } from '@/utils/paymentUtils';
+import { createOrder, createFreeTickets } from '@/utils/paymentUtils';
 
 interface Ticket {
   id: string;
@@ -196,7 +196,7 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast }: TicketTypeF
         return;
       }
 
-      const paymentInfo = JSON.parse(storedPayment);
+      // const paymentInfo = JSON.parse(storedPayment);
       
       // TODO: Integrate payment provider (Paystack, Flutterwave, etc.)
       // Redirect to payment page with order ID and buyer email

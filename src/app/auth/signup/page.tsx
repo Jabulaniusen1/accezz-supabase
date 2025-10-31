@@ -73,8 +73,8 @@ function Signup() {
       setTimeout(() => {
         router.push("/auth/login?verify=true");
       }, 1200);
-    } catch (error: any) {
-      const errorMessage = error?.message || "Signup failed. Please try again.";
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Signup failed. Please try again.";
       toast("error", errorMessage);
     } finally {
       setLoading(false);
