@@ -80,7 +80,7 @@ function Update() {
               sold: String(t.sold || '0'),
               details: t.details || undefined,
             })),
-          } as any;
+          };
 
           setEvent(eventData);
           setFormData(eventData);
@@ -159,9 +159,10 @@ function Update() {
 
       toast("success", "Event updated successfully!");
       setShouldRedirect(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error updating event:", error);
-      toast("error", error?.message || "Failed to update event");
+      const message = error instanceof Error ? error.message : "Failed to update event";
+      toast("error", message);
     } finally {
       setIsLoading(false);
     }

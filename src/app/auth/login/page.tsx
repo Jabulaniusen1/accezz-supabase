@@ -72,13 +72,15 @@ export default function Login() {
         }));
       }
       router.push('/dashboard');
-    } catch (error: any) {
-      const code = error?.status || error?.code;
+    } catch (error: unknown) {
+      const err = error as { status?: number; code?: string; message?: string };
+      const code = err?.status || err?.code;
       if (code === 'email_not_confirmed' || code === '400') {
         setShowVerificationNotice(true);
         showToastMessage('error', 'Please verify your email first');
       } else {
-        showToastMessage('error', error?.message || 'Login failed. Please try again.');
+        const message = err?.message || 'Login failed. Please try again.';
+        showToastMessage('error', message);
       }
     } finally {
       setLoading(false);

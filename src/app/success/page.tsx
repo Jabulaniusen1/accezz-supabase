@@ -122,8 +122,6 @@ const SuccessContent = () => {
         console.error('Payment verification error:', error);
         setIsVerifying(false);
         
-        const errorMessage = error instanceof Error ? error.message : 'Payment verification failed';
-        
         // Redirect to failure page
         router.push(`/payment-failed${urlTicketId ? `?ticketId=${urlTicketId}` : ''}`);
       }

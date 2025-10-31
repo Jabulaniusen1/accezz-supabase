@@ -1,6 +1,5 @@
 'use client';
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -8,7 +7,6 @@ import { supabase } from '@/utils/supabaseClient';
 
 
 function ForgotPassword() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -29,8 +27,9 @@ function ForgotPassword() {
       const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
       if (error) throw error;
       toast.success('Password reset email sent. Check your inbox for the link.');
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to send reset email.');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to send reset email.';
+      toast.error(message);
     } finally {
       setLoading(false);
     }

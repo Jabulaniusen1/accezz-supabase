@@ -62,8 +62,9 @@ export default function VerifyOTP() {
       });
       setShowToast(true);
       setResendCooldown(30);
-    } catch (error: any) {
-      setToastProps({ type: 'error', message: error?.message || 'Failed to resend verification link' });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to resend verification link';
+      setToastProps({ type: 'error', message });
       setShowToast(true);
     } finally {
       setResendLoading(false);

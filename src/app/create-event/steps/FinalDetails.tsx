@@ -116,7 +116,6 @@ export default function FinalDetails({
       let imageUrl: string | null = null;
       if (formData.image && typeof formData.image !== 'string') {
         const main = formData.image as File;
-        const ext = main.name.split('.').pop();
       // Defer main upload until after event is created to scope by user/event id
       // Temporary placeholder; will upload after insert
       imageUrl = null;
@@ -199,7 +198,8 @@ export default function FinalDetails({
       router.push('/dashboard');
     } catch (error) {
       console.error("Error creating event:", error);
-      setToast({ type: "error", message: (error as any)?.message || "Failed to create event", onClose: () => setToast(null) });
+      const message = error instanceof Error ? error.message : "Failed to create event";
+      setToast({ type: "error", message, onClose: () => setToast(null) });
     } finally {
       setIsLoading(false);
     }

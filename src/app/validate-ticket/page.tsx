@@ -68,7 +68,7 @@ const ValidateContent = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ type: 'success' | 'error' | 'info'; message: string; } | null>(null);
-  const eventId = ticketData?.eventId;
+  // const eventId = ticketData?.eventId;
   const [event, setEvent] = useState<Event | undefined>();
 
   const handleValidate = async () => {

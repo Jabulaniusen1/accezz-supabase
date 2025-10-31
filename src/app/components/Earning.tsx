@@ -81,7 +81,7 @@ const Earnings = () => {
         if (evErr) throw evErr;
 
         const eventIds = (evs || []).map(e => e.id);
-        let ticketMap = new Map<string, any[]>();
+        const ticketMap = new Map<string, Array<{ event_id: string; name: string; price: number | string; quantity: number | string; sold: number | string }>>();
         if (eventIds.length) {
           const { data: tickets } = await supabase
             .from('ticket_types')
@@ -109,7 +109,7 @@ const Earnings = () => {
             sold: String(t.sold ?? '0'),
             details: undefined,
           })),
-        } as any));
+        }));
 
         return list;
       } catch (err) {

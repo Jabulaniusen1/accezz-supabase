@@ -71,9 +71,10 @@ const Notifications = () => {
 
       setNotifications(mapped);
       setLoading(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error fetching notifications:", error);
-      toast("error", error?.message || "Failed to fetch notifications");
+      const message = error instanceof Error ? error.message : "Failed to fetch notifications";
+      toast("error", message);
       setLoading(false);
     }
   }, [router, toast]);
@@ -102,7 +103,7 @@ const Notifications = () => {
       if (error) throw error;
 
       toast("success", "Notification marked as read");
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Revert on error
       console.log(error);
       setNotifications(prev =>
@@ -110,7 +111,8 @@ const Notifications = () => {
           notification.id === id ? { ...notification, isRead: false } : notification
         )
       );
-      toast("error", error?.message || "Failed to mark notification as read");
+      const message = error instanceof Error ? error.message : "Failed to mark notification as read";
+      toast("error", message);
     }
   };
 
@@ -127,11 +129,12 @@ const Notifications = () => {
       if (error) throw error;
 
       toast("success", "Notification deleted successfully");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log(error);
       // Revert on error
       setNotifications(prevNotifs);
-      toast("error", error?.message || "Failed to delete notification");
+      const message = error instanceof Error ? error.message : "Failed to delete notification";
+      toast("error", message);
     }
   };
 
