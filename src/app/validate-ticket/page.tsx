@@ -130,9 +130,10 @@ const ValidateContent = () => {
 
       setTicketData({ ...ticketData, isScanned: true });
       setToast({ type: 'success', message: 'Ticket validated successfully!' });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error validating ticket:', err);
-      setToast({ type: 'error', message: err?.message || 'Failed to validate ticket' });
+      const message = err instanceof Error ? err.message : 'Failed to validate ticket';
+      setToast({ type: 'error', message });
     }
   };
 
@@ -218,7 +219,7 @@ const ValidateContent = () => {
           };
           setEvent(mappedEvent);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError('Failed to fetch ticket details');
         setLoading(false);
         console.error('Error fetching ticket:', err);

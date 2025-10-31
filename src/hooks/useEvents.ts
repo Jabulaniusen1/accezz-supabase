@@ -5,8 +5,38 @@ import { useEffect, useState } from 'react';
 import { Event, TrendingEvent } from '@/types/event';
 import { supabase } from '@/utils/supabaseClient';
 
+// Shapes returned from Supabase we actually use
+type SupabaseEventRow = {
+  id: string;
+  title: string;
+  slug: string;
+  description?: string | null;
+  date: string;
+  time?: string | null;
+  venue?: string | null;
+  location?: string | null;
+  image_url?: string | null;
+  social_links?: unknown;
+  user_id: string;
+  created_at: string;
+  updated_at: string;
+  country?: string | null;
+  currency?: string | null;
+  is_virtual?: boolean | null;
+  virtual_details?: unknown;
+};
+
+type TicketTypeRow = {
+  name: string;
+  price: number | string;
+  quantity: number | string;
+  sold: number | string;
+  details?: string | null;
+  event_id?: string;
+};
+
 // Helper function to map Supabase event data to Event interface
-const mapSupabaseEventToEvent = (supabaseEvent: any, ticketTypes: any[]): Event => {
+const mapSupabaseEventToEvent = (supabaseEvent: SupabaseEventRow, ticketTypes: TicketTypeRow[]): Event => {
   return {
     id: supabaseEvent.id,
     title: supabaseEvent.title,
@@ -21,9 +51,9 @@ const mapSupabaseEventToEvent = (supabaseEvent: any, ticketTypes: any[]): Event 
     gallery: [], // We'll fetch gallery separately if needed
     ticketType: ticketTypes.map(ticket => ({
       name: ticket.name,
-      price: ticket.price.toString(),
-      quantity: ticket.quantity.toString(),
-      sold: ticket.sold.toString(),
+      price: String(ticket.price),
+      quantity: String(ticket.quantity),
+      sold: String(ticket.sold),
       details: ticket.details || undefined,
     })),
     socialMediaLinks: supabaseEvent.social_links || undefined,
@@ -66,9 +96,9 @@ const fetchEventsFromSupabase = async (): Promise<Event[]> => {
   }
 
   // Map events with their ticket types
-  return events.map(event => {
-    const eventTicketTypes = ticketTypes?.filter(tt => tt.event_id === event.id) || [];
-    return mapSupabaseEventToEvent(event, eventTicketTypes);
+  return events.map((event) => {
+    const eventTicketTypes = (ticketTypes || []).filter((tt) => tt.event_id === event.id) as TicketTypeRow[];
+    return mapSupabaseEventToEvent(event as unknown as SupabaseEventRow, eventTicketTypes);
   });
 };
 

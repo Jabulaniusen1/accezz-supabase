@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import jsPDF from 'jspdf';
@@ -11,6 +11,7 @@ import { supabase } from '@/utils/supabaseClient';
 type ReceiptProps = {
   closeReceipt?: () => void;
   isModal?: boolean;
+  autoDownload?: boolean;
 };
 
 interface Attendee {
@@ -42,12 +43,13 @@ interface TicketData {
   attendees: Attendee[];
 }
 
-const Receipt = ({ closeReceipt, isModal = true }: ReceiptProps) => {
+const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: ReceiptProps) => {
   const router = useRouter();
   const [ticketData, setTicketData] = useState<TicketData | null>(null);
   const [eventData, setEventData] = useState<EventData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const hasAutoDownloaded = useRef(false);
   
   // Fetch ticket data from Supabase
   const fetchTicketData = async () => {
@@ -117,7 +119,7 @@ const Receipt = ({ closeReceipt, isModal = true }: ReceiptProps) => {
 
       setEventData(mappedEventData);
       setError(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError('Failed to fetch ticket details');
       console.error(err);
       setTicketData(null);
@@ -131,10 +133,26 @@ const Receipt = ({ closeReceipt, isModal = true }: ReceiptProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Auto-download PDF when ticket is ready (for success page)
+  useEffect(() => {
+    if (autoDownload && ticketData && eventData && !hasAutoDownloaded.current && !loading && !error) {
+      hasAutoDownloaded.current = true;
+      // Small delay to ensure QR code is loaded
+      setTimeout(() => {
+        downloadPDF().catch((err) => {
+          console.error('Auto-download failed:', err);
+          // Don't show error to user, just log it
+        });
+      }, 500);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoDownload, ticketData, eventData, loading, error]);
+
   // Retry handler for ErrorHandler
   const handleRetry = () => {
     setError(null);
     setLoading(true);
+    hasAutoDownloaded.current = false; // Reset download flag on retry
     fetchTicketData();
   };
 
@@ -463,7 +481,7 @@ const Receipt = ({ closeReceipt, isModal = true }: ReceiptProps) => {
         {/* Back Button - Only show when not in modal mode */}
         {!isModal && (
           <button
-            onClick={() => router.back()}
+            onClick={() => router.push('/')}
             className="absolute top-4 left-4 sm:top-6 sm:left-6 z-10 flex items-center gap-2 px-3 py-2 rounded-lg bg-white/90 hover:bg-white text-gray-600 hover:text-[#f54502] transition-all duration-200 shadow-sm hover:shadow-md"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
