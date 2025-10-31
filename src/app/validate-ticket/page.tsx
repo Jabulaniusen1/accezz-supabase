@@ -244,7 +244,7 @@ const ValidateContent = () => {
   <header className="flex justify-between items-center py-4">
     <div className="flex items-center gap-4">
       <FaTicketAlt className="w-8 h-8 text-blue-500" />
-      <h1 className="text-xl font-extrabold tracking-wide">V-Tickets</h1>
+      <h1 className="text-xl font-extrabold tracking-wide">Accezz</h1>
     </div>
   </header>
 

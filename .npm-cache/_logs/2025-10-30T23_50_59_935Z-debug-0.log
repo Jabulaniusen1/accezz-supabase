@@ -20,8 +20,8 @@
 19 silly packumentCache full:https://registry.npmjs.org/@types%2fqrcode cache-miss
 20 http fetch GET 200 https://registry.npmjs.org/@types%2fqrcode 269ms (cache miss)
 21 silly packumentCache full:https://registry.npmjs.org/@types%2fqrcode set size:undefined disposed:false
-22 silly placeDep ROOT @types/qrcode@1.5.6 OK for: v-tickets@0.1.0 want: *
-23 silly placeDep ROOT qrcode@1.5.4 OK for: v-tickets@0.1.0 want: *
+22 silly placeDep ROOT @types/qrcode@1.5.6 OK for: Accezz@0.1.0 want: *
+23 silly placeDep ROOT qrcode@1.5.4 OK for: Accezz@0.1.0 want: *
 24 silly fetch manifest dijkstrajs@^1.0.1
 25 silly packumentCache full:https://registry.npmjs.org/dijkstrajs cache-miss
 26 silly fetch manifest pngjs@^5.0.0

@@ -109,7 +109,7 @@ const Tutorial = () => {
                 ref={videoRef}
                 className="absolute top-0 left-0 w-full h-full"
                 src="https://www.youtube.com/embed/HK5GJfm4G10?si=odukjni1Fp4EaQ9k&enablejsapi=1"
-                title="How to use V-Ticket"
+                title="How to use Accezz"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               />

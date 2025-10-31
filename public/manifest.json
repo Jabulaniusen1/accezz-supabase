@@ -1,7 +1,7 @@
 {
-  "name": "VTickets",
-  "short_name": "VTickets",
-  "description": "Virtual Event Ticketing Platform",
+  "name": "Accezz",
+  "short_name": "Accezz",
+  "description": "Event Ticketing Platform",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

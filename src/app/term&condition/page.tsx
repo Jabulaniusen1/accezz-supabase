@@ -8,19 +8,19 @@ const TermsAndConditionsPage = () => {
   const sections = useMemo(() => [
     {
       title: "1. Acceptance of Terms",
-      content: "By accessing or using V-Tickets, you agree to be legally bound by these Terms and Conditions. Continued use constitutes acceptance. If you disagree with any provision, you must immediately cease all use."
+      content: "By accessing or using Accezz, you agree to be legally bound by these Terms and Conditions. Continued use constitutes acceptance. If you disagree with any provision, you must immediately cease all use."
     },
     {
       title: "2. User Registration & Eligibility",
-      content: "Users must be at least 18 years old and provide accurate information. You are solely liable for all activities under your account. V-Tickets reserves the right to suspend accounts with suspicious activity."
+      content: "Users must be at least 18 years old and provide accurate information. You are solely liable for all activities under your account. Accezz reserves the right to suspend accounts with suspicious activity."
     },
     {
       title: "3. Event Creation & Organizer Obligations",
-      content: "Organizers guarantee the legality, accuracy, and appropriateness of event details. Prohibited events include illegal activities, hate speech, or adult content. V-Tickets may remove events without notice."
+      content: "Organizers guarantee the legality, accuracy, and appropriateness of event details. Prohibited events include illegal activities, hate speech, or adult content. Accezz may remove events without notice."
     },
     {
       title: "4. Ticket Sales & Payments",
-      content: "All ticket sales are final. Organizers receive 94% of ticket revenue minus payment processing fees. V-Tickets take only 6% commission on both online, and offline ticket sales. Organizers agree to:",
+      content: "All ticket sales are final. Organizers receive 94% of ticket revenue minus payment processing fees. Accezz take only 6% commission on both online, and offline ticket sales. Organizers agree to:",
       subpoints: [
         "Accurate event pricing disclosure",
         "Clear communication of event details",
@@ -29,23 +29,23 @@ const TermsAndConditionsPage = () => {
     },
     {
       title: "5. No Refund Policy",
-      content: "All sales are final. No refunds will be issued unless required by law. Organizers may set their own refund policies, but V-Tickets provides no refund processing services."
+      content: "All sales are final. No refunds will be issued unless required by law. Organizers may set their own refund policies, but Accezz provides no refund processing services."
     },
     {
       title: "6. Digital Tickets & Validation",
-      content: "Tickets are non-transferable unless allowed by the organizer. QR codes are cryptographically secured and valid only once. Duplication or fraudulent use voids the ticket."
+      content: "Tickets are non-transferable unless allowed by the organizer. QR codes are cryptographically secured and valid only once. Duplication or fraudulent use voids the ticket. Accezz provides no ticket validation services."
     },
     {
       title: "7. Data Privacy & Security",
-      content: "User data is processed per our Privacy Policy. We may share necessary data with organizers for event management but are not responsible for their data practices."
+      content: "User data is processed per our Privacy Policy. We may share necessary data with organizers for event management but are not responsible for their data practices. Accezz provides no data privacy or security services."
     },
     {
       title: "8. Intellectual Property",
-      content: "Platform content is owned by V-Tickets or licensors. Organizers retain ownership of event content but grant V-Tickets a license to display it for operational purposes."
+      content: "Platform content is owned by Accezz or licensors. Organizers retain ownership of event content but grant Accezz a license to display it for operational purposes."
     },
     {
       title: "9. Service Availability",
-      content: "V-Tickets is provided 'as is'. We may modify, suspend, or terminate services without liability for maintenance, security, or force majeure events."
+      content: "Accezz is provided 'as is'. We may modify, suspend, or terminate services without liability for maintenance, security, or force majeure events. Accezz provides no service availability or uptime guarantees."
     },
     {
       title: "10. Limitation of Liability",
@@ -57,7 +57,7 @@ const TermsAndConditionsPage = () => {
     },
     {
       title: "12. Contact Information",
-      content: <>For questions contact <a href="mailto:support@vtickets.com" className="text-blue-500 underline">support@vtickets.site</a></>
+      content: <>For questions contact <a href="mailto:accezzlive@gmail.com" className="text-blue-500 underline">accezzlive@gmail.com</a></>
     }
   ], []);
 
@@ -79,7 +79,7 @@ const TermsAndConditionsPage = () => {
           >
             <h1 className="text-2xl font-bold text-center mb-4">Terms of Service</h1>
             <h2 className="text-xl text-center border-b pb-4 mb-6 dark:border-gray-700">
-              V-Tickets Platform Terms
+              Accezz Platform Terms
             </h2>
             <p className="text-center mb-8">
               <strong>Effective:</strong> {new Date().toLocaleDateString()}

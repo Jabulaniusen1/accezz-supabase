@@ -26,7 +26,7 @@ const AboutPage = () => {
                         className="text-center mb-16"
                     >
                         <h1 className="text-[2rem] md:text-5xl font-bold text-gray-700 dark:text-white mb-6">
-                            Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-800 to-blue-400">V-Tickets</span>
+                            Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-800 to-blue-400">Accezz</span>
                         </h1>
                         <p className="sm:text-xl text-base text-gray-700 dark:text-blue-100 max-w-3xl mx-auto">
                             Revolutionizing event management and ticket sales through innovative digital solutions.
@@ -49,7 +49,7 @@ const AboutPage = () => {
                             For Event Organizers
                             </h2>
                             <p className="text-base md:text-lg text-gray-700 dark:text-blue-100 leading-relaxed">
-                            Take your event management to the next level with our comprehensive organizer tools. We understand the challenges of event planning, which is why we&apos;ve created a platform that simplifies every aspect of ticket management. Track sales in real-time, monitor attendance patterns, and access detailed analytics to make data-driven decisions. Our platform is completely free to use, allowing you to focus on creating memorable events while we handle the technical aspects. With features like automated attendee management, customizable ticket designs, and integrated marketing tools, V‑Tickets is your partner in successful event planning.
+                            Take your event management to the next level with our comprehensive organizer tools. We understand the challenges of event planning, which is why we&apos;ve created a platform that simplifies every aspect of ticket management. Track sales in real-time, monitor attendance patterns, and access detailed analytics to make data-driven decisions. Our platform is completely free to use, allowing you to focus on creating memorable events while we handle the technical aspects. With features like automated attendee management, customizable ticket designs, and integrated marketing tools, Accezz is your partner in successful event planning.
                             </p>
                         </div>
                         {/* Image Section - 40% width */}
@@ -80,7 +80,7 @@ const AboutPage = () => {
                             For Event Attendees
                             </h2>
                             <p className="text-base md:text-lg text-gray-700 dark:text-blue-100 leading-relaxed">
-                            Discover a world of possibilities with V‑Tickets. As an attendee, you&apos;ll have seamless access to all the latest events in your city right at your fingertips. Our platform makes it effortless to browse, select, and purchase tickets for shows, games, exhibitions, and concerts. We&apos;ve implemented secure QR code-based entry systems and instant ticket delivery, ensuring a smooth experience from purchase to event entry. Never miss another event – with V‑Tickets, you&apos;re always connected to the pulse of your city&apos;s entertainment scene.
+                            Discover a world of possibilities with Accezz. As an attendee, you&apos;ll have seamless access to all the latest events in your city right at your fingertips. Our platform makes it effortless to browse, select, and purchase tickets for shows, games, exhibitions, and concerts. We&apos;ve implemented secure QR code-based entry systems and instant ticket delivery, ensuring a smooth experience from purchase to event entry. Never miss another event – with Accezz, you&apos;re always connected to the pulse of your city&apos;s entertainment scene.
                             </p>
                         </div>
                         </div>
@@ -96,7 +96,7 @@ const AboutPage = () => {
                     transition={{ duration: 0.8, delay: 0.6 }}
                     className="w-full text-center mb-16 text-gray-800 dark:text-white px-4"
                     >
-                    <h2 className="text-3xl font-bold mb-12">Why Choose V-Tickets?</h2>
+                    <h2 className="text-3xl font-bold mb-12">Why Choose Accezz?</h2>
                     <div className="flex flex-col md:flex-row items-center justify-center gap-12">
                         {[
                             {
@@ -148,7 +148,7 @@ const AboutPage = () => {
                             Ready to Transform Your Event Management?
                         </h2>
                         <p className="text-xl text-gray-600 dark:text-blue-100 mb-8">
-                            Join V-Tickets today and experience the future of event planning!
+                            Join Accezz today and experience the future of event planning!
                         </p>
                         <Link
                             href="/dashboard"

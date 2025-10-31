@@ -17,7 +17,7 @@
 16 http fetch GET 200 https://registry.npmjs.org/npm 1409ms
 17 http fetch GET 200 https://registry.npmjs.org/@supabase%2fsupabase-js 1068ms (cache miss)
 18 silly packumentCache full:https://registry.npmjs.org/@supabase%2fsupabase-js set size:undefined disposed:false
-19 silly placeDep ROOT @supabase/supabase-js@2.78.0 OK for: v-tickets@0.1.0 want: *
+19 silly placeDep ROOT @supabase/supabase-js@2.78.0 OK for: Accezz@0.1.0 want: *
 20 silly fetch manifest @supabase/auth-js@2.78.0
 21 silly packumentCache full:https://registry.npmjs.org/@supabase%2fauth-js cache-miss
 22 silly fetch manifest @supabase/functions-js@2.78.0
