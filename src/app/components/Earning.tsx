@@ -75,7 +75,7 @@ const Earnings = () => {
       try {
         const { data: evs, error: evErr } = await supabase
           .from('events')
-          .select('id, slug, title, description, image_url, date, created_at')
+          .select('id, slug, title, description, image_url, date, created_at, time, venue, location, country, currency, is_virtual')
           .eq('user_id', session.user.id)
           .order('created_at', { ascending: false });
         if (evErr) throw evErr;
@@ -101,6 +101,14 @@ const Earnings = () => {
           description: e.description as string,
           image: (e.image_url as string) || '',
           date: e.date as string,
+          time: (e.time as string) || '',
+          venue: (e.venue as string) || '',
+          location: (e.location as string) || '',
+          hostName: '',
+          gallery: [],
+          isVirtual: (e.is_virtual as boolean) || false,
+          country: (e.country as string) || undefined,
+          currency: (e.currency as string) || undefined,
           createdAt: e.created_at as string,
           ticketType: (ticketMap.get(e.id as string) || []).map(t => ({
             name: t.name as string,
