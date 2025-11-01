@@ -22,7 +22,7 @@ const AgreeTerms: React.FC<AgreeTermsProps> = ({ onClose }) => {
     },
     {
       title: "1. Acceptance",
-      content: "By using V-Tickets, you agree to our Terms of Service."
+      content: "By using Accezz, you agree to our Terms of Service."
     },
     {
       title: "2. Account Security",
