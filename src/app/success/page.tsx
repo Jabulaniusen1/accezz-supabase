@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Receipt from "../components/Receipt"
 import Loader from "@/components/ui/loader/Loader";
+import PaymentFailedModal from "@/components/PaymentFailedModal";
 import { markOrderAsPaid, createTicketsForOrder } from "@/utils/paymentUtils";
 import { supabase } from "@/utils/supabaseClient";
 
@@ -12,6 +13,7 @@ const SuccessContent = () => {
   const searchParams = useSearchParams();
   const [isVerifying, setIsVerifying] = useState(true);
   const [ticketId, setTicketId] = useState<string | null>(null);
+  const [showFailureModal, setShowFailureModal] = useState(false);
 
   useEffect(() => {
     const verifyPayment = async () => {
@@ -55,7 +57,8 @@ const SuccessContent = () => {
       }
       if (status === 'failed') {
         try { localStorage.removeItem('pendingPayment'); } catch {}
-        router.push(`/payment-failed${urlTicketId ? `?ticketId=${urlTicketId}` : ''}`);
+        setShowFailureModal(true);
+        setIsVerifying(false);
         return;
       }
     
@@ -82,7 +85,8 @@ const SuccessContent = () => {
           }
 
           if (vData.status !== 'success') {
-            router.push(`/payment-failed${urlTicketId ? `?ticketId=${urlTicketId}` : ''}`);
+            setShowFailureModal(true);
+            setIsVerifying(false);
             return;
           }
 
@@ -120,15 +124,13 @@ const SuccessContent = () => {
         throw new Error('Missing reference, ticketId, or orderId');
       } catch (error: unknown) {
         console.error('Payment verification error:', error);
+        setShowFailureModal(true);
         setIsVerifying(false);
-        
-        // Redirect to failure page
-        router.push(`/payment-failed${urlTicketId ? `?ticketId=${urlTicketId}` : ''}`);
       }
     };
 
     verifyPayment();
-  }, [searchParams, router]);
+  }, [searchParams]);
 
   // Sync ticketId from URL if we don't have it in state (e.g., on reload)
   useEffect(() => {
@@ -165,12 +167,23 @@ const SuccessContent = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-8">
-      {/* Ticket Display */}
-      <div className="w-full max-w-4xl">
-        <Receipt isModal={false} autoDownload={true} />
+    <>
+      {showFailureModal && (
+        <PaymentFailedModal
+          onClose={() => setShowFailureModal(false)}
+          onTryAgain={() => {
+            setShowFailureModal(false);
+            router.back();
+          }}
+        />
+      )}
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-8">
+        {/* Ticket Display */}
+        <div className="w-full max-w-4xl">
+          <Receipt isModal={false} autoDownload={true} />
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
