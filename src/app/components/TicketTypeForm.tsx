@@ -75,6 +75,7 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast }: TicketTypeF
     };
 
     fetchEvent();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventSlug]);
 
   const handleNext = async () => {
@@ -227,7 +228,7 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast }: TicketTypeF
         if (storedPayment) {
           // localStorage available, can use it
         }
-      } catch (e) {
+      } catch {
         // localStorage not available, continue with orderId from state
       }
 
