@@ -35,14 +35,14 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('http://accezzlive.com/'),
+  metadataBase: new URL('https://accezzlive.com/'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'http://accezzlive.com/',
+    url: 'https://accezzlive.com/',
     siteName: 'Accezz',
     title: 'Accezz - Premium Event Ticketing Platform | Create & Sell Tickets Online',
     description: 'Nigeria\'s leading event ticketing platform. Create, manage, and sell tickets for concerts, conferences, workshops, and events. Secure payment processing, QR code validation, and real-time analytics.',

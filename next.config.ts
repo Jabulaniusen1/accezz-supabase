@@ -55,5 +55,5 @@ const nextConfig: NextConfig = {
 export default withPWA({
   dest: 'public',
   register: true,
-  disable: true, // Disabled to prevent cache issues
+  disable: process.env.NODE_ENV === 'development',
 })(nextConfig);

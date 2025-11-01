@@ -1,12 +1,11 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
 import { useRouter } from 'next/navigation';
+import { supabase } from '@/utils/supabaseClient';
 import SuccessModal from './settings/modal/successModal';
 import Loader from '../../components/ui/loader/Loader';
 import Toast from '../../components/ui/Toast';
-import { BASE_URL } from '../../../config';
 import { FaSpinner, FaCheck, FaTimes } from 'react-icons/fa';
 
 type AccountData = {
@@ -58,8 +57,8 @@ const AccountSetupPopup = ({ onClose }: { onClose: () => void }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
           toast('error', 'Please login to view your account details');
           router.push('/auth/login');
           return;
@@ -71,43 +70,41 @@ const AccountSetupPopup = ({ onClose }: { onClose: () => void }) => {
         const country = localStorage.getItem('userCountry') || 'nigeria';
         const currency = localStorage.getItem('userCurrency') || 'NGN';
         
-        // Fetch banks for the country
-        const banksResponse = await axios.get(
-          `${BASE_URL}api/v1/users/banks?country=${encodeURIComponent(country.toLowerCase())}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        // Fetch banks for the country from our API
+        const banksResponse = await fetch(`/api/paystack/banks?country=${encodeURIComponent(country)}`);
+        const banksData = await banksResponse.json();
         
-        setBanks(banksResponse.data.banks || []);
+        if (banksResponse.ok && banksData.banks) {
+          setBanks(banksData.banks);
+        }
+        
         setAccountData(prev => ({ 
           ...prev, 
           country,
           currency
         }));
 
-        // Fetch existing account details if any
-        const profileResponse = await axios.get(
-          `${BASE_URL}api/v1/users/profile`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        // Fetch existing account details from Supabase
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('account_name, account_number, bank_code, bank_name, country, currency')
+          .eq('user_id', session.user.id)
+          .maybeSingle();
 
-        if (profileResponse.data.user.account_number) {
+        if (!profileError && profile?.account_number) {
           setAccountData({
-            account_name: profileResponse.data.user.account_name,
-            account_bank: profileResponse.data.user.account_bank,
-            bank_code: profileResponse.data.user.bank_code,
-            account_number: profileResponse.data.user.account_number,
-            currency: profileResponse.data.user.currency || currency,
-            country: profileResponse.data.user.country || country
+            account_name: profile.account_name || '',
+            account_bank: profile.bank_name || '',
+            bank_code: profile.bank_code || '',
+            account_number: profile.account_number,
+            currency: profile.currency || currency,
+            country: profile.country || country
           });
           setAccountVerified(true);
         }
       } catch (error) {
         console.error('Fetch error:', error);
-        if (axios.isAxiosError(error)) {
-          toast('error', error.response?.data?.message || 'Failed to fetch bank details');
-        } else {
-          toast('error', 'Failed to fetch bank details');
-        }
+        toast('error', 'Failed to fetch bank details');
       } finally {
         setFetchingBanks(false);
       }
@@ -124,26 +121,26 @@ const AccountSetupPopup = ({ onClose }: { onClose: () => void }) => {
 
     setVerifying(true);
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        toast('error', 'Please login to verify account');
-        return;
-      }
-
-      const response = await axios.post(
-        `${BASE_URL}api/v1/users/verify-account`,
-        {
-          bank_code: accountData.bank_code,
-          account_bank: accountData.account_bank,
-          account_number: accountData.account_number,
-          country: accountData.country
+      const response = await fetch('/api/paystack/verify-bank', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
         },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+        body: JSON.stringify({
+          account_number: accountData.account_number,
+          bank_code: accountData.bank_code
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to verify account');
+      }
 
       setAccountData(prev => ({
         ...prev,
-        account_name: response.data.account_name || prev.account_name,
+        account_name: data.account_name || prev.account_name,
         account_bank: banks.find(b => b.code === prev.bank_code)?.name || prev.account_bank
       }));
       setAccountVerified(true);
@@ -151,11 +148,8 @@ const AccountSetupPopup = ({ onClose }: { onClose: () => void }) => {
     } catch (error) {
       console.error('Verification error:', error);
       setAccountVerified(false);
-      if (axios.isAxiosError(error)) {
-        toast('error', error.response?.data?.message || 'Account verification failed. Please check details.');
-      } else {
-        toast('error', 'Account verification failed. Please check details.');
-      }
+      const message = error instanceof Error ? error.message : 'Account verification failed. Please check details.';
+      toast('error', message);
     } finally {
       setVerifying(false);
     }
@@ -171,17 +165,29 @@ const AccountSetupPopup = ({ onClose }: { onClose: () => void }) => {
 
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
         toast('error', 'Please login to update your account details');
         return;
       }
 
-      await axios.patch(
-        `${BASE_URL}api/v1/users/profile`,
-        accountData,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      // Update or insert profile with bank details
+      const { error: upsertError } = await supabase
+        .from('profiles')
+        .upsert({
+          user_id: session.user.id,
+          account_name: accountData.account_name,
+          account_number: accountData.account_number,
+          bank_code: accountData.bank_code,
+          bank_name: accountData.account_bank,
+          currency: accountData.currency,
+          country: accountData.country,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
+        });
+
+      if (upsertError) throw upsertError;
 
       setShowModal(true);
       setTimeout(() => {
@@ -190,11 +196,8 @@ const AccountSetupPopup = ({ onClose }: { onClose: () => void }) => {
       }, 2000);
     } catch (error) {
       console.error('Submission error:', error);
-      if (axios.isAxiosError(error)) {
-        toast('error', error.response?.data?.message || 'Failed to update account details');
-      } else {
-        toast('error', 'Failed to update account details');
-      }
+      const message = error instanceof Error ? error.message : 'Failed to update account details';
+      toast('error', message);
     } finally {
       setLoading(false);
     }

@@ -18,6 +18,11 @@ create table if not exists public.profiles (
   currency text,
   twofa_enabled boolean default false,
   verified boolean default false,
+  -- Bank account details for payments
+  account_name text,
+  account_number text,
+  bank_code text,
+  bank_name text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

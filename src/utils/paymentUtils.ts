@@ -230,6 +230,15 @@ export async function createTicketsForOrder(orderId: string): Promise<string[]> 
     const quantity = meta?.quantity || 1;
     const attendees = meta?.attendees || [];
 
+    console.log('[createTicketsForOrder] Fetching ticket type:', { ticketTypeName, eventId: order.event_id });
+
+    // Debug: List all ticket types for this event
+    const { data: allTicketTypes } = await supabase
+      .from('ticket_types')
+      .select('id, name')
+      .eq('event_id', order.event_id);
+    console.log('[createTicketsForOrder] Available ticket types:', allTicketTypes);
+
     // Fetch ticket type
     const { data: ticketType, error: ticketTypeError } = await supabase
       .from('ticket_types')
@@ -239,8 +248,13 @@ export async function createTicketsForOrder(orderId: string): Promise<string[]> 
       .single();
 
     if (ticketTypeError || !ticketType) {
-      throw new Error('Ticket type not found');
+      console.error('[createTicketsForOrder] Ticket type lookup error:', ticketTypeError);
+      console.error('[createTicketsForOrder] Meta data:', meta);
+      console.error('[createTicketsForOrder] Looking for:', ticketTypeName);
+      throw new Error(`Ticket type not found: ${ticketTypeName}`);
     }
+    
+    console.log('[createTicketsForOrder] Ticket type found:', ticketType.name);
 
     // Create tickets and generate QR codes
     const ticketCodes: string[] = [];

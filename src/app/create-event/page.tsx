@@ -3,7 +3,6 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { BiArrowBack } from 'react-icons/bi';
-import axios from 'axios';
 
 // Components
 import { FormContainer } from './components/FormContainer';
@@ -20,7 +19,7 @@ import FinalDetails from './steps/FinalDetails';
 // Utils & Types
 import { saveFormProgress, getFormProgress } from '@/utils/localStorage';
 import { Event, ToastProps } from '@/types/event';
-import { BASE_URL } from '../../../config';
+import { supabase } from '@/utils/supabaseClient';
 
 const INITIAL_EVENT_DATA: Event = {
   title: '',
@@ -54,8 +53,8 @@ export default function CreateEventPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [toast, setToast] = useState<ToastProps | null>(null);
-  const [showAccountSetup, setShowAccountSetup] = useState(false);
   const [formData, setFormData] = useState<Event>(INITIAL_EVENT_DATA);
+  const [showAccountSetup, setShowAccountSetup] = useState(false);
   const prevStep = useRef(step);
 
   // Memoized update function
@@ -102,12 +101,12 @@ export default function CreateEventPage() {
     return () => clearTimeout(timer);
   }, [formData]);
 
-  // Check account setup status
+  // Check authentication and bank account status
   useEffect(() => {
-    const checkAccountSetup = async () => {
+    const checkAuthAndAccount = async () => {
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
           setToast({ 
             type: 'error', 
             message: 'Please login to create an event',
@@ -117,24 +116,28 @@ export default function CreateEventPage() {
           return;
         }
 
-        const response = await axios.get(`${BASE_URL}api/v1/users/profile`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        // Check if user has bank account setup
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('account_number')
+          .eq('user_id', session.user.id)
+          .maybeSingle();
 
-        if (!response.data.user.account_number) {
+        // If no profile exists or no account_number, show setup popup
+        if (profileError || !profile?.account_number) {
           setShowAccountSetup(true);
         }
       } catch (error) {
-        console.error('Error fetching account details:', error);
+        console.error('Error checking auth:', error);
         setToast({ 
           type: 'error', 
-          message: 'Failed to fetch account details',
+          message: 'Failed to verify authentication',
           onClose: () => setToast(null)
         });
       }
     };
 
-    checkAccountSetup();
+    checkAuthAndAccount();
   }, [router]);
 
   // Step validation
