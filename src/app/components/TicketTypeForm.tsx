@@ -400,14 +400,23 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast }: TicketTypeF
                   <button
                     type="button"
                     onClick={handleNext}
-                    disabled={activeStep === 2}
-                    className={`px-4 py-2 rounded-xl hover:scale-105 shadow-lg hover:shadow-xl transition-colors ${
-                      activeStep === 2
+                    disabled={activeStep === 2 || isLoading}
+                    className={`px-4 py-2 rounded-xl hover:scale-105 shadow-lg hover:shadow-xl transition-colors flex items-center justify-center gap-2 ${
+                      activeStep === 2 || isLoading
                         ? 'bg-gray-400 text-white cursor-not-allowed'
                         : 'bg-[#f54502] text-white hover:bg-[#f54502]/90'
                     }`}
                   >
-                    {activeStep === 2 ? ' ' : 'Next'}
+                    {isLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        <span>Processing...</span>
+                      </>
+                    ) : activeStep === 2 ? (
+                      ' '
+                    ) : (
+                      'Next'
+                    )}
                   </button>
                 </div>
               </form>
