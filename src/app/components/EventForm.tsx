@@ -141,13 +141,21 @@ export default function EventForm({ eventId, onClose, onSuccess }: EventFormProp
     e.preventDefault();
     if (!validateForm()) return;
 
-    // session-based guard happens at dashboard; proceed to create
-
     try {
       setIsLoading(true);
       let imageUrl: string | undefined;
 
       if (eventId) {
+        // For updates, upload image first if provided
+        if (imageFile) {
+          const fileExt = imageFile.name.split('.').pop();
+          const filePath = `events/${eventId}/main.${fileExt}`;
+          const { error: uploadError } = await supabase.storage.from('event-images').upload(filePath, imageFile, { upsert: true });
+          if (uploadError) throw uploadError;
+          const { data: pub } = supabase.storage.from('event-images').getPublicUrl(filePath);
+          imageUrl = pub.publicUrl;
+        }
+        
         const { error } = await supabase
           .from('events')
           .update({
@@ -163,6 +171,17 @@ export default function EventForm({ eventId, onClose, onSuccess }: EventFormProp
       } else {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) throw new Error('Not authenticated');
+        
+        // Pre-validate: Prepare all data before any database operations
+        const tickets = (formData.ticketType || []).filter(t => t.name && t.price && t.quantity);
+        const ticketRows = tickets.map(t => ({
+          name: t.name,
+          price: Number(t.price),
+          quantity: Number(t.quantity),
+          details: t.details || null,
+        }));
+        
+        // Create event first (without image)
         const { data: ins, error } = await supabase
           .from('events')
           .insert({
@@ -178,30 +197,48 @@ export default function EventForm({ eventId, onClose, onSuccess }: EventFormProp
           .single();
         if (error) throw error;
 
-        // Upload image if provided (scoped path) and update event
-        if (imageFile) {
-          const fileExt = imageFile.name.split('.').pop();
-          const filePath = `events/${session.user.id}/${ins.id}/main.${fileExt}`;
-          const { error: uploadError } = await supabase.storage.from('event-images').upload(filePath, imageFile, { upsert: false });
-          if (uploadError) throw uploadError;
-          const { data: pub } = supabase.storage.from('event-images').getPublicUrl(filePath);
-          imageUrl = pub.publicUrl;
-          const { error: updErr } = await supabase.from('events').update({ image_url: imageUrl }).eq('id', ins.id);
-          if (updErr) throw updErr;
-        }
+        let eventCreated = true;
+        
+        try {
+          // Upload image if provided (after we have event ID)
+          if (imageFile) {
+            const fileExt = imageFile.name.split('.').pop();
+            const filePath = `events/${session.user.id}/${ins.id}/main.${fileExt}`;
+            const { error: uploadError } = await supabase.storage.from('event-images').upload(filePath, imageFile, { upsert: false });
+            if (uploadError) {
+              console.error('Image upload failed:', uploadError);
+              throw new Error('Failed to upload image. Please try again.');
+            }
+            const { data: pub } = supabase.storage.from('event-images').getPublicUrl(filePath);
+            imageUrl = pub.publicUrl;
+            
+            // Update event with image URL
+            const { error: updErr } = await supabase.from('events').update({ image_url: imageUrl }).eq('id', ins.id);
+            if (updErr) {
+              console.error('Failed to update event with image URL:', updErr);
+              throw new Error('Failed to save image. Please try again.');
+            }
+          }
 
-        // Insert ticket types
-        const tickets = (formData.ticketType || []).filter(t => t.name && t.price && t.quantity);
-        if (tickets.length) {
-          const rows = tickets.map(t => ({
-            event_id: ins.id,
-            name: t.name,
-            price: Number(t.price),
-            quantity: Number(t.quantity),
-            details: t.details || null,
-          }));
-          const { error: tErr } = await supabase.from('ticket_types').insert(rows);
-          if (tErr) throw tErr;
+          // Insert ticket types
+          if (ticketRows.length) {
+            const finalRows = ticketRows.map(t => ({
+              event_id: ins.id,
+              ...t,
+            }));
+            const { error: tErr } = await supabase.from('ticket_types').insert(finalRows);
+            if (tErr) {
+              console.error('Failed to insert ticket types:', tErr);
+              throw new Error('Failed to create ticket types. Please try again.');
+            }
+          }
+        } catch (error) {
+          // Cleanup: Delete the partially created event
+          console.error('Error during event creation, cleaning up:', error);
+          if (eventCreated && ins?.id) {
+            await supabase.from('events').delete().eq('id', ins.id);
+          }
+          throw error;
         }
       }
 
@@ -223,7 +260,8 @@ export default function EventForm({ eventId, onClose, onSuccess }: EventFormProp
       onClose();
     } catch (error) {
       console.error('Error saving event:', error);
-      notyf.error('Failed to save event');
+      const message = error instanceof Error ? error.message : 'Failed to save event';
+      notyf.error(message);
     } finally {
       setIsLoading(false);
     }

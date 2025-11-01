@@ -145,56 +145,85 @@ export default function FinalDetails({
         .single();
       if (evErr) throw evErr;
 
-      // Now upload main image under user/event scoped path and update event
-      if (formData.image && typeof formData.image !== 'string') {
-        const main = formData.image as File;
-        const ext2 = main.name.split('.').pop();
-        const mainPath = `events/${session.user.id}/${created.id}/main.${ext2}`;
-        const { error: upErr2 } = await supabase.storage.from('event-images').upload(mainPath, main, { upsert: false });
-        if (upErr2) throw upErr2;
-        const { data: pub2 } = supabase.storage.from('event-images').getPublicUrl(mainPath);
-        imageUrl = pub2.publicUrl;
-        const { error: updErr } = await supabase.from('events').update({ image_url: imageUrl }).eq('id', created.id);
-        if (updErr) throw updErr;
-      } else if (typeof formData.image === 'string') {
-        imageUrl = formData.image;
-        const { error: updErr } = await supabase.from('events').update({ image_url: imageUrl }).eq('id', created.id);
-        if (updErr) throw updErr;
-      }
+      let eventCreated = true;
 
-      // Upload gallery and insert records
-      if (formData.gallery.length) {
-        const galleryRows: { event_id: string; image_url: string; position: number }[] = [];
-        for (let i = 0; i < formData.gallery.length; i++) {
-          const file = formData.gallery[i];
-          const ext = file.name.split('.').pop();
-          const path = `events/${session.user.id}/${created.id}/gallery/${Date.now()}-${i}.${ext}`;
-          const { error: gErr } = await supabase.storage.from('event-gallery').upload(path, file, { upsert: false });
-          if (gErr) throw gErr;
-          const { data: pub } = supabase.storage.from('event-gallery').getPublicUrl(path);
-          galleryRows.push({ event_id: created.id, image_url: pub.publicUrl, position: i });
+      try {
+        // Now upload main image under user/event scoped path and update event
+        if (formData.image && typeof formData.image !== 'string') {
+          const main = formData.image as File;
+          const ext2 = main.name.split('.').pop();
+          const mainPath = `events/${session.user.id}/${created.id}/main.${ext2}`;
+          const { error: upErr2 } = await supabase.storage.from('event-images').upload(mainPath, main, { upsert: false });
+          if (upErr2) {
+            console.error('Main image upload failed:', upErr2);
+            throw new Error('Failed to upload main image. Please try again.');
+          }
+          const { data: pub2 } = supabase.storage.from('event-images').getPublicUrl(mainPath);
+          imageUrl = pub2.publicUrl;
+          const { error: updErr } = await supabase.from('events').update({ image_url: imageUrl }).eq('id', created.id);
+          if (updErr) {
+            console.error('Failed to update event with main image:', updErr);
+            throw new Error('Failed to save main image. Please try again.');
+          }
+        } else if (typeof formData.image === 'string') {
+          imageUrl = formData.image;
+          const { error: updErr } = await supabase.from('events').update({ image_url: imageUrl }).eq('id', created.id);
+          if (updErr) {
+            console.error('Failed to update event with existing image:', updErr);
+            throw new Error('Failed to save image. Please try again.');
+          }
         }
-        if (galleryRows.length) {
-          const { error: insGalErr } = await supabase.from('event_gallery').insert(galleryRows);
-          if (insGalErr) throw insGalErr;
+
+        // Upload gallery and insert records
+        if (formData.gallery.length) {
+          const galleryRows: { event_id: string; image_url: string; position: number }[] = [];
+          for (let i = 0; i < formData.gallery.length; i++) {
+            const file = formData.gallery[i];
+            const ext = file.name.split('.').pop();
+            const path = `events/${session.user.id}/${created.id}/gallery/${Date.now()}-${i}.${ext}`;
+            const { error: gErr } = await supabase.storage.from('event-gallery').upload(path, file, { upsert: false });
+            if (gErr) {
+              console.error('Gallery upload failed for image', i, ':', gErr);
+              throw new Error(`Failed to upload gallery image ${i + 1}. Please try again.`);
+            }
+            const { data: pub } = supabase.storage.from('event-gallery').getPublicUrl(path);
+            galleryRows.push({ event_id: created.id, image_url: pub.publicUrl, position: i });
+          }
+          if (galleryRows.length) {
+            const { error: insGalErr } = await supabase.from('event_gallery').insert(galleryRows);
+            if (insGalErr) {
+              console.error('Failed to insert gallery records:', insGalErr);
+              throw new Error('Failed to save gallery. Please try again.');
+            }
+          }
         }
-      }
 
-      // Insert ticket types
-      const tickets = formData.ticketType.map((t) => ({
-        event_id: created.id,
-        name: t.name.trim(),
-        price: Number(t.price),
-        quantity: Number(t.quantity),
-        details: t.details?.trim() || null,
-      }));
-      if (tickets.length) {
-        const { error: tErr } = await supabase.from('ticket_types').insert(tickets);
-        if (tErr) throw tErr;
-      }
+        // Insert ticket types
+        const tickets = formData.ticketType.map((t) => ({
+          event_id: created.id,
+          name: t.name.trim(),
+          price: Number(t.price),
+          quantity: Number(t.quantity),
+          details: t.details?.trim() || null,
+        }));
+        if (tickets.length) {
+          const { error: tErr } = await supabase.from('ticket_types').insert(tickets);
+          if (tErr) {
+            console.error('Failed to insert ticket types:', tErr);
+            throw new Error('Failed to create tickets. Please try again.');
+          }
+        }
 
-      setToast({ type: "success", message: "Event created successfully!", onClose: () => setToast(null) });
-      router.push('/dashboard');
+        setToast({ type: "success", message: "Event created successfully!", onClose: () => setToast(null) });
+        router.push('/dashboard');
+      } catch (error) {
+        // Cleanup: Delete the partially created event
+        console.error('Error during event creation, cleaning up:', error);
+        if (eventCreated && created?.id) {
+          await supabase.from('events').delete().eq('id', created.id);
+        }
+        throw error;
+      }
     } catch (error) {
       console.error("Error creating event:", error);
       const message = error instanceof Error ? error.message : "Failed to create event";

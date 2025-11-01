@@ -119,7 +119,10 @@ function Update() {
         const ext = imageFile.name.split('.').pop();
         const path = `events/${session.user.id}/${eventId}/main.${ext}`;
         const { error: upErr } = await supabase.storage.from('event-images').upload(path, imageFile, { upsert: true });
-        if (upErr) throw upErr;
+        if (upErr) {
+          console.error('Image upload failed:', upErr);
+          throw new Error('Failed to upload image. Please try again.');
+        }
         const { data: pub } = supabase.storage.from('event-images').getPublicUrl(path);
         imageUrl = pub.publicUrl;
       }
@@ -140,11 +143,17 @@ function Update() {
           image_url: imageUrl || undefined,
         })
         .eq('id', eventId);
-      if (evErr) throw evErr;
+      if (evErr) {
+        console.error('Failed to update event:', evErr);
+        throw new Error('Failed to update event. Please try again.');
+      }
 
       // Handle ticket types: delete existing and insert new ones
       const { error: delErr } = await supabase.from('ticket_types').delete().eq('event_id', eventId);
-      if (delErr) throw delErr;
+      if (delErr) {
+        console.error('Failed to delete existing tickets:', delErr);
+        throw new Error('Failed to update tickets. Please try again.');
+      }
 
       if (formData.ticketType?.length) {
         const ticketRows = formData.ticketType.map(t => ({
@@ -156,7 +165,10 @@ function Update() {
           details: t.details || null,
         }));
         const { error: insErr } = await supabase.from('ticket_types').insert(ticketRows);
-        if (insErr) throw insErr;
+        if (insErr) {
+          console.error('Failed to insert new tickets:', insErr);
+          throw new Error('Failed to save tickets. Please try again.');
+        }
       }
 
       toast("success", "Event updated successfully!");
