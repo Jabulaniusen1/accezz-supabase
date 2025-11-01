@@ -232,13 +232,6 @@ export async function createTicketsForOrder(orderId: string): Promise<string[]> 
 
     console.log('[createTicketsForOrder] Fetching ticket type:', { ticketTypeName, eventId: order.event_id });
 
-    // Debug: List all ticket types for this event
-    const { data: allTicketTypes } = await supabase
-      .from('ticket_types')
-      .select('id, name')
-      .eq('event_id', order.event_id);
-    console.log('[createTicketsForOrder] Available ticket types:', allTicketTypes);
-
     // Fetch ticket type
     const { data: ticketType, error: ticketTypeError } = await supabase
       .from('ticket_types')
@@ -283,49 +276,78 @@ export async function createTicketsForOrder(orderId: string): Promise<string[]> 
 
     if (primaryTicketError) throw primaryTicketError;
 
-    // Generate and store QR code for primary ticket
-    const primaryQRUrl = await generateAndStoreQRCode(primaryTicket.id, primaryTicketCode);
-    
-    // Update primary ticket with QR code URL
-    await supabase
-      .from('tickets')
-      .update({ qr_code_url: primaryQRUrl })
-      .eq('id', primaryTicket.id);
+    // Create all additional tickets first (without QR codes for speed)
+    const additionalTicketInserts: Array<{
+      order_id: string;
+      event_id: string;
+      ticket_type_id: string;
+      ticket_code: string;
+      qr_code_url: string;
+      attendee_name: string;
+      attendee_email: string;
+      price: number;
+      currency: string;
+      validation_status: string;
+    }> = [];
 
-    // Additional attendees
     for (let i = 0; i < Math.min(attendees.length, quantity - 1); i++) {
       const attendee = attendees[i];
       const ticketCode = generateTicketCode();
       ticketCodes.push(ticketCode);
       
-      // Insert ticket
-      const { data: additionalTicket, error: additionalTicketError } = await supabase
+      additionalTicketInserts.push({
+        order_id: orderId,
+        event_id: order.event_id,
+        ticket_type_id: ticketType.id,
+        ticket_code: ticketCode,
+        qr_code_url: '', // Will be generated in background
+        attendee_name: attendee.name,
+        attendee_email: attendee.email,
+        price: ticketType.price,
+        currency: order.currency,
+        validation_status: 'valid',
+      });
+    }
+
+    // Insert all additional tickets at once
+    if (additionalTicketInserts.length > 0) {
+      const { data: additionalTickets, error: additionalTicketError } = await supabase
         .from('tickets')
-        .insert({
-          order_id: orderId,
-          event_id: order.event_id,
-          ticket_type_id: ticketType.id,
-          ticket_code: ticketCode,
-          qr_code_url: '', // Will be updated after generation
-          attendee_name: attendee.name,
-          attendee_email: attendee.email,
-          price: ticketType.price,
-          currency: order.currency,
-          validation_status: 'valid',
-        })
-        .select('id')
-        .single();
+        .insert(additionalTicketInserts)
+        .select('id, ticket_code');
 
       if (additionalTicketError) throw additionalTicketError;
 
-      // Generate and store QR code
-      const additionalQRUrl = await generateAndStoreQRCode(additionalTicket.id, ticketCode);
-      
-      // Update ticket with QR code URL
-      await supabase
-        .from('tickets')
-        .update({ qr_code_url: additionalQRUrl })
-        .eq('id', additionalTicket.id);
+      // Generate QR codes for all tickets in background (non-blocking)
+      const allTicketsToGenerate = [
+        { id: primaryTicket.id, code: primaryTicketCode },
+        ...(additionalTickets || []).map((t: { id: string; ticket_code: string }) => ({ id: t.id, code: t.ticket_code }))
+      ];
+
+      // Generate QR codes asynchronously (don't wait)
+      Promise.all(
+        allTicketsToGenerate.map(async ({ id, code }) => {
+          try {
+            const qrUrl = await generateAndStoreQRCode(id, code);
+            await supabase
+              .from('tickets')
+              .update({ qr_code_url: qrUrl })
+              .eq('id', id);
+          } catch (error) {
+            console.error(`Failed to generate QR code for ticket ${id}:`, error);
+          }
+        })
+      ).catch(err => console.error('Background QR generation error:', err));
+    } else {
+      // Generate primary QR code in background if no additional tickets
+      generateAndStoreQRCode(primaryTicket.id, primaryTicketCode)
+        .then(qrUrl => {
+          return supabase
+            .from('tickets')
+            .update({ qr_code_url: qrUrl })
+            .eq('id', primaryTicket.id);
+        })
+        .catch(err => console.error('Background QR generation error:', err));
     }
 
     // Update ticket type sold count (using the function from schema)
