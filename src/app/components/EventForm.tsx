@@ -197,7 +197,7 @@ export default function EventForm({ eventId, onClose, onSuccess }: EventFormProp
           .single();
         if (error) throw error;
 
-        let eventCreated = true;
+        const eventCreated = true;
         
         try {
           // Upload image if provided (after we have event ID)
@@ -265,7 +265,7 @@ export default function EventForm({ eventId, onClose, onSuccess }: EventFormProp
     } finally {
       setIsLoading(false);
     }
-  }, [formData, imageFile, eventId, validateForm, notyf, router, onSuccess, onClose]);
+  }, [formData, imageFile, eventId, validateForm, notyf, onSuccess, onClose]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">

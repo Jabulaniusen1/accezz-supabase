@@ -158,7 +158,7 @@ const EventList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [handleError, router, showToastMessage]);
+  }, [handleError, showToastMessage]);
 
   useEffect(() => {
     fetchEvents();

@@ -144,7 +144,8 @@ const EventAnalyticsContent = () => {
     } finally {
       setLoading(false);
     }
-  }, [eventId, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eventId]);
 
   // const handleRefresh = useCallback(() => {
   //   fetchTickets(true);

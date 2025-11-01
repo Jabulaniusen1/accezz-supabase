@@ -145,7 +145,7 @@ export default function FinalDetails({
         .single();
       if (evErr) throw evErr;
 
-      let eventCreated = true;
+      const eventCreated = true;
 
       try {
         // Now upload main image under user/event scoped path and update event
