@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useRouter } from 'next/navigation';
 import { supabase } from '@/utils/supabaseClient';
 import { Event, Ticket } from '@/types/analytics';
 import Loader from '@/components/ui/loader/Loader';
@@ -24,7 +23,6 @@ const EventAnalyticsContent = () => {
   const [loading, setLoading] = useState(false);
   // const [refreshing, setRefreshing] = useState(false);
   // const [exporting, setExporting] = useState(false);
-  const router = useRouter();
   const searchParams = useSearchParams();
   const eventId = searchParams.get('id');
   const [event, setEvent] = useState<Event | null>(null);

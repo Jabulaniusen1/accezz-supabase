@@ -1,7 +1,6 @@
 // components/EventForm.tsx
 'use client';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { supabase } from '@/utils/supabaseClient';
 import { Event, Ticket } from '@/types/event';
@@ -17,7 +16,6 @@ interface EventFormProps {
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 export default function EventForm({ eventId, onClose, onSuccess }: EventFormProps) {
-  const router = useRouter();
   const [formData, setFormData] = useState<Partial<Event>>({
     title: '',
     description: '',
