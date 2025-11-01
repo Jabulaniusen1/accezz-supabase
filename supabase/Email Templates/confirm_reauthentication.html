@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Reauthentication</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo img {
+            max-width: 150px;
+            height: auto;
+        }
+        h2 {
+            color: #f54502;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        p {
+            margin-bottom: 16px;
+            font-size: 16px;
+            color: #555;
+        }
+        .code-container {
+            background-color: #f8f9fa;
+            border: 2px dashed #f54502;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        .code {
+            font-size: 32px;
+            font-weight: bold;
+            color: #f54502;
+            letter-spacing: 8px;
+            font-family: 'Courier New', monospace;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 14px;
+            color: #999;
+            text-align: center;
+        }
+        .footer p {
+            margin: 5px 0;
+        }
+        .info-box {
+            background-color: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .info-box p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <img src="https://kckdkipdodkfszakqwui.supabase.co/storage/v1/object/public/logo/accezzlogoc%20(2).webp" alt="Accezz Logo" width="150" height="auto">
+        </div>
+        <h2>Confirm reauthentication</h2>
+        <p>For your security, please enter the verification code below to confirm your identity:</p>
+        
+        <div class="code-container">
+            <div class="code">{{ .Token }}</div>
+        </div>
+        
+        <div class="info-box">
+            <p><strong>ℹ️ Instructions</strong></p>
+            <p>Enter this 6-digit code in the authentication form to complete the verification process.</p>
+        </div>
+        
+        <div class="footer">
+            <p>This verification code will expire in 10 minutes.</p>
+            <p>If you didn't request this code, please ignore this email or contact support.</p>
+        </div>
+    </div>
+</body>
+</html>
+
