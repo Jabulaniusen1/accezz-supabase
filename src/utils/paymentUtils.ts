@@ -90,6 +90,8 @@ async function generateAndStoreQRCode(ticketId: string, ticketCode: string): Pro
  */
 export async function createOrder(params: CreateOrderParams): Promise<{ orderId: string; totalAmount: number }> {
   try {
+    console.log('[createOrder] Starting order creation for eventId:', params.eventId);
+    
     // Fetch event to get ticket type details
     const { data: event, error: eventError } = await supabase
       .from('events')
@@ -97,7 +99,11 @@ export async function createOrder(params: CreateOrderParams): Promise<{ orderId:
       .eq('id', params.eventId)
       .single();
 
-    if (eventError) throw eventError;
+    if (eventError) {
+      console.error('[createOrder] Error fetching event:', eventError);
+      throw eventError;
+    }
+    console.log('[createOrder] Event fetched successfully:', event?.id);
 
     // Fetch ticket type
     const { data: ticketType, error: ticketTypeError } = await supabase
@@ -107,13 +113,20 @@ export async function createOrder(params: CreateOrderParams): Promise<{ orderId:
       .eq('name', params.ticketTypeName)
       .single();
 
-    if (ticketTypeError || !ticketType) {
+    if (ticketTypeError) {
+      console.error('[createOrder] Error fetching ticket type:', ticketTypeError);
+      throw ticketTypeError;
+    }
+    if (!ticketType) {
+      console.error('[createOrder] Ticket type not found:', params.ticketTypeName);
       throw new Error('Ticket type not found');
     }
+    console.log('[createOrder] Ticket type found:', ticketType.name);
 
     // Check if enough tickets are available
     const available = ticketType.quantity - ticketType.sold;
     if (available < params.quantity) {
+      console.error('[createOrder] Insufficient tickets:', { available, requested: params.quantity });
       throw new Error(`Only ${available} ticket(s) available`);
     }
 
@@ -123,8 +136,15 @@ export async function createOrder(params: CreateOrderParams): Promise<{ orderId:
 
     // Get current session (optional - for logged-in users)
     const { data: { session } } = await supabase.auth.getSession();
+    console.log('[createOrder] Session:', session ? 'authenticated' : 'anonymous');
 
     // Create order
+    console.log('[createOrder] Inserting order with data:', {
+      event_id: params.eventId,
+      buyer_email: params.email,
+      total_amount: totalAmount
+    });
+    
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .insert({
@@ -145,14 +165,19 @@ export async function createOrder(params: CreateOrderParams): Promise<{ orderId:
       .select('id')
       .single();
 
-    if (orderError) throw orderError;
+    if (orderError) {
+      console.error('[createOrder] Error creating order:', orderError);
+      console.error('[createOrder] Full error details:', JSON.stringify(orderError, null, 2));
+      throw orderError;
+    }
 
+    console.log('[createOrder] Order created successfully:', order.id);
     return {
       orderId: order.id,
       totalAmount: totalAmount,
     };
   } catch (error: unknown) {
-    console.error('Error creating order:', error);
+    console.error('[createOrder] Error creating order:', error);
     throw error;
   }
 }

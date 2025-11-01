@@ -53,15 +53,24 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast }: TicketTypeF
 
   useEffect(() => {
     const fetchEvent = async () => {
-      if (!eventSlug || typeof eventSlug !== 'string') return;
+      if (!eventSlug || typeof eventSlug !== 'string') {
+        console.error('Invalid eventSlug:', eventSlug);
+        return;
+      }
 
       try {
+        console.log('Fetching event for slug:', eventSlug);
         const fetchedEvent = await fetchEventBySlug(eventSlug);
         if (fetchedEvent) {
+          console.log('Event fetched successfully:', fetchedEvent.id);
           setEvent({ id: fetchedEvent.id || '', slug: fetchedEvent.slug || '' });
+        } else {
+          console.error('No event found for slug:', eventSlug);
+          setToast({ type: 'error', message: 'Event not found' });
         }
       } catch (err) {
         console.error('Failed to fetch event:', err);
+        setToast({ type: 'error', message: 'Failed to load event details' });
       } 
     };
 
@@ -108,6 +117,15 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast }: TicketTypeF
       // Create order for paid tickets
       try {
         setIsLoading(true);
+        console.log('Creating order with params:', {
+          eventId,
+          ticketTypeName: selectedTicket.name,
+          quantity: allAttendees.length,
+          email,
+          phone: phoneNumber,
+          fullName
+        });
+        
         const { orderId: createdOrderId } = await createOrder({
           eventId: eventId,
           ticketTypeName: selectedTicket.name,
@@ -119,16 +137,22 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast }: TicketTypeF
           currency: 'NGN',
         });
 
+        console.log('Order created successfully:', createdOrderId);
         setOrderId(createdOrderId);
         
         // Store order info for payment processing
-        localStorage.setItem('pendingPayment', JSON.stringify({
-          orderId: createdOrderId,
-          eventId: eventId,
-          email,
-          amount: totalPrice,
-          currency: 'NGN'
-        }));
+        try {
+          localStorage.setItem('pendingPayment', JSON.stringify({
+            orderId: createdOrderId,
+            eventId: eventId,
+            email,
+            amount: totalPrice,
+            currency: 'NGN'
+          }));
+        } catch (storageError) {
+          console.warn('Could not save to localStorage:', storageError);
+          // Non-critical - we have orderId in state
+        }
 
         setToast({
           type: 'success',
@@ -137,9 +161,11 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast }: TicketTypeF
         setActiveStep(2);
       } catch (error: unknown) {
         console.error('Error creating order:', error);
+        const errorMessage = (error as Error).message || 'Unknown error occurred';
+        console.error('Full error details:', JSON.stringify(error, null, 2));
         setToast({
           type: 'error',
-          message: (error instanceof Error ? error.message : 'Failed to create order. Please try again.')
+          message: errorMessage
         });
       } finally {
         setIsLoading(false);
@@ -190,10 +216,19 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast }: TicketTypeF
       
       // For now, we'll redirect to a payment page with order ID
       // In production, integrate with your payment provider here
-      const storedPayment = localStorage.getItem('pendingPayment');
-      if (!storedPayment || !orderId) {
-        setToast({ type: 'error', message: 'Payment information not found. Please try again.' });
+      if (!orderId) {
+        setToast({ type: 'error', message: 'Order information not found. Please try again.' });
         return;
+      }
+      
+      // Try to get from localStorage if available (non-critical)
+      try {
+        const storedPayment = localStorage.getItem('pendingPayment');
+        if (storedPayment) {
+          // localStorage available, can use it
+        }
+      } catch (e) {
+        // localStorage not available, continue with orderId from state
       }
 
       // const paymentInfo = JSON.parse(storedPayment);
