@@ -403,7 +403,7 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast }: TicketTypeF
                     disabled={activeStep === 2 || isLoading}
                     className={`px-4 py-2 rounded-xl hover:scale-105 shadow-lg hover:shadow-xl transition-colors flex items-center justify-center gap-2 ${
                       activeStep === 2 || isLoading
-                        ? 'bg-gray-400 text-white cursor-not-allowed'
+                        ? ' hidden cursor-not-allowed'
                         : 'bg-[#f54502] text-white hover:bg-[#f54502]/90'
                     }`}
                   >
