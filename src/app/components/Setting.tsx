@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import Password from './settings/Password';
 import Notifications from './settings/Notification';
-// import Payment from './settings/Payment';
 import Account from './settings/Account';
 
 
@@ -23,9 +21,8 @@ const Settings = () => {
       <div className="overflow-x-auto mb-8">
         <div className="flex min-w-max border-b border-gray-200 dark:border-gray-700">
           {[
-        { name: 'Passwords', id: 0 },
-        { name: 'Account', id: 1 },
-        { name: 'Notifications', id: 2 },
+        { name: 'Account', id: 0 },
+        { name: 'Notifications', id: 1 },
           ].map((tab) => (
         <button
           key={tab.id}
@@ -48,9 +45,8 @@ const Settings = () => {
 
       {/* Content Area */}
       <div className='flex-1'>
-      {activeTab === 0 && <Password />}
-      {activeTab === 1 && <Account />}
-      {activeTab === 2 && <Notifications />}
+      {activeTab === 0 && <Account />}
+      {activeTab === 1 && <Notifications />}
       </div>
     </div>
   );
