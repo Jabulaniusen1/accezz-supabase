@@ -307,7 +307,7 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
     });
     setQuantity(1);
     setTotalPrice(Number(ticket.price.replace(/[^\d.-]/g, '')));
-  };
+  }; 
 
   const handleQuantityChange = (newQuantity: number) => {
     setQuantity(newQuantity);

@@ -605,7 +605,48 @@ for each row execute function public.ensure_inventory_available();
 --   update public.orders set status = 'paid' where id = :order_id;
 --   select public.issue_tickets_and_update_inventory(:order_id);
 
--- 18) Storage policies (event images and gallery)
+-- 18) Performance indexes for critical queries
+-- These indexes dramatically improve ticket creation and retrieval performance
+
+-- Order indexes
+create index if not exists idx_orders_event_id on public.orders(event_id);
+create index if not exists idx_orders_buyer_user_id on public.orders(buyer_user_id);
+create index if not exists idx_orders_status on public.orders(status);
+create index if not exists idx_orders_buyer_email on public.orders(buyer_email);
+create index if not exists idx_orders_payment_reference on public.orders(payment_reference);
+
+-- Ticket indexes
+create index if not exists idx_tickets_order_id on public.tickets(order_id);
+create index if not exists idx_tickets_event_id on public.tickets(event_id);
+create index if not exists idx_tickets_ticket_type_id on public.tickets(ticket_type_id);
+create index if not exists idx_tickets_code on public.tickets(ticket_code);
+create index if not exists idx_tickets_validation_status on public.tickets(validation_status);
+
+-- Ticket type indexes
+create index if not exists idx_ticket_types_event_id on public.ticket_types(event_id);
+create index if not exists idx_ticket_types_event_name on public.ticket_types(event_id, name);
+
+-- Event gallery indexes
+create index if not exists idx_event_gallery_event_id on public.event_gallery(event_id);
+
+-- Ticket scans indexes
+create index if not exists idx_ticket_scans_ticket_id on public.ticket_scans(ticket_id);
+create index if not exists idx_ticket_scans_scanned_by on public.ticket_scans(scanned_by_user_id);
+
+-- Event views indexes
+create index if not exists idx_event_views_event_id on public.event_views(event_id);
+create index if not exists idx_event_views_created_at on public.event_views(created_at desc);
+
+-- Payment transactions indexes
+create index if not exists idx_payment_transactions_order_id on public.payment_transactions(order_id);
+create index if not exists idx_payment_transactions_provider_ref on public.payment_transactions(provider_ref);
+
+-- Notification indexes
+create index if not exists idx_notifications_user_id on public.notifications(user_id);
+create index if not exists idx_notifications_read_at on public.notifications(read_at);
+create index if not exists idx_notifications_created_at on public.notifications(created_at desc);
+
+-- 19) Storage policies (event images and gallery)
 -- Enable authenticated users to write to their own scoped folders; public read
 -- Note: storage.objects already has RLS enabled by Supabase
 

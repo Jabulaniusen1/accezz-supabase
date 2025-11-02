@@ -154,7 +154,7 @@ const SuccessContent = () => {
         setShowFailureModal(true);
         setIsVerifying(false);
       }
-    };
+    }; 
 
     verifyPayment();
   }, [searchParams]);

@@ -51,6 +51,21 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
   const [error, setError] = useState<string | null>(null);
   const hasAutoDownloaded = useRef(false);
   
+  // Generate fallback QR code if not available
+  const generateFallbackQR = async (ticketId: string, ticketCode: string): Promise<string> => {
+    try {
+      const QRCodeLib = await import('qrcode').then(m => m.default);
+      const baseUrl = window.location.origin;
+      const validateUrl = `${baseUrl}/validate-ticket?ticketId=${ticketId}&signature=${ticketCode}`;
+      return await QRCodeLib.toDataURL(validateUrl, { width: 400, margin: 2 });
+    } catch {
+      // Fallback to external service if qrcode library fails
+      const baseUrl = window.location.origin;
+      const encodedUrl = encodeURIComponent(`${baseUrl}/validate-ticket?ticketId=${ticketId}&signature=${ticketCode}`);
+      return `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodedUrl}`;
+    }
+  };
+
   // Fetch ticket data from Supabase
   const fetchTicketData = async () => {
     try {
@@ -89,6 +104,12 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
 
       if (ticketError || !ticket) throw ticketError || new Error('Ticket not found');
 
+      // Generate fallback QR if not available
+      let qrCodeUrl = ticket.qr_code_url || '';
+      if (!qrCodeUrl && ticket.ticket_code) {
+        qrCodeUrl = await generateFallbackQR(ticket.id, ticket.ticket_code);
+      }
+
       // Map ticket data
       const mappedTicketData: TicketData = {
         id: ticket.id,
@@ -99,7 +120,7 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
         ticketType: ticket.ticket_types.name,
         price: Number(ticket.price),
         purchaseDate: ticket.created_at,
-        qrCode: ticket.qr_code_url || '',
+        qrCode: qrCodeUrl,
         currency: ticket.currency || 'NGN',
         attendees: ticket.orders.meta?.attendees || [],
       };
@@ -137,13 +158,10 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
   useEffect(() => {
     if (autoDownload && ticketData && eventData && !hasAutoDownloaded.current && !loading && !error) {
       hasAutoDownloaded.current = true;
-      // Small delay to ensure QR code is loaded
-      setTimeout(() => {
-        downloadPDF().catch((err) => {
-          console.error('Auto-download failed:', err);
-          // Don't show error to user, just log it
-        });
-      }, 500);
+      downloadPDF().catch((err) => {
+        console.error('Auto-download failed:', err);
+        // Don't show error to user, just log it
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoDownload, ticketData, eventData, loading, error]);
@@ -484,7 +502,7 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
             onClick={() => router.push('/')}
             className="absolute top-4 left-4 sm:top-6 sm:left-6 z-10 flex items-center gap-2 px-3 py-2 rounded-lg bg-white/90 hover:bg-white text-gray-600 hover:text-[#f54502] transition-all duration-200 shadow-sm hover:shadow-md"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"> 
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             <span className="text-sm font-medium">Go Back</span>

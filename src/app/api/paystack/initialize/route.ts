@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
         amount: Math.round(Number(amount) * 100),
         currency,
         reference,
-        callback_url: callback,
+        callback_url: callback, 
         metadata: {
           orderId,
           integration: 'accezz-supabase'

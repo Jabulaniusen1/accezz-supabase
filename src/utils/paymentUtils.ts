@@ -198,31 +198,7 @@ export async function createTicketsForOrder(orderId: string): Promise<string[]> 
 
     // Ensure order is paid (required by RLS policy)
     if (order.status !== 'paid') {
-      // Try to update to paid if it's not already
-      const { error: updateError } = await supabase
-        .from('orders')
-        .update({ status: 'paid' })
-        .eq('id', orderId);
-      
-      if (updateError) {
-        throw new Error('Order must be paid before creating tickets');
-      }
-      
-      // Re-fetch order to get updated status
-      const { data: updatedOrder, error: refetchError } = await supabase
-        .from('orders')
-        .select('*, events!inner(*)')
-        .eq('id', orderId)
-        .single();
-      
-      if (refetchError || !updatedOrder) throw refetchError || new Error('Failed to verify order status');
-      
-      if (updatedOrder.status !== 'paid') {
-        throw new Error('Order must be paid before creating tickets');
-      }
-      
-      // Use updated order data
-      Object.assign(order, updatedOrder);
+      throw new Error('Order must be paid before creating tickets');
     }
 
     const meta = order.meta as { ticketTypeName?: string; quantity?: number; attendees?: Array<{ name: string; email: string }>; } | null;
@@ -422,4 +398,3 @@ export async function createFreeTickets(params: CreateOrderParams): Promise<{ ti
     throw error;
   }
 }
-

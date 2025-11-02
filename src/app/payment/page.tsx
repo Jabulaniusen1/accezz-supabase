@@ -26,7 +26,7 @@ function PaymentContent() {
           if (raw) {
             const p = JSON.parse(raw);
             eventSlug = p.eventSlug || null;
-          }
+          } 
         } catch {}
         // Clear localStorage
         try { localStorage.removeItem('pendingPayment'); } catch {}
