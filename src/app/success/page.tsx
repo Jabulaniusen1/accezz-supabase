@@ -7,6 +7,7 @@ import Loader from "@/components/ui/loader/Loader";
 import PaymentFailedModal from "@/components/PaymentFailedModal";
 import { markOrderAsPaid, createTicketsForOrder } from "@/utils/paymentUtils";
 import { supabase } from "@/utils/supabaseClient";
+import { clearTicketPurchaseState } from "@/utils/localStorage";
 
 const SuccessContent = () => {
   const router = useRouter();
@@ -26,6 +27,7 @@ const SuccessContent = () => {
       if (status === 'cancelled') {
         // Clear localStorage
         try { localStorage.removeItem('pendingPayment'); } catch {}
+        try { clearTicketPurchaseState(); } catch {}
         
         // Use orderId from URL to get event and redirect
         if (orderId) {
@@ -57,6 +59,7 @@ const SuccessContent = () => {
       }
       if (status === 'failed') {
         try { localStorage.removeItem('pendingPayment'); } catch {}
+        try { clearTicketPurchaseState(); } catch {}
         setShowFailureModal(true);
         setIsVerifying(false);
         return;
@@ -111,6 +114,10 @@ const SuccessContent = () => {
           }
 
           const firstTicketId = tickets[0].id;
+          
+          // Clear saved purchase state since payment is complete
+          try { clearTicketPurchaseState(); } catch {}
+          try { localStorage.removeItem('pendingPayment'); } catch {}
           
           // Store in state immediately and update URL (non-blocking navigation)
           setTicketId(firstTicketId);

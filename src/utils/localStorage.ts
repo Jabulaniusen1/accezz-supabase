@@ -36,6 +36,62 @@ export const getFormProgress = (): Partial<Event> | null => {
   return null;
 };
 
+// Ticket purchase flow state persistence
+export const saveTicketPurchaseState = (state: {
+  eventSlug: string;
+  showTicketForm: boolean;
+  activeStep?: number;
+  selectedTicket?: { id: string; name: string; price: string; quantity: string; sold: string; details?: string };
+  quantity?: number;
+  fullName?: string;
+  email?: string;
+  phoneNumber?: string;
+  totalPrice?: number;
+  orderId?: string;
+  additionalTicketHolders?: Array<{ name: string; email: string }>;
+}) => {
+  try {
+    localStorage.setItem(
+      "ticketPurchaseState",
+      JSON.stringify({
+        ...state,
+        lastUpdated: new Date().toISOString(),
+      })
+    );
+  } catch (error) {
+    console.error("Error saving ticket purchase state:", error);
+  }
+};
+
+export const getTicketPurchaseState = () => {
+  try {
+    const saved = localStorage.getItem("ticketPurchaseState");
+    if (saved) {
+      const data = JSON.parse(saved);
+      // Check if data is older than 2 hours (shorter than form progress)
+      const isExpired = new Date().getTime() - new Date(data.lastUpdated).getTime() > 2 * 60 * 60 * 1000;
+      
+      if (isExpired) {
+        localStorage.removeItem("ticketPurchaseState");
+        return null;
+      }
+      return data;
+    }
+  } catch (error) {
+    console.error("Error getting ticket purchase state:", error);
+    localStorage.removeItem("ticketPurchaseState");
+  }
+  return null;
+};
+
+export const clearTicketPurchaseState = () => {
+  try {
+    localStorage.removeItem("ticketPurchaseState");
+  } catch (error) {
+    console.error("Error clearing ticket purchase state:", error);
+  }
+};
+
 // FUNCTION TO CLEAN UP ALL EXPIRED LOCALSTORAGE ITEMS
 export const cleanupLocalStorage = () => {
   Object.keys(localStorage).forEach(key => {

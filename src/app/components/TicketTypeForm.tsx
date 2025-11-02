@@ -5,6 +5,7 @@ import OrderInformationStep from './TicketFormSec/OrderInformationStep';
 import PaymentStep from './TicketFormSec/PaymentStep';
 import { fetchEventBySlug } from '@/utils/eventUtils';
 import { createOrder, createFreeTickets } from '@/utils/paymentUtils';
+import { saveTicketPurchaseState, getTicketPurchaseState, clearTicketPurchaseState } from '@/utils/localStorage';
 
 interface Ticket {
   id: string;
@@ -28,11 +29,12 @@ type TicketTypeFormProps = {
   }[];
   eventSlug: string;
   setToast: (toast: { type: 'success' | 'error'; message: string } | null) => void;
+  isOpen?: boolean;
 };
 
 interface Event { id: string; slug: string; }
 
-const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast }: TicketTypeFormProps) => {
+const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true }: TicketTypeFormProps) => {
   const [activeStep, setActiveStep] = useState(0);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [quantity, setQuantity] = useState(1);
@@ -77,6 +79,48 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast }: TicketTypeF
     fetchEvent();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventSlug]);
+
+  // Restore saved state on mount
+  useEffect(() => {
+    try {
+      const savedState = getTicketPurchaseState();
+      if (savedState && savedState.eventSlug === eventSlug && savedState.showTicketForm) {
+        if (savedState.activeStep !== undefined) setActiveStep(savedState.activeStep);
+        if (savedState.selectedTicket) setSelectedTicket(savedState.selectedTicket);
+        if (savedState.quantity !== undefined) setQuantity(savedState.quantity);
+        if (savedState.fullName) setFullName(savedState.fullName);
+        if (savedState.email) setEmail(savedState.email);
+        if (savedState.phoneNumber) setPhoneNumber(savedState.phoneNumber);
+        if (savedState.totalPrice !== undefined) setTotalPrice(savedState.totalPrice);
+        if (savedState.orderId) setOrderId(savedState.orderId);
+        if (savedState.additionalTicketHolders) setAdditionalTicketHolders(savedState.additionalTicketHolders);
+      }
+    } catch (error) {
+      console.error('Error restoring ticket purchase state:', error);
+    }
+  }, [eventSlug]);
+
+  // Save state whenever it changes (only when modal is open)
+  useEffect(() => {
+    if (!isOpen) return;
+    try {
+      saveTicketPurchaseState({
+        eventSlug,
+        showTicketForm: true,
+        activeStep,
+        selectedTicket: selectedTicket || undefined,
+        quantity,
+        fullName,
+        email,
+        phoneNumber,
+        totalPrice,
+        orderId: orderId || undefined,
+        additionalTicketHolders: additionalTicketHolders.length > 0 ? additionalTicketHolders : undefined,
+      });
+    } catch (error) {
+      console.error('Error saving ticket purchase state:', error);
+    }
+  }, [activeStep, selectedTicket, quantity, fullName, email, phoneNumber, totalPrice, orderId, additionalTicketHolders, eventSlug, isOpen]);
 
   const handleNext = async () => {
     if (activeStep === 0) {
@@ -200,6 +244,7 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast }: TicketTypeF
             currency: 'NGN',
           });
 
+          clearTicketPurchaseState();
           window.location.href = `/success?ticketId=${ticketId}`;
           return;
         } catch (error: unknown) {
@@ -289,6 +334,12 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast }: TicketTypeF
 
   const closeReceipt = () => {
     setIsPurchased(false);
+    clearTicketPurchaseState();
+    closeForm();
+  };
+
+  const handleCloseForm = () => {
+    clearTicketPurchaseState();
     closeForm();
   };
 
@@ -299,7 +350,7 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast }: TicketTypeF
       <div className="relative w-full max-w-3xl bg-white dark:bg-gray-900 rounded-2xl shadow-2xl">
         <div className="p-4 sm:p-6">
           <button
-            onClick={closeForm}
+            onClick={handleCloseForm}
             className="absolute top-4 right-4 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -5,6 +5,7 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { type Event } from '@/types/event';
 import { fetchEventBySlug } from '@/utils/eventUtils';
+import { getTicketPurchaseState } from '@/utils/localStorage';
 
 // ALWAYS-LOADED COMPONENTS (NO LAZY LOAD)
 import Loader from '@/components/ui/loader/Loader';
@@ -93,6 +94,18 @@ export default function VirtualEventPage() {
       isMounted = false;
     };
   }, [eventSlug, router]);
+
+  // Restore modal state on mount if saved
+  useEffect(() => {
+    try {
+      const savedState = getTicketPurchaseState();
+      if (savedState && savedState.eventSlug === eventSlug && savedState.showTicketForm) {
+        setShowTicketForm(true);
+      }
+    } catch (error) {
+      console.error('Error restoring modal state:', error);
+    }
+  }, [eventSlug]);
 
   // LOADING STATE
   if (loading) return <Loader />;
@@ -191,6 +204,7 @@ export default function VirtualEventPage() {
           tickets={selectedTicket ? [selectedTicket] : []}
           eventSlug={eventSlug as string}
           setToast={setToast}
+          isOpen={showTicketForm}
         />
       )}
 

@@ -8,6 +8,7 @@ import Toast from '../../../components/ui/Toast';
 import Header from '@/app/components/layout/Header';
 import Footer from '@/app/components/layout/Footer';
 import { fetchEventBySlug } from '@/utils/eventUtils';
+import { getTicketPurchaseState } from '@/utils/localStorage';
 
 const EventHeroSection = React.lazy(() => import('./components/EventHeroSection').then(module => ({ default: module.EventHeroSection })));
 const EventHostSection = React.lazy(() => import('./components/EventHostSection').then(module => ({ default: module.EventHostSection })));
@@ -98,6 +99,18 @@ const EventDetail = () => {
     };
   }, [eventSlug, showToast]);
 
+  // Restore modal state on mount if saved
+  useEffect(() => {
+    try {
+      const savedState = getTicketPurchaseState();
+      if (savedState && savedState.eventSlug === eventSlug && savedState.showTicketForm) {
+        setShowTicketForm(true);
+      }
+    } catch (error) {
+      console.error('Error restoring modal state:', error);
+    }
+  }, [eventSlug]);
+
   if (loading) {
     return <Loader />;
   }
@@ -158,6 +171,7 @@ const EventDetail = () => {
               })) || []}
               eventSlug={eventSlug as string}
               setToast={showToast}
+              isOpen={showTicketForm}
             />
           </React.Suspense>
         )}
