@@ -1,10 +1,11 @@
-// import Image from 'next/image';
 import React, { useState, useEffect, useCallback } from 'react';
 import SuccessModal from './modal/successModal';
 import Toast from '../../../components/ui/Toast';
 import Loader from '../../../components/ui/loader/Loaders';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/utils/supabaseClient';
+import { FiUser, FiMail, FiPhone, FiMapPin, FiGlobe, FiSave } from 'react-icons/fi';
+import { Building2 } from 'lucide-react';
 
 
 type UserDataType = {
@@ -105,67 +106,6 @@ const Profile = () => {
     }));
   };
 
-  // const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = e.target.files?.[0];
-  //   if (file) {
-  //     handleImageUpload(file);
-  //   }
-  // };
-
-  // const handleImageUpload = async (file: File) => {
-  //   setLoading(true);
-  //   try {
-  //     const token = localStorage.getItem('token');
-  //     if (!token) {
-  //       toast('error', 'Please login to update your profile picture');
-  //       return;
-  //     }
-
-  //     // Convert image file to base64
-  //     const reader = new FileReader();
-  //     reader.onloadend = async () => {
-  //       const base64String = reader.result as string;
-        
-  //       // Update userData with the new image
-  //       setUserData(prevData => ({
-  //         ...prevData,
-  //         profilePhoto: base64String
-  //       }));
-
-  //       try {
-  //         const response = await axios.patch(
-  //           `${BASE_URL}api/v1/users/profile`,
-  //           { ...userData, profilePhoto: base64String },
-  //           {
-  //             headers: {
-  //               Authorization: `Bearer ${token}`,
-  //               'Content-Type': 'application/json',
-  //             },
-  //           }
-  //         );
-
-  //         if (response.data) {
-  //           localStorage.setItem('user', JSON.stringify(response.data.data));
-  //           toast('success', 'Profile picture updated successfully!');
-  //         }
-  //       } catch (error) {
-  //         if (axios.isAxiosError(error)) {
-  //           handleAxiosError(error);
-  //         } else {
-  //           toast('error', 'Failed to update profile picture');
-  //         }
-  //       }
-  //     };
-
-  //     reader.readAsDataURL(file);
-  //   } catch (error) {
-  //     console.log(error);
-  //     toast('error', 'Error processing image');
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -214,7 +154,7 @@ const Profile = () => {
 
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
       {loading && <Loader />}
       {showToast && (
         <Toast
@@ -224,181 +164,184 @@ const Profile = () => {
         />
       )}
       
+      {/* Header Section */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Profile Settings</h1>
+        <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">
+          Profile Settings
+        </h1>
         <p className="text-gray-600 dark:text-gray-400 text-sm lg:text-base">
           Manage your personal information and account details
         </p>
       </div>
 
-      {/* ===================== && •FORM SECTION• && ======================== */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 lg:p-8">
-        <form onSubmit={handleSubmit} className="space-y-6">
-        {/* ===================== && •PROFILE SETUP SECTION• && =========================== */}
-        {/* <div className="flex items-center space-x-4">
-          <div className="relative">
-            <Image
-              src={userData?.profilePhoto || '/phishing.png'}
-              width={150}
-              height={150}
-              alt="Profile"
-              className="w-24 h-24 rounded-full object-cover border-4 border-blue-500 shadow-md"
-            />
-          </div>
-          <label htmlFor="profilePhoto" className="cursor-pointer">
-            <span className="text-blue-500 font-semibold underline">Upload Profile Photo</span>
-            <input
-              type="file"
-              id="profilePhoto"
-              name="profilePhoto"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="hidden"
-            />
-          </label>
-        </div> */}
+      <form onSubmit={handleSubmit}>
+        {/* Personal Information Section */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 lg:p-8 mb-6">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+            <FiUser className="w-5 h-5 text-[#f54502]" />
+            Personal Information
+          </h2>
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Full Name */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <FiUser className="w-4 h-4 text-gray-500" />
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  name="fullName"
+                  value={userData?.fullName}
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-all duration-200"
+                  style={{ borderRadius: '5px' }}
+                  placeholder="Enter your full name"
+                  required
+                />
+                {errorMessages.fullName && (
+                  <p className="text-red-500 text-sm mt-1">{errorMessages.fullName}</p>
+                )}
+              </div>
 
-        {/* ===================== && •INPUT FIELDS SECTION• && ========================== */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Full Name</label>
-            <input
-              type="text"
-              name="fullName"
-              value={userData?.fullName}
-              onChange={handleChange}
-              className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-colors"
-              placeholder="Enter your full name"
-            />
-            {errorMessages.fullName && (
-              <p className="text-red-500 text-sm">{errorMessages.fullName}</p>
-            )}
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Business Name (optional)</label>
-            <input
-              type="text"
-              name="businessName"
-              value={userData?.businessName}
-              onChange={handleChange}
-              className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-colors"
-              placeholder="Enter your business name"
-            />
+              {/* Business Name */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <Building2 className="w-4 h-4 text-gray-500" />
+                  Business Name <span className="text-gray-400 text-xs">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  name="businessName"
+                  value={userData?.businessName}
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-all duration-200"
+                  style={{ borderRadius: '5px' }}
+                  placeholder="Enter your business name"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Email */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <FiMail className="w-4 h-4 text-gray-500" />
+                  Email Address
+                </label>
+                <div className="relative">
+                  <input
+                    type="email"
+                    name="email"
+                    value={userData?.email}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 rounded-lg px-4 py-3 text-gray-600 dark:text-gray-400 cursor-not-allowed"
+                    placeholder="Enter your email"
+                    readOnly
+                    disabled
+                  />
+                  <div className="absolute inset-0 bg-gray-50 dark:bg-gray-800 rounded-lg opacity-50 cursor-not-allowed"></div>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Email cannot be changed from here
+                </p>
+                {errorMessages.email && (
+                  <p className="text-red-500 text-sm mt-1">{errorMessages.email}</p>
+                )}
+              </div>
+
+              {/* Phone Number */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <FiPhone className="w-4 h-4 text-gray-500" />
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={userData?.phone}
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-all duration-200"
+                  style={{ borderRadius: '5px' }}
+                  placeholder="Enter your phone number"
+                />
+                {errorMessages.phone && (
+                  <p className="text-red-500 text-sm mt-1">{errorMessages.phone}</p>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Email</label>
-            <input
-              type="email"
-              name="email"
-              value={userData?.email}
-              onChange={handleChange}
-              className="w-full border border-gray-300 dark:border-none shadow-md dark:shadow-gray-500/50 bg-transparent dark:bg-gray-800 rounded-lg px-3 py-2 text-gray-400"
-              placeholder="Enter your email"
-              readOnly
-            />
-            {errorMessages.email && (
-              <p className="text-red-500 text-sm">{errorMessages.email}</p>
-            )}
-          </div>
+        {/* Business Details Section */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 lg:p-8 mb-6">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+            <Building2 className="w-5 h-5 text-[#f54502]" />
+            Business Details
+          </h2>
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Company Website */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <FiGlobe className="w-4 h-4 text-gray-500" />
+                  Company Website <span className="text-gray-400 text-xs">(optional)</span>
+                </label>
+                <input
+                  type="url"
+                  name="companyWebsite"
+                  value={userData?.companyWebsite}
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-all duration-200"
+                  style={{ borderRadius: '5px' }}
+                  placeholder="https://example.com"
+                />
+                {errorMessages.companyWebsite && (
+                  <p className="text-red-500 text-sm mt-1">{errorMessages.companyWebsite}</p>
+                )}
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">Phone Number</label>
-            <input
-              type="text"
-              name="phone"
-              value={userData?.phone}
-              onChange={handleChange}
-              className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-colors"
-              placeholder="Enter your phone number"
-            />
-            {errorMessages.phone && (
-              <p className="text-red-500 text-sm">{errorMessages.phone}</p>
-            )}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Company Website</label>
-            <input
-              type="text"
-              name="companyWebsite"
-              value={userData?.companyWebsite}
-              onChange={handleChange}
-              className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-colors"
-              placeholder="Enter your company website "
-            />
-            {errorMessages.companyWebsite && (
-              <p className="text-red-500 text-sm">{errorMessages.companyWebsite}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Address</label>
-            <input
-              type="text"
-              name="address"
-              value={userData?.address}
-              onChange={handleChange}
-              className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-colors"
-              placeholder="Enter your address"
-            />
-            {errorMessages.address && (
-              <p className="text-red-500 text-sm">{errorMessages.address}</p>
-            )}
+              {/* Address */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <FiMapPin className="w-4 h-4 text-gray-500" />
+                  Address <span className="text-gray-400 text-xs">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  name="address"
+                  value={userData?.address}
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-all duration-200"
+                  style={{ borderRadius: '5px' }}
+                  placeholder="Enter your address"
+                />
+                {errorMessages.address && (
+                  <p className="text-red-500 text-sm mt-1">{errorMessages.address}</p>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Time Zone</label>
-            <select
-              name="timeZone"
-              value={userData?.timeZone}
-              onChange={handleChange}
-              className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-colors"
+        {/* Submit Button Section */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 lg:p-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              <p>Make sure all information is correct before saving.</p>
+            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex items-center gap-2 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white font-semibold py-3 px-8 rounded-lg shadow-sm hover:from-[#f54502]/90 hover:to-[#d63a02]/90 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              style={{ borderRadius: '5px' }}
             >
-              <option value="">Select your time zone</option>
-              <option value="UTC-12:00">UTC-12:00</option>
-              <option value="UTC-11:00">UTC-11:00</option>
-              <option value="UTC+00:00">UTC+00:00 (GMT)</option>
-              <option value="UTC+01:00">UTC+01:00 (CET)</option>
-              <option value="UTC+05:30">UTC+05:30 (IST)</option>
-              <option value="UTC+09:00">UTC+09:00 (JST)</option>
-            </select>
+              <FiSave className="w-5 h-5" />
+              {loading ? 'Saving...' : 'Save Changes'}
+            </button>
           </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Event Category (optional)</label>
-            <select
-              name="eventCategory"
-              value={userData?.eventCategory}
-              onChange={handleChange}
-              className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-colors"
-            >
-              <option value="">Select an event category</option>
-              <option value="Music">Music</option>
-              <option value="Sports">Sports</option>
-              <option value="Business">Business</option>
-              <option value="Education">Education</option>
-              <option value="Technology">Technology</option>
-            </select>
-          </div>
-        </div> */}
-
-        <div>
-          <button
-            type="submit"
-            className="bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white font-semibold py-3 px-6 rounded-lg shadow hover:from-[#f54502]/90 hover:to-[#d63a02]/90 transition-all duration-200 transform hover:scale-105"
-          >
-            Update Profile
-          </button>
         </div>
-        </form>
-      </div>
+      </form>
 
       {showModal && (
         <SuccessModal
@@ -407,7 +350,6 @@ const Profile = () => {
           onClose={() => setShowModal(false)}
         />
       )}
-
     </div>
   );
 };

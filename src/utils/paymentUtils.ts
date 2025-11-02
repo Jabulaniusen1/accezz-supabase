@@ -187,10 +187,10 @@ export async function createOrder(params: CreateOrderParams): Promise<{ orderId:
  */
 export async function createTicketsForOrder(orderId: string): Promise<string[]> {
   try {
-    // Fetch order with event details
+    // Fetch order details (don't join events to avoid RLS issues)
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .select('*, events!inner(*)')
+      .select('*')
       .eq('id', orderId)
       .single();
 

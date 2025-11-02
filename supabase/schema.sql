@@ -209,6 +209,8 @@ for each row execute function public.handle_updated_at();
 create or replace function public.enforce_ticket_event_match()
 returns trigger
 language plpgsql
+security definer
+set search_path = public
 as $$
 declare
   tt_event uuid;
@@ -242,7 +244,11 @@ execute function public.enforce_ticket_event_match();
 
 -- 7) Atomic reservation + issuance helper
 create or replace function public.issue_tickets_and_update_inventory(p_order_id uuid)
-returns void language plpgsql as $$
+returns void 
+language plpgsql 
+security definer
+set search_path = public
+as $$
 declare
   r record;
 begin
@@ -495,12 +501,7 @@ for select using (
 drop policy if exists "tickets_insert_for_paid_orders" on public.tickets;
 create policy "tickets_insert_for_paid_orders" on public.tickets
 for insert with check (
-  exists(
-    select 1
-    from public.orders o
-    where o.id = order_id
-      and o.status = 'paid'
-  )
+  public.is_order_paid(order_id)
 );
 
 drop policy if exists "tickets_update_for_validation" on public.tickets;
@@ -578,19 +579,46 @@ $$;
 alter table public.tickets
   alter column ticket_code set default public.generate_ticket_code();
 
+-- 15b) Helper function to check if order is paid (for RLS policies)
+create or replace function public.is_order_paid(p_order_id uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  return exists(
+    select 1
+    from public.orders
+    where id = p_order_id
+      and status = 'paid'
+  );
+end;
+$$;
+
 -- 16) Inventory check on creating tickets (availability)
 create or replace function public.ensure_inventory_available()
-returns trigger language plpgsql as $$
+returns trigger 
+language plpgsql 
+security definer
+set search_path = public
+as $$
 declare
   available int;
 begin
-  select (quantity - sold) into available from public.ticket_types where id = new.ticket_type_id for update;
+  select (quantity - sold) into available 
+  from public.ticket_types 
+  where id = new.ticket_type_id 
+  for update;
+  
   if available is null then
     raise exception 'Ticket type not found';
   end if;
+  
   if available <= 0 then
     raise exception 'Ticket type is sold out';
   end if;
+  
   return new;
 end;
 $$;
