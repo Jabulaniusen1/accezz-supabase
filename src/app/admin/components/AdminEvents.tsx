@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/utils/supabaseClient';
-import { useRouter } from 'next/navigation';
 import Toast from '@/components/ui/Toast';
 import { Skeleton, CardSkeleton } from '@/components/ui/Skeleton';
 import ConfirmationModal from '@/components/ConfirmationModal';
@@ -31,7 +30,6 @@ const AdminEvents = () => {
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<string | null>(null);
-  const router = useRouter();
 
   const fetchEvents = useCallback(async () => {
     try {
