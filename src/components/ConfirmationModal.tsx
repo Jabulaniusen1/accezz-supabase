@@ -34,7 +34,7 @@ const ConfirmationModal = ({
           initial={{ scale: 0.95 }}
           animate={{ scale: 1 }}
           exit={{ scale: 0.95 }}
-          className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl"
+          className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl rounded-xl"
         >
           <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
             {itemName}
@@ -45,13 +45,15 @@ const ConfirmationModal = ({
           <div className="flex justify-end space-x-4">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              style={{ borderRadius: '5px' }}
             >
               Cancel
             </button>
             <button
               onClick={onConfirm}
-              className={`px-4 py-2 text-white rounded-lg transition-colors ${confirmButtonClass}`}
+              className={`px-4 py-2 text-white transition-colors ${confirmButtonClass}`}
+              style={{ borderRadius: '5px' }}
             >
               {confirmText}
             </button>
