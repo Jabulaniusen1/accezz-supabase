@@ -15,6 +15,7 @@ const SuccessContent = () => {
   const [isVerifying, setIsVerifying] = useState(true);
   const [ticketId, setTicketId] = useState<string | null>(null);
   const [showFailureModal, setShowFailureModal] = useState(false);
+  const [eventSlug, setEventSlug] = useState<string | null>(null);
 
   useEffect(() => {
     const verifyPayment = async () => {
@@ -23,13 +24,32 @@ const SuccessContent = () => {
       const orderId = searchParams.get('orderId');
       const status = searchParams.get('status');
     
+      // Store event slug from localStorage for later use before clearing
+      let storedEventSlug: string | null = null;
+      try {
+        const raw = localStorage.getItem('pendingPayment');
+        if (raw) {
+          const p = JSON.parse(raw);
+          if (p.eventSlug) {
+            setEventSlug(p.eventSlug); // For modal usage
+            storedEventSlug = p.eventSlug; // For immediate use
+          }
+        }
+      } catch {}
+    
       // Handle explicit failure cases
       if (status === 'cancelled') {
         // Clear localStorage
         try { localStorage.removeItem('pendingPayment'); } catch {}
         try { clearTicketPurchaseState(); } catch {}
         
-        // Use orderId from URL to get event and redirect
+        // Use stored event slug to redirect
+        if (storedEventSlug) {
+          router.replace(`/${storedEventSlug}`);
+          return;
+        }
+        
+        // Fallback: Use orderId from URL to get event and redirect
         if (orderId) {
           try {
             const { data: order, error: orderError } = await supabase
@@ -39,9 +59,9 @@ const SuccessContent = () => {
               .single();
             
             if (!orderError && order) {
-              const eventSlug = (order as { events?: { slug?: string | null } | null }).events?.slug || undefined;
-              if (eventSlug) {
-                router.replace(`/${eventSlug}`);
+              const slug = (order as { events?: { slug?: string | null } | null }).events?.slug || undefined;
+              if (slug) {
+                router.replace(`/${slug}`);
                 return;
               }
               const eventId = order.event_id;
@@ -177,9 +197,24 @@ const SuccessContent = () => {
     <>
       {showFailureModal && (
         <PaymentFailedModal
-          onClose={() => setShowFailureModal(false)}
-          onTryAgain={() => {
+          onClose={async () => {
             setShowFailureModal(false);
+            // Redirect to event details
+            if (eventSlug) {
+              router.replace(`/${eventSlug}`);
+              return;
+            }
+            // Fallback: go back to previous page
+            router.back();
+          }}
+          onTryAgain={async () => {
+            setShowFailureModal(false);
+            // Redirect to event details
+            if (eventSlug) {
+              router.replace(`/${eventSlug}`);
+              return;
+            }
+            // Fallback: go back to previous page
             router.back();
           }}
         />

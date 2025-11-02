@@ -15,12 +15,52 @@ function PaymentContent() {
       const amount = searchParams.get('amount');
       const email = searchParams.get('email');
       const status = searchParams.get('status');
+      const reference = searchParams.get('reference');
 
-      // If Paystack redirected back with cancelled/failed status, go back
+      // If Paystack redirected back with cancelled/failed status, redirect to event
       if (status === 'cancelled' || status === 'failed') {
+        // Get event slug before clearing localStorage
+        let eventSlug: string | null = null;
+        try {
+          const raw = localStorage.getItem('pendingPayment');
+          if (raw) {
+            const p = JSON.parse(raw);
+            eventSlug = p.eventSlug || null;
+          }
+        } catch {}
         // Clear localStorage
         try { localStorage.removeItem('pendingPayment'); } catch {}
-        // Simply go back to previous page (event details)
+        // Redirect to event details page using stored event slug
+        if (eventSlug) {
+          router.replace(`/${eventSlug}`);
+          return;
+        }
+        // Fallback to browser back if no event slug found
+        router.back();
+        return;
+      }
+
+      // If this is a return from Paystack with reference but no status (cancelled payment)
+      // Paystack doesn't send status when cancelled, just redirects back
+      const wasRedirectedBack = sessionStorage.getItem('paystack_redirected');
+      if (wasRedirectedBack && !reference && orderId) {
+        // Get event slug before clearing localStorage
+        let eventSlug: string | null = null;
+        try {
+          const raw = localStorage.getItem('pendingPayment');
+          if (raw) {
+            const p = JSON.parse(raw);
+            eventSlug = p.eventSlug || null;
+          }
+        } catch {}
+        // Clear the flag and localStorage
+        sessionStorage.removeItem('paystack_redirected');
+        try { localStorage.removeItem('pendingPayment'); } catch {}
+        // Redirect to event details
+        if (eventSlug) {
+          router.replace(`/${eventSlug}`);
+          return;
+        }
         router.back();
         return;
       }
@@ -59,6 +99,10 @@ function PaymentContent() {
         if (!data?.authorization_url) {
           throw new Error('Invalid response from payment initializer');
         }
+        
+        // Set a flag to indicate we're redirecting to Paystack
+        sessionStorage.setItem('paystack_redirected', 'true');
+        
         window.location.href = data.authorization_url;
       } catch (e: unknown) {
         const message = e instanceof Error ? e.message : 'Failed to start payment';

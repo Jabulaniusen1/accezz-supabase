@@ -190,6 +190,7 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
           localStorage.setItem('pendingPayment', JSON.stringify({
             orderId: createdOrderId,
             eventId: eventId,
+            eventSlug: eventSlug,  // Store event slug for proper redirect on cancel
             email,
             amount: totalPrice,
             currency: 'NGN'
