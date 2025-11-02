@@ -7,7 +7,6 @@ import Toast from '@/components/ui/Toast';
 import { Skeleton, CardSkeleton } from '@/components/ui/Skeleton';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import { FiSearch, FiTrash2, FiExternalLink } from 'react-icons/fi';
-import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
 
 interface Event {

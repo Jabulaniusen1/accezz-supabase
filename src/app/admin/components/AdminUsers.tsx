@@ -31,9 +31,34 @@ const AdminUsers = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [verificationFilter, setVerificationFilter] = useState<'all' | 'verified' | 'unverified'>('all');
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  interface UserEvent {
+    id: string;
+    title: string;
+    slug: string;
+    date: string;
+    created_at: string;
+    status: string;
+    tickets_sold: number;
+    revenue: number;
+  }
+
+  interface ProfileData {
+    user_id: string;
+    full_name: string | null;
+    verified: boolean;
+    created_at: string;
+    phone: string | null;
+    country: string | null;
+    currency: string | null;
+    account_name: string | null;
+    account_number: string | null;
+    bank_name: string | null;
+    bank_code: string | null;
+  }
+
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [selectedUserDetails, setSelectedUserDetails] = useState<User | null>(null);
-  const [userEvents, setUserEvents] = useState<any[]>([]);
+  const [userEvents, setUserEvents] = useState<UserEvent[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(false);
   const [showUserDetails, setShowUserDetails] = useState(false);
 
@@ -42,11 +67,11 @@ const AdminUsers = () => {
       setLoading(true);
       
       // Fetch all profiles - Supabase has a default limit of 1000, so we'll fetch in batches if needed
-      let allProfiles: any[] = [];
+      let allProfiles: ProfileData[] = [];
       let hasMore = true;
       let from = 0;
       const pageSize = 1000;
-      let fetchError: any = null;
+      let fetchError: Error | null = null;
 
       while (hasMore) {
         const { data: profilesBatch, error: batchError } = await supabase
@@ -139,7 +164,7 @@ const AdminUsers = () => {
         // Prioritize full_name from profiles table, fallback to name from API if profiles is null
         const displayName = profile.full_name || nameMap.get(profile.user_id) || null;
         // Handle verification - check for true boolean (not null, undefined, or false)
-        const isVerified = profile.verified === true || profile.verified === 'true';
+        const isVerified = profile.verified === true;
         return {
           user_id: profile.user_id,
           full_name: displayName,

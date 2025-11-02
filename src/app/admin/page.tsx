@@ -12,7 +12,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import AdminAnalytics from './components/AdminAnalytics';
 import AdminEvents from './components/AdminEvents';
-import { Skeleton, TableSkeleton, CardSkeleton } from '@/components/ui/Skeleton';
+import { Skeleton, CardSkeleton } from '@/components/ui/Skeleton';
 
 type AdminTab = 'users' | 'events' | 'analytics';
 

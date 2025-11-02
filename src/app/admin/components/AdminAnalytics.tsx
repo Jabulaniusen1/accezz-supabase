@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import Toast from '@/components/ui/Toast';
 import { FiTrendingUp, FiDollarSign, FiCalendar, FiUsers, FiArrowUp, FiArrowDown } from 'react-icons/fi';
-import { Skeleton, CardSkeleton } from '@/components/ui/Skeleton';
+import { CardSkeleton } from '@/components/ui/Skeleton';
 import { Line, Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,

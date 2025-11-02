@@ -95,8 +95,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Use service role to access auth.users for emails
-    let emails: [string, string][] = [];
-    let names: [string, string][] = [];
+    const emails: [string, string][] = [];
+    const names: [string, string][] = [];
 
     try {
       const { data: authUsers, error: usersError } = await supabaseAdmin.auth.admin.listUsers();
