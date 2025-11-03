@@ -69,6 +69,22 @@ function Signup() {
 
       await signUpWithEmail({ email, password, fullName: `${firstName} ${lastName}`, phone });
       localStorage.setItem("userEmail", email);
+      
+      // Send welcome email (non-blocking)
+      try {
+        await fetch('/api/emails/welcome', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            fullName: `${firstName} ${lastName}`,
+          }),
+        });
+      } catch (emailError) {
+        console.error('Failed to send welcome email:', emailError);
+        // Don't block signup if email fails
+      }
+      
       toast("success", "Signup successful! Please check your email for verification.");
       setTimeout(() => {
         router.push("/auth/login?verify=true");

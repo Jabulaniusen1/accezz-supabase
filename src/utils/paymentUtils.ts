@@ -1,5 +1,129 @@
 import { supabase } from './supabaseClient';
 
+/**
+ * Order type based on database schema
+ */
+interface Order {
+  id: string;
+  event_id: string;
+  buyer_user_id: string | null;
+  buyer_full_name: string | null;
+  buyer_email: string;
+  buyer_phone: string | null;
+  currency: string | null;
+  total_amount: number;
+  status: 'pending' | 'paid' | 'failed' | 'refunded' | 'cancelled';
+  payment_provider: string | null;
+  payment_reference: string | null;
+  meta: {
+    ticketTypeName?: string;
+    quantity?: number;
+    attendees?: Array<{ name: string; email: string }>;
+  } | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Ticket type based on database schema
+ */
+interface TicketType {
+  id: string;
+  event_id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  sold: number;
+  details: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Helper function to send ticket email after tickets are created
+ */
+async function sendTicketEmail({
+  orderId,
+  order,
+  ticketType,
+  ticketCodes,
+}: {
+  orderId: string;
+  order: Order;
+  ticketType: TicketType;
+  ticketCodes: string[];
+}): Promise<void> {
+  try {
+    // Fetch event details
+    const { data: event, error: eventError } = await supabase
+      .from('events')
+      .select('title, date, time, venue, location')
+      .eq('id', order.event_id)
+      .single();
+
+    if (eventError) {
+      console.error('[sendTicketEmail] Error fetching event:', eventError);
+      return;
+    }
+
+    // Fetch primary ticket to get QR code URL and ticket ID
+    const { data: primaryTicket } = await supabase
+      .from('tickets')
+      .select('qr_code_url, id, ticket_code')
+      .eq('order_id', orderId)
+      .eq('attendee_email', order.buyer_email)
+      .limit(1)
+      .single();
+
+    // Format date and time
+    const eventDate = event.date ? new Date(event.date).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }) : 'TBD';
+
+    const eventTime = event.time || 'TBD';
+
+    // Send email via API route
+    const baseUrl = typeof window !== 'undefined' 
+      ? window.location.origin 
+      : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    
+    const response = await fetch(`${baseUrl}/api/emails/ticket`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: order.buyer_email,
+        fullName: order.buyer_full_name,
+        eventTitle: event.title || 'Event',
+        eventDate,
+        eventTime,
+        venue: event.venue || event.location || 'TBD',
+        ticketType: ticketType.name,
+        quantity: ticketCodes.length,
+        ticketCodes,
+        totalAmount: order.total_amount,
+        currency: order.currency,
+        orderId,
+        qrCodeUrl: primaryTicket?.qr_code_url,
+        ticketId: primaryTicket?.id,
+        primaryTicketCode: primaryTicket?.ticket_code || ticketCodes[0],
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || 'Failed to send ticket email');
+    }
+
+    console.log('[sendTicketEmail] Ticket email sent successfully');
+  } catch (error) {
+    console.error('[sendTicketEmail] Error:', error);
+    // Don't throw - this is a background operation
+  }
+}
+
 interface CreateOrderParams {
   eventId: string;
   ticketTypeName: string;
@@ -338,6 +462,17 @@ export async function createTicketsForOrder(orderId: string): Promise<string[]> 
       console.error('Error updating ticket sold count:', updateError);
       // Don't throw - tickets are created, we can fix inventory later
     }
+
+    // Send ticket email (non-blocking, don't wait for it)
+    sendTicketEmail({
+      orderId,
+      order,
+      ticketType,
+      ticketCodes,
+    }).catch(err => {
+      console.error('Failed to send ticket email:', err);
+      // Don't throw - tickets are created successfully
+    });
 
     return ticketCodes;
   } catch (error: unknown) {
