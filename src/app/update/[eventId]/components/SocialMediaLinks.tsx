@@ -13,46 +13,39 @@ export default function SocialMediaLinks({
 }: SocialMediaLinksProps) {
   return (
     <motion.div
-      className="bg-gradient-to-br from-pink-50/50 to-rose-50/50 dark:from-gray-800 dark:to-gray-800/80 p-6 rounded-2xl shadow-xl border border-pink-100 dark:border-pink-900/30"
+      className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-[5px] shadow-xl border border-gray-200 dark:border-gray-700"
       initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.3 }}
     >
-      <h3 className="text-xl font-semibold text-pink-700 dark:text-pink-300 mb-6">
+      <h3 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-white mb-4 sm:mb-6">
         Social Media Links
       </h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {[
           { 
-            icon: <FaInstagram className="text-pink-100 text-xl" />,
+            icon: <FaInstagram className="text-[#f54502] text-base sm:text-lg" />,
             name: 'instagram',
-            placeholder: 'https://instagram.com/yourpage',
-            color: 'from-pink-500 to-rose-500'
+            placeholder: 'https://instagram.com/yourpage'
           },
           {
-            icon: <FaFacebookF className="text-white text-xl" />,
+            icon: <FaFacebookF className="text-[#f54502] text-base sm:text-lg" />,
             name: 'facebook', 
-            placeholder: 'https://facebook.com/yourpage',
-            color: 'from-blue-600 to-indigo-600'
+            placeholder: 'https://facebook.com/yourpage'
           },
           {
-            icon: <FaTwitter className="text-sky-100 text-xl" />,
+            icon: <FaTwitter className="text-[#f54502] text-base sm:text-lg" />,
             name: 'twitter',
-            placeholder: 'https://twitter.com/yourhandle', 
-            color: 'from-sky-400 to-blue-500'
+            placeholder: 'https://twitter.com/yourhandle'
           },
           {
-            icon: <FaLinkedin className="text-white text-xl" />,
+            icon: <FaLinkedin className="text-[#f54502] text-base sm:text-lg" />,
             name: 'linkedin',
-            placeholder: 'https://linkedin.com/in/yourprofile',
-            color: 'from-blue-700 to-blue-800'
+            placeholder: 'https://linkedin.com/in/yourprofile'
           }
         ].map((social) => (
           <div key={social.name} className="space-y-2">
-            <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-              <span className={`bg-gradient-to-r ${social.color} p-2 rounded-lg mr-2 shadow-lg`}>
-                {social.icon}
-              </span>
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
               {social.name.charAt(0).toUpperCase() + social.name.slice(1)}
             </label>
             <div className="relative">
@@ -69,7 +62,7 @@ export default function SocialMediaLinks({
                     }
                   });
                 }}
-                className={`w-full pl-12 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:border-transparent bg-white/80 dark:bg-gray-700/30 focus:bg-white dark:focus:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-200`}
+                className="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-200 text-sm sm:text-base"
                 placeholder={social.placeholder}
               />
               <div className="absolute left-3 top-1/2 transform -translate-y-1/2">

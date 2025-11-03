@@ -1,7 +1,8 @@
 'use client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaTicketAlt, FaPlus, FaTrash, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
-import { useCallback, memo } from 'react';
+import { FaPlus, FaTrash, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
+import { RiTicketLine } from 'react-icons/ri';
+import { useCallback, memo, useEffect, useRef } from 'react';
 import { Event, Ticket, ToastProps } from '@/types/event';
 import { formatPrice } from '@/utils/formatPrice';
 
@@ -20,6 +21,9 @@ const TicketSetup = memo(function TicketSetup({
   onBack, 
   setToast 
 }: TicketSetupProps) {
+  const ticketCardsRef = useRef<{ [key: number]: HTMLDivElement | null }>({});
+  const previousTicketCountRef = useRef<number>(0);
+
   const handleAddTicket = useCallback(() => {
     updateFormData({
       ticketType: [
@@ -35,6 +39,38 @@ const TicketSetup = memo(function TicketSetup({
       ]
     });
   }, [formData.ticketType, updateFormData]);
+
+  // Scroll to newly added ticket
+  useEffect(() => {
+    const currentTicketCount = formData.ticketType.length;
+    const previousTicketCount = previousTicketCountRef.current;
+
+    // If a new ticket was added (count increased)
+    if (currentTicketCount > previousTicketCount && currentTicketCount > 0) {
+      const newTicketIndex = currentTicketCount - 1;
+      
+      // Use setTimeout to wait for DOM to update
+      setTimeout(() => {
+        const newTicketCard = ticketCardsRef.current[newTicketIndex];
+        if (newTicketCard) {
+          newTicketCard.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start',
+            inline: 'nearest'
+          });
+          
+          // Focus on the ticket name input (first text input in the card)
+          const nameInput = newTicketCard.querySelector<HTMLInputElement>('input[type="text"]');
+          if (nameInput) {
+            setTimeout(() => nameInput.focus(), 300);
+          }
+        }
+      }, 100);
+    }
+
+    // Update the previous count
+    previousTicketCountRef.current = currentTicketCount;
+  }, [formData.ticketType.length]);
 
   const handleRemoveTicket = useCallback((index: number) => {
     const updatedTickets = formData.ticketType.filter((_, i) => i !== index);
@@ -118,7 +154,7 @@ const TicketSetup = memo(function TicketSetup({
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 200 }}
         >
-          <FaTicketAlt className="mr-2 sm:mr-3 text-[#f54502]" size={20} />
+          <RiTicketLine className="mr-2 sm:mr-3 text-[#f54502]" size={20} />
           <span className="bg-gradient-to-r from-[#f54502] to-[#d63a02] bg-clip-text text-transparent">
             Create Your Tickets
           </span>
@@ -131,15 +167,21 @@ const TicketSetup = memo(function TicketSetup({
       <div className="space-y-6">
         <AnimatePresence mode="popLayout">
           {formData.ticketType.map((ticket, index) => (
-            <TicketCard 
+            <div
               key={index}
-              index={index}
-              ticket={ticket}
-              currency={formData.currency || 'NGN'}
-              onTicketChange={handleTicketChange}
-              onFreeChange={handleFreeTicketChange}
-              onRemove={handleRemoveTicket}
-            />
+              ref={(el) => {
+                ticketCardsRef.current[index] = el;
+              }}
+            >
+              <TicketCard 
+                index={index}
+                ticket={ticket}
+                currency={formData.currency || 'NGN'}
+                onTicketChange={handleTicketChange}
+                onFreeChange={handleFreeTicketChange}
+                onRemove={handleRemoveTicket}
+              />
+            </div>
           ))}
         </AnimatePresence>
 

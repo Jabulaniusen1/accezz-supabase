@@ -56,14 +56,50 @@ function Update() {
             .eq('event_id', eventId);
           if (ttErr) throw ttErr;
 
+          // Format date from ISO string to YYYY-MM-DD
+          let formattedDate = '';
+          if (ev.date) {
+            try {
+              const dateObj = new Date(ev.date);
+              if (!isNaN(dateObj.getTime())) {
+                formattedDate = dateObj.toISOString().split('T')[0];
+              }
+            } catch (e) {
+              console.error('Error parsing date:', e);
+            }
+          }
+
+          // Format time to HH:MM (24-hour format)
+          let formattedTime = '';
+          if (ev.time) {
+            try {
+              // If time is already in HH:MM format, use it
+              if (/^\d{2}:\d{2}$/.test(ev.time)) {
+                formattedTime = ev.time;
+              } else {
+                // If it's in a different format, try to parse it
+                const timeParts = ev.time.split(':');
+                if (timeParts.length >= 2) {
+                  const hours = parseInt(timeParts[0], 10);
+                  const minutes = parseInt(timeParts[1], 10);
+                  if (!isNaN(hours) && !isNaN(minutes)) {
+                    formattedTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                  }
+                }
+              }
+            } catch (e) {
+              console.error('Error parsing time:', e);
+            }
+          }
+
           const eventData: Event = {
             id: ev.id,
             slug: ev.slug || ev.id,
             title: ev.title,
             description: ev.description,
             image: ev.image_url,
-            date: ev.date,
-            time: ev.time || '',
+            date: formattedDate,
+            time: formattedTime,
             venue: ev.venue || '',
             location: ev.location || '',
             hostName: '',
@@ -201,27 +237,27 @@ function Update() {
         initial={{ scale: 0.95 }}
         animate={{ scale: 1 }}
         exit={{ scale: 0.95 }}
-        className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full shadow-xl"
+        className="bg-white dark:bg-gray-800 rounded-[5px] p-4 sm:p-6 max-w-md w-full shadow-xl"
       >
-        <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
+        <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-gray-900 dark:text-white">
           Event Updated Successfully
         </h3>
-        <p className="text-gray-600 dark:text-gray-300 mb-6">
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mb-4 sm:mb-6">
           What would you like to do next?
         </p>
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           <button
             onClick={() => {
               setShouldRedirect(false);
               setShowToast(false);
             }}
-            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg transition-colors"
+            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-[5px] transition-colors text-sm sm:text-base"
           >
             Continue Editing
           </button>
           <button
             onClick={() => router.push("/dashboard")}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+            className="px-4 py-2 bg-[#f54502] hover:bg-[#d63a02] text-white rounded-[5px] transition-colors text-sm sm:text-base"
           >
             Go to Dashboard
           </button>
@@ -231,7 +267,7 @@ function Update() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 py-12 px-4 sm:px-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 py-6 sm:py-12 px-4 sm:px-6">
       <AnimatePresence>
         {showToast && (
           <Toast
@@ -254,7 +290,7 @@ function Update() {
         
 
         <motion.div
-          className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-3xl shadow-2xl p-4 sm:p-10 border border-gray-200/50 dark:border-gray-700/50"
+          className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-[5px] shadow-2xl p-4 sm:p-6 md:p-10 border border-gray-200/50 dark:border-gray-700/50"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -275,8 +311,8 @@ function Update() {
           }}
         />
           {event ? (
-            <form onSubmit={handleSubmit} className="space-y-12">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10">
+            <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8 md:space-y-12">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-10">
                 <EventBasicDetails 
                   formData={formData}
                   handleInputChange={(e, field) => {
@@ -285,7 +321,7 @@ function Update() {
                   }}
                 />
 
-                <div className="space-y-10">
+                <div className="space-y-6 sm:space-y-8 md:space-y-10">
                   <VirtualEventSettings
                     formData={formData}
                     setFormData={setFormData}

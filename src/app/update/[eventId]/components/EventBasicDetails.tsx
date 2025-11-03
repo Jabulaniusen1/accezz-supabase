@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import { FaUserPlus, FaCalendarAlt, FaClock, FaHeading, FaAlignLeft } from "react-icons/fa";
 import { Event } from "../../../../types/event";
 import DateTimePicker from "@/components/ui/DateTimePicker";
 
@@ -18,36 +17,33 @@ export default function EventBasicDetails({
 
   return (
     <motion.div
-      className="space-y-6 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-100 dark:border-gray-700"
+      className="space-y-4 sm:space-y-6 bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-[5px] shadow-md border border-gray-100 dark:border-gray-700"
       initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
     >
       {/* Header */}
-      <div className="pb-4 border-b border-gray-200 dark:border-gray-700">
-        <h3 className="text-xl font-bold text-gray-800 dark:text-white">
+      <div className="pb-3 sm:pb-4 border-b border-gray-200 dark:border-gray-700">
+        <h3 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white">
           Basic Details
         </h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
           Fill in the essential information about your event
         </p>
       </div>
 
       {/* Form Grid */}
-      <div className="grid grid-cols-1 gap-6">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6">
         {/* Event Title */}
         <div className="space-y-2">
-          <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-            <span className="bg-blue-500 p-2 rounded-lg mr-3 text-white">
-              <FaHeading className="text-lg" />
-            </span>
+          <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
             Event Title
           </label>
           <input
             type="text"
             value={formData?.title || ""}
             onChange={(e) => handleInputChange(e, "title")}
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-[#f54502] focus:border-transparent transition-all duration-200 text-sm sm:text-base"
             placeholder="Enter event title..."
             required
           />
@@ -55,17 +51,14 @@ export default function EventBasicDetails({
 
         {/* Description */}
         <div className="space-y-2">
-          <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-            <span className="bg-blue-500 p-2 rounded-lg mr-3 text-white">
-              <FaAlignLeft className="text-lg" />
-            </span>
+          <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
             Event Description
           </label>
           <textarea
             value={formData?.description || ""}
             onChange={(e) => handleInputChange(e, "description")}
             rows={4}
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-[#f54502] focus:border-transparent transition-all duration-200 text-sm sm:text-base"
             placeholder="Describe your event in detail..."
             required
           />
@@ -73,30 +66,24 @@ export default function EventBasicDetails({
 
         {/* Host Name */}
         <div className="space-y-2">
-          <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-            <span className="bg-blue-500 p-2 rounded-lg mr-3 text-white">
-              <FaUserPlus className="text-lg" />
-            </span>
+          <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
             Host Name
           </label>
           <input
             type="text"
             value={formData?.hostName || ""}
             onChange={(e) => handleInputChange(e, "hostName")}
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-[#f54502] focus:border-transparent transition-all duration-200 text-sm sm:text-base"
             placeholder="Enter host name"
             required
           />
         </div>
 
         {/* Date & Time */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           {/* Date */}
-          <div className="space-y-3">
-            <label className="flex items-center text-sm font-medium text-indigo-700 dark:text-indigo-300">
-              <span className="bg-gradient-to-r from-indigo-500 to-purple-500 p-2.5 rounded-xl mr-2 shadow-md">
-          <FaCalendarAlt className="text-white text-lg" />
-              </span>
+          <div className="space-y-2 sm:space-y-3">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
               Date
             </label>
             {/* Use DateTimePicker for date */}
@@ -115,11 +102,8 @@ export default function EventBasicDetails({
           </div>
 
           {/* Time */}
-          <div className="space-y-3">
-            <label className="flex items-center text-sm font-medium text-indigo-700 dark:text-indigo-300">
-              <span className="bg-gradient-to-r from-indigo-500 to-purple-500 p-2.5 rounded-xl mr-2 shadow-md">
-          <FaClock className="text-white text-lg" />
-              </span>
+          <div className="space-y-2 sm:space-y-3">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
               Time
             </label>
             {/* Use DateTimePicker for time */}

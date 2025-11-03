@@ -19,7 +19,7 @@ export default function EventImageUpload({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
-      <div className="relative group w-[540px] h-[250px] rounded-xl overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-md hover:shadow-lg transition-shadow">
+      <div className="relative group w-full max-w-[540px] h-[200px] sm:h-[250px] rounded-[5px] overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-md hover:shadow-lg transition-shadow mx-auto">
         {imagePreview ? (
           <>
             <Image
@@ -27,13 +27,13 @@ export default function EventImageUpload({
               alt="Event preview"
               fill
               className="object-cover transition-all duration-300"
-              style={{ borderRadius: "12px" }}
+              style={{ borderRadius: "5px" }}
               priority
             />
-            <label className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer rounded-xl">
-              <div className="flex flex-col items-center justify-center p-4 bg-white/90 dark:bg-gray-900/90 rounded-lg shadow-lg">
-                <RiImageEditFill className="text-2xl text-purple-600 dark:text-purple-400 mb-1" />
-                <span className="text-base font-medium text-gray-800 dark:text-white">
+            <label className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer rounded-[5px]">
+              <div className="flex flex-col items-center justify-center p-3 sm:p-4 bg-white/90 dark:bg-gray-900/90 rounded-[5px] shadow-lg">
+                <RiImageEditFill className="text-xl sm:text-2xl text-[#f54502] mb-1" />
+                <span className="text-sm sm:text-base font-medium text-gray-800 dark:text-white">
                   Change Image
                 </span>
                 <span className="text-xs text-gray-600 dark:text-gray-300 mt-1">
@@ -42,26 +42,26 @@ export default function EventImageUpload({
               </div>
               <input
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
                 onChange={handleImageChange}
                 className="hidden"
               />
             </label>
           </>
         ) : (
-          <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer bg-gradient-to-br from-purple-50 to-blue-100 dark:from-gray-800 dark:to-gray-700 rounded-xl">
-            <div className="flex flex-col items-center justify-center p-6 bg-white/85 dark:bg-gray-900/85 rounded-lg shadow border-2 border-dashed border-purple-200 dark:border-gray-600">
-              <BiImageAdd className="text-3xl text-purple-500 dark:text-purple-400 mb-2" />
-              <span className="text-base font-medium text-gray-800 dark:text-white">
+          <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer bg-[#f54502]/5 dark:bg-gray-800 rounded-[5px]">
+            <div className="flex flex-col items-center justify-center p-4 sm:p-6 bg-white/85 dark:bg-gray-900/85 rounded-[5px] shadow border-2 border-dashed border-[#f54502]/30 dark:border-gray-600">
+              <BiImageAdd className="text-2xl sm:text-3xl text-[#f54502] mb-2" />
+              <span className="text-sm sm:text-base font-medium text-gray-800 dark:text-white">
                 Upload Event Image
               </span>
               <span className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                1200x600px recommended
+                JPG, PNG, or WEBP
               </span>
             </div>
             <input
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/jpg,image/png,image/webp"
               onChange={handleImageChange}
               className="hidden"
             />
