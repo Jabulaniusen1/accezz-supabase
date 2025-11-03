@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Notifications from './settings/Notification';
 import Account from './settings/Account';
+import Wallet from './settings/Wallet';
 
 
 const Settings = () => {
@@ -22,7 +23,8 @@ const Settings = () => {
         <div className="flex min-w-max border-b border-gray-200 dark:border-gray-700">
           {[
         { name: 'Account', id: 0 },
-        { name: 'Notifications', id: 1 },
+        { name: 'Wallet', id: 1 },
+        { name: 'Notifications', id: 2 },
           ].map((tab) => (
         <button
           key={tab.id}
@@ -46,7 +48,8 @@ const Settings = () => {
       {/* Content Area */}
       <div className='flex-1'>
       {activeTab === 0 && <Account />}
-      {activeTab === 1 && <Notifications />}
+      {activeTab === 1 && <Wallet />}
+      {activeTab === 2 && <Notifications />}
       </div>
     </div>
   );

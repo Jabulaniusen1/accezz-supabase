@@ -38,6 +38,9 @@ const Account = () => {
     currency: 'NGN',
     country: 'nigeria'
   });
+  const [availableBalance, setAvailableBalance] = useState<number>(0);
+  const [withdrawing, setWithdrawing] = useState(false);
+  const [withdrawAmount, setWithdrawAmount] = useState<string>('');
 
   // Country to currency mapping
   const countryCurrencyMap: Record<string, string> = {
@@ -203,6 +206,14 @@ const Account = () => {
             currency: profile?.currency || defaultCurrency
           }));
         }
+
+        // Fetch available balance via RPC
+        try {
+          const { data: bal, error: balErr } = await supabase.rpc('get_my_available_balance');
+          if (!balErr && typeof bal === 'number') {
+            setAvailableBalance(bal);
+          }
+        } catch {}
       } catch (error: unknown) {
         console.error('Error fetching data:', error);
         const message = error instanceof Error ? error.message : 'Failed to fetch account data';
@@ -427,6 +438,69 @@ const Account = () => {
                   <circle cx="20" cy="20" r="8" stroke="white" strokeWidth="1"/>
                 </svg>
               </div>
+            </div>
+          </div>
+
+          {/* Withdraw Funds */}
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">Available Balance</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white">₦{availableBalance.toLocaleString()}</p>
+            </div>
+            <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg flex items-end gap-3">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Withdraw Amount (NGN)</label>
+                <input
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  value={withdrawAmount}
+                  onChange={(e) => setWithdrawAmount(e.target.value)}
+                  className="w-full p-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-colors"
+                  style={{ borderRadius: '5px' }}
+                  placeholder="0.00"
+                />
+              </div>
+              <button
+                type="button"
+                disabled={withdrawing || !withdrawAmount || Number(withdrawAmount) <= 0}
+                onClick={async () => {
+                  const amt = Number(withdrawAmount);
+                  if (isNaN(amt)) return;
+                  if (amt > availableBalance) {
+                    toast('error', 'Amount exceeds available balance');
+                    return;
+                  }
+                  setWithdrawing(true);
+                  try {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    const accessToken = session?.access_token;
+                    const res = await fetch('/api/paystack/withdraw', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
+                      },
+                      body: JSON.stringify({ amount: amt })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Withdrawal failed');
+                    toast('success', 'Withdrawal initiated successfully');
+                    // Optimistically reduce available balance
+                    setAvailableBalance(prev => Math.max(0, prev - amt));
+                    setWithdrawAmount('');
+                  } catch (e: unknown) {
+                    const msg = e instanceof Error ? e.message : 'Withdrawal failed';
+                    toast('error', msg);
+                  } finally {
+                    setWithdrawing(false);
+                  }
+                }}
+                style={{ borderRadius: '5px' }}
+                className="px-6 py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white hover:from-[#f54502]/90 hover:to-[#d63a02]/90 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200 text-sm font-medium whitespace-nowrap"
+              >
+                {withdrawing ? 'Processing...' : 'Withdraw'}
+              </button>
             </div>
           </div>
         </div>

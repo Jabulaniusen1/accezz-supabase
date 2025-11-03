@@ -6,6 +6,7 @@ import EventList from "../components/EventList";
 import Earnings from "../components/Earning";
 import Notifications from "../components/Notifications";
 import Setting from "../components/Setting";
+import Wallet from "../components/settings/Wallet";
 import Profile from "../components/settings/Profile";
 import ToggleMode from "../../components/ui/mode/toggleMode";
 import Loader from "@/components/ui/loader/Loader";
@@ -20,6 +21,7 @@ import ConfirmationModal from "@/components/ConfirmationModal";
 import EventTypeModal from "@/components/Modal/EventType";
 import Link from "next/link";
 import Image from "next/image";
+import { WalletCards } from "lucide-react";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState(0);
@@ -233,6 +235,19 @@ const Dashboard = () => {
 
           <button
                 className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+              activeTab === 5
+                    ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
+                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+            }`}
+            style={{ borderRadius: '5px' }}
+            onClick={() => setActiveTab(5)}
+          >
+                <WalletCards size={20} />
+                <span className="font-medium">Wallet</span>
+          </button>
+
+          <button
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
               activeTab === 2
                     ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
                     : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -316,6 +331,7 @@ const Dashboard = () => {
                 {activeTab === 2 && <Notifications />}
                 {activeTab === 3 && <Setting />}
                 {activeTab === 4 && <Profile />}
+                {activeTab === 5 && <Wallet />}
           </motion.div>
         </AnimatePresence>
           </div>
