@@ -6,10 +6,10 @@ const createTransporter = () => {
     service: 'gmail',
     host: 'smtp.gmail.com',
     port: 587,
-    secure: false, // true for 465, false for other ports
+    secure: false,
     auth: {
       user: process.env.GMAIL_USER,
-      pass: process.env.GMAIL_APP_PASSWORD, // Use App Password, not regular password
+      pass: process.env.GMAIL_APP_PASSWORD,
     },
   });
 };
@@ -33,7 +33,6 @@ interface SendEmailOptions {
  */
 export async function sendEmail({ to, subject, html, text, attachments }: SendEmailOptions): Promise<void> {
   try {
-    // Validate environment variables
     if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
       throw new Error('Gmail SMTP credentials not configured. Please set GMAIL_USER and GMAIL_APP_PASSWORD environment variables.');
     }
@@ -45,7 +44,7 @@ export async function sendEmail({ to, subject, html, text, attachments }: SendEm
       to,
       subject,
       html,
-      text: text || subject, // Fallback to subject if no text provided
+      text: text || subject,
       attachments: attachments || [],
     };
 
@@ -70,100 +69,299 @@ export function generateWelcomeEmailHTML(fullName: string): string {
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Welcome to Accezz</title>
       <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
         body {
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
           line-height: 1.6;
-          color: #333;
+          color: #1a1a1a;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          padding: 40px 20px;
+        }
+        .email-wrapper {
           max-width: 600px;
           margin: 0 auto;
-          padding: 20px;
-          background-color: #f5f5f5;
-        }
-        .container {
           background-color: #ffffff;
-          border-radius: 12px;
-          padding: 40px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        .header {
+          background: linear-gradient(135deg, #f54502 0%, #ff6b35 100%);
+          padding: 40px 40px 60px;
+          text-align: center;
+          position: relative;
+        }
+        .header::after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          height: 40px;
+          background: #ffffff;
+          border-radius: 50% 50% 0 0 / 100% 100% 0 0;
         }
         .logo {
-          text-align: center;
-          margin-bottom: 30px;
+          margin-bottom: 20px;
         }
         .logo img {
-          max-width: 150px;
+          max-width: 140px;
           height: auto;
+          filter: brightness(0) invert(1);
         }
-        h2 {
-          color: #f54502;
-          font-size: 24px;
+        .header h1 {
+          color: #ffffff;
+          font-size: 28px;
+          font-weight: 700;
+          margin: 0;
+          position: relative;
+          z-index: 1;
+        }
+        .content {
+          padding: 40px 40px 20px;
+        }
+        .greeting {
+          font-size: 20px;
+          color: #1a1a1a;
+          font-weight: 600;
+          margin-bottom: 20px;
+        }
+        .message {
+          font-size: 16px;
+          color: #4a5568;
+          margin-bottom: 16px;
+          line-height: 1.8;
+        }
+        .features {
+          background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+          border-radius: 12px;
+          padding: 30px;
+          margin: 30px 0;
+        }
+        .features h3 {
+          color: #2d3748;
+          font-size: 18px;
           margin-bottom: 20px;
           text-align: center;
         }
-        p {
-          margin-bottom: 16px;
-          font-size: 16px;
-          color: #555;
+        .feature-grid {
+          display: grid;
+          gap: 16px;
         }
-        .button {
+        .feature-item {
+          display: flex;
+          align-items: start;
+          padding: 16px;
+          background: #ffffff;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+          transition: transform 0.2s;
+        }
+        .feature-icon {
+          width: 40px;
+          height: 40px;
+          background: linear-gradient(135deg, #f54502 0%, #ff6b35 100%);
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-right: 16px;
+          flex-shrink: 0;
+        }
+        .feature-icon::before {
+          content: '✓';
+          color: #ffffff;
+          font-size: 20px;
+          font-weight: bold;
+        }
+        .feature-text {
+          color: #4a5568;
+          font-size: 15px;
+          line-height: 1.6;
+        }
+        .cta-container {
+          text-align: center;
+          margin: 40px 0;
+        }
+        .cta-button {
           display: inline-block;
-          padding: 14px 32px;
-          background-color: #f54502;
+          padding: 16px 48px;
+          background: linear-gradient(135deg, #f54502 0%, #ff6b35 100%);
           color: #ffffff !important;
           text-decoration: none;
-          border-radius: 8px;
+          border-radius: 50px;
           font-weight: 600;
-          text-align: center;
-          margin: 20px 0;
-          transition: background-color 0.3s;
+          font-size: 16px;
+          box-shadow: 0 10px 30px rgba(245, 69, 2, 0.3);
+          transition: all 0.3s ease;
         }
-        .button:hover {
-          background-color: #d63a02;
+        .cta-button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 15px 40px rgba(245, 69, 2, 0.4);
         }
-        .button-container {
-          text-align: center;
+        .help-section {
+          background: #fff8f3;
+          border-left: 4px solid #f54502;
+          padding: 20px;
+          border-radius: 8px;
           margin: 30px 0;
         }
-        .footer {
-          margin-top: 40px;
-          padding-top: 20px;
-          border-top: 1px solid #eee;
+        .help-section p {
+          color: #4a5568;
           font-size: 14px;
-          color: #999;
-          text-align: center;
+          margin: 0;
         }
-        .footer p {
-          margin: 5px 0;
+        .footer {
+          background: #f7fafc;
+          padding: 30px 40px;
+          text-align: center;
+          border-top: 1px solid #e2e8f0;
+        }
+        .footer-signature {
+          font-size: 15px;
+          color: #2d3748;
+          font-weight: 600;
+          margin-bottom: 8px;
+        }
+        .footer-team {
+          font-size: 15px;
+          color: #718096;
+          margin-bottom: 20px;
+        }
+        .footer-note {
+          font-size: 13px;
+          color: #a0aec0;
+          margin: 0;
+        }
+        .social-links {
+          margin: 20px 0;
+        }
+        .social-links a {
+          display: inline-block;
+          width: 36px;
+          height: 36px;
+          background: #e2e8f0;
+          border-radius: 50%;
+          margin: 0 6px;
+          line-height: 36px;
+          color: #4a5568;
+          text-decoration: none;
+          transition: all 0.3s ease;
+        }
+        .social-links a:hover {
+          background: #f54502;
+          color: #ffffff;
+          transform: translateY(-2px);
+        }
+        @media only screen and (max-width: 600px) {
+          body {
+            padding: 20px 10px;
+          }
+          .content {
+            padding: 30px 20px 15px;
+          }
+          .header {
+            padding: 30px 20px 50px;
+          }
+          .header h1 {
+            font-size: 24px;
+          }
+          .features {
+            padding: 20px;
+          }
+          .cta-button {
+            padding: 14px 36px;
+            font-size: 15px;
+          }
+          .footer {
+            padding: 25px 20px;
+          }
         }
       </style>
     </head>
     <body>
-      <div class="container">
-        <div class="logo">
-          <img src="https://kckdkipdodkfszakqwui.supabase.co/storage/v1/object/public/logo/accezzlogoc%20(2).webp" alt="Accezz Logo" width="150" height="auto">
-        </div>
-        <h2>Welcome to Accezz, ${firstName}!</h2>
-        <p>Thank you for joining Accezz! We're thrilled to have you on board.</p>
-        <p>You're now part of a community that makes event management and ticket sales simple and seamless.</p>
-        <p>Here's what you can do with Accezz:</p>
-        <ul style="color: #555; font-size: 16px; line-height: 1.8;">
-          <li>Create and manage events effortlessly</li>
-          <li>Sell tickets online with secure payment processing</li>
-          <li>Track your event analytics and attendees</li>
-          <li>Send email marketing campaigns to your attendees</li>
-        </ul>
-        
-        <div class="button-container">
-          <a href="${process.env.NEXT_PUBLIC_BASE_URL || 'https://accezz.com'}/dashboard" class="button">Go to Dashboard</a>
+      <div class="email-wrapper">
+        <div class="header">
+          <div class="logo">
+            <img src="https://kckdkipdodkfszakqwui.supabase.co/storage/v1/object/public/logo/accezz%20logo.png" alt="Accezz Logo">
+          </div>
+          <h1>Welcome to Accezz!</h1>
         </div>
         
-        <p style="font-size: 14px; color: #777;">
-          If you have any questions or need help getting started, feel free to reach out to us.
-        </p>
+        <div class="content">
+          <p class="greeting">Hi ${firstName}! 👋</p>
+          
+          <p class="message">
+            We're absolutely thrilled to have you join the Accezz community! You've just taken the first step towards effortless event management.
+          </p>
+          
+          <p class="message">
+            Whether you're planning intimate gatherings or large-scale events, Accezz is here to make every aspect seamless and enjoyable.
+          </p>
+          
+          <div class="features">
+            <h3>What You Can Do with Accezz</h3>
+            <div class="feature-grid">
+              <div class="feature-item">
+                <div class="feature-icon"></div>
+                <div class="feature-text">
+                  <strong>Create & Manage Events</strong><br>
+                  Set up stunning event pages in minutes with our intuitive builder
+                </div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-icon"></div>
+                <div class="feature-text">
+                  <strong>Sell Tickets Securely</strong><br>
+                  Accept payments with confidence using our secure payment processing
+                </div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-icon"></div>
+                <div class="feature-text">
+                  <strong>Track Analytics</strong><br>
+                  Get real-time insights into ticket sales and attendee engagement
+                </div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-icon"></div>
+                <div class="feature-text">
+                  <strong>Email Marketing</strong><br>
+                  Keep attendees engaged with targeted email campaigns
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="cta-container">
+            <a href="${process.env.NEXT_PUBLIC_BASE_URL || 'https://accezz.com'}/dashboard" class="cta-button">
+              Get Started Now
+            </a>
+          </div>
+          
+          <div class="help-section">
+            <p>
+              <strong>Need help getting started?</strong><br>
+              Our support team is here for you. Feel free to reach out anytime – we're always happy to help!
+            </p>
+          </div>
+        </div>
         
         <div class="footer">
-          <p>Best regards,</p>
-          <p>The Accezz Team</p>
-          <p style="margin-top: 20px;">This is an automated email. Please do not reply directly to this message.</p>
+          <p class="footer-signature">Best regards,</p>
+          <p class="footer-team">The Accezz Team</p>
+          <div class="social-links">
+            <a href="#">𝕏</a>
+            <a href="#">in</a>
+            <a href="#">f</a>
+          </div>
+          <p class="footer-note">
+            This is an automated message. Please do not reply to this email.
+          </p>
         </div>
       </div>
     </body>
@@ -190,9 +388,10 @@ export function generateTicketEmailHTML(data: {
 }): string {
   const firstName = data.fullName?.split(' ')[0] || 'there';
   const ticketList = data.ticketCodes.map((code, index) => 
-    `<li style="margin: 10px 0; padding: 10px; background-color: #f9f9f9; border-radius: 6px;">
-      <strong>Ticket ${index + 1}:</strong> ${code}
-    </li>`
+    `<div class="ticket-card">
+      <div class="ticket-number">Ticket ${index + 1}</div>
+      <div class="ticket-code">${code}</div>
+    </div>`
   ).join('');
 
   return `
@@ -203,160 +402,398 @@ export function generateTicketEmailHTML(data: {
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Your Tickets - ${data.eventTitle}</title>
       <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
         body {
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
           line-height: 1.6;
-          color: #333;
-          max-width: 600px;
-          margin: 0 auto;
-          padding: 20px;
-          background-color: #f5f5f5;
+          color: #1a1a1a;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          padding: 40px 20px;
         }
-        .container {
+        .email-wrapper {
+          max-width: 650px;
+          margin: 0 auto;
           background-color: #ffffff;
-          border-radius: 12px;
-          padding: 40px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        .header {
+          background: linear-gradient(135deg, #f54502 0%, #ff6b35 100%);
+          padding: 40px 40px 60px;
+          text-align: center;
+          position: relative;
+        }
+        .header::after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          height: 40px;
+          background: #ffffff;
+          border-radius: 50% 50% 0 0 / 100% 100% 0 0;
         }
         .logo {
-          text-align: center;
-          margin-bottom: 30px;
+          margin-bottom: 20px;
         }
         .logo img {
-          max-width: 150px;
+          max-width: 140px;
           height: auto;
+          filter: brightness(0) invert(1);
         }
-        h2 {
-          color: #f54502;
-          font-size: 24px;
+        .header h1 {
+          color: #ffffff;
+          font-size: 28px;
+          font-weight: 700;
+          margin: 0;
+          position: relative;
+          z-index: 1;
+        }
+        .success-icon {
+          width: 80px;
+          height: 80px;
+          background: #ffffff;
+          border-radius: 50%;
+          margin: 20px auto 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 40px;
+          position: relative;
+          z-index: 1;
+        }
+        .content {
+          padding: 40px 40px 20px;
+        }
+        .greeting {
+          font-size: 20px;
+          color: #1a1a1a;
+          font-weight: 600;
+          margin-bottom: 16px;
+        }
+        .message {
+          font-size: 16px;
+          color: #4a5568;
+          margin-bottom: 16px;
+          line-height: 1.8;
+        }
+        .event-card {
+          background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+          border-radius: 16px;
+          padding: 30px;
+          margin: 30px 0;
+          border: 2px solid #e2e8f0;
+        }
+        .event-title {
+          font-size: 22px;
+          color: #2d3748;
+          font-weight: 700;
+          margin-bottom: 24px;
+          text-align: center;
+          padding-bottom: 16px;
+          border-bottom: 2px solid #cbd5e0;
+        }
+        .detail-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 12px 0;
+          border-bottom: 1px solid #e2e8f0;
+        }
+        .detail-row:last-child {
+          border-bottom: none;
+        }
+        .detail-label {
+          color: #718096;
+          font-size: 14px;
+          font-weight: 500;
+        }
+        .detail-value {
+          color: #2d3748;
+          font-size: 15px;
+          font-weight: 600;
+          text-align: right;
+        }
+        .tickets-section {
+          margin: 30px 0;
+        }
+        .tickets-header {
+          font-size: 20px;
+          color: #2d3748;
+          font-weight: 700;
           margin-bottom: 20px;
           text-align: center;
         }
-        .event-details {
-          background-color: #f9f9f9;
+        .ticket-card {
+          background: #ffffff;
+          border: 2px dashed #f54502;
+          border-radius: 12px;
           padding: 20px;
-          border-radius: 8px;
-          margin: 20px 0;
+          margin-bottom: 16px;
+          text-align: center;
+          transition: all 0.3s ease;
         }
-        .event-details h3 {
-          color: #333;
-          margin-top: 0;
-          margin-bottom: 15px;
+        .ticket-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(245, 69, 2, 0.15);
         }
-        .event-details p {
-          margin: 8px 0;
-          color: #555;
+        .ticket-number {
+          font-size: 13px;
+          color: #718096;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          margin-bottom: 8px;
+          font-weight: 600;
         }
-        .ticket-codes {
-          background-color: #fff;
-          padding: 20px;
-          border: 2px solid #f54502;
-          border-radius: 8px;
-          margin: 20px 0;
-        }
-        .ticket-codes h3 {
+        .ticket-code {
+          font-size: 24px;
           color: #f54502;
-          margin-top: 0;
+          font-weight: 700;
+          font-family: 'Courier New', monospace;
+          letter-spacing: 2px;
+          padding: 12px;
+          background: #fff8f3;
+          border-radius: 8px;
         }
-        .ticket-codes ul {
+        .qr-section {
+          background: linear-gradient(135deg, #ffffff 0%, #f7fafc 100%);
+          border-radius: 16px;
+          padding: 30px;
+          text-align: center;
+          margin: 30px 0;
+          border: 2px solid #e2e8f0;
+        }
+        .qr-section h3 {
+          color: #2d3748;
+          font-size: 18px;
+          margin-bottom: 20px;
+        }
+        .qr-code-container {
+          background: #ffffff;
+          padding: 20px;
+          border-radius: 12px;
+          display: inline-block;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .qr-code-container img {
+          max-width: 220px;
+          display: block;
+          border-radius: 8px;
+        }
+        .important-info {
+          background: linear-gradient(135deg, #fef5e7 0%, #fdebd0 100%);
+          border-left: 4px solid #f39c12;
+          border-radius: 8px;
+          padding: 24px;
+          margin: 30px 0;
+        }
+        .important-info h4 {
+          color: #875a28;
+          font-size: 16px;
+          margin-bottom: 16px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .important-info h4::before {
+          content: '⚠️';
+          font-size: 20px;
+        }
+        .info-list {
           list-style: none;
           padding: 0;
         }
-        .qr-code {
+        .info-list li {
+          color: #7d6b3f;
+          font-size: 14px;
+          padding: 8px 0;
+          padding-left: 24px;
+          position: relative;
+        }
+        .info-list li::before {
+          content: '•';
+          position: absolute;
+          left: 8px;
+          color: #f39c12;
+          font-weight: bold;
+        }
+        .summary-box {
+          background: linear-gradient(135deg, #f54502 0%, #ff6b35 100%);
+          color: #ffffff;
+          border-radius: 12px;
+          padding: 24px;
+          margin: 30px 0;
           text-align: center;
-          margin: 20px 0;
         }
-        .qr-code img {
-          max-width: 200px;
-          border: 2px solid #f54502;
-          border-radius: 8px;
-          padding: 10px;
-          background: white;
+        .summary-box .amount {
+          font-size: 36px;
+          font-weight: 700;
+          margin: 12px 0;
         }
-        p {
-          margin-bottom: 16px;
-          font-size: 16px;
-          color: #555;
+        .summary-box .label {
+          font-size: 14px;
+          opacity: 0.9;
+          text-transform: uppercase;
+          letter-spacing: 1px;
         }
         .footer {
-          margin-top: 40px;
-          padding-top: 20px;
-          border-top: 1px solid #eee;
-          font-size: 14px;
-          color: #999;
+          background: #f7fafc;
+          padding: 30px 40px;
           text-align: center;
+          border-top: 1px solid #e2e8f0;
         }
-        .footer p {
-          margin: 5px 0;
+        .footer-signature {
+          font-size: 15px;
+          color: #2d3748;
+          font-weight: 600;
+          margin-bottom: 8px;
         }
-        .info-box {
-          background-color: #fff3cd;
-          border-left: 4px solid #ffc107;
-          padding: 15px;
-          margin: 20px 0;
-          border-radius: 4px;
+        .footer-team {
+          font-size: 15px;
+          color: #718096;
+          margin-bottom: 20px;
         }
-        .info-box p {
-          margin: 5px 0;
-          font-size: 14px;
-          color: #856404;
+        .footer-note {
+          font-size: 13px;
+          color: #a0aec0;
+          margin: 0;
+        }
+        .divider {
+          height: 1px;
+          background: linear-gradient(to right, transparent, #e2e8f0, transparent);
+          margin: 30px 0;
+        }
+        @media only screen and (max-width: 600px) {
+          body {
+            padding: 20px 10px;
+          }
+          .content {
+            padding: 30px 20px 15px;
+          }
+          .header {
+            padding: 30px 20px 50px;
+          }
+          .header h1 {
+            font-size: 24px;
+          }
+          .event-card, .qr-section, .important-info {
+            padding: 20px;
+          }
+          .ticket-code {
+            font-size: 18px;
+          }
+          .summary-box .amount {
+            font-size: 28px;
+          }
+          .footer {
+            padding: 25px 20px;
+          }
+          .detail-row {
+            flex-direction: column;
+            gap: 4px;
+          }
+          .detail-value {
+            text-align: left;
+          }
         }
       </style>
     </head>
     <body>
-      <div class="container">
-        <div class="logo">
-          <img src="https://kckdkipdodkfszakqwui.supabase.co/storage/v1/object/public/logo/accezzlogoc%20(2).webp" alt="Accezz Logo" width="150" height="auto">
+      <div class="email-wrapper">
+        <div class="header">
+          <div class="logo">
+            <img src="https://kckdkipdodkfszakqwui.supabase.co/storage/v1/object/public/logo/accezz%20logo.png" alt="Accezz Logo">
+          </div>
+          <h1>Ticket Confirmation</h1>
+          <div class="success-icon">🎉</div>
         </div>
-        <h2>Your Tickets Are Here! 🎉</h2>
-        <p>Hi ${firstName},</p>
-        <p>Thank you for your purchase! Your tickets for <strong>${data.eventTitle}</strong> are confirmed.</p>
         
-        <div class="event-details">
-          <h3>Event Details</h3>
-          <p><strong>Event:</strong> ${data.eventTitle}</p>
-          <p><strong>Date:</strong> ${data.eventDate}</p>
-          <p><strong>Time:</strong> ${data.eventTime}</p>
-          <p><strong>Venue:</strong> ${data.venue}</p>
-          <p><strong>Ticket Type:</strong> ${data.ticketType}</p>
-          <p><strong>Quantity:</strong> ${data.quantity}</p>
-          <p><strong>Total Amount:</strong> ${data.currency} ${data.totalAmount.toLocaleString()}</p>
-          <p><strong>Order ID:</strong> ${data.orderId}</p>
-        </div>
+        <div class="content">
+          <p class="greeting">Hi ${firstName}!</p>
+          
+          <p class="message">
+            Great news! Your ticket purchase has been confirmed. Get ready for an amazing experience at <strong>${data.eventTitle}</strong>!
+          </p>
+          
+          <div class="event-card">
+            <div class="event-title">${data.eventTitle}</div>
+            <div class="detail-row">
+              <span class="detail-label">📅 Date</span>
+              <span class="detail-value">${data.eventDate}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">🕐 Time</span>
+              <span class="detail-value">${data.eventTime}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">📍 Venue</span>
+              <span class="detail-value">${data.venue}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">🎫 Ticket Type</span>
+              <span class="detail-value">${data.ticketType}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">🔢 Quantity</span>
+              <span class="detail-value">${data.quantity}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">🆔 Order ID</span>
+              <span class="detail-value">${data.orderId}</span>
+            </div>
+          </div>
 
-        <div class="ticket-codes">
-          <h3>Your Ticket Code${data.quantity > 1 ? 's' : ''}</h3>
-          <ul>
+          <div class="summary-box">
+            <div class="label">Total Amount Paid</div>
+            <div class="amount">${data.currency} ${data.totalAmount.toLocaleString()}</div>
+          </div>
+
+          <div class="tickets-section">
+            <div class="tickets-header">Your Ticket Code${data.quantity > 1 ? 's' : ''}</div>
             ${ticketList}
-          </ul>
-        </div>
+          </div>
 
-        ${data.qrCodeUrl ? `
-        <div class="qr-code">
-          <p><strong>Scan this QR code at the event:</strong></p>
-          <img src="${data.qrCodeUrl}" alt="QR Code" />
-        </div>
-        ` : ''}
+          ${data.qrCodeUrl ? `
+          <div class="qr-section">
+            <h3>Your Entry QR Code</h3>
+            <p class="message" style="margin-bottom: 20px;">Show this QR code at the event entrance for quick check-in</p>
+            <div class="qr-code-container">
+              <img src="${data.qrCodeUrl}" alt="Event Entry QR Code" />
+            </div>
+          </div>
+          ` : ''}
 
-        <div class="info-box">
-          <p><strong>Important:</strong></p>
-          <p>• Please keep this email safe - you'll need your ticket code${data.quantity > 1 ? 's' : ''} for entry</p>
-          <p>• Present your QR code at the event entrance</p>
-          <p>• If you have any questions, contact the event organizer</p>
+          <div class="important-info">
+            <h4>Important Information</h4>
+            <ul class="info-list">
+              <li>Keep this email safe – you'll need your ticket code${data.quantity > 1 ? 's' : ''} for entry</li>
+              <li>Arrive early to avoid queues and ensure smooth check-in</li>
+              <li>Present your QR code (digital or printed) at the entrance</li>
+              <li>Contact the event organizer directly for any event-specific questions</li>
+              <li>Tickets are non-transferable unless stated otherwise</li>
+            </ul>
+          </div>
+          
+          <div class="divider"></div>
+          
+          <p class="message" style="text-align: center; font-weight: 600; color: #2d3748;">
+            We can't wait to see you there! Have an incredible time! 🎊
+          </p>
         </div>
-        
-        <p style="font-size: 14px; color: #777;">
-          We're excited to see you at the event!
-        </p>
         
         <div class="footer">
-          <p>Best regards,</p>
-          <p>The Accezz Team</p>
-          <p style="margin-top: 20px;">This is an automated email. Please do not reply directly to this message.</p>
+          <p class="footer-signature">Best regards,</p>
+          <p class="footer-team">The Accezz Team</p>
+          <p class="footer-note">
+            This is an automated confirmation email. Please do not reply to this message.
+          </p>
         </div>
       </div>
     </body>
     </html>
   `;
 }
-
