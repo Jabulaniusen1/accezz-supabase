@@ -5,10 +5,11 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiMenu, FiX, FiLogOut, FiUser } from "react-icons/fi";
 import { MdSpaceDashboard } from "react-icons/md";
-import ToggleMode from "../../../components/ui/mode/toggleMode";
+// import ToggleMode from "../../../components/ui/mode/toggleMode";
 import Loader from "@/components/ui/loader/Loader";
 import { useRouter, usePathname } from "next/navigation";
 import Toast from "@/components/ui/Toast";
+import { FaArrowRight } from "react-icons/fa";
 
 const Header = () => {
 
@@ -169,7 +170,7 @@ const Header = () => {
 
             {/* Mobile Menu Button */}
             <div className="flex items-center md:hidden space-x-4">
-              <ToggleMode />
+              {/* <ToggleMode /> */}
               <button
                 className="p-2 rounded-lg text-gray-700 dark:text-gray-300 transition-colors"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -188,36 +189,84 @@ const Header = () => {
         {/* Mobile Menu */}
         <AnimatePresence>
           {isMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-              className="md:hidden bg-black/50 backdrop-blur-md border-t border-white/20 overflow-hidden rounded-b-xl"
-            >
-              <div className="px-4 py-2 space-y-2">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className="block px-3 py-3 text-base font-medium text-white/90 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+            <>
+              {/* Backdrop with blur */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] md:hidden"
+                onClick={() => setIsMenuOpen(false)}
+              />
+              
+              {/* Menu Panel - Slide from top */}
+              <motion.div
+                initial={{ y: '-100%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '-100%' }}
+                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                className="fixed top-0 left-0 right-0 bg-white dark:bg-gray-900 z-[101] md:hidden shadow-2xl border-b-2 border-[#f54502]"
+              >
+                {/* Menu Header */}
+                <div className="flex items-center justify-between px-6 py-5 border-b-2 border-gray-200 dark:border-gray-700 bg-gradient-to-r from-[#f54502] to-[#d63a02]">
+                  <div className="flex items-center space-x-3">
+                    <Image 
+                      src="/accezz logo.png" 
+                      alt="Accezz Logo" 
+                      width={140}
+                      height={100}
+                      className="h-10 w-auto"
+                    />
+                  </div>
+                  <button
                     onClick={() => setIsMenuOpen(false)}
+                    className="p-2.5 rounded-lg bg-white/20 hover:bg-white/30 text-white transition-colors"
+                    style={{ borderRadius: '5px' }}
                   >
-                    {item.name}
-                  </Link>
-                ))}
+                    <FiX className="w-6 h-6 font-bold" />
+                  </button>
+                </div>
 
-                <div className="pt-2 border-t border-white/20">
+                {/* Menu Content */}
+                <div className="px-4 py-4 space-y-1 max-h-[calc(100vh-80px)] overflow-y-auto">
+                  {/* Navigation Items */}
+                  <div className="space-y-2 mb-4">
+                    {navItems.map((item, index) => (
+                      <motion.div
+                        key={item.name}
+                        initial={{ x: -50, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ delay: index * 0.05, duration: 0.2 }}
+                      >
+                        <Link
+                          href={item.href}
+                          className="flex items-center justify-between px-5 py-4 text-lg font-bold text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800 rounded-xl hover:bg-[#f54502] hover:text-white dark:hover:bg-[#f54502] active:bg-[#f54502] active:text-white visited:text-gray-900 dark:visited:text-white transition-all duration-200 group shadow-sm"
+                          style={{ borderRadius: '5px' }}
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <span className="font-semibold">{item.name}</span>
+                          <FaArrowRight className="w-5 h-5 text-gray-400 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                        </Link>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  {/* Divider */}
+                  <div className="border-t-2 border-gray-200 dark:border-gray-700 my-4"></div>
+
+                  {/* Auth Section */}
                   {isLoggedIn ? (
-                    <>
+                    <div className="space-y-2">
                       <button
                         onClick={() => {
                           handleRedirect("/dashboard");
                           setIsMenuOpen(false);
                         }}
-                        className="flex items-center space-x-2 w-full px-3 py-3 text-base font-medium text-white/90 hover:text-white hover:bg-white/10 rounded-lg"
+                        className="flex items-center justify-center space-x-3 w-full px-5 py-4 text-lg font-bold text-white bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 rounded-xl transition-all shadow-lg"
+                        style={{ borderRadius: '5px' }}
                       >
-                        <MdSpaceDashboard className="w-5 h-5" />
+                        <MdSpaceDashboard className="w-6 h-6" />
                         <span>Dashboard</span>
                       </button>
                       <button
@@ -225,22 +274,24 @@ const Header = () => {
                           handleLogout();
                           setIsMenuOpen(false);
                         }}
-                        className="flex items-center space-x-2 w-full px-3 py-3 text-base font-medium text-white/90 hover:text-white hover:bg-white/10 rounded-lg"
+                        className="flex items-center justify-center space-x-3 w-full px-5 py-4 text-lg font-bold text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition-all"
+                        style={{ borderRadius: '5px' }}
                       >
-                        <FiLogOut className="w-5 h-5" />
+                        <FiLogOut className="w-6 h-6" />
                         <span>Logout</span>
                       </button>
-                    </>
+                    </div>
                   ) : (
-                    <>
+                    <div className="space-y-2">
                       <button
                         onClick={() => {
                           handleRedirect("/auth/login");
                           setIsMenuOpen(false);
                         }}
-                        className="flex items-center space-x-2 w-full px-3 py-3 text-base font-medium text-white/90 hover:text-white hover:bg-white/10 rounded-lg"
+                        className="flex items-center justify-center space-x-3 w-full px-5 py-4 text-lg font-bold text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition-all"
+                        style={{ borderRadius: '5px' }}
                       >
-                        <FiUser className="w-5 h-5" />
+                        <FiUser className="w-6 h-6" />
                         <span>Sign In</span>
                       </button>
                       <button
@@ -248,15 +299,16 @@ const Header = () => {
                           handleRedirect("/auth/signup");
                           setIsMenuOpen(false);
                         }}
-                        className="w-full px-3 py-3 text-base font-medium text-center text-white bg-[#f54502] hover:bg-[#f54502]/90 rounded-lg transition-colors mt-2"
+                        className="w-full px-5 py-4 text-lg font-bold text-center text-white bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 rounded-xl transition-all shadow-lg"
+                        style={{ borderRadius: '5px' }}
                       >
                         Sign Up
                       </button>
-                    </>
+                    </div>
                   )}
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            </>
           )}
         </AnimatePresence>
       </header>

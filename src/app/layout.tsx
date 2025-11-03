@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import QueryProvider from '@/providers/QueryProvider';
 import Script from 'next/script';
+import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
   title: {
@@ -149,6 +150,7 @@ export default function RootLayout({
           `}
         </Script>
         
+        <Analytics />
         <QueryProvider>
           {children}
         </QueryProvider>
