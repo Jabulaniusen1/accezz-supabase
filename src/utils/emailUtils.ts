@@ -355,9 +355,9 @@ export function generateWelcomeEmailHTML(fullName: string): string {
           <p class="footer-signature">Best regards,</p>
           <p class="footer-team">The Accezz Team</p>
           <div class="social-links">
-            <a href="#">𝕏</a>
-            <a href="#">in</a>
-            <a href="#">f</a>
+            <a href="https://x.com/accezz_live">𝕏</a>
+            <a href="https://www.instagram.com/accezzlive/">in</a>
+            <a href="https://www.facebook.com/accezzlive/">fb</a>
           </div>
           <p class="footer-note">
             This is an automated message. Please do not reply to this email.
