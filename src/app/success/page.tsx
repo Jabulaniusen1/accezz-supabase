@@ -157,7 +157,7 @@ const SuccessContent = () => {
     }; 
 
     verifyPayment();
-  }, [searchParams]);
+  }, [searchParams, router]);
 
   // Sync ticketId from URL if we don't have it in state (e.g., on reload)
   useEffect(() => {

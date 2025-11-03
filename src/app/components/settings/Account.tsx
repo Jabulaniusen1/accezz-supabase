@@ -117,9 +117,9 @@ const Account = () => {
   ];
 
   // Helper function to get currency for country
-  const getCurrencyForCountry = (country: string): string => {
+  const getCurrencyForCountry = useCallback((country: string): string => {
     return countryCurrencyMap[country.toLowerCase()] || 'NGN';
-  };
+  }, []);
 
   // Helper function to capitalize country name
   const capitalizeCountry = (country: string): string => {
@@ -213,7 +213,7 @@ const Account = () => {
     };
 
     fetchData();
-  }, [router, toast]);
+  }, [router, toast, getCurrencyForCountry]);
 
   const verifyAccount = async () => {
     if (!accountData.account_number || !accountData.bank_code) {

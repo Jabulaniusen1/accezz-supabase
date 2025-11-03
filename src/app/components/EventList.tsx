@@ -8,7 +8,7 @@ import { Toast } from './Toast';
 import { motion, AnimatePresence } from 'framer-motion';
 // import Loader from '@/components/ui/loader/Loader';
 import { formatPrice } from '@/utils/formatPrice';
-import { BarChartIcon, ChartAreaIcon, PencilIcon, Share, Share2, ShareIcon, TrashIcon, MoreVertical } from 'lucide-react';
+import { ChartAreaIcon, PencilIcon, Share2, TrashIcon, MoreVertical } from 'lucide-react';
 import { FaCalendarAlt } from 'react-icons/fa';
 // Removed REST API usage; using Supabase instead
 
