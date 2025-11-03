@@ -2,7 +2,6 @@
 import React from "react";
 import { useMemo, useCallback, useState } from "react";
 import { FaMoneyBillWave, FaChartLine, FaChartBar, FaChartPie } from "react-icons/fa";
-import { BiMoneyWithdraw } from "react-icons/bi";
 import { Bar, Line, Pie } from "react-chartjs-2";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -10,6 +9,7 @@ import { Toast } from "./Toast";
 import { supabase } from '@/utils/supabaseClient';
 import { Event } from '@/types/event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+// Withdrawals moved to its own tab
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -28,6 +28,7 @@ const queryClient = new QueryClient();
 const Earnings = () => {
   const router = useRouter();
   const [expandedRows, setExpandedRows] = useState<number[]>([]);
+  // Withdrawals UI has been moved to a dedicated tab
   const [showToast, setShowToast] = useState(false);
   const [toastProps, setToastProps] = useState<{
     type: "success" | "error" | "warning" | "info";
@@ -127,6 +128,8 @@ const Earnings = () => {
     },
     staleTime: 1000 * 60 * 5 // 5 minutes
   });
+
+  // Withdrawals logic moved to dedicated tab
 
   // Format currency with memoization
   const formatCurrency = useCallback((amount: number) => {
@@ -606,16 +609,7 @@ const Earnings = () => {
             </div>
           </div>
 
-          {/* Withdraw Button */}
-          <div className="text-center">
-            <button
-              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 text-white font-medium rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:ring-offset-2"
-              onClick={() => showToastMessage('info', "Withdrawal feature coming soon!")}
-            >
-              <BiMoneyWithdraw className="mr-2 text-xl" />
-              Withdraw Earnings
-            </button>
-          </div>
+          {/* Withdrawals are now in the Withdrawals tab */}
         </>
       )}
     </div>

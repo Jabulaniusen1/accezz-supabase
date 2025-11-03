@@ -12,9 +12,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 import AdminAnalytics from './components/AdminAnalytics';
 import AdminEvents from './components/AdminEvents';
+import AdminWithdrawals from './components/AdminWithdrawals';
 import { Skeleton, CardSkeleton } from '@/components/ui/Skeleton';
 
-type AdminTab = 'users' | 'events' | 'analytics';
+type AdminTab = 'users' | 'events' | 'analytics' | 'withdrawals';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState<AdminTab>('analytics');
@@ -169,6 +170,18 @@ const AdminDashboard = () => {
                 <FiCalendar size={20} />
                 <span className="font-medium">Events</span>
               </button>
+
+              <button
+                className={`w-full flex items-center space-x-3 px-4 py-3 transition-all duration-200 ${
+                  activeTab === 'withdrawals'
+                    ? 'bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                }`}
+                style={{ borderRadius: '5px' }}
+                onClick={() => setActiveTab('withdrawals')}
+              >
+                <span className="font-medium">Withdrawal Requests</span>
+              </button>
             </nav>
 
             {/* Profile Button */}
@@ -258,6 +271,7 @@ const AdminDashboard = () => {
                 {activeTab === 'analytics' && <AdminAnalytics />}
                 {activeTab === 'users' && <AdminUsers />}
                 {activeTab === 'events' && <AdminEvents />}
+                {activeTab === 'withdrawals' && <AdminWithdrawals />}
               </motion.div>
             </AnimatePresence>
           </div>
