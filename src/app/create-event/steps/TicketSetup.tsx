@@ -111,19 +111,19 @@ const TicketSetup = memo(function TicketSetup({
       animate={{ opacity: 1, y: 0 }}
       className="space-y-8"
     >
-      <div className="text-center mb-8">
+      <div className="text-center mb-6 sm:mb-8">
         <motion.h2 
-          className="text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-center justify-center"
+          className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-center justify-center"
           initial={{ scale: 0.95 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 200 }}
         >
-          <FaTicketAlt className="mr-3 text-blue-500 animate-pulse" size={28} />
+          <FaTicketAlt className="mr-2 sm:mr-3 text-[#f54502]" size={20} />
           <span className="bg-gradient-to-r from-[#f54502] to-[#d63a02] bg-clip-text text-transparent">
             Create Your Tickets
           </span>
         </motion.h2>
-        <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 max-w-md mx-auto">
           Design different ticket options for your event. Make them special!
         </p>
       </div>
@@ -175,41 +175,35 @@ const TicketCard = memo(function TicketCard({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, x: -50 }}
       transition={{ type: "spring", stiffness: 300 }}
-      className="relative bg-white dark:bg-gray-800 rounded-2xl p-6 border-2 border-gray-100 dark:border-gray-700 shadow-lg hover:shadow-xl transition-shadow duration-300"
+      className="relative bg-white dark:bg-gray-800 rounded-[5px] p-4 sm:p-6 border-2 border-gray-100 dark:border-gray-700 shadow-lg hover:shadow-xl transition-shadow duration-300"
       whileHover={{ y: -3 }}
     >
-      <div className="absolute -top-3 -left-3 bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-md">
+      <div className="absolute -top-3 -left-3 bg-[#f54502] text-white px-2 sm:px-3 py-1 rounded-[5px] text-xs font-bold shadow-md">
         Ticket #{index + 1}
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-            <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 p-1 rounded mr-2">
-              ✨
-            </span>
-            What&apos;s this ticket called? *
+          <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Ticket Name *
           </label>
           <input
             type="text"
             value={ticket.name}
             onChange={(e) => onTicketChange(index, 'name', e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-200"
+            className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border-2 border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-200 text-sm sm:text-base"
             placeholder="e.g., VIP Pass, Early Bird"
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-            <span className="bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 p-1 rounded mr-2">
-              💰
-            </span>
-            How much does it cost? *
+          <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Price *
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span className="text-gray-500 dark:text-gray-400">
+              <span className="text-gray-500 dark:text-gray-400 text-sm">
                 {formatPrice(0, currency).charAt(0)}
               </span>
             </div>
@@ -217,12 +211,12 @@ const TicketCard = memo(function TicketCard({
               type="text"
               value={ticket.price}
               onChange={(e) => onTicketChange(index, 'price', e.target.value)}
-              className="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-200"
+              className="w-full pl-8 sm:pl-10 pr-12 sm:pr-16 py-2 sm:py-3 rounded-[5px] border-2 border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-200 text-sm sm:text-base"
               placeholder="0.00"
               required
             />
             <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-              <span className="text-gray-500 dark:text-gray-400 text-sm">
+              <span className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">
                 {currency}
               </span>
             </div>
@@ -230,17 +224,14 @@ const TicketCard = memo(function TicketCard({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-            <span className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 p-1 rounded mr-2">
-              🎟️
-            </span>
-            How many available? *
+          <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Quantity *
           </label>
           <input
             type="text"
             value={ticket.quantity}
             onChange={(e) => onTicketChange(index, 'quantity', e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-200"
+            className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border-2 border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-200 text-sm sm:text-base"
             placeholder="100"
             required
           />
@@ -256,10 +247,10 @@ const TicketCard = memo(function TicketCard({
               onChange={(e) => onFreeChange(index, e.target.checked)}
               className="sr-only peer"
             />
-            <div className="w-12 h-6 bg-gray-200 dark:bg-gray-600 rounded-full peer 
-              peer-checked:after:translate-x-6 peer-checked:bg-green-500
+            <div className="w-12 h-6 bg-gray-200 dark:bg-gray-600 rounded-[5px] peer 
+              peer-checked:after:translate-x-6 peer-checked:bg-[#f54502]
               after:content-[''] after:absolute after:top-[2px] after:left-[2px] 
-              after:bg-white after:border-gray-300 after:rounded-full after:h-5 after:w-5 
+              after:bg-white after:border-gray-300 after:rounded-[5px] after:h-5 after:w-5 
               after:transition-all after:duration-300 peer-hover:shadow-lg
               peer-checked:after:border-white flex items-center justify-between px-1">
               <span className="text-xs text-white font-bold">FREE</span>
@@ -288,13 +279,13 @@ const AddTicketButton = memo(function AddTicketButton({ onClick }: { onClick: ()
       whileHover={{ scale: 1.02, boxShadow: "0 5px 15px rgba(59, 130, 246, 0.3)" }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className="w-full py-5 border-2 border-dashed border-blue-400 dark:border-blue-500
-              rounded-2xl text-blue-600 dark:text-blue-400 font-medium text-lg
-              hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-all duration-300
+      className="w-full py-4 sm:py-5 border-2 border-dashed border-[#f54502] dark:border-[#f54502]
+              rounded-[5px] text-[#f54502] dark:text-[#f54502] font-medium text-sm sm:text-base
+              hover:bg-[#f54502]/10 dark:hover:bg-[#f54502]/20 transition-all duration-300
               flex flex-col items-center justify-center space-y-2 group"
     >
-      <div className="w-10 h-7 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-        <FaPlus className="text-blue-500 dark:text-blue-400" />
+      <div className="w-8 h-6 sm:w-10 sm:h-7 bg-[#f54502]/20 dark:bg-[#f54502]/30 rounded-[5px] flex items-center justify-center group-hover:scale-110 transition-transform">
+        <FaPlus className="text-[#f54502]" />
       </div>
       <span>Add Another Ticket Option</span>
     </motion.button>
@@ -314,9 +305,9 @@ const NavigationButtons = memo(function NavigationButtons({
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.97 }}
         onClick={onBack}
-        className="px-8 py-3 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300
-                rounded-xl border-2 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600
-                transition-all duration-200 flex items-center justify-center"
+        className="px-4 sm:px-6 md:px-8 py-2 sm:py-3 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300
+                rounded-[5px] border-2 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600
+                transition-all duration-200 flex items-center justify-center text-sm sm:text-base w-full sm:w-auto"
       >
         <FaArrowLeft className="mr-2" />
         Go Back
@@ -326,10 +317,10 @@ const NavigationButtons = memo(function NavigationButtons({
         whileHover={{ scale: 1.05, boxShadow: "0 5px 20px rgba(124, 58, 237, 0.4)" }}
         whileTap={{ scale: 0.98 }}
         onClick={onNext}
-        className="px-8 py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white
-                rounded-xl hover:from-[#f54502]/90 hover:to-[#d63a02]/90
+        className="px-4 sm:px-6 md:px-8 py-2 sm:py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white
+                rounded-[5px] hover:from-[#f54502]/90 hover:to-[#d63a02]/90
                 transition-all duration-300 shadow-lg hover:shadow-xl
-                flex items-center justify-center"
+                flex items-center justify-center text-sm sm:text-base w-full sm:w-auto"
       >
         Continue to Ticket Details
         <FaArrowRight className="ml-2" />

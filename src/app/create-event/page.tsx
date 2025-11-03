@@ -223,12 +223,12 @@ export default function CreateEventPage() {
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => router.push('/dashboard')}
-                className="flex items-center space-x-1 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="flex items-center space-x-1 text-gray-600 dark:text-gray-300 hover:text-[#f54502] dark:hover:text-[#f54502] transition-colors duration-200 p-2 rounded-[5px] hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <BiArrowBack className="text-lg" />
                 <span className="hidden sm:inline">Back</span>
               </button>
-              <h1 className="text-xl font-bold text-gray-800 dark:text-white">
+              <h1 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white">
                 Create New Event
               </h1>
             </div>
@@ -257,11 +257,11 @@ export default function CreateEventPage() {
                     onClick={() => step >= stepItem.number && setStep(stepItem.number)}
                     className={`flex flex-col items-center group ${step >= stepItem.number ? 'cursor-pointer' : 'cursor-default'}`}
                   >
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300
+                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-[5px] flex items-center justify-center transition-all duration-300 text-sm sm:text-base
                       ${step === stepItem.number 
                         ? 'bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white shadow-lg ring-4 ring-[#f54502]/20 dark:ring-[#f54502]/20 transform scale-110'
                         : step > stepItem.number
-                        ? 'bg-green-500 text-white shadow-md'
+                        ? 'bg-[#f54502] text-white shadow-md'
                         : 'bg-white dark:bg-gray-700 text-gray-400 border-2 border-gray-300 dark:border-gray-600'}`}
                     >
                       {step > stepItem.number ? (

@@ -249,11 +249,11 @@ export default function FinalDetails({
       animate={{ opacity: 1, y: 0 }}
       className="space-y-8"
     >
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+      <div className="mb-6 sm:mb-8">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">
           Final Details
         </h2>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
           Add the finishing touches to your event
         </p>
       </div>
@@ -296,7 +296,7 @@ export default function FinalDetails({
               {galleryPreviews.map((preview, index) => (
                 <div
                   key={index}
-                  className="relative aspect-square bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden group"
+                  className="relative aspect-square bg-gray-100 dark:bg-gray-700 rounded-[5px] overflow-hidden group"
                 >
                   <Image
                     src={preview}
@@ -308,7 +308,7 @@ export default function FinalDetails({
                   <button
                     type="button"
                     onClick={() => removeGalleryImage(index)}
-                    className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all duration-200 opacity-0 group-hover:opacity-100"
+                    className="absolute top-2 right-2 p-1.5 sm:p-2 bg-[#f54502] text-white rounded-[5px] hover:bg-[#d63a02] transition-all duration-200 opacity-0 group-hover:opacity-100"
                   >
                     <FaTrash size={12} />
                   </button>
@@ -318,7 +318,7 @@ export default function FinalDetails({
           ) : (
             <div 
               onClick={() => fileInputRef.current?.click()}
-              className="w-full py-12 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition-colors"
+                  className="w-full py-8 sm:py-12 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-[5px] flex flex-col items-center justify-center cursor-pointer hover:border-[#f54502] dark:hover:border-[#f54502] transition-colors"
             >
               <FaImages className="text-gray-400 text-2xl mb-2" />
               <p className="text-gray-500 dark:text-gray-400">No images added yet</p>
@@ -338,7 +338,7 @@ export default function FinalDetails({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <FaInstagram className="text-pink-500" />
+                <FaInstagram className="text-[#f54502]" />
               </div>
               <input
                 type="url"
@@ -351,14 +351,14 @@ export default function FinalDetails({
                     },
                   })
                 }
-                className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-pink-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full pl-8 sm:pl-10 pr-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                 placeholder="https://instagram.com/yourpage"
               />
             </div>
 
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <FaFacebookF className="text-blue-600" />
+                <FaFacebookF className="text-[#f54502]" />
               </div>
               <input
                 type="url"
@@ -371,14 +371,14 @@ export default function FinalDetails({
                     },
                   })
                 }
-                className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full pl-8 sm:pl-10 pr-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                 placeholder="https://facebook.com/yourpage"
               />
             </div>
 
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <FaTwitter className="text-blue-400" />
+                <FaTwitter className="text-[#f54502]" />
               </div>
               <input
                 type="url"
@@ -391,7 +391,7 @@ export default function FinalDetails({
                     },
                   })
                 }
-                className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full pl-8 sm:pl-10 pr-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                 placeholder="https://twitter.com/yourpage"
               />
             </div>
@@ -403,14 +403,14 @@ export default function FinalDetails({
           <button
             type="button"
             onClick={onBack}
-            className="px-6 py-3 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200"
+            className="px-4 sm:px-6 py-2 sm:py-3 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-[5px] border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200 text-sm sm:text-base w-full sm:w-auto"
           >
             Back
           </button>
           <button
             type="submit"
             disabled={isLoading}
-            className={`px-6 py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white rounded-lg hover:from-[#f54502]/90 hover:to-[#d63a02]/90 transform transition-all duration-200 shadow-lg hover:shadow-xl relative overflow-hidden ${
+            className={`px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white rounded-[5px] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 transform transition-all duration-200 shadow-lg hover:shadow-xl relative overflow-hidden text-sm sm:text-base w-full sm:w-auto ${
               isLoading ? "opacity-75 cursor-not-allowed" : "hover:scale-[1.02]"
             }`}
           >

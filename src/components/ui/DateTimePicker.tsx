@@ -142,8 +142,8 @@ const DateTimePicker = memo(({
           key={`day-${i}`}
           onClick={() => !isDisabled && handleDateSelect(dayDate)}
           disabled={!!isDisabled}
-          className={`w-8 h-8 rounded-full flex items-center justify-center text-sm
-            ${isSelected ? 'bg-blue-600 text-white' : ''}
+          className={`w-8 h-8 rounded-[5px] flex items-center justify-center text-sm
+            ${isSelected ? 'bg-[#f54502] text-white' : ''}
             ${isDisabled ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed' : 
               'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200'}
             transition-colors duration-150
@@ -206,7 +206,7 @@ const DateTimePicker = memo(({
                   onClick={() => setHour(h)}
                   className={`w-full py-2 text-center ${
                     hour === h
-                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 font-medium'
+                      ? 'bg-[#f54502]/10 dark:bg-[#f54502]/20 text-[#f54502] dark:text-[#f54502] font-medium'
                       : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200'
                   }`}
                 >
@@ -229,7 +229,7 @@ const DateTimePicker = memo(({
                   onClick={() => setMinute(m)}
                   className={`w-full py-2 text-center ${
                     minute === m
-                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 font-medium'
+                      ? 'bg-[#f54502]/10 dark:bg-[#f54502]/20 text-[#f54502] dark:text-[#f54502] font-medium'
                       : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200'
                   }`}
                 >
@@ -244,16 +244,16 @@ const DateTimePicker = memo(({
             <div className="flex flex-col space-y-2 h-48 justify-center">
               <button 
                 onClick={() => setIsAm(true)}
-                className={`px-4 py-3 rounded-lg ${
-                  isAm ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                className={`px-4 py-3 rounded-[5px] ${
+                  isAm ? 'bg-[#f54502] text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                 }`}
               >
                 AM
               </button>
               <button 
                 onClick={() => setIsAm(false)}
-                className={`px-4 py-3 rounded-lg ${
-                  !isAm ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                className={`px-4 py-3 rounded-[5px] ${
+                  !isAm ? 'bg-[#f54502] text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                 }`}
               >
                 PM
@@ -265,13 +265,13 @@ const DateTimePicker = memo(({
         <div className="flex justify-between pt-4">
           <button
             onClick={handleClear}
-            className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 rounded-[5px] hover:bg-gray-100 dark:hover:bg-gray-700"
           >
             Clear
           </button>
           <button
             onClick={handleTimeConfirm}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2"
+            className="px-4 py-2 bg-[#f54502] text-white rounded-[5px] hover:bg-[#d63a02] flex items-center space-x-2"
           >
             <FaCheck size={14} />
             <span>Confirm</span>
@@ -301,11 +301,11 @@ const DateTimePicker = memo(({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full px-4 py-3 rounded-lg border ${
+        className={`w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border ${
           isOpen 
-            ? 'border-blue-500 ring-2 ring-blue-200 dark:ring-blue-800' 
+            ? 'border-[#f54502] ring-2 ring-[#f54502]/20 dark:ring-[#f54502]/30' 
             : 'border-gray-300 dark:border-gray-600'
-        } bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 flex items-center justify-between transition-all duration-200`}
+        } bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 flex items-center justify-between transition-all duration-200 text-sm sm:text-base`}
       >
         <span className="text-left">{displayValue()}</span>
         <div className="flex items-center space-x-2">
@@ -336,7 +336,7 @@ const DateTimePicker = memo(({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.2 }}
-            className="absolute z-20 mt-1 w-full min-w-[280px] bg-white dark:bg-gray-800 rounded-lg shadow-xl p-4 border border-gray-200 dark:border-gray-700"
+            className="absolute z-20 mt-1 w-full min-w-[280px] bg-white dark:bg-gray-800 rounded-[5px] shadow-xl p-4 border border-gray-200 dark:border-gray-700"
           >
             <div className="flex justify-between items-center mb-3">
               <h3 className="font-medium text-gray-800 dark:text-gray-200">

@@ -33,21 +33,15 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
   }, [formData.image]);
 
   const handleImageChange = (file: File) => {
-    if (!file.type.startsWith('image/')) {
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
       setToast({
         type: 'error',
-        message: 'Please upload an image file',
+        message: 'Invalid image format. Please upload JPG, PNG, or WEBP files only.',
         onClose: () => setToast(null)
       });
-      return;
-    }
-  
-    if (file.size > 5 * 1024 * 1024) {
-      setToast({
-        type: 'error',
-        message: 'File size should be less than 5MB',
-        onClose: () => setToast(null)
-      });
+      if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
   
@@ -58,10 +52,6 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
     const previewUrl = URL.createObjectURL(file);
     setImagePreview(previewUrl);
     updateFormData({ image: file });
-
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -180,25 +170,25 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+      <div className="mb-6 sm:mb-8">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">
           Event Basic Information
         </h2>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
           Start by setting up the foundation of your event
         </p>
       </div>
 
-      {/* Image Upload - Improved */}
-      <div className="space-y-4">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+      {/* Image Upload - Simplified */}
+      <div className="space-y-3 sm:space-y-4">
+        <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300">
           Event Image *
         </label>
         <div
-          className={`relative border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-200 ${
+          className={`relative border-2 border-dashed rounded-[5px] p-4 sm:p-6 text-center cursor-pointer transition-all duration-200 ${
             isDragging
-              ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-              : "border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500"
+              ? "border-[#f54502] bg-[#f54502]/10 dark:bg-[#f54502]/20"
+              : "border-gray-300 dark:border-gray-600 hover:border-[#f54502] dark:hover:border-[#f54502]"
           }`}
           onDragOver={(e) => {
             e.preventDefault();
@@ -212,21 +202,45 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
             type="file"
             ref={fileInputRef}
             className="hidden"
-            accept="image/*"
+            accept="image/jpeg,image/jpg,image/png,image/webp"
             onChange={(e) => {
               const file = e.target.files?.[0];
-              if (file) handleImageChange(file);
+              if (file) {
+                // Validate image type
+                const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+                if (!validTypes.includes(file.type)) {
+                  setToast({
+                    type: 'error',
+                    message: 'Invalid image format. Please upload JPG, PNG, or WEBP files only.',
+                    onClose: () => setToast(null)
+                  });
+                  if (fileInputRef.current) fileInputRef.current.value = '';
+                  return;
+                }
+                handleImageChange(file);
+              }
             }}
           />
 
           {imagePreview ? (
-            <div className="relative h-48 w-full rounded-lg overflow-hidden">
+            <div className="relative h-40 sm:h-48 w-full rounded-[5px] overflow-hidden bg-gray-100 dark:bg-gray-800">
               <Image
                 src={imagePreview}
                 alt="Event preview"
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 50vw"
+                onError={() => {
+                  setToast({
+                    type: 'error',
+                    message: 'Failed to load image. Please upload a valid image file.',
+                    onClose: () => setToast(null)
+                  });
+                  if (imagePreview) URL.revokeObjectURL(imagePreview);
+                  setImagePreview(null);
+                  updateFormData({ image: null });
+                  if (fileInputRef.current) fileInputRef.current.value = '';
+                }}
               />
               <button
                 onClick={(e) => {
@@ -234,21 +248,22 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                   if (imagePreview) URL.revokeObjectURL(imagePreview);
                   setImagePreview(null);
                   updateFormData({ image: null });
+                  if (fileInputRef.current) fileInputRef.current.value = '';
                 }}
-                className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors duration-200"
+                className="absolute top-2 right-2 p-1.5 sm:p-2 bg-[#f54502] text-white rounded-[5px] hover:bg-[#d63a02] transition-colors duration-200"
               >
                 <FaTrash size={12} />
               </button>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center space-y-3">
-              <FaCloudUploadAlt className="w-10 h-10 text-gray-400" />
+            <div className="flex flex-col items-center justify-center space-y-2 sm:space-y-3 py-4 sm:py-6">
+              <FaCloudUploadAlt className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                  Drag and drop your image here
+                <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300">
+                  Click to upload or drag and drop
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  or click to browse (Max 5MB)
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  JPG, PNG, or WEBP
                 </p>
               </div>
             </div>
@@ -256,32 +271,32 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
         </div>
       </div>
 
-      {/* Form Fields - Improved Layout */}
-      <div className="grid gap-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Form Fields */}
+      <div className="grid gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
               Event Title *
             </label>
             <input
               type="text"
               value={formData.title}
               onChange={(e) => updateFormData({ title: e.target.value })}
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
               placeholder="e.g., Tech Conference 2023"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
               Host Name *
             </label>
             <input
               type="text"
               value={formData.hostName}
               onChange={(e) => updateFormData({ hostName: e.target.value })}
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
               placeholder="Your name or organization"
               required
             />
@@ -290,22 +305,22 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
 
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
             Description *
           </label>
           <textarea
             value={formData.description}
             onChange={(e) => updateFormData({ description: e.target.value })}
             rows={4}
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
             placeholder="Tell attendees what your event is about..."
             required
           />
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-3">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          <div className="space-y-2 sm:space-y-3">
+            <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
               Date *
             </label>
             <DateTimePicker
@@ -315,8 +330,8 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
               minDate={new Date().toISOString().split('T')[0]}
             />
           </div>
-          <div className="space-y-3">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <div className="space-y-2 sm:space-y-3">
+            <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
               Time *
             </label>
             <DateTimePicker
@@ -345,7 +360,7 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
               }}
               className="sr-only peer" 
             />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#f54502]/30 dark:peer-focus:ring-[#f54502]/50 rounded-[5px] peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-[5px] after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#f54502]"></div>
             <span className="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">
               Virtual Event
             </span>
@@ -353,53 +368,52 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
         </div>
 
         {!formData.isVirtual ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Venue *
               </label>
               <input
                 type="text"
                 value={formData.venue}
                 onChange={(e) => updateFormData({ venue: e.target.value })}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                 placeholder="e.g., Convention Center"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Location *
               </label>
               <input
                 type="text"
                 value={formData.location}
                 onChange={(e) => updateFormData({ location: e.target.value })}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                 placeholder="e.g., 123 Main St, City"
                 required
               />
             </div>
           </div>
         ) : (
-          /* Virtual Event Details - Improved */
           <motion.div 
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             transition={{ duration: 0.3 }}
-            className="bg-blue-50 dark:bg-blue-900/10 rounded-xl p-6 border border-blue-100 dark:border-blue-900/20"
+            className="bg-[#f54502]/10 dark:bg-[#f54502]/20 rounded-[5px] p-4 sm:p-6 border border-[#f54502]/20 dark:border-[#f54502]/30"
           >
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200 flex items-center">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-2 sm:gap-0">
+                  <h3 className="text-base sm:text-lg font-semibold text-[#f54502] dark:text-[#f54502] flex items-center">
                     <RiEarthLine className="mr-2" /> Virtual Event Setup
                   </h3>
-                  <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-medium rounded-full">
+                  <span className="px-2 sm:px-3 py-1 bg-[#f54502]/20 dark:bg-[#f54502]/30 text-[#f54502] dark:text-[#f54502] text-xs font-medium rounded-[5px]">
                     Online Event
                   </span>
                 </div>
 
                 {/* Platform Selection */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 dark:text-white text-gray-900">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
                 {(['google-meet', 'zoom', 'whereby', 'custom'] as const).map((platform) => (
                   <motion.button
                     key={platform}
@@ -422,17 +436,17 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                           'Virtual Event'
                       });
                     }}
-                    className={`p-4 rounded-lg border-2 transition-all duration-200 flex flex-col items-center dark:text-white text-gray-900
+                    className={`p-3 sm:p-4 rounded-[5px] border-2 transition-all duration-200 flex flex-col items-center dark:text-white text-gray-900
                       ${formData.virtualEventDetails?.platform === platform
-                      ? 'border-blue-500 bg-gradient-to-r from-blue-100 via-purple-100 to-blue-50 dark:from-blue-900/40 dark:via-purple-900/30 dark:to-blue-900/20 shadow-md'
-                      : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gradient-to-r hover:from-blue-400/20 hover:via-purple-400/30 hover:to-blue-200/30 dark:hover:from-blue-700/40 dark:hover:via-purple-700/30 dark:hover:to-blue-900/20 hover:border-blue-400 dark:hover:border-blue-400'
+                      ? 'border-[#f54502] bg-[#f54502]/10 dark:bg-[#f54502]/20 shadow-md'
+                      : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-[#f54502]/5 dark:hover:bg-[#f54502]/10 hover:border-[#f54502] dark:hover:border-[#f54502]'
                       }`}
                   >
-                      {platform === 'google-meet' && <FaGoogle className="text-red-500 text-2xl mb-2" />}
-                      {platform === 'zoom' && <FaVideo className="text-blue-500 text-2xl mb-2" />}
-                      {platform === 'whereby' && <FaVideo className="text-purple-500 text-2xl mb-2" />}
-                      {platform === 'custom' && <FaKey className="text-green-500 text-2xl mb-2" />}
-                      <span className="capitalize font-medium text-sm">
+                      {platform === 'google-meet' && <FaGoogle className="text-[#f54502] text-xl sm:text-2xl mb-2" />}
+                      {platform === 'zoom' && <FaVideo className="text-[#f54502] text-xl sm:text-2xl mb-2" />}
+                      {platform === 'whereby' && <FaVideo className="text-[#f54502] text-xl sm:text-2xl mb-2" />}
+                      {platform === 'custom' && <FaKey className="text-[#f54502] text-xl sm:text-2xl mb-2" />}
+                      <span className="capitalize font-medium text-xs sm:text-sm text-center">
                         {platform === 'google-meet' ? 'Google Meet' : 
                         platform === 'whereby' ? 'Whereby' :
                         platform === 'custom' ? 'Custom Setup' : platform}
@@ -443,18 +457,18 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
 
                 {/* Google Meet  */}
                 {formData.virtualEventDetails?.platform === 'google-meet' && (
-                  <div className="space-y-4 mb-6">
-                  <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800">
+                  <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
+                  <div className="bg-[#f54502]/10 dark:bg-[#f54502]/20 p-3 sm:p-4 rounded-[5px] border border-[#f54502]/20 dark:border-[#f54502]/30">
                     <div className="flex items-start">
-                      <FaInfoCircle className="text-blue-500 mt-1 mr-2 flex-shrink-0" />
-                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                      <FaInfoCircle className="text-[#f54502] mt-1 mr-2 flex-shrink-0 text-sm sm:text-base" />
+                    <p className="text-xs sm:text-sm text-[#f54502] dark:text-[#f54502]">
                       Please paste your Google Meet link below. Make sure the link is accessible to attendees.
                     </p>
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-                      <FaLink className="mr-2" /> Google Meet Link *
+                    <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                      <FaLink className="mr-2 text-sm" /> Google Meet Link *
                     </label>
                     <input
                     type="url"
@@ -465,9 +479,9 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                       meetingUrl: e.target.value
                       }
                     })}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600
-                        focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                        bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600
+                        focus:ring-2 focus:ring-[#f54502] focus:border-transparent
+                        bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                     placeholder="https://meet.google.com/xxx-xxxx-xxx"
                     required
                     />
@@ -477,11 +491,11 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
 
                 {/* Whereby Section */}
                 {formData.virtualEventDetails?.platform === 'whereby' && (
-                  <div className="space-y-4 mb-6">
-                    <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
+                  <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
+                    <div className="bg-[#f54502]/10 dark:bg-[#f54502]/20 p-3 sm:p-4 rounded-[5px] border border-[#f54502]/20 dark:border-[#f54502]/30">
                       <div className="flex items-start">
-                        <FaInfoCircle className="text-purple-500 mt-1 mr-2 flex-shrink-0" />
-                        <p className="text-sm text-purple-700 dark:text-purple-300">
+                        <FaInfoCircle className="text-[#f54502] mt-1 mr-2 flex-shrink-0 text-sm sm:text-base" />
+                        <p className="text-xs sm:text-sm text-[#f54502] dark:text-[#f54502]">
                           A Whereby meeting link will be automatically generated when you publish your event.
                           You can customize the room name later in your Whereby dashboard.
                         </p>
@@ -489,11 +503,11 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Meeting Options
                       </label>
-                      <div className="space-y-3">
-                        <label className="flex items-center space-x-3">
+                      <div className="space-y-2 sm:space-y-3">
+                        <label className="flex items-center space-x-2 sm:space-x-3">
                           <input
                             type="checkbox"
                             checked={formData.virtualEventDetails?.enableWaitingRoom || false}
@@ -503,11 +517,11 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                                 enableWaitingRoom: e.target.checked
                               }
                             })}
-                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            className="h-4 w-4 text-[#f54502] focus:ring-[#f54502] border-gray-300 rounded-[5px]"
                           />
-                          <span className="text-sm text-gray-700 dark:text-gray-300">Enable waiting room</span>
+                          <span className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">Enable waiting room</span>
                         </label>
-                        <label className="flex items-center space-x-3">
+                        <label className="flex items-center space-x-2 sm:space-x-3">
                           <input
                             type="checkbox"
                             checked={formData.virtualEventDetails?.lockRoom || false}
@@ -517,9 +531,9 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                                 lockRoom: e.target.checked
                               }
                             })}
-                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            className="h-4 w-4 text-[#f54502] focus:ring-[#f54502] border-gray-300 rounded-[5px]"
                           />
-                          <span className="text-sm text-gray-700 dark:text-gray-300">Lock room after start</span>
+                          <span className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">Lock room after start</span>
                         </label>
                       </div>
                     </div>
@@ -528,10 +542,10 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
 
                 {/* Zoom Section */}
                 {formData.virtualEventDetails?.platform === 'zoom' && (
-                  <div className="space-y-4 mb-6">
+                  <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-                        <FaIdCard className="mr-2" /> Zoom Meeting ID *
+                      <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                        <FaIdCard className="mr-2 text-sm" /> Zoom Meeting ID *
                       </label>
                       <input
                         type="text"
@@ -542,17 +556,17 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                             meetingId: e.target.value
                           }
                         })}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600
-                                focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                                bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600
+                                focus:ring-2 focus:ring-[#f54502] focus:border-transparent
+                                bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                         placeholder="123 456 7890"
                         required
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-                        <FaLock className="mr-2" /> Zoom Passcode (Optional)
+                      <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                        <FaLock className="mr-2 text-sm" /> Zoom Passcode (Optional)
                       </label>
                       <input
                         type="text"
@@ -563,9 +577,9 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                             passcode: e.target.value
                           }
                         })}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600
-                                focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                                bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600
+                                focus:ring-2 focus:ring-[#f54502] focus:border-transparent
+                                bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                         placeholder="Leave empty if no passcode required"
                       />
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
@@ -577,10 +591,10 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
 
                 {/* Custom Platform Section */}
                 {formData.virtualEventDetails?.platform === 'custom' && (
-                  <div className="space-y-4 mb-6">
+                  <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-                        <FaLink className="mr-2" /> Meeting URL *
+                      <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                        <FaLink className="mr-2 text-sm" /> Meeting URL *
                       </label>
                       <input
                         type="url"
@@ -591,17 +605,17 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                             meetingUrl: e.target.value
                           }
                         })}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600
-                                focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                                bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600
+                                focus:ring-2 focus:ring-[#f54502] focus:border-transparent
+                                bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                         placeholder="https://your-platform.com/meeting-id"
                         required
                       />
                     </div>
-                    <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                    <div className="bg-[#f54502]/10 dark:bg-[#f54502]/20 p-3 sm:p-4 rounded-[5px] border border-[#f54502]/20 dark:border-[#f54502]/30">
                       <div className="flex items-start">
-                        <FaExclamationTriangle className="text-yellow-500 mt-1 mr-2 flex-shrink-0" />
-                        <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                        <FaExclamationTriangle className="text-[#f54502] mt-1 mr-2 flex-shrink-0 text-sm sm:text-base" />
+                        <p className="text-xs sm:text-sm text-[#f54502] dark:text-[#f54502]">
                           For custom platforms, you&apos;re responsible for creating the meeting and managing access.
                           Ensure the URL is correct and accessible to attendees.
                         </p>
@@ -611,8 +625,8 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                 )}
 
                 {/* Universal Virtual Password Section */}
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
-                  <div className="flex items-center justify-between mb-3">
+                <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-[5px] border border-gray-200 dark:border-gray-700 shadow-sm">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 gap-2 sm:gap-0">
                     <label className="flex items-center cursor-pointer">
                       <input
                         type="checkbox"
@@ -626,13 +640,13 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                         })}
                         className="sr-only peer"
                       />
-                      <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                      <span className="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#f54502]/30 dark:peer-focus:ring-[#f54502]/50 rounded-[5px] peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-[5px] after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#f54502]"></div>
+                      <span className="ml-3 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
                         Require Virtual Password
                       </span>
                     </label>
                     {formData.virtualEventDetails?.requiresPassword && (
-                      <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full">
+                      <span className="text-xs bg-[#f54502]/20 dark:bg-[#f54502]/30 text-[#f54502] dark:text-[#f54502] px-2 py-1 rounded-[5px]">
                         Extra Security
                       </span>
                     )}
@@ -645,8 +659,8 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                       transition={{ duration: 0.3 }}
                       className="mt-3"
                     >
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-                        <FaLock className="mr-2" /> Virtual Event Password
+                      <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                        <FaLock className="mr-2 text-sm" /> Virtual Event Password
                       </label>
                       <div className="relative">
                         <input
@@ -658,9 +672,9 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                               virtualPassword: e.target.value
                             }
                           })}
-                          className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600
-                                  focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                                  bg-white dark:bg-gray-700 text-gray-900 dark:text-white pr-10"
+                          className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600
+                                  focus:ring-2 focus:ring-[#f54502] focus:border-transparent
+                                  bg-white dark:bg-gray-700 text-gray-900 dark:text-white pr-10 text-sm sm:text-base"
                           placeholder="Create a password for attendees"
                         />
                         <button
@@ -688,10 +702,10 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
       </div>
 
       {/* Next Button */}
-      <div className="flex justify-end mt-8">
+      <div className="flex justify-end mt-6 sm:mt-8">
         <button
           onClick={() => validateForm() && onNext()}
-          className="px-6 py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white rounded-lg hover:from-[#f54502]/90 hover:to-[#d63a02]/90 transform hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl w-full md:w-auto"
+          className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white rounded-[5px] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 transform hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl w-full sm:w-auto text-sm sm:text-base"
         >
           Continue to Ticket Setup
         </button>

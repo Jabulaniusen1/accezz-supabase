@@ -45,44 +45,49 @@ const Toast: React.FC<ToastProps> = ({ type, message, onClose }) => {
           position: fixed;
           top: 20px;
           right: 20px;
-          min-width: 300px;
+          min-width: 280px;
           max-width: 90vw;
-          padding: 16px;
-          border-radius: 12px;
-          font-size: 15px;
+          padding: 12px 16px;
+          border-radius: 5px;
+          font-size: 14px;
           color: #fff;
           z-index: 9999;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-          backdrop-filter: blur(8px);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+          border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .toast-content {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 10px;
         }
 
         .toast-icon {
           flex-shrink: 0;
-          font-size: 18px;
+          font-size: 16px;
         }
 
         .toast-message {
           flex-grow: 1;
           margin-right: 8px;
-          line-height: 1.4;
+          line-height: 1.5;
         }
 
         .toast-close {
           background: none;
           border: none;
           color: inherit;
-          font-size: 24px;
+          font-size: 20px;
           cursor: pointer;
           padding: 0;
-          opacity: 0.7;
+          opacity: 0.8;
           transition: opacity 0.2s;
           line-height: 1;
+          width: 20px;
+          height: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .toast-close:hover {
@@ -90,31 +95,30 @@ const Toast: React.FC<ToastProps> = ({ type, message, onClose }) => {
         }
 
         .success {
-          background-color: rgba(34, 197, 94, 0.95);
-          border-left: 4px solid rgb(21, 128, 61);
+          background-color: rgba(34, 197, 94, 1);
         }
 
         .error {
-          background-color: rgba(239, 68, 68, 0.95);
-          border-left: 4px solid rgb(185, 28, 28);
+          background-color: rgba(239, 68, 68, 1);
         }
 
         .warning {
-          background-color: rgba(249, 115, 22, 0.95);
-          border-left: 4px solid rgb(194, 65, 12);
+          background-color: rgba(245, 69, 2, 1);
         }
 
         .info {
-          background-color: rgba(59, 130, 246, 0.95);
-          border-left: 4px solid rgb(29, 78, 216);
+          background-color: rgba(245, 69, 2, 1);
         }
 
         @media (max-width: 768px) {
           .toast-container {
-            top: 2px;
-            right: 20px;
+            top: 10px;
+            right: 10px;
+            left: 10px;
             min-width: unset;
             width: auto;
+            padding: 10px 14px;
+            font-size: 13px;
           }
         }
       `}</style>

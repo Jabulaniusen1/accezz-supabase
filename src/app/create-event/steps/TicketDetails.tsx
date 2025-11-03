@@ -140,19 +140,19 @@ export default function TicketDetails({
       animate={{ opacity: 1, y: 0 }}
       className="space-y-8"
     >
-      <div className="text-center mb-8">
+      <div className="text-center mb-6 sm:mb-8">
         <motion.h2 
-          className="text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-center justify-center"
+          className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-center justify-center"
           initial={{ scale: 0.95 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 200 }}
         >
-          <MdDescription className="mr-3 text-blue-500" size={28} />
+          <MdDescription className="mr-2 sm:mr-3 text-[#f54502]" size={20} />
           <span className="bg-gradient-to-r from-[#f54502] to-[#d63a02] bg-clip-text text-transparent">
             Enhance Your Tickets
           </span>
         </motion.h2>
-        <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 max-w-md mx-auto">
           Add special features and pre-register attendees for each ticket type
         </p>
       </div>
@@ -164,10 +164,10 @@ export default function TicketDetails({
             initial={{ opacity: 0, y: -20, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ type: "spring", stiffness: 300 }}
-            className="relative bg-white dark:bg-gray-800 rounded-2xl p-6 border-2 border-gray-100 dark:border-gray-700 shadow-lg hover:shadow-xl transition-shadow duration-300"
+            className="relative bg-white dark:bg-gray-800 rounded-[5px] p-4 sm:p-6 border-2 border-gray-100 dark:border-gray-700 shadow-lg hover:shadow-xl transition-shadow duration-300"
             whileHover={{ y: -3 }}
           >
-            <div className="absolute -top-3 -left-3 bg-purple-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-md">
+            <div className="absolute -top-3 -left-3 bg-[#f54502] text-white px-2 sm:px-3 py-1 rounded-[5px] text-xs font-bold shadow-md">
               {ticket.name || `Ticket ${ticketIndex + 1}`}
             </div>
             
@@ -176,7 +176,7 @@ export default function TicketDetails({
               className={`w-full flex items-center justify-between text-left ${expandedTicket === ticketIndex ? 'pb-4' : ''}`}
             >
               <div className="flex items-center space-x-4">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${expandedTicket === ticketIndex ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}>
+                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-[5px] flex items-center justify-center text-xs sm:text-sm ${expandedTicket === ticketIndex ? 'bg-[#f54502]/10 dark:bg-[#f54502]/20 text-[#f54502] dark:text-[#f54502]' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}>
                   {ticketIndex + 1}
                 </div>
                 <div>
@@ -207,12 +207,9 @@ export default function TicketDetails({
                   <div className="pt-4 space-y-6">
                     {/* Features Section */}
                     <div>
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-medium text-gray-800 dark:text-white flex items-center">
-                          <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 p-1 rounded mr-2">
-                            ✨
-                          </span>
-                          What&apos;s Special About This Ticket?
+                      <div className="flex items-center justify-between mb-3 sm:mb-4">
+                        <h3 className="text-base sm:text-lg font-medium text-gray-800 dark:text-white">
+                          Ticket Features
                         </h3>
                       </div>
                       
@@ -225,7 +222,7 @@ export default function TicketDetails({
                             className="flex items-start space-x-3 group"
                           >
                             <div className="flex-1 flex items-center space-x-2">
-                              <span className="text-blue-500 mt-1.5">•</span>
+                              <span className="text-[#f54502] mt-1.5">•</span>
                               <input
                                 type="text"
                                 value={feature}
@@ -254,15 +251,15 @@ export default function TicketDetails({
                           type="text"
                           value={newFeatureText}
                           onChange={(e) => setNewFeatureText(e.target.value)}
-                          className="flex-1 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          className="flex-1 px-3 py-2 rounded-[5px] border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                           placeholder="Add a new feature..."
                           onKeyDown={(e) => e.key === 'Enter' && handleAddFeature(ticketIndex)}
                         />
                         <button
                           onClick={() => handleAddFeature(ticketIndex)}
                           disabled={!newFeatureText.trim()}
-                          className={`px-4 py-2 rounded-lg flex items-center ${newFeatureText.trim() 
-                            ? 'bg-blue-500 text-white hover:bg-blue-600' 
+                          className={`px-3 sm:px-4 py-2 rounded-[5px] flex items-center text-sm sm:text-base ${newFeatureText.trim() 
+                            ? 'bg-[#f54502] text-white hover:bg-[#d63a02]' 
                             : 'bg-gray-100 dark:bg-gray-700 text-gray-400 cursor-not-allowed'}`}
                         >
                           <FaPlus />
@@ -277,13 +274,10 @@ export default function TicketDetails({
                     <div className="border-t border-gray-100 dark:border-gray-700 pt-6">
                       <div className="flex items-center justify-between mb-4">
                         <div>
-                          <h3 className="text-lg font-medium text-gray-800 dark:text-white flex items-center">
-                            <span className="bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 p-1 rounded mr-2">
-                              👥
-                            </span>
+                          <h3 className="text-base sm:text-lg font-medium text-gray-800 dark:text-white">
                             Pre-registered Attendees
                           </h3>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                             {ticket.attendees?.length || 0} of {ticket.quantity} spots filled
                           </p>
                         </div>
@@ -291,11 +285,11 @@ export default function TicketDetails({
                           type="button"
                           onClick={() => handleAddAttendee(ticketIndex)}
                           disabled={(ticket.attendees?.length || 0) >= parseInt(ticket.quantity)}
-                          className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${(ticket.attendees?.length || 0) >= parseInt(ticket.quantity) 
+                          className={`flex items-center space-x-2 px-3 py-2 rounded-[5px] text-xs sm:text-sm ${(ticket.attendees?.length || 0) >= parseInt(ticket.quantity) 
                             ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed' 
-                            : 'bg-green-500 text-white hover:bg-green-600'}`}
+                            : 'bg-[#f54502] text-white hover:bg-[#d63a02]'}`}
                         >
-                          <FaUserPlus size={14} />
+                          <FaUserPlus size={12} />
                           <span>Add Attendee</span>
                         </button>
                       </div>
@@ -315,7 +309,7 @@ export default function TicketDetails({
                                   type="text"
                                   value={attendee.name}
                                   onChange={(e) => handleAttendeeChange(ticketIndex, attendeeIndex, 'name', e.target.value)}
-                                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                  className="w-full px-3 py-2 rounded-[5px] border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                                   placeholder="Full Name"
                                   required
                                 />
@@ -325,7 +319,7 @@ export default function TicketDetails({
                                   type="email"
                                   value={attendee.email}
                                   onChange={(e) => handleAttendeeChange(ticketIndex, attendeeIndex, 'email', e.target.value)}
-                                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                  className="w-full px-3 py-2 rounded-[5px] border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                                   placeholder="Email Address"
                                   required
                                 />
@@ -363,22 +357,22 @@ export default function TicketDetails({
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             onClick={onBack}
-            className="px-8 py-3 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300
-                     rounded-xl border-2 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600
-                     transition-all duration-200 flex items-center justify-center"
+            className="px-4 sm:px-6 md:px-8 py-2 sm:py-3 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300
+                     rounded-[5px] border-2 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600
+                     transition-all duration-200 flex items-center justify-center text-sm sm:text-base w-full sm:w-auto"
           >
             <FaArrowLeft className="mr-2" />
             Back to Ticket Setup
           </motion.button>
           
           <motion.button
-            whileHover={{ scale: 1.05, boxShadow: "0 5px 20px rgba(124, 58, 237, 0.4)" }}
+            whileHover={{ scale: 1.05, boxShadow: "0 5px 20px rgba(245, 69, 2, 0.4)" }}
             whileTap={{ scale: 0.98 }}
             onClick={() => validateDetails() && onNext()}
-            className="px-8 py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white
-                     rounded-xl hover:from-[#f54502]/90 hover:to-[#d63a02]/90
+            className="px-4 sm:px-6 md:px-8 py-2 sm:py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white
+                     rounded-[5px] hover:from-[#f54502]/90 hover:to-[#d63a02]/90
                      transition-all duration-300 shadow-lg hover:shadow-xl
-                     flex items-center justify-center"
+                     flex items-center justify-center text-sm sm:text-base w-full sm:w-auto"
           >
             Continue to Final Details
             <FaArrowRight className="ml-2" />
