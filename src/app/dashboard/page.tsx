@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import EventList from "../components/EventList";
 import Earnings from "../components/Earning";
+import Withdrawals from "../components/Withdrawals";
 import Notifications from "../components/Notifications";
 import Setting from "../components/Setting";
 import Profile from "../components/settings/Profile";
@@ -233,6 +234,19 @@ const Dashboard = () => {
 
           <button
                 className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+              activeTab === 5
+                    ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
+                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+            }`}
+            style={{ borderRadius: '5px' }}
+            onClick={() => setActiveTab(5)}
+          >
+                <span className="text-lg font-bold">₦</span>
+                <span className="font-medium">Withdrawals</span>
+          </button>
+
+          <button
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
               activeTab === 2
                     ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
                     : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -313,6 +327,7 @@ const Dashboard = () => {
           >
                 {activeTab === 0 && <EventList />}
                 {activeTab === 1 && <Earnings />}
+                {activeTab === 5 && <Withdrawals />}
                 {activeTab === 2 && <Notifications />}
                 {activeTab === 3 && <Setting />}
                 {activeTab === 4 && <Profile />}
