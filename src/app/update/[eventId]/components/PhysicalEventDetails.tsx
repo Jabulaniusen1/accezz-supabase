@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { FaMapMarkerAlt, FaBuilding } from "react-icons/fa";
+import { FaMapMarkerAlt } from "react-icons/fa";
 import { Event } from "../../../../types/event";
 
 interface PhysicalEventDetailsProps {
