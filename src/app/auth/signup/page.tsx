@@ -116,10 +116,10 @@ function Signup() {
         {/* Back Button */}
         <button
           onClick={() => router.push('/')}
-          className="absolute top-6 left-6 flex items-center gap-2 text-gray-600 hover:text-[#f54502] transition-colors group"
+          className="absolute top-4 left-4 sm:top-6 sm:left-6 flex items-center gap-1 sm:gap-2 text-gray-600 hover:text-[#f54502] transition-colors group"
         >
-          <FaArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span className="text-sm font-medium">Back to Home</span>
+          <FaArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 group-hover:-translate-x-1 transition-transform" />
+          <span className="text-xs sm:text-sm font-medium">Back to Home</span>
         </button>
 
         {/* Loading and Toast */}
@@ -141,51 +141,51 @@ function Signup() {
         {/* Form Container */}
         <div className="w-full max-w-md">
           {/* Header Section */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-[#f54502] rounded-2xl mb-4 shadow-lg">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="text-center mb-4 sm:mb-8">
+            <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-[#f54502] rounded-[5px] mb-3 sm:mb-4 shadow-lg">
+              <svg className="w-5 h-5 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
               </svg>
             </div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Join Accezz</h1>
-            <p className="text-gray-600 text-lg">Create your account and start your journey</p>
+            <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-1 sm:mb-2">Join Accezz</h1>
+            <p className="text-gray-600 text-sm sm:text-lg">Create your account and start your journey</p>
           </div>
 
           {/* Form Card */}
-          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 animate-fadeIn">
-            <div className="space-y-6">
+          <div className="bg-white/80 backdrop-blur-xl rounded-[5px] rounded-xl shadow-2xl border border-white/20 p-4 sm:p-8 animate-fadeIn">
+            <div className="space-y-4 sm:space-y-6">
 
-              <form onSubmit={handleSignup} className="space-y-6">
+              <form onSubmit={handleSignup} className="space-y-4 sm:space-y-6">
                 {/* Name Fields */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label htmlFor="firstName" className="text-sm font-medium text-gray-700">
+                <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                  <div className="space-y-1 sm:space-y-2">
+                    <label htmlFor="firstName" className="text-xs sm:text-sm font-medium text-gray-700">
                       First Name
                     </label>
                     <div className="relative group">
-                      <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f54502] transition-colors" />
+                      <FaUser className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f54502] transition-colors w-3 h-3 sm:w-4 sm:h-4" />
                       <input
                         type="text"
                         id="firstName"
                         name="firstName"
-                        placeholder="Femi"
-                        className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-transparent text-gray-900 placeholder-gray-400 transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                        placeholder="Nkechi"
+                        className="w-full pl-9 sm:pl-12 pr-2 sm:pr-4 py-2 sm:py-3 border border-gray-200 rounded-[5px] focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-transparent text-sm sm:text-base text-gray-900 placeholder-gray-400 transition-all duration-200 bg-white/50 "
                         required
                       />
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <label htmlFor="lastName" className="text-sm font-medium text-gray-700">
+                  <div className="space-y-1 sm:space-y-2">
+                    <label htmlFor="lastName" className="text-xs sm:text-sm font-medium text-gray-700">
                       Last Name
                     </label>
                     <div className="relative group">
-                      <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f54502] transition-colors" />
+                      <FaUser className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f54502] transition-colors w-3 h-3 sm:w-4 sm:h-4" />
                       <input
                         type="text"
                         id="lastName"
                         name="lastName"
-                        placeholder="Bode"
-                        className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-transparent text-gray-900 placeholder-gray-400 transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                        placeholder="Adesina"
+                        className="w-full pl-9 sm:pl-12 pr-2 sm:pr-4 py-2 sm:py-3 border border-gray-200 rounded-[5px] focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-transparent text-sm sm:text-base text-gray-900 placeholder-gray-400 transition-all duration-200 bg-white/50 "
                         required
                       />
                     </div>
@@ -193,75 +193,75 @@ function Signup() {
                 </div>
 
                 {/* Email Field */}
-                <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium text-gray-700">
+                <div className="space-y-1 sm:space-y-2">
+                  <label htmlFor="email" className="text-xs sm:text-sm font-medium text-gray-700">
                     Email Address
                   </label>
                   <div className="relative group">
-                    <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f54502] transition-colors" />
+                    <FaEnvelope className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f54502] transition-colors w-3 h-3 sm:w-4 sm:h-4" />
                     <input
                       type="email"
                       id="email"
                       name="email"
-                      placeholder="you@example.com"
-                      className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-transparent text-gray-900 placeholder-gray-400 transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                      placeholder="you@accezzlive.com"
+                      className="w-full pl-9 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 border border-gray-200 rounded-[5px] focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-transparent text-sm sm:text-base text-gray-900 placeholder-gray-400 transition-all duration-200 bg-white/50 "
                       required
                     />
                   </div>
                 </div>
 
                 {/* Phone Field */}
-                <div className="space-y-2">
-                  <label htmlFor="phone" className="text-sm font-medium text-gray-700">
+                <div className="space-y-1 sm:space-y-2">
+                  <label htmlFor="phone" className="text-xs sm:text-sm font-medium text-gray-700">
                     Phone Number
                   </label>
                   <div className="relative group">
-                    <FaPhone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f54502] transition-colors" />
+                    <FaPhone className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f54502] transition-colors w-3 h-3 sm:w-4 sm:h-4" />
                     <input
                       type="tel"
                       id="phone"
                       name="phone"
-                      placeholder="+234 701 121 1312"
-                      className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-transparent text-gray-900 placeholder-gray-400 transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                      placeholder="+234 701 000 000"
+                      className="w-full pl-9 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 border border-gray-200 rounded-[5px] focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-transparent text-sm sm:text-base text-gray-900 placeholder-gray-400 transition-all duration-200 bg-white/50 "
                       required
                     />
                   </div>
                 </div>
 
                 {/* Password Field */}
-                <div className="space-y-2">
-                  <label htmlFor="password" className="text-sm font-medium text-gray-700">
+                <div className="space-y-1 sm:space-y-2">
+                  <label htmlFor="password" className="text-xs sm:text-sm font-medium text-gray-700">
                     Password
                   </label>
                   <div className="relative group">
-                    <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f54502] transition-colors" />
+                    <FaLock className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f54502] transition-colors w-3 h-3 sm:w-4 sm:h-4" />
                     <input
                       type={showPassword ? "text" : "password"}
                       id="password"
                       name="password"
                       placeholder="••••••••"
-                      className="w-full pl-12 pr-12 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-transparent text-gray-900 placeholder-gray-400 transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                      className="w-full pl-9 sm:pl-12 pr-9 sm:pr-12 py-2 sm:py-3 border border-gray-200 rounded-[5px] focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-transparent text-sm sm:text-base text-gray-900 placeholder-gray-400 transition-all duration-200 bg-white/50 "
                       required
                     />
                     <button
                       type="button"
                       onClick={togglePasswordVisibility}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#f54502] transition-colors"
+                      className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#f54502] transition-colors"
                     >
-                      {showPassword ? <FaEyeSlash /> : <FaEye />}
+                      {showPassword ? <FaEyeSlash className="w-3 h-3 sm:w-4 sm:h-4" /> : <FaEye className="w-3 h-3 sm:w-4 sm:h-4" />}
                     </button>
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-3">
+                <div className="flex items-start space-x-2 sm:space-x-3">
                   <input
                     type="checkbox"
                     id="agreeTerms"
                     checked={agreeTerms}
                     onChange={(e) => setAgreeTerms(e.target.checked)}
-                    className="w-5 h-5 text-[#f54502] bg-white border-gray-300 rounded focus:ring-[#f54502] focus:ring-2"
+                    className="w-4 h-4 sm:w-5 sm:h-5 mt-0.5 text-[#f54502] bg-white border-gray-300 rounded-[5px] focus:ring-[#f54502] focus:ring-2"
                   />
-                  <label htmlFor="agreeTerms" className="text-sm text-gray-600">
+                  <label htmlFor="agreeTerms" className="text-xs sm:text-sm text-gray-600">
                     I agree to the{" "}
                     <button
                       type="button"
@@ -276,7 +276,7 @@ function Signup() {
                 <button
                   type="submit"
                   disabled={!agreeTerms || loading}
-                  className={`w-full px-6 py-4 flex items-center justify-center rounded-2xl font-semibold text-lg transition-all duration-300 transform
+                  className={`w-full px-4 sm:px-6 py-2.5 sm:py-4 flex items-center justify-center rounded-[5px] font-semibold text-sm sm:text-lg transition-all duration-300 transform
                   ${
                     !agreeTerms || loading
                       ? "bg-gray-400 cursor-not-allowed"
@@ -295,7 +295,7 @@ function Signup() {
               </form>
 
               <div className="text-center">
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-xs sm:text-sm">
                   Already have an account?{" "}
                   <Link
                     href="/auth/login"

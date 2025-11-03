@@ -8,6 +8,8 @@ import { Toast } from './Toast';
 import { motion, AnimatePresence } from 'framer-motion';
 // import Loader from '@/components/ui/loader/Loader';
 import { formatPrice } from '@/utils/formatPrice';
+import { BarChartIcon, ChartAreaIcon, PencilIcon, Share, Share2, ShareIcon, TrashIcon, MoreVertical } from 'lucide-react';
+import { FaCalendarAlt } from 'react-icons/fa';
 // Removed REST API usage; using Supabase instead
 
 interface Event {
@@ -247,9 +249,7 @@ const EventList: React.FC = () => {
     return (
       <div className="col-span-full flex flex-col items-center justify-center min-h-[50vh] px-4 text-center">
         <div className="w-24 h-24 mb-6 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
+          <FaCalendarAlt size={40} className="text-[#f54502]" />
         </div>
         <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">No Events Yet</h2>
         <p className="text-gray-500 dark:text-gray-400 max-w-md mb-6">
@@ -258,7 +258,7 @@ const EventList: React.FC = () => {
         <button
           onClick={() => router.push('/create-event')}
           style={{ borderRadius: '5px' }}
-          className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white font-medium shadow-md transition-all duration-200 transform hover:-translate-y-0.5"
+          className="px-6 py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 text-white font-medium shadow-md transition-all duration-200 transform hover:-translate-y-0.5"
         >
           Create Your First Event
         </button>
@@ -332,6 +332,7 @@ const EventCard: React.FC<{
   onEdit: () => void;
   onDelete: () => void;
 }> = ({ event, onCopyLink, onEdit, onDelete }) => {
+  const [menuOpen, setMenuOpen] = useState(false);
   const progressPercentage = event.totalTickets > 0 
     ? Math.min(100, (event.ticketsSold / event.totalTickets) * 100)
     : 0;
@@ -406,41 +407,80 @@ const EventCard: React.FC<{
         {/* Action buttons */}
         <div className="flex space-x-2 mt-auto">
           <button
-            onClick={() => onCopyLink(event.slug)}
-            className="flex-1 flex items-center justify-center px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-            </svg>
-            Share
-          </button>
-          <button
             onClick={onEdit}
-            className="flex-1 px-3 py-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 rounded-lg text-sm font-medium hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors duration-200"
+            style={{ borderRadius: '5px' }}
+            className="flex-1 flex items-center justify-center px-3 py-2 bg-indigo-50 dark:bg-indigo-900/30 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200"
           >
-            Edit
+            <PencilIcon className="h-4 w-4 mr-2" />
+            <span>Edit</span>
           </button>
+          <Link
+            href={`/analytics?id=${event.id}`} passHref
+            style={{ borderRadius: '5px' }}
+            className="flex-1 flex items-center justify-center px-3 py-2 bg-orange-500 text-white bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 text-sm text-gray-700 dark:text-white-300 hover:bg-orange-600 dark:hover:bg-orange-600 transition-colors duration-200"
+          >
+            <ChartAreaIcon className="h-4 w-4 mr-2" />
+            <span>Analytics</span>
+          </Link>
         </div>
       </div>
 
-      {/* Analytics quick link */}
-      <Link href={`/analytics?id=${event.id}`} passHref>
-        <span className="absolute top-4 right-4 p-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-white dark:hover:bg-gray-800 transition-colors duration-200">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-700 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-          </svg>
-        </span>
-      </Link>
+      {/* Menu button */}
+      <div className="absolute top-4 right-4">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setMenuOpen(!menuOpen);
+          }}
+          style={{ borderRadius: '5px' }}
+          className="p-2 bg-white shadow-md dark:bg-gray-800/90 backdrop-blur-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 border border-gray-200 dark:border-gray-600"
+        >
+          <MoreVertical className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+        </button>
 
-      {/* Delete button */}
-      <button
-        onClick={onDelete}
-        className="absolute top-4 left-4 p-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors duration-200 group"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 group-hover:text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-        </svg>
-      </button>
+        {/* Dropdown menu */}
+        <AnimatePresence>
+          {menuOpen && (
+            <>
+              {/* Backdrop to close menu */}
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setMenuOpen(false)}
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-20 overflow-hidden"
+                style={{ borderRadius: '5px' }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  onClick={() => {
+                    onCopyLink(event.slug);
+                    setMenuOpen(false);
+                  }}
+                  className="w-full flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                >
+                  <Share2 className="h-4 w-4 mr-3 text-indigo-500" />
+                  <span>Share Event</span>
+                </button>
+                <button
+                  onClick={() => {
+                    onDelete();
+                    setMenuOpen(false);
+                  }}
+                  className="w-full flex items-center px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200"
+                >
+                  <TrashIcon className="h-4 w-4 mr-3" />
+                  <span>Delete Event</span>
+                </button>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+      </div>
     </motion.div>
   );
 };

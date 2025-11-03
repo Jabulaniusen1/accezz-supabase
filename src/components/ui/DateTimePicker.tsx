@@ -175,8 +175,8 @@ const DateTimePicker = memo(({
         </div>
         
         <div className="grid grid-cols-7 gap-1 text-center">
-          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(day => (
-            <div key={day} className="text-xs font-medium text-gray-500 dark:text-gray-400 py-1">
+          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+            <div key={`day-header-${index}`} className="text-xs font-medium text-gray-500 dark:text-gray-400 py-1">
               {day}
             </div>
           ))}

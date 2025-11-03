@@ -94,20 +94,20 @@ export default function VerifyOTP() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="relative w-full max-w-md p-6 backdrop-blur-lg bg-white/10 rounded-2xl shadow-2xl border border-white/20"
+        className="relative w-full max-w-md p-4 sm:p-6 backdrop-blur-lg bg-white/10 rounded-[5px] shadow-2xl border border-white/20"
       >
-        <div className="text-center space-y-4">
-          <h1 className="text-2xl font-bold text-white">Verify Your Email</h1>
-          <p className="text-blue-100">
+        <div className="text-center space-y-3 sm:space-y-4">
+          <h1 className="text-xl sm:text-2xl font-bold text-white">Verify Your Email</h1>
+          <p className="text-blue-100 text-xs sm:text-sm">
             We&apos;re verifying your email address ({email})
           </p>
 
-          <div className="space-y-6 mt-8">
+          <div className="space-y-4 sm:space-y-6 mt-6 sm:mt-8">
             {/* VERIFY BUTTON */}
             <button
               onClick={verifyToken}
               disabled={loading}
-              className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all duration-300 
+              className={`w-full flex items-center justify-center gap-2 py-2.5 sm:py-3 px-4 rounded-[5px] font-medium transition-all duration-300 text-sm sm:text-base
                 ${loading ? 'bg-gray-500/30 cursor-not-allowed' : 'bg-blue-500/30 hover:bg-blue-500/50'}`}
             >
               {loading ? (
@@ -123,7 +123,7 @@ export default function VerifyOTP() {
             <button
               onClick={handleResendOtp}
               disabled={resendLoading || resendCooldown > 0}
-              className="text-blue-100 hover:text-white transition-colors flex items-center justify-center gap-2 mx-auto disabled:opacity-50"
+              className="text-blue-100 hover:text-white transition-colors flex items-center justify-center gap-2 mx-auto disabled:opacity-50 text-xs sm:text-sm"
             >
               <FaRedo className={resendLoading ? 'animate-spin' : ''} />
               {resendLoading

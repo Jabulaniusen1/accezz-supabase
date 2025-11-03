@@ -42,12 +42,12 @@ function VerifyEmail() {
         {/* Form Container */}
         <div className="w-full max-w-md">
           {/* Header Section */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-[#f54502] rounded-2xl mb-4 shadow-lg">
-              <FaEnvelope className="w-8 h-8 text-white" />
+          <div className="text-center mb-4 sm:mb-8">
+            <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-[#f54502] rounded-[5px] mb-3 sm:mb-4 shadow-lg">
+              <FaEnvelope className="w-5 h-5 sm:w-8 sm:h-8 text-white" />
             </div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Check Your Email</h1>
-            <p className="text-gray-600 text-lg">We&apos;ve sent you a verification link</p>
+            <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-1 sm:mb-2">Check Your Email</h1>
+            <p className="text-gray-600 text-sm sm:text-lg">We&apos;ve sent you a verification link</p>
           </div>
 
           {/* Form Card */}
@@ -55,19 +55,19 @@ function VerifyEmail() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 animate-fadeIn text-center"
+            className="bg-white/80 backdrop-blur-xl rounded-[5px] sm:rounded-3xl shadow-2xl border border-white/20 p-4 sm:p-8 animate-fadeIn text-center"
           >
-            <div className="space-y-6">
-              <div className="p-4 bg-gradient-to-r from-[#f54502]/10 to-[#f54502]/5 border border-[#f54502]/20 rounded-2xl">
-                <p className="text-gray-700 text-sm">
+            <div className="space-y-4 sm:space-y-6">
+              <div className="p-3 sm:p-4 bg-gradient-to-r from-[#f54502]/10 to-[#f54502]/5 border border-[#f54502]/20 rounded-[5px]">
+                <p className="text-gray-700 text-xs sm:text-sm">
                   We&apos;ve sent a verification link to{' '}
                   <span className="font-semibold text-[#f54502]">{email}</span>.
                   Please click the link in the email to verify your account.
                 </p>
               </div>
 
-              <div className="space-y-4">
-                <p className="text-gray-600 text-sm">
+              <div className="space-y-3 sm:space-y-4">
+                <p className="text-gray-600 text-xs sm:text-sm">
                   Didn&apos;t receive the email? Check your spam folder or{' '}
                   <button 
                     onClick={resendOtp}
@@ -79,7 +79,7 @@ function VerifyEmail() {
 
                 <Link
                   href="/auth/login"
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 text-white rounded-2xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
+                  className="inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 text-white rounded-[5px] font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl text-sm sm:text-base"
                 >
                   Go to Login <FaArrowRight />
                 </Link>

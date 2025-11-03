@@ -1,15 +1,12 @@
 'use client';
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { 
   FaInstagram, 
-  FaFacebookF, 
-  FaTwitter, 
-  FaImages, 
-  FaTrash, 
-  FaPlus
+  FaFacebookF
 } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
 import { Event, ToastProps } from '@/types/event';
 import { supabase } from '@/utils/supabaseClient';
 import {useRouter} from "next/navigation";
@@ -28,67 +25,7 @@ export default function FinalDetails({
   setToast,
 }: FinalDetailsProps) {
   const router = useRouter();
-  const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const previews = formData.gallery.map(file => URL.createObjectURL(file));
-    setGalleryPreviews(previews);
-
-    return () => {
-      previews.forEach(url => URL.revokeObjectURL(url));
-    };
-  }, [formData.gallery]);
-
-  const handleGalleryUpload = (files: FileList | null) => {
-    if (!files) return;
-
-    const newFiles: File[] = [];
-    const newPreviews: string[] = [];
-
-    if (formData.gallery.length + files.length > 5) {
-      setToast({ 
-        type: "error", 
-        message: "Maximum 5 gallery images allowed",
-        onClose: () => setToast(null)
-      });
-      return;
-    }
-
-    Array.from(files).forEach(file => {
-      if (!file.type.startsWith("image/")) {
-        setToast({ 
-          type: "error", 
-          message: "Please upload only image files",
-          onClose: () => setToast(null)
-        });
-        return;
-      }
-
-      if (file.size > 5 * 1024 * 1024) {
-        setToast({ 
-          type: "error", 
-          message: `${file.name} is too large (max 5MB)`,
-          onClose: () => setToast(null)
-        });
-        return;
-      }
-
-      newFiles.push(file);
-      newPreviews.push(URL.createObjectURL(file));
-    });
-
-    updateFormData({ gallery: [...formData.gallery, ...newFiles] });
-  };
-
-  const removeGalleryImage = (index: number) => {
-    URL.revokeObjectURL(galleryPreviews[index]);
-    const updatedGallery = formData.gallery.filter((_, i) => i !== index);
-    const updatedPreviews = galleryPreviews.filter((_, i) => i !== index);
-    updateFormData({ gallery: updatedGallery });
-    setGalleryPreviews(updatedPreviews);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -174,29 +111,6 @@ export default function FinalDetails({
           }
         }
 
-        // Upload gallery and insert records
-        if (formData.gallery.length) {
-          const galleryRows: { event_id: string; image_url: string; position: number }[] = [];
-          for (let i = 0; i < formData.gallery.length; i++) {
-            const file = formData.gallery[i];
-            const ext = file.name.split('.').pop();
-            const path = `events/${session.user.id}/${created.id}/gallery/${Date.now()}-${i}.${ext}`;
-            const { error: gErr } = await supabase.storage.from('event-gallery').upload(path, file, { upsert: false });
-            if (gErr) {
-              console.error('Gallery upload failed for image', i, ':', gErr);
-              throw new Error(`Failed to upload gallery image ${i + 1}. Please try again.`);
-            }
-            const { data: pub } = supabase.storage.from('event-gallery').getPublicUrl(path);
-            galleryRows.push({ event_id: created.id, image_url: pub.publicUrl, position: i });
-          }
-          if (galleryRows.length) {
-            const { error: insGalErr } = await supabase.from('event_gallery').insert(galleryRows);
-            if (insGalErr) {
-              console.error('Failed to insert gallery records:', insGalErr);
-              throw new Error('Failed to save gallery. Please try again.');
-            }
-          }
-        }
 
         // Insert ticket types
         const tickets = formData.ticketType.map((t) => ({
@@ -259,73 +173,6 @@ export default function FinalDetails({
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Gallery Section - Improved */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="text-lg font-medium text-gray-800 dark:text-white">
-                Event Gallery
-              </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Add up to 5 images ({(formData.gallery.length || 0)}/5 added)
-              </p>
-            </div>
-            {formData.gallery.length < 5 && (
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 flex items-center space-x-1"
-              >
-                <FaPlus size={12} />
-                <span>Add Images</span>
-              </button>
-            )}
-          </div>
-
-          <input
-            type="file"
-            ref={fileInputRef}
-            className="hidden"
-            accept="image/*"
-            multiple
-            onChange={(e) => handleGalleryUpload(e.target.files)}
-          />
-
-          {galleryPreviews.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              {galleryPreviews.map((preview, index) => (
-                <div
-                  key={index}
-                  className="relative aspect-square bg-gray-100 dark:bg-gray-700 rounded-[5px] overflow-hidden group"
-                >
-                  <Image
-                    src={preview}
-                    alt={`Gallery image ${index + 1}`}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeGalleryImage(index)}
-                    className="absolute top-2 right-2 p-1.5 sm:p-2 bg-[#f54502] text-white rounded-[5px] hover:bg-[#d63a02] transition-all duration-200 opacity-0 group-hover:opacity-100"
-                  >
-                    <FaTrash size={12} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div 
-              onClick={() => fileInputRef.current?.click()}
-                  className="w-full py-8 sm:py-12 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-[5px] flex flex-col items-center justify-center cursor-pointer hover:border-[#f54502] dark:hover:border-[#f54502] transition-colors"
-            >
-              <FaImages className="text-gray-400 text-2xl mb-2" />
-              <p className="text-gray-500 dark:text-gray-400">No images added yet</p>
-            </div>
-          )}
-        </div>
-
         {/* Social Media - Improved */}
         <div>
           <h3 className="text-lg font-medium text-gray-800 dark:text-white mb-4">
@@ -378,7 +225,7 @@ export default function FinalDetails({
 
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <FaTwitter className="text-[#f54502]" />
+                <FaXTwitter className="text-[#f54502]" />
               </div>
               <input
                 type="url"

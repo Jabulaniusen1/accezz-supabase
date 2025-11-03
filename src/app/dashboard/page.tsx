@@ -10,7 +10,7 @@ import Setting from "../components/Setting";
 import Profile from "../components/settings/Profile";
 import ToggleMode from "../../components/ui/mode/toggleMode";
 import Loader from "@/components/ui/loader/Loader";
-import { BiMenuAltLeft, BiX, BiCalendar } from "react-icons/bi";
+import { BiMenuAltLeft, BiX, BiCalendar, BiMoneyWithdraw } from "react-icons/bi";
 import { FiSettings, FiLogOut, FiBell } from "react-icons/fi";
 import { Notyf } from "notyf";
 import "notyf/notyf.min.css";
@@ -21,6 +21,8 @@ import ConfirmationModal from "@/components/ConfirmationModal";
 import EventTypeModal from "@/components/Modal/EventType";
 import Link from "next/link";
 import Image from "next/image";
+import { GiTakeMyMoney } from "react-icons/gi";
+import { BsBell, BsCalendar2Event, BsGear, BsPerson } from "react-icons/bs";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState(0);
@@ -215,7 +217,7 @@ const Dashboard = () => {
                 style={{ borderRadius: '5px' }}
             onClick={() => setActiveTab(0)}
           >
-                <BiCalendar size={20} />
+                <BsCalendar2Event size={20} />
                 <span className="font-medium">Events</span>
           </button>
 
@@ -228,7 +230,7 @@ const Dashboard = () => {
             style={{ borderRadius: '5px' }}
             onClick={() => setActiveTab(1)}
           >
-                <span className="text-lg font-bold">₦</span>
+                <GiTakeMyMoney size={20} />
                 <span className="font-medium">Earnings</span>
           </button>
 
@@ -241,7 +243,7 @@ const Dashboard = () => {
             style={{ borderRadius: '5px' }}
             onClick={() => setActiveTab(5)}
           >
-                <span className="text-lg font-bold">₦</span>
+                <BiMoneyWithdraw size={20} />
                 <span className="font-medium">Withdrawals</span>
           </button>
 
@@ -254,7 +256,7 @@ const Dashboard = () => {
             style={{ borderRadius: '5px' }}
             onClick={() => setActiveTab(2)}
           >
-                <FiBell size={20} />
+                <BsBell size={20} />
                 <span className="font-medium">Notifications</span>
           </button>
 
@@ -267,7 +269,7 @@ const Dashboard = () => {
             style={{ borderRadius: '5px' }}
             onClick={() => setActiveTab(3)}
           >
-                <FiSettings size={20} />
+                <BsGear size={20} />
                 <span className="font-medium">Settings</span>
               </button>
             </nav>
@@ -283,9 +285,7 @@ const Dashboard = () => {
                 style={{ borderRadius: '5px' }}
                 onClick={() => setActiveTab(4)}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
+                <BsPerson size={20} />
                 <span className="font-medium">Profile</span>
           </button>
             </div>

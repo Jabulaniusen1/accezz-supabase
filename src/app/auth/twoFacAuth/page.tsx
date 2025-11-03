@@ -71,12 +71,12 @@ const TwoFacAuth = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-6 bg-gray-50 dark:bg-gray-900 h-screen text-gray-800">
-      <div className={`w-full max-w-md shadow-lg rounded-lg p-6 ${isSecure ? 'bg-green-50 dark:bg-green-900' : 'bg-white dark:bg-gray-800'}`}>
-        <h1 className={`text-2xl font-bold mb-4 ${isSecure ? 'text-green-600' : 'dark:text-white'}`}>
+    <div className="flex flex-col items-center justify-center p-4 sm:p-6 bg-gray-50 dark:bg-gray-900 min-h-screen text-gray-800">
+      <div className={`w-full max-w-md shadow-lg rounded-[5px] p-4 sm:p-6 ${isSecure ? 'bg-green-50 dark:bg-green-900' : 'bg-white dark:bg-gray-800'}`}>
+        <h1 className={`text-xl sm:text-2xl font-bold mb-3 sm:mb-4 ${isSecure ? 'text-green-600' : 'dark:text-white'}`}>
           Two-Factor Authentication
         </h1>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-4 sm:mb-6">
           {isSecure
             ? 'Your account is secure with two-factor authentication enabled.'
             : 'Enhance your account security by enabling two-factor authentication.'}
@@ -84,32 +84,32 @@ const TwoFacAuth = () => {
 
         {!isEnabled ? (
           <>
-            <label className="block text-sm font-medium dark:text-gray-300 mb-2">
+            <label className="block text-xs sm:text-sm font-medium dark:text-gray-300 mb-1 sm:mb-2">
               Create Your 2FA Code
             </label>
             <input
               type="password"
               value={userCode}
               onChange={(e) => setUserCode(e.target.value)}
-              className="w-full border border-gray-300 dark:border-gray-700 shadow-sm bg-transparent dark:bg-gray-800 rounded-lg px-3 py-2 mb-4"
+              className="w-full border border-gray-300 dark:border-gray-700 shadow-sm bg-transparent dark:bg-gray-800 rounded-[5px] px-3 py-2 sm:py-2.5 mb-3 sm:mb-4 text-sm sm:text-base"
               placeholder="Enter a secure code"
             />
             <button
               onClick={handleSetup}
-              className="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 focus:ring-2 focus:ring-green-400 focus:outline-none"
+              className="w-full bg-green-500 text-white py-2 sm:py-2.5 px-4 rounded-[5px] hover:bg-green-600 focus:ring-2 focus:ring-green-400 focus:outline-none text-sm sm:text-base"
             >
               Enable Two-Factor Authentication
             </button>
           </>
         ) : (
           <>
-            <p className="text-green-500 text-sm mb-4">
+            <p className="text-green-500 text-xs sm:text-sm mb-3 sm:mb-4">
               Two-factor authentication is currently enabled.
             </p>
-            <label className="block text-sm font-medium dark:text-gray-300 mb-2">
+            <label className="block text-xs sm:text-sm font-medium dark:text-gray-300 mb-1 sm:mb-2">
               Verify Your 2FA Code
             </label>
-            <div className="flex space-x-2 justify-center mb-4">
+            <div className="flex space-x-2 justify-center mb-3 sm:mb-4">
               {inputCode.map((char, index) => (
                 <input
                   key={index}
@@ -117,29 +117,29 @@ const TwoFacAuth = () => {
                   value={char}
                   onChange={(e) => handleInputChange(e.target.value, index)}
                   maxLength={1}
-                  className="w-12 h-12 text-center border border-gray-300 dark:border-gray-700 shadow-sm bg-transparent dark:bg-gray-800 rounded-lg text-xl"
+                  className="w-10 h-10 sm:w-12 sm:h-12 text-center border border-gray-300 dark:border-gray-700 shadow-sm bg-transparent dark:bg-gray-800 rounded-[5px] text-lg sm:text-xl"
                 />
               ))}
             </div>
             <button
               onClick={handleVerify}
-              className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-400 focus:outline-none mb-4"
+              className="w-full bg-blue-500 text-white py-2 sm:py-2.5 px-4 rounded-[5px] hover:bg-blue-600 focus:ring-2 focus:ring-blue-400 focus:outline-none mb-3 sm:mb-4 text-sm sm:text-base"
             >
               Verify Code
             </button>
-            <label className="block text-sm font-medium dark:text-gray-300 mb-2">
+            <label className="block text-xs sm:text-sm font-medium dark:text-gray-300 mb-1 sm:mb-2">
               Enter Password to Disable 2FA
             </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-gray-300 dark:border-gray-700 shadow-sm bg-transparent dark:bg-gray-800 rounded-lg px-3 py-2 mb-4"
+              className="w-full border border-gray-300 dark:border-gray-700 shadow-sm bg-transparent dark:bg-gray-800 rounded-[5px] px-3 py-2 sm:py-2.5 mb-3 sm:mb-4 text-sm sm:text-base"
               placeholder="Enter your password"
             />
             <button
               onClick={handleDisable}
-              className="w-full bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 focus:ring-2 focus:ring-red-400 focus:outline-none"
+              className="w-full bg-red-500 text-white py-2 sm:py-2.5 px-4 rounded-[5px] hover:bg-red-600 focus:ring-2 focus:ring-red-400 focus:outline-none text-sm sm:text-base"
             >
               Disable Two-Factor Authentication
             </button>
@@ -147,7 +147,7 @@ const TwoFacAuth = () => {
         )}
 
         {message && (
-          <p className={`mt-4 text-sm ${message.includes('successfully') ? 'text-green-600' : 'text-red-600'} dark:text-gray-400`}>
+          <p className={`mt-3 sm:mt-4 text-xs sm:text-sm ${message.includes('successfully') ? 'text-green-600' : 'text-red-600'} dark:text-gray-400`}>
             {message}
           </p>
         )}

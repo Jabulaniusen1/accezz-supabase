@@ -122,10 +122,10 @@ export default function Login() {
         {/* Back Button */}
         <button
           onClick={() => router.push('/')}
-          className="absolute top-6 left-6 flex items-center gap-2 text-gray-600 hover:text-[#f54502] transition-colors group"
+          className="absolute top-4 left-4 sm:top-6 sm:left-6 flex items-center gap-1 sm:gap-2 text-gray-600 hover:text-[#f54502] transition-colors group"
         >
-          <FaArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span className="text-sm font-medium">Back to Home</span>
+          <FaArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 group-hover:-translate-x-1 transition-transform" />
+          <span className="text-xs sm:text-sm font-medium">Back to Home</span>
         </button>
 
         {/* Loading and Toast */}
@@ -141,28 +141,28 @@ export default function Login() {
         {/* Form Container */}
         <div className="w-full max-w-md">
           {/* Header Section */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-[#f54502] rounded-2xl mb-4 shadow-lg">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="text-center mb-4 sm:mb-8">
+            <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-[#f54502] rounded-[5px] mb-3 sm:mb-4 shadow-lg">
+              <svg className="w-5 h-5 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-            <p className="text-gray-600 text-lg">Sign in to continue your journey</p>
+            <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-1 sm:mb-2">Welcome Back</h1>
+            <p className="text-gray-600 text-sm sm:text-lg">Sign in to continue your journey</p>
           </div>
 
           {/* Form Card */}
-          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 animate-fadeIn">
-            <div className="space-y-6">
+          <div className="bg-white/80 backdrop-blur-xl rounded-[5px] sm:rounded-xl shadow-2xl border border-white/20 p-4 sm:p-8 animate-fadeIn">
+            <div className="space-y-4 sm:space-y-6">
 
               {/* VERIFICATION NOTICE */}
               {showVerificationNotice && (
-                <div className="p-4 bg-gradient-to-r from-[#f54502]/10 to-[#f54502]/5 border border-[#f54502]/20 rounded-2xl text-[#f54502] text-sm">
+                <div className="p-3 sm:p-4 bg-gradient-to-r from-[#f54502]/10 to-[#f54502]/5 border border-[#f54502]/20 rounded-[5px] text-[#f54502] text-xs sm:text-sm">
                   <p className="font-medium">Please verify your email to continue.</p>
                   <button 
                     onClick={resendVerification}
                     disabled={resendLoading}
-                    className="mt-2 flex items-center text-sm text-[#f54502] hover:underline font-medium"
+                    className="mt-2 flex items-center text-xs sm:text-sm text-[#f54502] hover:underline font-medium"
                   >
                     {resendLoading ? 'Sending...' : 'Resend verification email'}
                     {resendLoading && <FaRedo className="ml-2 animate-spin" />}
@@ -170,48 +170,48 @@ export default function Login() {
                 </div>
               )}
 
-              <form onSubmit={handleLogin} className="space-y-6">
+              <form onSubmit={handleLogin} className="space-y-4 sm:space-y-6">
                 {/* Email Field */}
-                <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium text-gray-700">
+                <div className="space-y-1 sm:space-y-2">
+                  <label htmlFor="email" className="text-xs sm:text-sm font-medium text-gray-700">
                     Email Address
                   </label>
                   <div className="relative group">
-                    <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f54502] transition-colors" />
+                    <FaEnvelope className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f54502] transition-colors w-3 h-3 sm:w-4 sm:h-4" />
                     <input
                       type="email"
                       id="email"
                       value={formData.email}
                       onChange={handleChange}
                       placeholder="you@example.com"
-                      className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-transparent text-gray-900 placeholder-gray-400 transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                      className="w-full pl-9 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 border border-gray-200 rounded-[5px] focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-transparent text-sm sm:text-base text-gray-900 placeholder-gray-400 transition-all duration-200 bg-white/50"
                       required
                     />
                   </div>
                 </div>
 
                 {/* Password Field */}
-                <div className="space-y-2">
-                  <label htmlFor="password" className="text-sm font-medium text-gray-700">
+                <div className="space-y-1 sm:space-y-2">
+                  <label htmlFor="password" className="text-xs sm:text-sm font-medium text-gray-700">
                     Password
                   </label>
                   <div className="relative group">
-                    <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f54502] transition-colors" />
+                    <FaLock className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f54502] transition-colors w-3 h-3 sm:w-4 sm:h-4" />
                     <input
                       type={showPassword ? "text" : "password"}
                       id="password"
                       value={formData.password}
                       onChange={handleChange}
                       placeholder="••••••••"
-                      className="w-full pl-12 pr-12 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-transparent text-gray-900 placeholder-gray-400 transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                      className="w-full pl-9 sm:pl-12 pr-9 sm:pr-12 py-2 sm:py-3 border border-gray-200 rounded-[5px] focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-transparent text-sm sm:text-base text-gray-900 placeholder-gray-400 transition-all duration-200 bg-white/50"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#f54502] transition-colors"
+                      className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#f54502] transition-colors"
                     >
-                      {showPassword ? <FaEyeSlash /> : <FaEye />}
+                      {showPassword ? <FaEyeSlash className="w-3 h-3 sm:w-4 sm:h-4" /> : <FaEye className="w-3 h-3 sm:w-4 sm:h-4" />}
                     </button>
                   </div>
                 </div>
@@ -219,7 +219,7 @@ export default function Login() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`w-full px-6 py-4 flex items-center justify-center rounded-2xl font-semibold text-lg transition-all duration-300 transform
+                  className={`w-full px-4 sm:px-6 py-2.5 sm:py-4 flex items-center justify-center rounded-[5px] font-semibold text-sm sm:text-lg transition-all duration-300 transform
                   ${
                     loading
                       ? "bg-gray-400 cursor-not-allowed"
@@ -237,14 +237,14 @@ export default function Login() {
                 </button>
               </form>
 
-              <div className="text-center space-y-4">
+              <div className="text-center space-y-3 sm:space-y-4">
                 <Link
                   href="/auth/forgot-password"
-                  className="block text-gray-600 hover:text-[#f54502] text-sm font-medium transition-colors"
+                  className="block text-gray-600 hover:text-[#f54502] text-xs sm:text-sm font-medium transition-colors"
                 >
                   Forgot password?
                 </Link>
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-xs sm:text-sm">
                   Don&apos;t have an account?{" "}
                   <Link
                     href="/auth/signup"

@@ -1,11 +1,11 @@
 'use client'
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useRouter } from 'next/navigation'
 import Link from 'next/link';
 import { supabase } from '@/utils/supabaseClient';
+import { toast, ToastContainer } from 'react-toastify';
 
 
 function PasswordReset() {
@@ -51,7 +51,7 @@ function PasswordReset() {
       }}
     >
       <ToastContainer />
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 space-y-6"
+      <div className="max-w-md w-full bg-white rounded-[5px] shadow-lg p-4 sm:p-8 space-y-4 sm:space-y-6"
         style={{
             boxShadow: '3px -2px 3px 4px rgba(1,1,1,.2)'
         }}
@@ -62,10 +62,10 @@ function PasswordReset() {
             alt="Accezz Logo"
             width={120}
             height={120}
-            className="mx-auto mb-4"
+            className="mx-auto mb-3 sm:mb-4 w-20 h-20 sm:w-[120px] sm:h-[120px]"
           />
-          <h1 className="text-3xl font-semibold text-gray-900">Reset Your Password</h1>
-          <p className="text-gray-500 mt-2">Enter your new password below.</p>
+          <h1 className="text-xl sm:text-3xl font-semibold text-gray-900">Reset Your Password</h1>
+          <p className="text-gray-500 mt-1 sm:mt-2 text-xs sm:text-sm">Enter your new password below.</p>
         </div>
 {/* 
         {message && (
@@ -75,34 +75,34 @@ function PasswordReset() {
         )} */}
 
         {error && (
-          <div className="text-red-600 text-center mb-4">
+          <div className="text-red-600 text-center mb-3 sm:mb-4 text-xs sm:text-sm">
             <p>{error}</p>
           </div>
         )}
 
-        <form className="space-y-6" onSubmit={handleSubmit}>
+        <form className="space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
           <div>
-            <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">New Password</label>
+            <label htmlFor="newPassword" className="block text-xs sm:text-sm font-medium text-gray-700">New Password</label>
             <input
               type="password"
               id="newPassword"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
-              className="mt-2 w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              className="mt-1 sm:mt-2 w-full px-3 sm:px-4 py-2 border rounded-[5px] focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm sm:text-base"
               placeholder="Enter new password"
             />
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">Confirm Password</label>
+            <label htmlFor="confirmPassword" className="block text-xs sm:text-sm font-medium text-gray-700">Confirm Password</label>
             <input
               type="password"
               id="confirmPassword"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              className="mt-2 w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              className="mt-1 sm:mt-2 w-full px-3 sm:px-4 py-2 border rounded-[5px] focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm sm:text-base"
               placeholder="Confirm your password"
             />
           </div>
@@ -111,7 +111,7 @@ function PasswordReset() {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-2 rounded-md text-white ${loading ? 'bg-gray-500' : 'bg-blue-600 hover:bg-blue-700'} focus:outline-none focus:ring-2 focus:ring-blue-400`}
+              className={`w-full py-2 sm:py-2.5 rounded-[5px] text-sm sm:text-base text-white ${loading ? 'bg-gray-500' : 'bg-blue-600 hover:bg-blue-700'} focus:outline-none focus:ring-2 focus:ring-blue-400`}
             >
               {loading ? 'Processing...' : 'Reset Password'}
             </button>
@@ -119,7 +119,7 @@ function PasswordReset() {
         </form>
 
         <div className="text-center">
-          <p className="text-sm text-gray-600">
+          <p className="text-xs sm:text-sm text-gray-600">
             Remembered your password?{' '}
             <Link href="/auth/login" className="text-blue-500 hover:underline">Log in</Link>
           </p>

@@ -1,0 +1,48 @@
+0 verbose cli /usr/local/bin/node /usr/local/bin/npm
+1 info using npm@10.9.3
+2 info using node@v22.20.0
+3 silly config load:file:/usr/local/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/mac/Desktop/accezz-supabase/.npmrc
+5 silly config load:file:/Users/mac/.npmrc
+6 silly config load:file:/usr/local/etc/npmrc
+7 verbose title npm install lucid-icons
+8 verbose argv "install" "lucid-icons"
+9 verbose logfile logs-max:10 dir:/Users/mac/Desktop/accezz-supabase/.npm-cache/_logs/2025-11-03T16_18_01_503Z-
+10 verbose logfile /Users/mac/Desktop/accezz-supabase/.npm-cache/_logs/2025-11-03T16_18_01_503Z-debug-0.log
+11 silly logfile start cleaning logs, removing 1 files
+12 silly packumentCache heap:4345298944 maxSize:1086324736 maxEntrySize:543162368
+13 silly logfile done cleaning log files
+14 silly idealTree buildDeps
+15 silly fetch manifest lucid-icons@*
+16 silly packumentCache full:https://registry.npmjs.org/lucid-icons cache-miss
+17 http fetch GET 404 https://registry.npmjs.org/lucid-icons 1534ms (cache skip)
+18 silly placeDep ROOT lucid-icons@ OK for: Accezz@0.2.0 want: *
+19 verbose stack HttpErrorGeneral: 404 Not Found - GET https://registry.npmjs.org/lucid-icons - Not found
+19 verbose stack     at /usr/local/lib/node_modules/npm/node_modules/npm-registry-fetch/lib/check-response.js:103:15
+19 verbose stack     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+19 verbose stack     at async RegistryFetcher.packument (/usr/local/lib/node_modules/npm/node_modules/pacote/lib/registry.js:90:19)
+19 verbose stack     at async RegistryFetcher.manifest (/usr/local/lib/node_modules/npm/node_modules/pacote/lib/registry.js:128:23)
+19 verbose stack     at async #fetchManifest (/usr/local/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/build-ideal-tree.js:1202:20)
+19 verbose stack     at async #nodeFromEdge (/usr/local/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/build-ideal-tree.js:1040:19)
+19 verbose stack     at async #buildDepStep (/usr/local/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/build-ideal-tree.js:904:11)
+19 verbose stack     at async Arborist.buildIdealTree (/usr/local/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/build-ideal-tree.js:181:7)
+19 verbose stack     at async Promise.all (index 1)
+19 verbose stack     at async Arborist.reify (/usr/local/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/reify.js:131:5)
+20 verbose statusCode 404
+21 verbose pkgid lucid-icons@*
+22 error code E404
+23 error 404 Not Found - GET https://registry.npmjs.org/lucid-icons - Not found
+24 error 404
+25 error 404  'lucid-icons@*' is not in this registry.
+26 error 404
+27 error 404 Note that you can also install from a
+28 error 404 tarball, folder, http url, or git url.
+29 silly unfinished npm timer reify 1762186681942
+30 silly unfinished npm timer reify:loadTrees 1762186681945
+31 verbose cwd /Users/mac/Desktop/accezz-supabase
+32 verbose os Darwin 24.6.0
+33 verbose node v22.20.0
+34 verbose npm  v10.9.3
+35 verbose exit 1
+36 verbose code 1
+37 error A complete log of this run can be found in: /Users/mac/Desktop/accezz-supabase/.npm-cache/_logs/2025-11-03T16_18_01_503Z-debug-0.log

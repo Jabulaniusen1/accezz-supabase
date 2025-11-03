@@ -3,9 +3,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/utils/supabaseClient';
-import SuccessModal from './settings/modal/successModal';
 import Loader from '../../components/ui/loader/Loader';
 import Toast from '../../components/ui/Toast';
+import SearchableSelect from '@/components/ui/SearchableSelect';
 import { FaSpinner, FaCheck, FaTimes } from 'react-icons/fa';
 
 type AccountData = {
@@ -26,7 +26,6 @@ const AccountSetupPopup = ({ onClose }: { onClose: () => void }) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [verifying, setVerifying] = useState(false);
-  const [showModal, setShowModal] = useState(false);
   const [banks, setBanks] = useState<Bank[]>([]);
   const [accountData, setAccountData] = useState<AccountData>({
     account_name: '',
@@ -53,6 +52,123 @@ const AccountSetupPopup = ({ onClose }: { onClose: () => void }) => {
     setShowToast(true);
   }, []);
 
+  // Country to currency mapping
+  const countryCurrencyMap: Record<string, string> = {
+    'nigeria': 'NGN',
+    'ghana': 'GHS',
+    'south africa': 'ZAR',
+    'kenya': 'KES',
+    'tanzania': 'TZS',
+    'zambia': 'ZMW',
+    'rwanda': 'RWF',
+    'senegal': 'XOF',
+    'cameroon': 'XAF',
+    'ivory coast': 'XOF',
+    'ethiopia': 'ETB',
+    'egypt': 'EGP',
+    'morocco': 'MAD',
+    'algeria': 'DZD',
+    'tunisia': 'TND',
+    'angola': 'AOA',
+    'mozambique': 'MZN',
+    'botswana': 'BWP',
+    'zimbabwe': 'USD',
+    'united kingdom': 'GBP',
+    'uk': 'GBP',
+    'united states': 'USD',
+    'us': 'USD',
+    'usa': 'USD',
+  };
+
+  const currencyOptions = [
+    { value: 'NGN', label: 'NGN - Nigerian Naira' },
+    { value: 'GHS', label: 'GHS - Ghanaian Cedi' },
+    { value: 'ZAR', label: 'ZAR - South African Rand' },
+    { value: 'KES', label: 'KES - Kenyan Shilling' },
+    { value: 'TZS', label: 'TZS - Tanzanian Shilling' },
+    { value: 'ZMW', label: 'ZMW - Zambian Kwacha' },
+    { value: 'RWF', label: 'RWF - Rwandan Franc' },
+    { value: 'XOF', label: 'XOF - West African CFA Franc' },
+    { value: 'XAF', label: 'XAF - Central African CFA Franc' },
+    { value: 'ETB', label: 'ETB - Ethiopian Birr' },
+    { value: 'EGP', label: 'EGP - Egyptian Pound' },
+    { value: 'MAD', label: 'MAD - Moroccan Dirham' },
+    { value: 'DZD', label: 'DZD - Algerian Dinar' },
+    { value: 'TND', label: 'TND - Tunisian Dinar' },
+    { value: 'AOA', label: 'AOA - Angolan Kwanza' },
+    { value: 'MZN', label: 'MZN - Mozambican Metical' },
+    { value: 'BWP', label: 'BWP - Botswanan Pula' },
+    { value: 'USD', label: 'USD - US Dollar' },
+    { value: 'EUR', label: 'EUR - Euro' },
+    { value: 'GBP', label: 'GBP - British Pound' },
+  ];
+
+  const countryOptions = [
+    { value: 'nigeria', label: 'Nigeria' },
+    { value: 'ghana', label: 'Ghana' },
+    { value: 'south africa', label: 'South Africa' },
+    { value: 'kenya', label: 'Kenya' },
+    { value: 'tanzania', label: 'Tanzania' },
+    { value: 'zambia', label: 'Zambia' },
+    { value: 'rwanda', label: 'Rwanda' },
+    { value: 'senegal', label: 'Senegal' },
+    { value: 'cameroon', label: 'Cameroon' },
+    { value: 'ivory coast', label: 'Ivory Coast' },
+    { value: 'ethiopia', label: 'Ethiopia' },
+    { value: 'egypt', label: 'Egypt' },
+    { value: 'morocco', label: 'Morocco' },
+    { value: 'algeria', label: 'Algeria' },
+    { value: 'tunisia', label: 'Tunisia' },
+    { value: 'angola', label: 'Angola' },
+    { value: 'mozambique', label: 'Mozambique' },
+    { value: 'botswana', label: 'Botswana' },
+    { value: 'zimbabwe', label: 'Zimbabwe' },
+    { value: 'united kingdom', label: 'United Kingdom' },
+    { value: 'united states', label: 'United States' },
+  ];
+
+  const getCurrencyForCountry = (country: string): string => {
+    return countryCurrencyMap[country.toLowerCase()] || 'NGN';
+  };
+
+  const handleCountryChange = async (country: string) => {
+    const currency = getCurrencyForCountry(country);
+    setAccountData(prev => ({
+      ...prev,
+      country,
+      currency,
+      bank_code: '',
+      account_bank: '',
+    }));
+    setAccountVerified(false);
+    
+    // Fetch banks for the selected country
+    setFetchingBanks(true);
+    try {
+      const banksResponse = await fetch(`/api/paystack/banks?country=${encodeURIComponent(country)}`);
+      const banksData = await banksResponse.json();
+      if (banksResponse.ok && banksData.banks) {
+        setBanks(banksData.banks);
+      }
+    } catch (error) {
+      console.error('Error fetching banks:', error);
+    } finally {
+      setFetchingBanks(false);
+    }
+  };
+
+  const handleCurrencyChange = (currency: string) => {
+    setAccountData(prev => ({
+      ...prev,
+      currency,
+    }));
+  };
+
+  const bankOptions = banks.map(bank => ({
+    value: bank.code,
+    label: bank.name,
+  }));
+
   // Fetch user's country and currency from localStorage and banks list
   useEffect(() => {
     const fetchData = async () => {
@@ -64,25 +180,9 @@ const AccountSetupPopup = ({ onClose }: { onClose: () => void }) => {
           return;
         }
 
-        setFetchingBanks(true);
-        
         // Get user's country and currency from localStorage
-        const country = localStorage.getItem('userCountry') || 'nigeria';
-        const currency = localStorage.getItem('userCurrency') || 'NGN';
-        
-        // Fetch banks for the country from our API
-        const banksResponse = await fetch(`/api/paystack/banks?country=${encodeURIComponent(country)}`);
-        const banksData = await banksResponse.json();
-        
-        if (banksResponse.ok && banksData.banks) {
-          setBanks(banksData.banks);
-        }
-        
-        setAccountData(prev => ({ 
-          ...prev, 
-          country,
-          currency
-        }));
+        let country = localStorage.getItem('userCountry') || 'nigeria';
+        let currency = localStorage.getItem('userCurrency') || 'NGN';
 
         // Fetch existing account details from Supabase
         const { data: profile, error: profileError } = await supabase
@@ -92,21 +192,41 @@ const AccountSetupPopup = ({ onClose }: { onClose: () => void }) => {
           .maybeSingle();
 
         if (!profileError && profile?.account_number) {
+          country = profile.country || country;
+          currency = profile.currency || currency;
           setAccountData({
             account_name: profile.account_name || '',
             account_bank: profile.bank_name || '',
             bank_code: profile.bank_code || '',
             account_number: profile.account_number,
-            currency: profile.currency || currency,
-            country: profile.country || country
+            currency,
+            country
           });
           setAccountVerified(true);
+        } else {
+          setAccountData(prev => ({ 
+            ...prev, 
+            country,
+            currency
+          }));
+        }
+
+        // Fetch banks for the country
+        setFetchingBanks(true);
+        try {
+          const banksResponse = await fetch(`/api/paystack/banks?country=${encodeURIComponent(country)}`);
+          const banksData = await banksResponse.json();
+          if (banksResponse.ok && banksData.banks) {
+            setBanks(banksData.banks);
+          }
+        } catch (error) {
+          console.error('Error fetching banks:', error);
+        } finally {
+          setFetchingBanks(false);
         }
       } catch (error) {
         console.error('Fetch error:', error);
         toast('error', 'Failed to fetch bank details');
-      } finally {
-        setFetchingBanks(false);
       }
     };
 
@@ -189,11 +309,10 @@ const AccountSetupPopup = ({ onClose }: { onClose: () => void }) => {
 
       if (upsertError) throw upsertError;
 
-      setShowModal(true);
+      toast('success', 'Bank account setup complete! Your account is ready to receive payments.');
       setTimeout(() => {
-        setShowModal(false);
         onClose();
-      }, 2000);
+      }, 1500);
     } catch (error) {
       console.error('Submission error:', error);
       const message = error instanceof Error ? error.message : 'Failed to update account details';
@@ -203,8 +322,8 @@ const AccountSetupPopup = ({ onClose }: { onClose: () => void }) => {
     }
   };
 
-  const handleBankChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedBank = banks.find(bank => bank.code === e.target.value);
+  const handleBankChange = (bankCode: string) => {
+    const selectedBank = banks.find(bank => bank.code === bankCode);
     if (selectedBank) {
       setAccountData(prev => ({
         ...prev,
@@ -226,102 +345,94 @@ const AccountSetupPopup = ({ onClose }: { onClose: () => void }) => {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-2 sm:p-4 backdrop-blur-sm">
-      <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl shadow-lg sm:shadow-2xl w-full max-w-[95vw] sm:max-w-md max-h-[95vh] overflow-y-auto border border-white/20 dark:border-gray-600/30">
-        {/* Header with close button - stacked on mobile */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-4 sm:mb-6">
+      <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-lg w-full max-w-md max-h-[95vh] overflow-y-auto border border-gray-200 dark:border-gray-600" style={{ borderRadius: '5px' }}>
+        {/* Header with close button */}
+        <div className="flex justify-between items-start gap-3 mb-4">
           <div className="flex-1">
-            <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-[#f54502] to-[#d63a02] bg-clip-text text-transparent">
+            <h2 className="text-lg font-bold bg-gradient-to-r from-[#f54502] to-[#d63a02] bg-clip-text text-transparent">
               Set Up Your Bank Account
             </h2>
-            <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mt-1">
+            <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">
               Secure and seamless payment integration
             </p>
           </div>
           <button 
             onClick={onClose} 
-            className="self-end sm:self-start text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors p-1"
             aria-label="Close"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
         
-        {/* Introductory text - optimized for small screens */}
-        <div className="mb-4 sm:mb-6">
-          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mb-2">
-            Complete in <span className="font-semibold text-blue-600 dark:text-blue-400">30 seconds</span> to:
-          </p>
-          <ul className="space-y-1.5 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-            <li className="flex items-start">
-              <svg className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              <span>Receive payments instantly</span>
-            </li>
-            <li className="flex items-start">
-              <svg className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              <span>Enable automatic transfers</span>
-            </li>
-            <li className="flex items-start">
-              <svg className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              <span>Get verified for higher limits</span>
-            </li>
-          </ul>
-        </div>
-        
-        <form onSubmit={handleAccountSubmit} className="space-y-4 sm:space-y-6">
-          <div className="space-y-4 sm:space-y-6">
-            {/* Bank Selection - full width on mobile */}
-            <div className="relative">
-              <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2 text-gray-700 dark:text-gray-300">
-                Select Your Bank
+        <form onSubmit={handleAccountSubmit} className="space-y-4">
+          <div className="space-y-4">
+            {/* Country Selection */}
+            <div>
+              <label className="block text-xs font-medium mb-1.5 text-gray-700 dark:text-gray-300">
+                Country
               </label>
-              <div className="relative">
-                <select
-                  value={accountData.bank_code}
-                  onChange={handleBankChange}
-                  className="w-full p-3 sm:p-4 border border-gray-300 dark:border-gray-600 rounded-lg sm:rounded-xl bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none pr-8 sm:pr-10 transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500 text-sm sm:text-base"
-                  required
-                  disabled={fetchingBanks}
-                >
-                  <option value="">Choose your bank...</option>
-                  {banks.map((bank) => (
-                    <option key={bank.code} value={bank.code}>
-                      {bank.name}
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:pr-3 pointer-events-none">
-                  <svg className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </div>
-              </div>
+              <SearchableSelect
+                options={countryOptions}
+                value={accountData.country}
+                onChange={handleCountryChange}
+                placeholder="Select your country"
+                searchPlaceholder="Search countries..."
+                className="text-sm"
+              />
+            </div>
+
+            {/* Currency Selection */}
+            <div>
+              <label className="block text-xs font-medium mb-1.5 text-gray-700 dark:text-gray-300">
+                Currency
+              </label>
+              <SearchableSelect
+                options={currencyOptions}
+                value={accountData.currency}
+                onChange={handleCurrencyChange}
+                placeholder="Select currency"
+                searchPlaceholder="Search currencies..."
+                className="text-sm"
+              />
+            </div>
+
+            {/* Bank Selection */}
+            <div>
+              <label className="block text-xs font-medium mb-1.5 text-gray-700 dark:text-gray-300">
+                Bank
+              </label>
+              <SearchableSelect
+                options={bankOptions}
+                value={accountData.bank_code}
+                onChange={handleBankChange}
+                placeholder="Select your bank"
+                searchPlaceholder="Search banks..."
+                disabled={fetchingBanks || !accountData.country}
+                className="text-sm"
+              />
               {fetchingBanks && (
-                <div className="mt-1 sm:mt-2 text-xs sm:text-sm text-blue-600 dark:text-blue-400 flex items-center animate-pulse">
-                  <FaSpinner className="animate-spin mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                  Loading available banks...
+                <div className="mt-1.5 text-xs text-blue-600 dark:text-blue-400 flex items-center">
+                  <FaSpinner className="animate-spin mr-1.5 h-3 w-3" />
+                  Loading banks...
                 </div>
               )}
             </div>
             
-            {/* Account Number with Verification - stacked on mobile */}
+            {/* Account Number with Verification */}
             <div>
-              <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2 text-gray-700 dark:text-gray-300">
-                Your Account Number
+              <label className="block text-xs font-medium mb-1.5 text-gray-700 dark:text-gray-300">
+                Account Number
               </label>
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <div className="flex gap-2">
                 <input
                   type="text"
                   value={accountData.account_number}
                   onChange={handleAccountNumberChange}
-                  className="flex-1 p-3 sm:p-4 border border-gray-300 dark:border-gray-600 rounded-lg sm:rounded-xl bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500 text-sm sm:text-base"
+                  className="flex-1 p-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-all duration-200 text-sm"
+                  style={{ borderRadius: '5px' }}
                   required
                   maxLength={10}
                   placeholder="e.g. 0123456789"
@@ -330,75 +441,72 @@ const AccountSetupPopup = ({ onClose }: { onClose: () => void }) => {
                   type="button"
                   onClick={verifyAccount}
                   disabled={verifying || !accountData.account_number || !accountData.bank_code}
-                  className={`p-3 sm:px-5 sm:py-4 rounded-lg sm:rounded-xl flex items-center justify-center sm:min-w-[120px] transition-all duration-200 text-sm sm:text-base ${
+                  className={`px-4 py-2.5 flex items-center justify-center min-w-[100px] transition-all duration-200 text-sm ${
                     verifying
                       ? 'bg-blue-500 text-white'
                       : accountVerified
                         ? 'bg-green-500 text-white hover:bg-green-600'
                         : 'bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-600'
                   }`}
+                  style={{ borderRadius: '5px' }}
                 >
                   {verifying ? (
-                    <FaSpinner className="animate-spin mr-1 sm:mr-2 h-4 w-4" />
+                    <FaSpinner className="animate-spin mr-1.5 h-3.5 w-3.5" />
                   ) : accountVerified ? (
-                    <FaCheck className="mr-1 sm:mr-2 h-4 w-4" />
+                    <FaCheck className="mr-1.5 h-3.5 w-3.5" />
                   ) : (
-                    <FaTimes className="mr-1 sm:mr-2 h-4 w-4" />
+                    <FaTimes className="mr-1.5 h-3.5 w-3.5" />
                   )}
-                  <span className="whitespace-nowrap">
+                  <span className="whitespace-nowrap text-xs">
                     {verifying ? 'Checking' : accountVerified ? 'Verified' : 'Verify'}
                   </span>
                 </button>
               </div>
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Enter your 10-digit account number without special characters
+                Enter your 10-digit account number
               </p>
             </div>
             
             {/* Account Name (auto-filled after verification) */}
             {accountData.account_name && (
-              <div className="animate-fade-in">
-                <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2 text-gray-700 dark:text-gray-300">
+              <div>
+                <label className="block text-xs font-medium mb-1.5 text-gray-700 dark:text-gray-300">
                   Account Holder Name
                 </label>
-                <div className="p-3 sm:p-4 border border-green-200 dark:border-green-800 rounded-lg sm:rounded-xl bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-200 text-sm sm:text-base">
+                <div className="p-2.5 border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-200 text-sm" style={{ borderRadius: '5px' }}>
                   {accountData.account_name}
                 </div>
-                <p className="mt-1 text-xs text-green-600 dark:text-green-400 flex items-center">
-                  <svg className="h-3 w-3 sm:h-4 sm:w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Verified account name from your bank
-                </p>
               </div>
             )}
           </div>
           
-          {/* Action Buttons - full width on mobile */}
-          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 sm:space-x-3 pt-2">
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-2 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="w-full sm:w-auto px-4 py-2.5 sm:px-6 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg sm:rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 hover:shadow-sm disabled:opacity-50 text-sm sm:text-base"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 disabled:opacity-50 text-sm"
+              style={{ borderRadius: '5px' }}
               disabled={loading}
             >
-              Maybe Later
+              Cancel
             </button>
             <button
               type="submit"
-              className={`w-full sm:w-auto px-4 py-2.5 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl text-white transition-all duration-200 hover:shadow-md flex items-center justify-center text-sm sm:text-base ${
+              className={`px-4 py-2 text-white transition-all duration-200 flex items-center justify-center text-sm ${
                 loading
                   ? 'bg-blue-500'
                   : accountVerified
                     ? 'bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90'
                     : 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
               }`}
+              style={{ borderRadius: '5px' }}
               disabled={loading || !accountVerified}
             >
               {loading ? (
                 <>
-                  <FaSpinner className="animate-spin mr-1 sm:mr-2 h-4 w-4" />
-                  Processing...
+                  <FaSpinner className="animate-spin mr-1.5 h-3.5 w-3.5" />
+                  <span className="text-xs">Processing...</span>
                 </>
               ) : (
                 'Complete Setup'
@@ -410,22 +518,15 @@ const AccountSetupPopup = ({ onClose }: { onClose: () => void }) => {
         {/* Loading indicator */}
         {loading && <Loader />}
 
-        {/* Success modal */}
-        {showModal && (
-          <SuccessModal
-            title="Setup Complete!"
-            message="Your bank account is now ready to receive payments. Start transacting immediately!"
-            onClose={() => setShowModal(false)}
-          />
-        )}
-
         {/* Toast notifications */}
         {showToast && (
-          <Toast
-            type={toastProps.type}
-            message={toastProps.message}
-            onClose={() => setShowToast(false)}
-          />
+          <div className="fixed top-4 right-4 z-[60]">
+            <Toast
+              type={toastProps.type}
+              message={toastProps.message}
+              onClose={() => setShowToast(false)}
+            />
+          </div>
         )}
       </div>
     </div>

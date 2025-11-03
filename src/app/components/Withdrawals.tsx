@@ -198,7 +198,7 @@ const Withdrawals: React.FC = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-3 sm:px-0">
+    <div className="max-w-5xl px-3 sm:px-0 lg:mt-5">
       {showToast && (
         <div className="fixed top-4 right-4 z-50 w-full max-w-sm">
           <Toast type={toastProps.type} message={toastProps.message} onClose={() => setShowToast(false)} />
