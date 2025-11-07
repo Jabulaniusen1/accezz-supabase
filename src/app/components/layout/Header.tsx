@@ -26,6 +26,7 @@ const Header = () => {
 
   const navItems = [
     { name: "Discover events", href: "/#events" },
+    { name: "Event Centers", href: "/locations" },
     { name: "How Accezz Works", href: "/#tutorial" },
     { name: "About", href: "/about" },
     { name: "Blog", href: "/blog" },

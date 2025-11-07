@@ -8,8 +8,9 @@ import Withdrawals from "../components/Withdrawals";
 import Notifications from "../components/Notifications";
 import Setting from "../components/Setting";
 import Profile from "../components/settings/Profile";
+import LocationManager from "../components/LocationManager";
+import LocationBookings from "../components/LocationBookings";
 import ToggleMode from "../../components/ui/mode/toggleMode";
-import Loader from "@/components/ui/loader/Loader";
 import { BiMenuAltLeft, BiX, BiMoneyWithdraw } from "react-icons/bi";
 import { FiLogOut } from "react-icons/fi";
 import { Notyf } from "notyf";
@@ -23,6 +24,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { GiTakeMyMoney } from "react-icons/gi";
 import { BsBell, BsCalendar2Event, BsGear, BsPerson } from "react-icons/bs";
+import { MdOutlineLocationCity } from "react-icons/md";
+import { RiCalendarCheckLine } from "react-icons/ri";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState(0);
@@ -157,7 +160,6 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-      {isLoading && <Loader />}
 
       <EventTypeModal 
         isOpen={showEventTypeModal}
@@ -219,6 +221,32 @@ const Dashboard = () => {
           >
                 <BsCalendar2Event size={20} />
                 <span className="font-medium">Events</span>
+          </button>
+
+          <button
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+              activeTab === 6
+                    ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
+                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+            }`}
+            style={{ borderRadius: '5px' }}
+            onClick={() => setActiveTab(6)}
+          >
+                <MdOutlineLocationCity size={20} />
+                <span className="font-medium">Locations</span>
+          </button>
+
+          <button
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+              activeTab === 7
+                    ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
+                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+            }`}
+            style={{ borderRadius: '5px' }}
+            onClick={() => setActiveTab(7)}
+          >
+                <RiCalendarCheckLine size={20} />
+                <span className="font-medium">Bookings</span>
           </button>
 
           <button
@@ -316,23 +344,31 @@ const Dashboard = () => {
 
           {/* Content Area */}
           <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-                className="p-6"
-          >
-                {activeTab === 0 && <EventList />}
-                {activeTab === 1 && <Earnings />}
-                {activeTab === 5 && <Withdrawals />}
-                {activeTab === 2 && <Notifications />}
-                {activeTab === 3 && <Setting />}
-                {activeTab === 4 && <Profile />}
-          </motion.div>
-        </AnimatePresence>
+            {isLoading ? (
+              <div className="flex h-full min-h-[60vh] items-center justify-center">
+                <div className="h-12 w-12 animate-spin rounded-full border-4 border-[#f54502]/30 border-t-[#f54502]" />
+              </div>
+            ) : (
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="p-6"
+                >
+                  {activeTab === 0 && <EventList />}
+                  {activeTab === 1 && <Earnings />}
+                  {activeTab === 5 && <Withdrawals />}
+                  {activeTab === 6 && <LocationManager />}
+                  {activeTab === 7 && <LocationBookings />}
+                  {activeTab === 2 && <Notifications />}
+                  {activeTab === 3 && <Setting />}
+                  {activeTab === 4 && <Profile />}
+                </motion.div>
+              </AnimatePresence>
+            )}
           </div>
 
         {/* Add Event Button */}
