@@ -29,13 +29,13 @@ const mapAmenities = (value: unknown): string[] | undefined => {
 };
 
 interface LocationPageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export const revalidate = 60;
 
 export async function generateMetadata({ params }: LocationPageProps): Promise<Metadata> {
-  const { slug } = params;
+  const { slug } = await params;
   const { data } = await supabaseServer
     .from('locations')
     .select('name, city, country, description')
@@ -56,7 +56,7 @@ export async function generateMetadata({ params }: LocationPageProps): Promise<M
 }
 
 export default async function LocationDetailPage({ params }: LocationPageProps) {
-  const { slug } = params;
+  const { slug } = await params;
 
   const { data: locationRow, error } = await supabaseServer
     .from('locations')
