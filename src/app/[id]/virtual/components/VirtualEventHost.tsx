@@ -32,7 +32,7 @@ export default function VirtualEventHost({ event }: VirtualEventHostProps) {
             {event.image ? (
               <Image
                 src={typeof event.image === 'string' ? event.image : URL.createObjectURL(event.image)}
-                alt={event.hostName}
+                alt={event.hostName || ''}
                 width={96}
                 height={96}
                 className="object-cover"

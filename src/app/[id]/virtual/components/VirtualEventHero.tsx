@@ -40,7 +40,7 @@ export default function VirtualEventHero({ event }: VirtualEventHeroProps) {
             <div>
               <p className="text-xs text-gray-500 dark:text-gray-400">DATE</p>
               <p className="font-medium text-gray-900 dark:text-gray-100 text-sm sm:text-base">
-                {formatEventDate(event.date)}
+                {formatEventDate(event?.date || '')}
               </p>
             </div>
           </div>
@@ -50,7 +50,7 @@ export default function VirtualEventHero({ event }: VirtualEventHeroProps) {
             <div>
               <p className="text-xs text-gray-500 dark:text-gray-400">TIME</p>
               <p className="font-medium text-gray-900 dark:text-gray-100 text-sm sm:text-base">
-               {formatEventTime(event.time)}
+               {formatEventTime(event?.time || '')}
               </p>
             </div>
           </div>
