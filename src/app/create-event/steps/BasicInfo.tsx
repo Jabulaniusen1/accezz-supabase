@@ -78,15 +78,15 @@ const normalizeCoordinate = (value?: number | string | null): number | null => {
 };
 
 // Google Maps API types
-type GoogleMapsPlacesNamespace = {
+type MapsPlacesLibrary = {
   Autocomplete: new (
     inputField: HTMLInputElement,
     options?: { fields?: string[]; types?: string[] }
   ) => GooglePlacesAutocomplete;
 };
 
-type GoogleMapsNamespace = {
-  places?: GoogleMapsPlacesNamespace;
+type MapsLibrary = {
+  places?: MapsPlacesLibrary;
 };
 
 type GooglePlacesAutocomplete = {
@@ -159,17 +159,33 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
     formDataRef.current = formData;
   }, [formData]);
 
-  const loadGooglePlacesScript = useCallback((): Promise<GoogleMapsNamespace | null> => {
+  type ExtendedWindow = typeof window & {
+    google?: {
+      maps?: MapsLibrary;
+    };
+    __accezzMapsScriptPromise?: Promise<MapsLibrary | null>;
+  };
+
+  const getExtendedWindow = (): ExtendedWindow | null => {
     if (typeof window === 'undefined') {
+      return null;
+    }
+
+    return window as ExtendedWindow;
+  };
+
+  const loadGooglePlacesScript = useCallback((): Promise<MapsLibrary | null> => {
+    const extendedWindow = getExtendedWindow();
+    if (!extendedWindow) {
       return Promise.resolve(null);
     }
 
-    if (window.google?.maps?.places) {
-      return Promise.resolve(window.google.maps as GoogleMapsNamespace | null);
+    if (extendedWindow.google?.maps?.places) {
+      return Promise.resolve(extendedWindow.google.maps ?? null);
     }
 
-    if (window.__googleMapsScriptLoadingPromise) {
-      return window.__googleMapsScriptLoadingPromise as Promise<GoogleMapsNamespace | null>;
+    if (extendedWindow.__accezzMapsScriptPromise) {
+      return extendedWindow.__accezzMapsScriptPromise;
     }
 
     const apiKey = googleApiKeyRef.current;
@@ -180,25 +196,25 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
       return Promise.resolve(null);
     }
 
-    const scriptPromise: Promise<GoogleMapsNamespace | null> = new Promise((resolve, reject) => {
+    const scriptPromise: Promise<MapsLibrary | null> = new Promise((resolve, reject) => {
       const script = document.createElement('script');
       script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&language=en`;
       script.async = true;
       script.defer = true;
       script.onload = () => {
-        resolve((window.google?.maps ?? null) as GoogleMapsNamespace | null);
+        resolve(extendedWindow.google?.maps ?? null);
       };
       script.onerror = (event) => {
-        window.__googleMapsScriptLoadingPromise = undefined;
+        extendedWindow.__accezzMapsScriptPromise = undefined;
         console.error('Failed to load Google Maps script', event);
         reject(event);
       };
       document.head.appendChild(script);
     });
 
-    (window as any).__googleMapsScriptLoadingPromise = scriptPromise;
+    extendedWindow.__accezzMapsScriptPromise = scriptPromise;
 
-    return scriptPromise.catch(() => null) as Promise<GoogleMapsNamespace | null>;
+    return scriptPromise.catch(() => null);
   }, []);
 
   useEffect(() => {
