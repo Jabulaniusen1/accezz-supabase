@@ -165,7 +165,17 @@ const Withdrawals: React.FC = () => {
       .reduce((sum, w) => sum + Number(w.amount || 0), 0);
   }, [myWithdrawals]);
 
-  const availableBalance = useMemo(() => Math.max(0, totalEarnings - pendingTotal), [totalEarnings, pendingTotal]);
+  const approvedTotal = useMemo(() => {
+    const approvedStatuses = new Set(['approved', 'completed', 'paid']);
+    return myWithdrawals
+      .filter(w => approvedStatuses.has((w.status || '').toLowerCase()))
+      .reduce((sum, w) => sum + Number(w.amount || 0), 0);
+  }, [myWithdrawals]);
+
+  const availableBalance = useMemo(
+    () => Math.max(0, totalEarnings - pendingTotal - approvedTotal),
+    [totalEarnings, pendingTotal, approvedTotal]
+  );
 
   const submitWithdrawal = useCallback(async () => {
     if (!hasBankDetails) {

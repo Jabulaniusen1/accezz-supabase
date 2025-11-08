@@ -302,21 +302,95 @@ async function sendLocationBookingEmails(params: {
   ownerUserId: string | null;
   locationName: string | null;
   eventDate: string | null;
+  bookingId?: string | null;
 }) {
   const locationName = params.locationName || 'your location';
-  const dateText = params.eventDate
-    ? `scheduled for ${new Date(params.eventDate).toLocaleDateString()}`
-    : 'with no date specified';
+  const dateFormatted = params.eventDate ? new Date(params.eventDate).toLocaleDateString() : null;
+  const dateText = dateFormatted ? `scheduled for ${dateFormatted}` : 'with no date specified';
+  const bookingDashboardBase = `${process.env.NEXT_PUBLIC_BASE_URL || ''}/dashboard/`;
+  const bookingLink = params.bookingId ? `${bookingDashboardBase}?id=${params.bookingId}` : bookingDashboardBase;
 
   const requesterGreeting = params.requesterName ? `Hi ${params.requesterName.split(' ')[0]},` : 'Hi there,';
   const requesterHtml = `
-    <p>${requesterGreeting}</p>
-    <p>Thanks for your booking request for <strong>${locationName}</strong> ${dateText}.</p>
-    <p>The venue manager has received your request and will get back to you shortly.</p>
+    <div style="
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #eef2f7;
+      padding: 32px 16px;
+    ">
+      <table role="presentation" cellspacing="0" cellpadding="0" style="
+        max-width: 560px;
+        margin: 0 auto;
+        background: #ffffff;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 18px 34px rgba(15, 23, 42, 0.12);
+        border: 1px solid rgba(15, 23, 42, 0.05);
+      ">
+        <tr>
+          <td style="padding: 36px 28px; text-align: center; background: linear-gradient(135deg, #0f172a, #1e293b); color: #e2e8f0;">
+            <div style="font-size: 32px; margin-bottom: 12px;">📅</div>
+            <h1 style="margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 0.02em; color: #f8fafc;">
+              Booking Request Sent
+            </h1>
+            <p style="margin: 10px 0 0; font-size: 14px; opacity: 0.85; color: #cbd5f5;">
+              We&apos;ll let you know once the venue responds.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 28px;">
+            <p style="margin: 0 0 18px; font-size: 15px; color: #0f172a; font-weight: 600;">
+              ${requesterGreeting}
+            </p>
+            <p style="margin: 0 0 16px; font-size: 15px; color: #334155; line-height: 1.6;">
+              Thanks for requesting <strong>${locationName}</strong> ${dateText}. The venue manager has received your submission and will be in touch soon to confirm availability.
+            </p>
+            <div style="
+              margin: 22px 0;
+              padding: 20px;
+              border-radius: 16px;
+              border: 1px solid rgba(15, 23, 42, 0.08);
+              background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(15, 118, 110, 0.08));
+            ">
+              <p style="margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.18em; color: #f97316; font-weight: 600;">
+                Booking Preview
+              </p>
+              <p style="margin: 10px 0 0; font-size: 20px; color: #0f172a; font-weight: 600;">
+                ${locationName}
+              </p>
+              ${dateFormatted ? `<p style="margin: 6px 0 0; font-size: 14px; color: #475569;">📅 ${dateFormatted}</p>` : ''}
+            </div>
+            <p style="margin: 0 0 14px; font-size: 14px; color: #64748b;">
+              You can keep an eye on all your requests from your dashboard.
+            </p>
+            <div style="text-align: center; margin-top: 24px;">
+              <a href="${bookingLink}" style="
+                display: inline-block;
+                padding: 14px 26px;
+                border-radius: 9999px;
+                background: linear-gradient(135deg, #0f172a, #1e293b);
+                color: #f8fafc;
+                text-decoration: none;
+                font-weight: 600;
+                font-size: 14px;
+                box-shadow: 0 12px 22px rgba(15, 23, 42, 0.25);
+              ">
+                View Your Bookings
+              </a>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 18px 28px 28px; text-align: center; background: #eef2f7; color: #7b8794; font-size: 12px;">
+            Need to make changes? You can update or cancel the request from your dashboard.
+          </td>
+        </tr>
+      </table>
+    </div>
   `;
   await safeSendEmail(
     params.requesterEmail,
-    'We received your booking request',
+    'Booking request received',
     requesterHtml,
     `${requesterGreeting} Thanks for your booking request for ${locationName} ${dateText}.`
   );
@@ -325,9 +399,77 @@ async function sendLocationBookingEmails(params: {
   if (owner.email) {
     const ownerGreeting = owner.fullName ? `Hi ${owner.fullName.split(' ')[0]},` : 'Hello,';
     const ownerHtml = `
-      <p>${ownerGreeting}</p>
-      <p>You have a new booking request for <strong>${locationName}</strong> ${dateText}.</p>
-      <p>Visit your dashboard to review and respond.</p>
+      <div style="
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: #eef2f7;
+        padding: 32px 16px;
+      ">
+        <table role="presentation" cellspacing="0" cellpadding="0" style="
+          max-width: 560px;
+          margin: 0 auto;
+          background: #ffffff;
+          border-radius: 18px;
+          overflow: hidden;
+          box-shadow: 0 18px 34px rgba(15, 23, 42, 0.12);
+          border: 1px solid rgba(15, 23, 42, 0.05);
+        ">
+          <tr>
+            <td style="padding: 34px 28px; text-align: center; background: linear-gradient(135deg, #0f172a, #1e293b); color: #e2e8f0;">
+              <div style="font-size: 30px; margin-bottom: 12px;">📍</div>
+              <h1 style="margin: 0; font-size: 24px; font-weight: 700;">
+                New Location Booking
+              </h1>
+              <p style="margin: 10px 0 0; font-size: 14px; opacity: 0.7;">
+                A new host is interested in your space.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 30px;">
+              <p style="margin: 0 0 16px; font-size: 15px; color: #0f172a; font-weight: 600;">
+                ${ownerGreeting}
+              </p>
+              <p style="margin: 0 0 18px; font-size: 15px; color: #334155; line-height: 1.6;">
+                Someone just requested to book <strong>${locationName}</strong> ${dateText}. Review the details and respond quickly to secure the booking.
+              </p>
+              <div style="
+                padding: 20px;
+                border-radius: 16px;
+                background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(15, 118, 110, 0.08));
+                border: 1px solid rgba(15, 23, 42, 0.08);
+              ">
+                <p style="margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.16em; color: #0f766e; font-weight: 600;">
+                  Location
+                </p>
+                <p style="margin: 8px 0 0; font-size: 20px; color: #0f172a; font-weight: 600;">
+                  ${locationName}
+                </p>
+                ${dateFormatted ? `<p style="margin: 6px 0 0; font-size: 14px; color: #475569;">Requested Date: ${dateFormatted}</p>` : ''}
+              </div>
+              <div style="text-align: center; margin-top: 24px;">
+                <a href="${bookingLink}" style="
+                  display: inline-block;
+                  padding: 14px 28px;
+                  border-radius: 9999px;
+                  background: linear-gradient(135deg, #0f172a, #1e293b);
+                  color: #f8fafc;
+                  text-decoration: none;
+                  font-weight: 600;
+                  font-size: 14px;
+                  box-shadow: 0 14px 24px rgba(15, 23, 42, 0.25);
+                ">
+                  Review Booking
+                </a>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 18px 30px 30px; text-align: center; background: #eef2f7; color: #7b8794; font-size: 12px;">
+              Respond promptly to give your guests the best experience.
+            </td>
+          </tr>
+        </table>
+      </div>
     `;
     await safeSendEmail(
       owner.email,
@@ -350,13 +492,98 @@ async function sendWithdrawalApprovedEmail(params: {
   const formattedAmount = formatCurrency(params.amount, params.currency || 'NGN');
   const greeting = contact.fullName ? `Hi ${contact.fullName.split(' ')[0]},` : 'Hi there,';
   const html = `
-    <p>${greeting}</p>
-    <p>Your withdrawal request for <strong>${formattedAmount}</strong> has been approved.</p>
-    <p>The funds will be on their way shortly. Thanks for using Accezz!</p>
+    <div style="
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f8fafc;
+      padding: 32px 16px;
+    ">
+      <table role="presentation" cellspacing="0" cellpadding="0" style="
+        max-width: 560px;
+        margin: 0 auto;
+        background: #ffffff;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 18px 34px rgba(15, 23, 42, 0.12);
+        border: 1px solid rgba(15, 23, 42, 0.06);
+      ">
+        <tr>
+          <td style="
+            padding: 38px 32px 30px;
+            text-align: center;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 45%, #f97316 100%);
+            color: #f8fafc;
+          ">
+            <div style="display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 18px; background: rgba(248, 250, 252, 0.18); margin-bottom: 18px;">
+              <span style="font-size: 32px;">💸</span>
+            </div>
+            <h1 style="margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 0.02em;">
+              Withdrawal Successful
+            </h1>
+            <p style="margin: 12px 0 0; font-size: 14px; opacity: 0.8;">
+              Your funds are on their way. Keep building with Accezz.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 32px;">
+            <p style="margin: 0 0 16px; font-size: 16px; color: #111827; font-weight: 600;">
+              ${greeting}
+            </p>
+            <p style="margin: 0 0 20px; font-size: 15px; color: #374151; line-height: 1.6;">
+              Great news! Your withdrawal request has been processed successfully. The payment of <strong>${formattedAmount}</strong> is now headed to your bank account.
+            </p>
+            <div style="
+              border-radius: 16px;
+              border: 1px solid rgba(249, 115, 22, 0.2);
+              background: linear-gradient(135deg, rgba(249, 115, 22, 0.12), rgba(14, 165, 233, 0.08));
+              padding: 22px;
+              text-align: center;
+            ">
+              <p style="margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.18em; color: #f97316; font-weight: 600;">
+                Amount Sent
+              </p>
+              <p style="margin: 10px 0 0; font-size: 30px; font-weight: 700; color: #0f172a;">
+                ${formattedAmount}
+              </p>
+            </div>
+            <div style="margin: 24px 0;">
+              <p style="margin: 0 0 10px; font-size: 14px; color: #6b7280;">
+                What happens next:
+              </p>
+              <ul style="margin: 0; padding-left: 20px; color: #4b5563; font-size: 14px; line-height: 1.6;">
+                <li>Transfers typically arrive within 1-5 business days.</li>
+                <li>You&apos;ll receive a follow-up once the status is updated.</li>
+                <li>Track every payout anytime from your dashboard.</li>
+              </ul>
+            </div>
+            <div style="text-align: center; margin-top: 28px;">
+              <a href="${process.env.NEXT_PUBLIC_BASE_URL || ''}/dashboard" style="
+                display: inline-block;
+                padding: 14px 26px;
+                border-radius: 9999px;
+                background: linear-gradient(135deg, #f97316, #ef4444);
+                color: #ffffff;
+                text-decoration: none;
+                font-weight: 600;
+                font-size: 14px;
+                box-shadow: 0 14px 24px rgba(249, 115, 22, 0.24);
+              ">
+                View Dashboard
+              </a>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 20px 32px 32px; text-align: center; background: #f8fafc; color: #94a3b8; font-size: 12px;">
+            Need help? Reply to this email or reach us via support.
+          </td>
+        </tr>
+      </table>
+    </div>
   `;
   await safeSendEmail(
     contact.email,
-    'Your withdrawal has been approved',
+    'Withdrawal Successful',
     html,
     `${greeting} Your withdrawal request for ${formattedAmount} has been approved.`
   );
