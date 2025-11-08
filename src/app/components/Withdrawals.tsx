@@ -9,6 +9,17 @@ import AccountSetupPopup from './AccountSetupPopup';
 import type { Event } from '@/types/event';
 import type { WithdrawalRequest } from '@/types/withdrawal';
 
+const PLATFORM_FEE_RATE = 0.06;
+const NET_MULTIPLIER = 1 - PLATFORM_FEE_RATE;
+const calculateNetRevenue = (price: string | number, sold: string | number): number => {
+  const numericPrice = typeof price === 'number' ? price : parseFloat(price || '0');
+  const numericSold = typeof sold === 'number' ? sold : parseFloat(sold || '0');
+  if (Number.isNaN(numericPrice) || Number.isNaN(numericSold)) {
+    return 0;
+  }
+  return numericPrice * numericSold * NET_MULTIPLIER;
+};
+
 const Withdrawals: React.FC = () => {
   const router = useRouter();
   const [showToast, setShowToast] = useState(false);
@@ -113,7 +124,8 @@ const Withdrawals: React.FC = () => {
 
   const totalEarnings = useMemo(() => {
     return events?.reduce((total, event) => {
-      return total + (event.ticketType?.reduce((subtotal, ticket) => subtotal + (parseFloat(ticket.price) * parseFloat(ticket.sold)), 0) || 0);
+      const eventNet = event.ticketType?.reduce((subtotal, ticket) => subtotal + calculateNetRevenue(ticket.price, ticket.sold), 0) || 0;
+      return total + eventNet;
     }, 0) || 0;
   }, [events]);
 
@@ -143,11 +155,14 @@ const Withdrawals: React.FC = () => {
     })();
   }, []);
 
-  const totalRequested = useMemo(() => {
-    return myWithdrawals.reduce((sum, w) => sum + Number(w.amount || 0), 0);
+  const pendingTotal = useMemo(() => {
+    const pendingStatuses = new Set(['pending', 'processing']);
+    return myWithdrawals
+      .filter(w => pendingStatuses.has((w.status || '').toLowerCase()))
+      .reduce((sum, w) => sum + Number(w.amount || 0), 0);
   }, [myWithdrawals]);
 
-  const availableBalance = useMemo(() => Math.max(0, totalEarnings - totalRequested), [totalEarnings, totalRequested]);
+  const availableBalance = useMemo(() => Math.max(0, totalEarnings - pendingTotal), [totalEarnings, pendingTotal]);
 
   const submitWithdrawal = useCallback(async () => {
     if (!hasBankDetails) {
@@ -213,16 +228,19 @@ const Withdrawals: React.FC = () => {
       {/* Balance Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
         <div className="bg-white dark:bg-gray-800 shadow-md p-4 md:p-6 border-l-4 border-green-500" style={{ borderRadius: '5px' }}>
-          <h3 className="text-gray-500 dark:text-gray-400 text-sm font-medium">Total Earnings</h3>
+          <h3 className="text-gray-500 dark:text-gray-400 text-sm font-medium">Total Net Earnings</h3>
           <p className="text-2xl font-bold text-gray-800 dark:text-white">{formatCurrency(totalEarnings)}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">After 6% platform fee</p>
         </div>
         <div className="bg-white dark:bg-gray-800 shadow-md p-4 md:p-6 border-l-4 border-yellow-500" style={{ borderRadius: '5px' }}>
-          <h3 className="text-gray-500 dark:text-gray-400 text-sm font-medium">Total Requested</h3>
-          <p className="text-2xl font-bold text-gray-800 dark:text-white">{formatCurrency(totalRequested)}</p>
+          <h3 className="text-gray-500 dark:text-gray-400 text-sm font-medium">Pending Requests</h3>
+          <p className="text-2xl font-bold text-gray-800 dark:text-white">{formatCurrency(pendingTotal)}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Withdrawals awaiting approval or processing</p>
         </div>
         <div className="bg-white dark:bg-gray-800 shadow-md p-4 md:p-6 border-l-4 border-[#f54502]" style={{ borderRadius: '5px' }}>
           <h3 className="text-gray-500 dark:text-gray-400 text-sm font-medium">Available Balance</h3>
           <p className="text-2xl font-bold text-gray-800 dark:text-white">{formatCurrency(availableBalance)}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Amount you can withdraw now</p>
         </div>
       </div>
 
@@ -269,6 +287,11 @@ const Withdrawals: React.FC = () => {
               onClick={() => setQuickAmount(0.3)}
             >30%</button>
           </div>
+          {availableBalance <= 0 && (
+            <p className="mt-2 text-xs text-yellow-700 dark:text-yellow-300">
+              Your current earnings are fully covered by the 6% platform fee or pending withdrawals.
+            </p>
+          )}
           {!hasBankDetails && (
             <p className="mt-2 text-xs text-yellow-700 dark:text-yellow-300">You need to set up your bank account before requesting withdrawals.</p>
           )}

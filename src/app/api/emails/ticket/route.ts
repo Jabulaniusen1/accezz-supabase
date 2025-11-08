@@ -67,6 +67,10 @@ export async function POST(req: NextRequest) {
       qrCodeUrl,
       ticketId,
       primaryTicketCode,
+      isVirtual,
+      virtualAccessLink,
+      virtualPlatform,
+      virtualMeetingId,
     } = body;
 
     if (!email || !fullName || !eventTitle) {
@@ -89,6 +93,10 @@ export async function POST(req: NextRequest) {
       currency: currency || 'NGN',
       orderId: orderId || 'N/A',
       qrCodeUrl,
+      isVirtual: Boolean(isVirtual),
+      virtualAccessLink,
+      virtualPlatform,
+      virtualMeetingId,
     });
 
     // Ensure we have a QR code URL for the PDF
@@ -110,11 +118,15 @@ export async function POST(req: NextRequest) {
         ticketType: ticketType || 'General',
         price: totalAmount || 0,
         currency: currency || 'NGN',
-        qrCodeUrl: finalQrCodeUrl || undefined,
+        qrCodeUrl: isVirtual ? undefined : finalQrCodeUrl || undefined,
         fullName,
         orderId: orderId || 'N/A',
         ticketCode: primaryTicketCode,
         ticketId: ticketId,
+        isVirtual: Boolean(isVirtual),
+        virtualAccessLink,
+        virtualPlatform,
+        virtualMeetingId,
       });
 
       // Create safe filename

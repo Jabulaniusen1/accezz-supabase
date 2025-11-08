@@ -12,14 +12,9 @@ export interface Ticket {
 
 
 export interface VirtualEventDetails {
-  platform?: 'google-meet' | 'zoom' | 'whereby' | 'custom';
+  platform?: 'google-meet' | 'zoom' | 'meets' | 'custom';
   meetingUrl?: string;
   meetingId?: string;
-  passcode?: string;
-  virtualPassword?: string;
-  requiresPassword?: boolean;
-  enableWaitingRoom?: boolean;
-  lockRoom?: boolean;
 }
 
 export interface SocialMediaLinks {

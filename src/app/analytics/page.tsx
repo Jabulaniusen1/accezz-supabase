@@ -18,6 +18,17 @@ import { EmailMarketing } from './components/EmailMarketing';
 import { FaMoneyBill, FaTicketAlt } from 'react-icons/fa';
 // import { Line } from 'react-chartjs-2';
 
+const PLATFORM_FEE_RATE = 0.06;
+const NET_MULTIPLIER = 1 - PLATFORM_FEE_RATE;
+const calculateNetRevenue = (price: string | number, sold: string | number): number => {
+  const numericPrice = typeof price === 'number' ? price : parseFloat(price || '0');
+  const numericSold = typeof sold === 'number' ? sold : parseFloat(sold || '0');
+  if (Number.isNaN(numericPrice) || Number.isNaN(numericSold)) {
+    return 0;
+  }
+  return numericPrice * numericSold * NET_MULTIPLIER;
+};
+
 const EventAnalyticsContent = () => {
   const [toast, setToast] = useState<{ type: 'error' | 'success'; message: string } | null>(null);
   const [loading, setLoading] = useState(false);
@@ -40,6 +51,10 @@ const EventAnalyticsContent = () => {
   const [emailContent, setEmailContent] = useState('');
   const [activeTab, setActiveTab] = useState('attendees');
   const [paymentFilter, setPaymentFilter] = useState('');
+
+  // const toast = useCallback((newToast: { type: 'error' | 'success'; message: string }) => {
+  //   setToast(newToast);
+  // }, []);
 
   const fetchEvent = useCallback(async () => {
     if (!eventId) return;
@@ -177,7 +192,6 @@ const EventAnalyticsContent = () => {
   //     link.setAttribute('download', `${event?.title || 'event'}_attendees_${new Date().toISOString().slice(0, 10)}.csv`);
   //     document.body.appendChild(link);
   //     link.click();
-  //       document.body.removeChild(link);
       
   //     setToast({ type: 'success', message: 'Export completed successfully!' });
   //   } catch (error) {
@@ -334,9 +348,7 @@ const EventAnalyticsContent = () => {
   const totalRevenueFromEvent = useMemo(() => {
     if (!event?.ticketType) return 0;
     return event.ticketType.reduce((total, ticketType) => {
-      const sold = parseInt(ticketType.sold || '0');
-      const price = parseInt(ticketType.price || '0');
-      return total + (sold * price);
+      return total + calculateNetRevenue(ticketType.price, ticketType.sold);
     }, 0);
   }, [event]);
 
@@ -645,6 +657,7 @@ const EventAnalyticsContent = () => {
                     setSearchQuery('');
                     setTicketTypeFilter('');
                     setScannedFilter('');
+                    setPaymentFilter('');
                   }}
                 />
                 <div className="mt-6">

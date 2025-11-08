@@ -107,8 +107,8 @@ function Update() {
             isVirtual: !!ev.is_virtual,
             virtualEventDetails: ev.virtual_details || (ev.is_virtual ? {
                 platform: undefined,
-                requiresPassword: false,
-                virtualPassword: ""
+                meetingUrl: '',
+                meetingId: ''
             } : undefined),
             socialMediaLinks: ev.social_links || {},
             ticketType: (types || []).map(t => ({
