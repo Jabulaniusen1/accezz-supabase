@@ -40,8 +40,8 @@ export default function VirtualEventDetails({ event }: VirtualEventDetailsProps)
   const platformLabel = getVirtualPlatformLabel(event);
   const meetingUrl = virtualDetails?.meetingUrl;
   const meetingId = virtualDetails?.meetingId;
-  const formattedDate = formatEventDate(event.date);
-  const formattedTime = formatEventTime(event.time);
+  const formattedDate = formatEventDate(event?.date || '');
+  const formattedTime = formatEventTime(event?.time || '');
 
   return (
     <div className="space-y-6">
