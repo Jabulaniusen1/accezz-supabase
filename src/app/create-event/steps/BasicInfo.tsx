@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { FaCloudUploadAlt, FaExclamationTriangle, FaGoogle, FaIdCard, FaInfoCircle, FaLink, FaTrash, FaVideo } from 'react-icons/fa';
+import { FaCloudUploadAlt, FaExclamationTriangle, FaIdCard, FaInfoCircle, FaLink, FaTrash } from 'react-icons/fa';
 import { type Event } from '@/types/event';
 import { RiEarthLine } from 'react-icons/ri';
 import { ToastProps } from '@/types/event';

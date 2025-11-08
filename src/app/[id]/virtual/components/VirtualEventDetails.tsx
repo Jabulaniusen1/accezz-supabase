@@ -107,16 +107,6 @@ export default function VirtualEventDetails({ event }: VirtualEventDetailsProps)
           </div>
         </div>
       </section>
-
-      <section className="rounded-3xl border border-gray-200/60 bg-white/95 p-6 shadow-lg dark:border-gray-700/50 dark:bg-gray-800/80">
-        <h2 className="flex items-center gap-2 text-xl font-semibold text-gray-900 dark:text-white">
-          <FaInfoCircle className="text-[#f54502]" />
-          About this event
-        </h2>
-        <p className="mt-4 leading-relaxed text-gray-700 dark:text-gray-300">
-          {event.description || 'The organiser will share more information about this virtual experience soon.'}
-        </p>
-      </section>
     </div>
   );
 }

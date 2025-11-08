@@ -115,7 +115,8 @@ export default function VirtualEventPage() {
     };
   }, []);
 
-  const handleGetTicket = useCallback((_ticket: Ticket) => {
+  const handleGetTicket = useCallback((ticket: Ticket) => {
+    void ticket;
     setShowTicketForm(true);
   }, []);
 

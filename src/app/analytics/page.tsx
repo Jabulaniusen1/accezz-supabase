@@ -18,6 +18,17 @@ import { EmailMarketing } from './components/EmailMarketing';
 import { FaMoneyBill, FaTicketAlt } from 'react-icons/fa';
 // import { Line } from 'react-chartjs-2';
 
+const PLATFORM_FEE_RATE = 0.06;
+const NET_MULTIPLIER = 1 - PLATFORM_FEE_RATE;
+const calculateNetRevenue = (price: string | number, sold: string | number): number => {
+  const numericPrice = typeof price === 'number' ? price : parseFloat(price || '0');
+  const numericSold = typeof sold === 'number' ? sold : parseFloat(sold || '0');
+  if (Number.isNaN(numericPrice) || Number.isNaN(numericSold)) {
+    return 0;
+  }
+  return numericPrice * numericSold * NET_MULTIPLIER;
+};
+
 const EventAnalyticsContent = () => {
   const [toast, setToast] = useState<{ type: 'error' | 'success'; message: string } | null>(null);
   const [loading, setLoading] = useState(false);
@@ -44,17 +55,6 @@ const EventAnalyticsContent = () => {
   // const toast = useCallback((newToast: { type: 'error' | 'success'; message: string }) => {
   //   setToast(newToast);
   // }, []);
-
-  const PLATFORM_FEE_RATE = 0.06;
-  const NET_MULTIPLIER = 1 - PLATFORM_FEE_RATE;
-  const calculateNetRevenue = (price: string | number, sold: string | number): number => {
-    const numericPrice = typeof price === 'number' ? price : parseFloat(price || '0');
-    const numericSold = typeof sold === 'number' ? sold : parseFloat(sold || '0');
-    if (Number.isNaN(numericPrice) || Number.isNaN(numericSold)) {
-      return 0;
-    }
-    return numericPrice * numericSold * NET_MULTIPLIER;
-  };
 
   const fetchEvent = useCallback(async () => {
     if (!eventId) return;

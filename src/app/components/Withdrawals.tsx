@@ -9,6 +9,17 @@ import AccountSetupPopup from './AccountSetupPopup';
 import type { Event } from '@/types/event';
 import type { WithdrawalRequest } from '@/types/withdrawal';
 
+const PLATFORM_FEE_RATE = 0.06;
+const NET_MULTIPLIER = 1 - PLATFORM_FEE_RATE;
+const calculateNetRevenue = (price: string | number, sold: string | number): number => {
+  const numericPrice = typeof price === 'number' ? price : parseFloat(price || '0');
+  const numericSold = typeof sold === 'number' ? sold : parseFloat(sold || '0');
+  if (Number.isNaN(numericPrice) || Number.isNaN(numericSold)) {
+    return 0;
+  }
+  return numericPrice * numericSold * NET_MULTIPLIER;
+};
+
 const Withdrawals: React.FC = () => {
   const router = useRouter();
   const [showToast, setShowToast] = useState(false);
@@ -19,18 +30,6 @@ const Withdrawals: React.FC = () => {
   const [myWithdrawals, setMyWithdrawals] = useState<WithdrawalRequest[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-
-  const PLATFORM_FEE_RATE = 0.06;
-  const NET_MULTIPLIER = 1 - PLATFORM_FEE_RATE;
-
-  const calculateNetRevenue = (price: string | number, sold: string | number): number => {
-    const numericPrice = typeof price === 'number' ? price : parseFloat(price || '0');
-    const numericSold = typeof sold === 'number' ? sold : parseFloat(sold || '0');
-    if (Number.isNaN(numericPrice) || Number.isNaN(numericSold)) {
-      return 0;
-    }
-    return numericPrice * numericSold * NET_MULTIPLIER;
-  };
 
   const [rawAmount, setRawAmount] = useState<number | null>(null);
   const [displayAmount, setDisplayAmount] = useState<string>('');
