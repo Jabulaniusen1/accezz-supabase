@@ -188,7 +188,7 @@ const Notifications = () => {
               You're all caught up
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 max-w-xs">
-              When there’s something new about your events, bookings, or payouts, it’ll show up here.
+              When there&apos;s something new about your events, bookings, or payouts, it&apos;ll show up here.
             </p>
           </div>
         ) : (
