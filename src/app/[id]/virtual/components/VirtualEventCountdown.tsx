@@ -8,28 +8,70 @@ interface VirtualEventCountdownProps {
   event: Event;
 }
 
+type CountdownState = {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+  isLive: boolean;
+};
+
 export default function VirtualEventCountdown({ event }: VirtualEventCountdownProps) {
   // STATE TO TRACK TIME LEFT UNTIL EVENT STARTS
-  const [timeLeft, setTimeLeft] = useState({
+  const defaultCountdownState: CountdownState = {
     days: 0,
     hours: 0,
     minutes: 0,
     seconds: 0,
     isLive: false
-  });
+  };
+
+  const [timeLeft, setTimeLeft] = useState<CountdownState>(defaultCountdownState);
 
   useEffect(() => {
     const calculateTimeLeft = () => {
       const now = new Date();
 
-      // COMBINE DATE AND TIME STRINGS INTO A VALID ISO STRING
-      const [hour, minute] = event.time.split(':');
+      if (!event?.date) {
+        return { ...defaultCountdownState };
+      }
+
       const eventDateTime = new Date(event.date);
-      eventDateTime.setHours(parseInt(hour), parseInt(minute), 0); // SET TIME PROPERLY
+      if (isNaN(eventDateTime.getTime())) {
+        return { ...defaultCountdownState };
+      }
+
+      let hours: number | null = null;
+      let minutes: number | null = null;
+
+      if (event.time) {
+        const parts = event.time.split(':');
+        if (parts.length >= 2) {
+          const parsedHour = parseInt(parts[0], 10);
+          const parsedMinute = parseInt(parts[1], 10);
+          if (!Number.isNaN(parsedHour) && !Number.isNaN(parsedMinute)) {
+            hours = parsedHour;
+            minutes = parsedMinute;
+          }
+        }
+      } else if (event.startTime) {
+        const startTimeDate = new Date(event.startTime);
+        if (!Number.isNaN(startTimeDate.getTime())) {
+          hours = startTimeDate.getHours();
+          minutes = startTimeDate.getMinutes();
+        }
+      }
+
+      if (hours === null || minutes === null) {
+        return { ...defaultCountdownState };
+      }
+
+      // COMBINE DATE AND TIME STRINGS INTO A VALID ISO STRING
+      eventDateTime.setHours(hours, minutes, 0, 0); // SET TIME PROPERLY
 
       // CHECK IF PARSED DATE IS VALID
       if (isNaN(eventDateTime.getTime())) {
-        return { days: 0, hours: 0, minutes: 0, seconds: 0, isLive: false };
+        return { ...defaultCountdownState };
       }
 
       // CALCULATE DIFFERENCE IN SECONDS
@@ -41,12 +83,18 @@ export default function VirtualEventCountdown({ event }: VirtualEventCountdownPr
       }
 
       // BREAK DOWN INTO DAYS, HOURS, MINUTES, SECONDS
-      const days = Math.floor(diffInSeconds / (60 * 60 * 24));
-      const hours = Math.floor((diffInSeconds % (60 * 60 * 24)) / (60 * 60));
-      const minutes = Math.floor((diffInSeconds % (60 * 60)) / 60);
-      const seconds = Math.floor(diffInSeconds % 60);
+      const remainingDays = Math.floor(diffInSeconds / (60 * 60 * 24));
+      const remainingHours = Math.floor((diffInSeconds % (60 * 60 * 24)) / (60 * 60));
+      const remainingMinutes = Math.floor((diffInSeconds % (60 * 60)) / 60);
+      const remainingSeconds = Math.floor(diffInSeconds % 60);
 
-      return { days, hours, minutes, seconds, isLive: false };
+      return {
+        days: remainingDays,
+        hours: remainingHours,
+        minutes: remainingMinutes,
+        seconds: remainingSeconds,
+        isLive: false
+      };
     };
 
     // START INTERVAL TO UPDATE COUNTDOWN EVERY 1 SECOND
@@ -56,10 +104,18 @@ export default function VirtualEventCountdown({ event }: VirtualEventCountdownPr
 
     // CLEAN UP ON UNMOUNT
     return () => clearInterval(timer);
-  }, [event.date, event.time]);
+  }, [event.date, event.time, event.startTime]);
 
   // FORMAT DATE NICELY FOR DISPLAY
   const formattedDate = event.date ? format(parseISO(event.date), 'MMMM do, yyyy') : '';
+  let formattedTime = event.time || '';
+
+  if (!formattedTime && event.startTime) {
+    const start = new Date(event.startTime);
+    if (!Number.isNaN(start.getTime())) {
+      formattedTime = format(start, 'HH:mm');
+    }
+  }
 
   return (
     <motion.div 
@@ -111,7 +167,8 @@ export default function VirtualEventCountdown({ event }: VirtualEventCountdownPr
       {/* SHOW EVENT DATE AND TIME */}
       <div className="mt-4 flex items-center text-gray-600 dark:text-gray-300">
         <FaClock className="mr-2 text-[#f54502]" />
-        {formattedDate} at {event.time}
+        {formattedDate}
+        {formattedTime ? ` at ${formattedTime}` : ''}
       </div>
     </motion.div>
   );
