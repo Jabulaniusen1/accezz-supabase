@@ -13,6 +13,10 @@ interface ReceiptData {
   orderId: string;
   ticketCode?: string;
   ticketId?: string;
+  isVirtual?: boolean;
+  virtualAccessLink?: string;
+  virtualPlatform?: string;
+  virtualMeetingId?: string;
 }
 
 /**
@@ -206,61 +210,110 @@ export async function generateReceiptPDF(data: ReceiptData): Promise<Buffer> {
 
   yPos += ticketBoxHeight + 25;
 
-  // QR Code Section - Always include QR code in PDF
-  // If qrCodeUrl is provided, use it; otherwise try to generate one from order data
-  let qrCodeBase64: string | null = null;
-  
-  if (data.qrCodeUrl) {
-    try {
-      qrCodeBase64 = await fetchImageAsBase64(data.qrCodeUrl);
-    } catch (error) {
-      console.error('Error fetching QR code from URL:', error);
-    }
-  }
-  
-  // If we still don't have a QR code, generate one from ticket code
-  if (!qrCodeBase64 && (data.ticketCode || data.ticketId)) {
-    try {
-      const qrcode = await import('qrcode');
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-      const ticketId = data.ticketId || data.orderId;
-      const ticketCode = data.ticketCode || data.orderId;
-      const validateUrl = `${baseUrl}/validate-ticket?ticketId=${ticketId}&signature=${ticketCode}`;
-      qrCodeBase64 = await qrcode.default.toDataURL(validateUrl, {
-        width: 400,
-        margin: 2,
-        color: {
-          dark: '#000000',
-          light: '#FFFFFF',
-        },
-      });
-    } catch (error) {
-      console.error('Error generating QR code:', error);
-    }
-  }
-  
-  // Add QR code to PDF if we have one
-  if (qrCodeBase64) {
-    const qrSize = 70;
-    const qrX = (pageWidth - qrSize) / 2;
-    const qrY = yPos;
+  const isVirtualEvent = Boolean(data.isVirtual);
 
-    doc.setFillColor(255, 255, 255);
-    doc.roundedRect(qrX - 5, qrY - 5, qrSize + 10, qrSize + 10, 2, 2, 'F');
-    doc.setDrawColor(200, 200, 200);
-    doc.setLineWidth(0.5);
-    doc.roundedRect(qrX - 5, qrY - 5, qrSize + 10, qrSize + 10, 2, 2, 'S');
+  if (isVirtualEvent) {
+    const formatPlatform = (value?: string) => {
+      if (!value) return 'Online Session';
+      return value
+        .split(/[-_]/g)
+        .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+        .join(' ');
+    };
 
-    doc.addImage(qrCodeBase64, 'PNG', qrX, qrY, qrSize, qrSize);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.setTextColor(245, 69, 2);
+    doc.text('Virtual Access Details', leftMargin, yPos);
+    yPos += 10;
 
-    yPos += qrSize + 10;
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.setTextColor(128, 128, 128);
-    const qrLabel = 'Present this QR code at the event entrance for verification';
-    const qrLabelLines = doc.splitTextToSize(qrLabel, contentWidth);
-    doc.text(qrLabelLines, pageWidth / 2, yPos, { align: 'center' });
-    yPos += qrLabelLines.length * 5 + 15;
+    doc.text('Platform', leftMargin, yPos);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(29, 29, 29);
+    doc.text(formatPlatform(data.virtualPlatform), leftMargin, yPos + 6);
+    yPos += 14;
+
+    if (data.virtualMeetingId) {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.setTextColor(128, 128, 128);
+      doc.text('Meeting ID', leftMargin, yPos);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.setTextColor(29, 29, 29);
+      doc.text(data.virtualMeetingId, leftMargin, yPos + 6);
+      yPos += 14;
+    }
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.setTextColor(128, 128, 128);
+    doc.text('Access Link', leftMargin, yPos);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11.5);
+    const accessText = data.virtualAccessLink || "We've emailed your access link. Check your inbox for instructions.";
+    const accessLines = doc.splitTextToSize(accessText, contentWidth);
+    doc.setTextColor(59, 130, 246);
+    doc.text(accessLines, leftMargin, yPos + 6);
+    doc.setTextColor(29, 29, 29);
+    yPos += Math.max(accessLines.length * 6, 12) + 20;
+  } else {
+    let qrCodeBase64: string | null = null;
+  
+    if (data.qrCodeUrl) {
+      try {
+        qrCodeBase64 = await fetchImageAsBase64(data.qrCodeUrl);
+      } catch (error) {
+        console.error('Error fetching QR code from URL:', error);
+      }
+    }
+  
+    if (!qrCodeBase64 && (data.ticketCode || data.ticketId)) {
+      try {
+        const qrcode = await import('qrcode');
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+        const ticketId = data.ticketId || data.orderId;
+        const ticketCode = data.ticketCode || data.orderId;
+        const validateUrl = `${baseUrl}/validate-ticket?ticketId=${ticketId}&signature=${ticketCode}`;
+        qrCodeBase64 = await qrcode.default.toDataURL(validateUrl, {
+          width: 400,
+          margin: 2,
+          color: {
+            dark: '#000000',
+            light: '#FFFFFF',
+          },
+        });
+      } catch (error) {
+        console.error('Error generating QR code:', error);
+      }
+    }
+  
+    if (qrCodeBase64) {
+      const qrSize = 70;
+      const qrX = (pageWidth - qrSize) / 2;
+      const qrY = yPos;
+  
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(qrX - 5, qrY - 5, qrSize + 10, qrSize + 10, 2, 2, 'F');
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineWidth(0.5);
+      doc.roundedRect(qrX - 5, qrY - 5, qrSize + 10, qrSize + 10, 2, 2, 'S');
+  
+      doc.addImage(qrCodeBase64, 'PNG', qrX, qrY, qrSize, qrSize);
+  
+      yPos += qrSize + 10;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(128, 128, 128);
+      const qrLabel = 'Present this QR code at the event entrance for verification';
+      const qrLabelLines = doc.splitTextToSize(qrLabel, contentWidth);
+      doc.text(qrLabelLines, pageWidth / 2, yPos, { align: 'center' });
+      yPos += qrLabelLines.length * 5 + 15;
+    }
   }
 
   // Order Information

@@ -25,6 +25,18 @@ import {
 
 const queryClient = new QueryClient();
 
+const PLATFORM_FEE_RATE = 0.06;
+const NET_MULTIPLIER = 1 - PLATFORM_FEE_RATE;
+
+const calculateNetRevenue = (price: string | number, sold: string | number): number => {
+  const numericPrice = typeof price === 'number' ? price : parseFloat(price || '0');
+  const numericSold = typeof sold === 'number' ? sold : parseFloat(sold || '0');
+  if (Number.isNaN(numericPrice) || Number.isNaN(numericSold)) {
+    return 0;
+  }
+  return numericPrice * numericSold * NET_MULTIPLIER;
+};
+
 const Earnings = () => {
   const router = useRouter();
   const [expandedRows, setExpandedRows] = useState<number[]>([]);
@@ -144,9 +156,10 @@ const Earnings = () => {
   // Calculate total earnings with memoization
   const totalEarnings = useMemo(() => {
     return events?.reduce((total, event) => {
-      return total + (event.ticketType?.reduce((subtotal, ticket) => {
-        return subtotal + (parseFloat(ticket.price) * parseFloat(ticket.sold));
-      }, 0) || 0);
+      const eventNetRevenue = event.ticketType?.reduce((subtotal, ticket) => {
+        return subtotal + calculateNetRevenue(ticket.price, ticket.sold);
+      }, 0) || 0;
+      return total + eventNetRevenue;
     }, 0) || 0;
   }, [events]);
 
@@ -159,8 +172,8 @@ const Earnings = () => {
       const eventDate = event.createdAt ? new Date(event.createdAt) : new Date();
       const month = eventDate.getMonth();
       
-      const revenue = event.ticketType.reduce((total, ticket) => 
-        total + (parseFloat(ticket.price) * parseFloat(ticket.sold)), 0);
+      const revenue = event.ticketType.reduce((netTotal, ticket) => 
+        netTotal + calculateNetRevenue(ticket.price, ticket.sold), 0);
       
       const attendees = event.ticketType.reduce((total, ticket) => 
         total + parseFloat(ticket.sold), 0);
@@ -173,7 +186,7 @@ const Earnings = () => {
       revenue: {
         labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
         datasets: [{
-          label: "Monthly Revenue (₦)",
+          label: "Monthly Net Revenue (₦)",
           data: monthlyRevenue,
           borderColor: "#3b82f6",
           backgroundColor: "rgba(59, 130, 246, 0.3)",
@@ -280,14 +293,17 @@ const Earnings = () => {
                   <FaMoneyBillWave className="text-[#f54502] dark:text-[#f54502] text-2xl" />
                 </div>
                 <div>
-                  <h3 className="text-gray-500 dark:text-gray-400 text-sm font-medium">Total Earnings</h3>
+                  <h3 className="text-gray-500 dark:text-gray-400 text-sm font-medium">Total Net Earnings</h3>
                   <p className="text-2xl font-bold text-gray-800 dark:text-white">
                     {formatCurrency(totalEarnings)}
                   </p>
                 </div>
               </div>
               <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                Your lifetime earnings from all events
+                Your lifetime earnings after our 6% platform fee
+              </p>
+              <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                We automatically deduct a 6% platform fee from ticket sales.
               </p>
             </div>
 
@@ -323,7 +339,7 @@ const Earnings = () => {
                 </div>
               </div>
               <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                Average earnings per event
+                Average net earnings per event after the 6% fee
               </p>
             </div>
           </div>
@@ -413,7 +429,7 @@ const Earnings = () => {
                       Date
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Revenue
+                      Net Revenue
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Tickets Sold
@@ -426,7 +442,7 @@ const Earnings = () => {
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {events?.map((event, index) => {
                     const eventRevenue = event.ticketType.reduce((total, ticket) => 
-                      total + (parseFloat(ticket.price) * parseFloat(ticket.sold)), 0);
+                      total + calculateNetRevenue(ticket.price, ticket.sold), 0);
                     const ticketsSold = event.ticketType.reduce((total, ticket) => 
                       total + parseFloat(ticket.sold), 0);
                     const eventDate = event.createdAt ? new Date(event.createdAt).toLocaleDateString() : "N/A";
@@ -487,7 +503,7 @@ const Earnings = () => {
                                           Sold
                                         </th>
                                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                          Revenue
+                                          Net Revenue
                                         </th>
                                       </tr>
                                     </thead>
@@ -504,7 +520,7 @@ const Earnings = () => {
                                             {ticket.sold}
                                           </td>
                                           <td className="px-4 py-2 text-sm font-medium text-gray-900 dark:text-white">
-                                            {formatCurrency(parseFloat(ticket.price) * parseFloat(ticket.sold))}
+                                            {formatCurrency(calculateNetRevenue(ticket.price, ticket.sold))}
                                           </td>
                                         </tr>
                                       ))}

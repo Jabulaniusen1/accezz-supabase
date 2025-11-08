@@ -385,6 +385,10 @@ export function generateTicketEmailHTML(data: {
   currency: string;
   orderId: string;
   qrCodeUrl?: string;
+  isVirtual?: boolean;
+  virtualAccessLink?: string;
+  virtualPlatform?: string;
+  virtualMeetingId?: string;
 }): string {
   const firstName = data.fullName?.split(' ')[0] || 'there';
   const ticketList = data.ticketCodes.map((code, index) => 
@@ -393,6 +397,60 @@ export function generateTicketEmailHTML(data: {
       <div class="ticket-code">${code}</div>
     </div>`
   ).join('');
+
+  const isVirtualEvent = Boolean(data.isVirtual);
+  const formatPlatform = (value?: string) => {
+    if (!value) return 'Online Session';
+    return value.split(/[-_]/g).map(segment => segment.charAt(0).toUpperCase() + segment.slice(1)).join(' ');
+  };
+  const virtualAccessSection = isVirtualEvent
+    ? `<div class="virtual-card">
+        <h3>Virtual Access</h3>
+        <div class="virtual-row">
+          <span class="virtual-label">Platform</span>
+          <span class="virtual-value">${formatPlatform(data.virtualPlatform)}</span>
+        </div>
+        ${data.virtualMeetingId ? `<div class="virtual-row">
+            <span class="virtual-label">Meeting ID</span>
+            <span class="virtual-value">${data.virtualMeetingId}</span>
+          </div>` : ''}
+        <div class="virtual-link">
+          ${data.virtualAccessLink
+            ? `<a href="${data.virtualAccessLink}" target="_blank" rel="noopener noreferrer">Join Virtual Session</a>`
+            : 'Your access link has been sent to your email. Please check your inbox for instructions.'}
+        </div>
+      </div>`
+    : '';
+
+  const qrSection = (!isVirtualEvent && data.qrCodeUrl)
+    ? `<div class="qr-section">
+        <h3>Your Entry QR Code</h3>
+        <div class="qr-code-container">
+          <img src="${data.qrCodeUrl}" alt="Ticket QR Code" />
+        </div>
+        <p>Show this QR code at the event entrance for quick check-in.</p>
+      </div>`
+    : '';
+
+  const importantInfoList = isVirtualEvent
+    ? `
+      <li>Keep this email safe – you'll need your ticket codes for reference</li>
+      <li>Join the session using the virtual access details above a few minutes before start time</li>
+      <li>Ensure your internet connection and audio/video setup are ready ahead of time</li>
+      <li>Contact the event organizer directly for any event-specific questions</li>
+      <li>Tickets are non-transferable unless stated otherwise</li>
+    `
+    : `
+      <li>Keep this email safe – you'll need your ticket code${data.quantity > 1 ? 's' : ''} for entry</li>
+      <li>Arrive early to avoid queues and ensure smooth check-in</li>
+      <li>Present your QR code (digital or printed) at the entrance</li>
+      <li>Contact the event organizer directly for any event-specific questions</li>
+      <li>Tickets are non-transferable unless stated otherwise</li>
+    `;
+
+  const introMessage = isVirtualEvent
+    ? `Great news! Your ticket purchase has been confirmed. We've included your virtual access details below for <strong>${data.eventTitle}</strong>.`
+    : `Great news! Your ticket purchase has been confirmed. Get ready for an amazing experience at <strong>${data.eventTitle}</strong>!`;
 
   return `
     <!DOCTYPE html>
@@ -559,6 +617,55 @@ export function generateTicketEmailHTML(data: {
           background: #fff8f3;
           border-radius: 8px;
         }
+        .virtual-card {
+          background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+          border-radius: 16px;
+          border: 2px solid #cbd5f5;
+          padding: 30px;
+          margin: 30px 0;
+        }
+        .virtual-card h3 {
+          font-size: 18px;
+          font-weight: 700;
+          color: #2d3748;
+          margin-bottom: 18px;
+          text-align: center;
+        }
+        .virtual-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 10px 0;
+          border-bottom: 1px solid #e2e8f0;
+        }
+        .virtual-row:last-child {
+          border-bottom: none;
+        }
+        .virtual-label {
+          color: #718096;
+          font-size: 14px;
+          font-weight: 500;
+        }
+        .virtual-value {
+          color: #2d3748;
+          font-size: 15px;
+          font-weight: 600;
+        }
+        .virtual-link a {
+          display: inline-block;
+          margin-top: 18px;
+          padding: 12px 20px;
+          background: linear-gradient(135deg, #f54502 0%, #ff6b35 100%);
+          color: #ffffff !important;
+          text-decoration: none;
+          border-radius: 9999px;
+          font-weight: 600;
+          font-size: 14px;
+          box-shadow: 0 8px 20px rgba(245, 69, 2, 0.2);
+          word-break: break-all;
+        }
+        .virtual-link {
+          text-align: center;
+        }
         .qr-section {
           background: linear-gradient(135deg, #ffffff 0%, #f7fafc 100%);
           border-radius: 16px;
@@ -716,7 +823,7 @@ export function generateTicketEmailHTML(data: {
           <p class="greeting">Hi ${firstName}!</p>
           
           <p class="message">
-            Great news! Your ticket purchase has been confirmed. Get ready for an amazing experience at <strong>${data.eventTitle}</strong>!
+            ${introMessage}
           </p>
           
           <div class="event-card">
@@ -757,24 +864,14 @@ export function generateTicketEmailHTML(data: {
             ${ticketList}
           </div>
 
-          ${data.qrCodeUrl ? `
-          <div class="qr-section">
-            <h3>Your Entry QR Code</h3>
-            <p class="message" style="margin-bottom: 20px;">Show this QR code at the event entrance for quick check-in</p>
-            <div class="qr-code-container">
-              <img src="${data.qrCodeUrl}" alt="Event Entry QR Code" />
-            </div>
-          </div>
-          ` : ''}
+          ${qrSection}
+
+          ${virtualAccessSection}
 
           <div class="important-info">
             <h4>Important Information</h4>
             <ul class="info-list">
-              <li>Keep this email safe – you'll need your ticket code${data.quantity > 1 ? 's' : ''} for entry</li>
-              <li>Arrive early to avoid queues and ensure smooth check-in</li>
-              <li>Present your QR code (digital or printed) at the entrance</li>
-              <li>Contact the event organizer directly for any event-specific questions</li>
-              <li>Tickets are non-transferable unless stated otherwise</li>
+              ${importantInfoList}
             </ul>
           </div>
           

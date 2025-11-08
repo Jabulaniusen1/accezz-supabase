@@ -1,57 +1,57 @@
 'use client';
 
-// CORE IMPORTS
-import { lazy, Suspense, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { type Event } from '@/types/event';
-import { fetchEventBySlug } from '@/utils/eventUtils';
-import { getTicketPurchaseState } from '@/utils/localStorage';
-
-// ALWAYS-LOADED COMPONENTS (NO LAZY LOAD)
-import Loader from '@/components/ui/loader/Loader';
-import Toast from '@/components/ui/Toast';
 import Header from '@/app/components/layout/Header';
 import Footer from '@/app/components/layout/Footer';
+import Loader from '@/components/ui/loader/Loader';
+import Toast from '@/components/ui/Toast';
 import TicketTypeForm from '@/app/components/TicketTypeForm';
-import WhatsAppPurchaseModal from '@/app/components/WhatsAppPurchaseModal';
-import LatestEvent from '@/app/components/home/LatestEvent';
+import { fetchEventBySlug } from '@/utils/eventUtils';
+import { getTicketPurchaseState } from '@/utils/localStorage';
+import { type Event, type Ticket } from '@/types/event';
 
-// LAZY LOADED COMPONENTS (USING DEFAULT EXPORTS)
-const VirtualEventCountdown = lazy(() => import('./components/VirtualEventCountdown'));
-const VirtualEventHero = lazy(() => import('./components/VirtualEventHero'));
-const VirtualEventDetails = lazy(() => import('./components/VirtualEventDetails'));
-const VirtualEventTickets = lazy(() => import('./components/VirtualEventTickets'));
-const VirtualEventShare = lazy(() => import('./components/VirtualEventShare'));
-const VirtualEventHost = lazy(() => import('./components/VirtualEventHost'));
-const EventHostSection = lazy(() => import('../event/components/EventHostSection').then(m => ({ default: m.EventHostSection })));
-const EventGallerySection = lazy(() => import('../event/components/EventGallerySection'));
+import { EventHeroSection } from '../event/components/EventHeroSection';
+import { EventHostSection } from '../event/components/EventHostSection';
+import { EventTicketsSection } from '../event/components/TicketCard';
+import EventGallerySection from '../event/components/EventGallerySection';
+import OtherEventsYouMayLike from '@/app/components/home/OtherEventsYouMayLike';
+import VirtualEventDetails, { getVirtualPlatformLabel } from './components/VirtualEventDetails';
+import VirtualEventCountdown from './components/VirtualEventCountdown';
+
+type ToastState = { type: 'success' | 'error'; message: string } | null;
 
 export default function VirtualEventPage() {
-  // STATE MANAGEMENT
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
-  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [toast, setToast] = useState<ToastState>(null);
   const [showTicketForm, setShowTicketForm] = useState(false);
-  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
-  const [selectedTicket, setSelectedTicket] = useState<{
-    id: string;
-    name: string;
-    price: string;
-    quantity: string;
-    sold: string;
-    details?: string;
-  } | null>(null);
 
-  // ROUTING
+  const ticketsSectionRef = useRef<HTMLDivElement>(null);
+  const toastTimeoutRef = useRef<number | null>(null);
   const params = useParams();
   const eventSlug = params?.id;
   const router = useRouter();
 
-  // DATA FETCHING WITH CLEANUP
+  const showToast = useCallback((toastValue: ToastState) => {
+    setToast(toastValue);
+    if (toastTimeoutRef.current) {
+      window.clearTimeout(toastTimeoutRef.current);
+      toastTimeoutRef.current = null;
+    }
+    if (toastValue) {
+      toastTimeoutRef.current = window.setTimeout(() => {
+        setToast(null);
+        toastTimeoutRef.current = null;
+      }, 3000);
+    }
+  }, []);
+
   useEffect(() => {
     let isMounted = true;
 
-    const fetchEvent = async () => {
+    const loadEvent = async () => {
       if (!eventSlug || typeof eventSlug !== 'string') return;
 
       try {
@@ -60,42 +60,38 @@ export default function VirtualEventPage() {
         
         if (!fetchedEvent) {
           if (isMounted) {
-            setToast({ 
-              type: 'error', 
-              message: 'Event not found' 
-            });
+            showToast({ type: 'error', message: 'Event not found.' });
           }
           return;
         }
 
-        if (!fetchedEvent.isVirtual && isMounted) {
-          // REDIRECT TO REGULAR EVENT PAGE IF NOT VIRTUAL
+        if (!fetchedEvent.isVirtual) {
           router.push(`/${eventSlug}`);
           return;
         }
 
-        if (isMounted) setEvent(fetchedEvent);
-      } catch (error) {
         if (isMounted) {
-          console.error('Error fetching event:', error);
-          setToast({ 
-            type: 'error', 
-            message: 'Failed to load virtual event' 
-          });
+          setEvent(fetchedEvent);
+        }
+      } catch (error) {
+        console.error('Failed to load virtual event:', error);
+        if (isMounted) {
+          showToast({ type: 'error', message: 'Failed to load event details.' });
         }
       } finally {
-        if (isMounted) setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
-    fetchEvent();
+    loadEvent();
 
     return () => {
       isMounted = false;
     };
-  }, [eventSlug, router]);
+  }, [eventSlug, router, showToast]);
 
-  // Restore modal state on mount if saved
   useEffect(() => {
     try {
       const savedState = getTicketPurchaseState();
@@ -103,112 +99,109 @@ export default function VirtualEventPage() {
         setShowTicketForm(true);
       }
     } catch (error) {
-      console.error('Error restoring modal state:', error);
+      console.error('Error restoring ticket state:', error);
     }
   }, [eventSlug]);
 
-  // LOADING STATE
-  if (loading) return <Loader />;
+  const scrollToTickets = useCallback(() => {
+    ticketsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, []);
 
-  // EVENT NOT FOUND STATE
-  if (!event) return (
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current) {
+        window.clearTimeout(toastTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleGetTicket = useCallback((_ticket: Ticket) => {
+    setShowTicketForm(true);
+  }, []);
+
+  const closeTicketForm = useCallback(() => {
+    setShowTicketForm(false);
+  }, []);
+
+  if (loading) {
+    return <Loader />;
+  }
+
+  if (!event) {
+    return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-      <p className="text-gray-700 dark:text-gray-300">Event not found</p>
+        <p className="text-gray-700 dark:text-gray-300">Event not found.</p>
     </div>
   );
+  }
 
-  // MAIN RENDER
   return (
-    <div className="virtual-event-page bg-gradient-to-b from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-950">
-      {/* TOAST NOTIFICATION */}
-      {toast && <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />}
-
-      {/* HEADER */}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header />
+      {toast && <Toast type={toast.type} message={toast.message} onClose={() => showToast(null)} />}
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:space-y-8 space-y-4">
-        {/* VIRTUAL EVENT HERO SECTION */}
-        <Suspense fallback={<div className="h-96 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-xl" />}>
-          <VirtualEventHero event={event} />
-        </Suspense>
-
-        {/* VIRTUAL EVENT HOST */}
-        <Suspense fallback={<div className="h-64 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-xl" />}>
-          <EventHostSection event={event} />
-        </Suspense>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
-          <div className="lg:col-span-2 space-y-8">
-            {/* VIRTUAL EVENT DETAILS */}
-            <Suspense fallback={<div className="h-64 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-xl" />}>
-              <VirtualEventDetails event={event} />
-            </Suspense>
-            
-            {/* VIRTUAL EVENT COUNTDOWN */}
-            <Suspense fallback={<div className="h-32 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-xl" />}>
-              <VirtualEventCountdown event={event} />
-            </Suspense>
-          </div>
-  
-          <div className="space-y-8">
-            <Suspense fallback={<div className="h-32 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-xl" />}>
-              <VirtualEventHost event={event} />
-            </Suspense>
-            
-            {/* VIRTUAL EVENT SHARE */}
-            <Suspense fallback={<div className="h-32 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-xl" />}>
-              <VirtualEventShare event={event} />
-            </Suspense>
+      <div className="event-page-main">
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+          <div className="mx-auto px-4 sm:px-6 lg:px-32 py-4">
+            <nav className="flex items-center space-x-2 text-sm">
+              <Link href="/" className="text-gray-500 hover:text-[#f54502] transition-colors">
+                Home
+              </Link>
+              <span className="text-gray-400">/</span>
+              <Link href="/#events" className="text-gray-500 hover:text-[#f54502] transition-colors">
+                Events
+              </Link>
+              <span className="text-gray-400">/</span>
+              <span className="text-[#f54502] font-medium truncate">{event.title}</span>
+            </nav>
           </div>
         </div>
 
-        {/* VIRTUAL EVENT TICKETS */}
-        <Suspense fallback={<div className="h-64 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-xl" />}>
-          <VirtualEventTickets 
-            event={event}
-            setSelectedTicket={setSelectedTicket}
-            setShowWhatsAppModal={setShowWhatsAppModal}
-          />
-        </Suspense>
-
-        {/* GALLERY SECTION */}
-        <Suspense fallback={<div className="h-64 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-xl" />}>
-          <EventGallerySection event={event} />
-        </Suspense>
-
-        {/* LATEST EVENTS */}
-        <LatestEvent />
-      </main>
-
-      {/* WHATSAPP PURCHASE MODAL */}
-      {showWhatsAppModal && selectedTicket && event && (
-        <WhatsAppPurchaseModal
-          isOpen={showWhatsAppModal}
-          onClose={() => {
-            setShowWhatsAppModal(false);
-            setSelectedTicket(null);
-          }}
-          onWebsitePurchase={() => {
-            setShowTicketForm(true);
-            setShowWhatsAppModal(false);
-          }}
-          ticket={selectedTicket}
-          eventTitle={event.title}
+        <EventHeroSection
+          event={event}
+          scrollToTickets={scrollToTickets}
+          showMap={false}
+          virtualPlatformLabel={getVirtualPlatformLabel(event)}
         />
-      )}
+          <EventHostSection event={event} />
 
-      {/* TICKET FORM MODAL */}
+        <div className="bg-white dark:bg-gray-900 py-10">
+          <div className="mx-auto px-4 sm:px-6 lg:px-32 grid grid-cols-1 lg:grid-cols-3 gap-10">
+            <div className="lg:col-span-2 space-y-10">
+              <VirtualEventDetails event={event} />
+            </div>
+            <div className="space-y-10">
+              <VirtualEventCountdown event={event} />
+          </div>
+          </div>
+        </div>
+
+        <div ref={ticketsSectionRef}>
+          <EventTicketsSection event={event} handleGetTicket={handleGetTicket} />
+        </div>
+
+          <EventGallerySection event={event} />
+
+        <OtherEventsYouMayLike />
+      </div>
+
       {showTicketForm && (
         <TicketTypeForm
-          closeForm={() => setShowTicketForm(false)}
-          tickets={selectedTicket ? [selectedTicket] : []}
+          closeForm={closeTicketForm}
+          tickets={event.ticketType.map((ticket) => ({
+            id: event.id || '',
+            name: ticket.name,
+            price: ticket.price,
+            quantity: ticket.quantity,
+            sold: ticket.sold,
+            details: ticket.details || '',
+          }))}
           eventSlug={eventSlug as string}
-          setToast={setToast}
+          setToast={showToast}
           isOpen={showTicketForm}
         />
       )}
 
-      {/* FOOTER */}
       <Footer />
     </div>
   );

@@ -57,7 +57,7 @@ async function sendTicketEmail({
     // Fetch event details
     const { data: event, error: eventError } = await supabase
       .from('events')
-      .select('title, date, time, venue, location')
+      .select('title, date, time, venue, location, is_virtual, virtual_details')
       .eq('id', order.event_id)
       .single();
 
@@ -65,6 +65,31 @@ async function sendTicketEmail({
       console.error('[sendTicketEmail] Error fetching event:', eventError);
       return;
     }
+
+    const isVirtualEvent = Boolean(event.is_virtual);
+    const virtualDetails = (event.virtual_details as Record<string, unknown> | null) || null;
+    const rawMeetingUrl = typeof virtualDetails?.meetingUrl === 'string' ? virtualDetails.meetingUrl.trim() : '';
+    const rawMeetingId = typeof virtualDetails?.meetingId === 'string' ? virtualDetails.meetingId.trim() : '';
+    const virtualPlatform = typeof virtualDetails?.platform === 'string' ? virtualDetails.platform : undefined;
+
+    let virtualAccessLink: string | undefined;
+    if (rawMeetingUrl) {
+      virtualAccessLink = rawMeetingUrl;
+    } else if (virtualPlatform === 'zoom' && rawMeetingId) {
+      virtualAccessLink = `https://zoom.us/j/${rawMeetingId}`;
+    }
+
+    const formatPlatform = (value?: string) => {
+      if (!value) return 'Online Event';
+      return value
+        .split(/[-_]/g)
+        .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+        .join(' ');
+    };
+
+    const eventVenue = isVirtualEvent
+      ? `${formatPlatform(virtualPlatform)} (Online)`
+      : event.venue || event.location || 'TBD';
 
     // Fetch primary ticket to get QR code URL and ticket ID
     const { data: primaryTicket } = await supabase
@@ -99,7 +124,7 @@ async function sendTicketEmail({
         eventTitle: event.title || 'Event',
         eventDate,
         eventTime,
-        venue: event.venue || event.location || 'TBD',
+        venue: eventVenue,
         ticketType: ticketType.name,
         quantity: ticketCodes.length,
         ticketCodes,
@@ -109,6 +134,10 @@ async function sendTicketEmail({
         qrCodeUrl: primaryTicket?.qr_code_url,
         ticketId: primaryTicket?.id,
         primaryTicketCode: primaryTicket?.ticket_code || ticketCodes[0],
+        isVirtual: isVirtualEvent,
+        virtualAccessLink,
+        virtualPlatform,
+        virtualMeetingId: rawMeetingId || undefined,
       }),
     });
 

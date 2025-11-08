@@ -32,11 +32,11 @@ export default function VirtualEventPlatform({ event }: VirtualEventPlatformProp
           color: 'bg-blue-100 dark:bg-blue-900/20',
           textColor: 'text-blue-700 dark:text-blue-300'
         };
-      case 'whereby':
+      case 'meets':
         return {
-          name: 'Whereby',
-          icon: <RiEarthLine className="text-purple-500 text-2xl" />,
-          link: `https://whereby.com/${event.id}`,
+          name: 'Meets',
+          icon: <FaVideo className="text-purple-500 text-2xl" />,
+          link: event.virtualEventDetails?.meetingUrl || '#',
           color: 'bg-purple-100 dark:bg-purple-900/20',
           textColor: 'text-purple-700 dark:text-purple-300'
         };
@@ -52,7 +52,6 @@ export default function VirtualEventPlatform({ event }: VirtualEventPlatformProp
   };
 
   const platform = getPlatformDetails();
-  // const requiresPassword = event.virtualEventDetails?.requiresPassword;
 
   const [toastOpen, setToastOpen] = useState(false);
 
@@ -133,21 +132,6 @@ export default function VirtualEventPlatform({ event }: VirtualEventPlatformProp
                 </IconButton>
               </Tooltip>
             </div>
-
-            {/* Password Section */}
-            {/* {requiresPassword && (
-              <div className="flex items-center gap-3 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 rounded-xl px-5 py-3 mb-4 shadow-sm">
-                <FaLock className="text-yellow-500 text-xl" />
-                <div>
-                  <p className="text-xs font-semibold text-yellow-700 dark:text-yellow-300 mb-0.5 tracking-wide">
-                    PASSWORD REQUIRED
-                  </p>
-                  <span className="font-mono text-base text-yellow-600 dark:text-yellow-400 select-all">
-                    {event.virtualEventDetails?.virtualPassword}
-                  </span>
-                </div>
-              </div>
-            )} */}
 
             {/* Join Button */}
             <div className="mt-6">

@@ -9,9 +9,18 @@ import { ClockIcon, MapPinIcon, CalendarIcon } from 'lucide-react';
 interface EventHeroSectionProps {
   event: Event;
   scrollToTickets: () => void;
+  showMap?: boolean;
+  virtualPlatformLabel?: string;
 }
 
-export const EventHeroSection = ({ event, scrollToTickets }: EventHeroSectionProps) => {
+export const EventHeroSection = ({
+  event,
+  scrollToTickets,
+  showMap = true,
+  virtualPlatformLabel,
+}: EventHeroSectionProps) => {
+  const locationSummary = [event.venue, event.location].filter(Boolean).join(', ');
+  const mapQuery = locationSummary || event.location || event.venue || event.title;
   return (
     <div className="bg-white dark:bg-gray-800 py-12">
       <div className="mx-auto px-4 sm:px-6 lg:px-32">
@@ -89,8 +98,14 @@ export const EventHeroSection = ({ event, scrollToTickets }: EventHeroSectionPro
                       <MapPinIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#f54502]" />
                     </div>
                     <div>
-                      <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Location</p>
-                      <p className="text-sm sm:text-base font-semibold">{event.venue}, {event.location}</p>
+                      <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                        {showMap ? 'Location' : 'Hosted on'}
+                      </p>
+                      <p className="text-sm sm:text-base font-semibold">
+                        {showMap
+                          ? locationSummary || 'Location to be announced'
+                          : virtualPlatformLabel || 'Online event'}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -106,18 +121,22 @@ export const EventHeroSection = ({ event, scrollToTickets }: EventHeroSectionPro
                 </div>
 
                 {/* Simple Map Section */}
-                <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 border border-gray-200 dark:border-gray-600">
-                  <h4 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">Location</h4>
-                  <div className="relative w-full h-48 sm:h-64 rounded-xl overflow-hidden">
-                    <iframe
-                      src={`https://www.google.com/maps?q=${encodeURIComponent(event.venue + ', ' + event.location)}&output=embed`}
-                      className="w-full h-full"
-                      loading="lazy"
-                      title="Event Location Map"
-                      allowFullScreen
-                    />
+                {showMap && (
+                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 border border-gray-200 dark:border-gray-600">
+                    <h4 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
+                      Location
+                    </h4>
+                    <div className="relative w-full h-48 sm:h-64 rounded-xl overflow-hidden">
+                      <iframe
+                        src={`https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`}
+                        className="w-full h-full"
+                        loading="lazy"
+                        title="Event Location Map"
+                        allowFullScreen
+                      />
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Social Media Links */}
                 <div className="space-y-3 sm:space-y-4">
