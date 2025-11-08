@@ -276,11 +276,11 @@ const Earnings = () => {
       {isLoading ? (
         <div className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="h-40 bg-gray-100 dark:bg-gray-700 rounded-xl animate-pulse" />
-            <div className="h-40 bg-gray-100 dark:bg-gray-700 rounded-xl animate-pulse" />
-            <div className="h-40 bg-gray-100 dark:bg-gray-700 rounded-xl animate-pulse" />
+            <div className="h-40 bg-gray-100 dark:bg-gray-700 rounded-xl" />
+            <div className="h-40 bg-gray-100 dark:bg-gray-700 rounded-xl" />
+            <div className="h-40 bg-gray-100 dark:bg-gray-700 rounded-xl" />
           </div>
-          <div className="h-96 bg-gray-100 dark:bg-gray-700 rounded-xl animate-pulse" />
+          <div className="h-96 bg-gray-100 dark:bg-gray-700 rounded-xl" />
         </div>
       ) : (
         <>
@@ -362,6 +362,7 @@ const Earnings = () => {
                   options={{ 
                     responsive: true,
                     maintainAspectRatio: false,
+                    animation: false,
                     plugins: {
                       legend: { display: false },
                       tooltip: {
@@ -398,6 +399,7 @@ const Earnings = () => {
                   options={{ 
                     responsive: true,
                     maintainAspectRatio: false,
+                    animation: false,
                     plugins: {
                       legend: { display: false }
                     }
@@ -597,6 +599,7 @@ const Earnings = () => {
                     options={{
                       responsive: true,
                       maintainAspectRatio: false,
+                      animation: false,
                       plugins: {
                         legend: {
                           position: 'right',

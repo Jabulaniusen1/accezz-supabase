@@ -1,5 +1,6 @@
 import { useMutation, useQuery, UseQueryOptions, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/utils/supabaseClient';
+import { notifyLocationBooking } from '@/utils/notificationClient';
 import {
   Location,
   LocationBooking,
@@ -328,6 +329,10 @@ export const createLocationBooking = async (payload: CreateBookingPayload): Prom
 
   if (error) {
     throw error;
+  }
+
+  if (data?.id) {
+    await notifyLocationBooking(data.id);
   }
 
   return {

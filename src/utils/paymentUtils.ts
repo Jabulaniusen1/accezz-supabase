@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import { notifyTicketPurchase } from './notificationClient';
 
 /**
  * Order type based on database schema
@@ -545,6 +546,7 @@ export async function createFreeTickets(params: CreateOrderParams): Promise<{ ti
 
     // Create tickets
     await createTicketsForOrder(orderId);
+    await notifyTicketPurchase(orderId);
 
     // Return the first ticket ID
     const { data: ticket, error: ticketError } = await supabase

@@ -8,6 +8,7 @@ import PaymentFailedModal from "@/components/PaymentFailedModal";
 import { markOrderAsPaid, createTicketsForOrder } from "@/utils/paymentUtils";
 import { supabase } from "@/utils/supabaseClient";
 import { clearTicketPurchaseState } from "@/utils/localStorage";
+import { notifyTicketPurchase } from "@/utils/notificationClient";
 
 const SuccessContent = () => {
   const router = useRouter();
@@ -121,6 +122,7 @@ const SuccessContent = () => {
           // Mark order as paid and issue tickets
           await markOrderAsPaid(resolvedOrderId, reference, 'paystack');
           await createTicketsForOrder(resolvedOrderId);
+          await notifyTicketPurchase(resolvedOrderId);
 
           // Get the first ticket ID
           const { data: tickets, error: ticketsError } = await supabase
