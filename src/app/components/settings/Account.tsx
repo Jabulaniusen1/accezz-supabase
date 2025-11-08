@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import SuccessModal from './modal/successModal';
 import Toast from '../../../components/ui/Toast';
@@ -21,6 +21,33 @@ type Bank = {
   name: string;
 };
 
+const COUNTRY_CURRENCY_MAP: Record<string, string> = {
+  nigeria: 'NGN',
+  ghana: 'GHS',
+  'south africa': 'ZAR',
+  kenya: 'KES',
+  tanzania: 'TZS',
+  zambia: 'ZMW',
+  rwanda: 'RWF',
+  senegal: 'XOF',
+  cameroon: 'XAF',
+  'ivory coast': 'XOF',
+  ethiopia: 'ETB',
+  egypt: 'EGP',
+  morocco: 'MAD',
+  algeria: 'DZD',
+  tunisia: 'TND',
+  angola: 'AOA',
+  mozambique: 'MZN',
+  botswana: 'BWP',
+  zimbabwe: 'USD',
+  'united kingdom': 'GBP',
+  uk: 'GBP',
+  'united states': 'USD',
+  us: 'USD',
+  usa: 'USD',
+};
+
 const Account = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -38,34 +65,6 @@ const Account = () => {
     currency: 'NGN',
     country: 'nigeria'
   });
-
-  // Country to currency mapping
-  const countryCurrencyMap = useMemo<Record<string, string>>(() => ({
-    'nigeria': 'NGN',
-    'ghana': 'GHS',
-    'south africa': 'ZAR',
-    'kenya': 'KES',
-    'tanzania': 'TZS',
-    'zambia': 'ZMW',
-    'rwanda': 'RWF',
-    'senegal': 'XOF',
-    'cameroon': 'XAF',
-    'ivory coast': 'XOF',
-    'ethiopia': 'ETB',
-    'egypt': 'EGP',
-    'morocco': 'MAD',
-    'algeria': 'DZD',
-    'tunisia': 'TND',
-    'angola': 'AOA',
-    'mozambique': 'MZN',
-    'botswana': 'BWP',
-    'zimbabwe': 'USD',
-    'united kingdom': 'GBP',
-    'uk': 'GBP',
-    'united states': 'USD',
-    'us': 'USD',
-    'usa': 'USD',
-  }), []);
 
   // Currency options with full names
   const currencyOptions = [
@@ -118,8 +117,8 @@ const Account = () => {
 
   // Helper function to get currency for country
   const getCurrencyForCountry = useCallback((country: string): string => {
-    return countryCurrencyMap[country.toLowerCase()] || 'NGN';
-  }, [countryCurrencyMap]);
+    return COUNTRY_CURRENCY_MAP[country.toLowerCase()] || 'NGN';
+  }, []);
 
   // Helper function to capitalize country name
   const capitalizeCountry = (country: string): string => {

@@ -9,6 +9,7 @@ interface ConfirmationModalProps {
   message?: string;
   confirmText?: string;
   confirmButtonClass?: string;
+  confirmDisabled?: boolean;
 }
 
 const ConfirmationModal = ({
@@ -18,7 +19,8 @@ const ConfirmationModal = ({
   itemName,
   message,
   confirmText = 'Delete',
-  confirmButtonClass = 'bg-red-500 hover:bg-red-600'
+  confirmButtonClass = 'bg-red-500 hover:bg-red-600',
+  confirmDisabled = false
 }: ConfirmationModalProps) => {
   if (!isOpen) return null;
 
@@ -52,6 +54,7 @@ const ConfirmationModal = ({
             </button>
             <button
               onClick={onConfirm}
+              disabled={confirmDisabled}
               className={`px-4 py-2 text-white transition-colors ${confirmButtonClass}`}
               style={{ borderRadius: '5px' }}
             >
