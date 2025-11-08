@@ -185,7 +185,7 @@ const Notifications = () => {
               <IoMailUnreadOutline className="w-8 h-8 text-blue-500 dark:text-blue-300" />
             </div>
             <p className="text-gray-700 dark:text-gray-300 text-lg font-medium">
-              You're all caught up
+              You&apos;re all caught up
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 max-w-xs">
               When there&apos;s something new about your events, bookings, or payouts, it&apos;ll show up here.
