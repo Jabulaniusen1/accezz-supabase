@@ -171,7 +171,7 @@ const LatestEvent = () => {
                 <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm p-3 md:p-4 rounded-lg shadow-sm">
                   <div className="flex items-center space-x-2 text-blue-600 dark:text-blue-400">
                     <FaCalendar className="text-sm md:text-base" />
-                    <span className="font-medium text-sm md:text-base">{formatEventDate(currentEvent.date)}</span>
+                    <span className="font-medium text-sm md:text-base">{formatEventDate(currentEvent?.date || '')}</span>
                   </div>
                 </div>
               </div>

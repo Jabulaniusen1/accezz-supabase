@@ -8,7 +8,7 @@ import 'react-calendar/dist/Calendar.css';
 import { useAllEvents } from '@/hooks/useEvents';
 import { formatEventDate } from '@/utils/formatDateTime';
 
-interface Event {
+interface CalendarEvent {
   id: string;
   slug: string;
   title: string;
@@ -23,15 +23,15 @@ const EventCalendar = () => {
   const router = useRouter();
   const { data: allEvents, isLoading } = useAllEvents();
   const [showCalendar, setShowCalendar] = useState(false);
-  const [selectedEvents, setSelectedEvents] = useState<Event[]>([]);
+  const [selectedEvents, setSelectedEvents] = useState<CalendarEvent[]>([]);
   const [showModal, setShowModal] = useState(false);
 
   // Map events to the format needed by the calendar
-  const events: Event[] = (allEvents || []).map(event => ({
+  const events: CalendarEvent[] = (allEvents || []).map(event => ({
     id: event.id || '',
     slug: event.slug || event.id || '',
     title: event.title,
-    date: event.date,
+    date: event.date || event.startTime || '',
     time: event.time || '',
     venue: event.venue || event.location || '',
     location: event.location || event.venue || '',

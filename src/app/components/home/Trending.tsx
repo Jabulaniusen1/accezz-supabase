@@ -166,7 +166,7 @@ const Trending = () => {
                       <div className="space-y-3">
                         <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
                           <FaClock className="text-blue-500" />
-                          <span>{formatEventDate(event.date)}</span>
+                          <span>{formatEventDate(event?.date || '')}</span>
                         </div>
                         
                         <div className="space-y-1">

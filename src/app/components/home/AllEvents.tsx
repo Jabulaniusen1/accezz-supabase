@@ -6,24 +6,7 @@ import { useAllEvents } from '@/hooks/useEvents';
 import { formatPrice } from '@/utils/formatPrice';
 import { formatEventDate } from '@/utils/formatDateTime';
 import Toast from '@/components/ui/Toast';
-
-interface TicketType {
-  name: string;
-  price: string;
-  quantity: string;
-  sold: string;
-}
-
-interface Event {
-  id?: string;
-  title: string;
-  slug?: string;
-  description: string;
-  image: string | File | null;
-  date: string;
-  location: string;
-  ticketType: TicketType[];
-}
+import type { Event as AppEvent, Ticket as AppTicket } from '@/types/event';
 
 const AllEvents = () => {
   const { data: events, isLoading } = useAllEvents();
@@ -59,10 +42,20 @@ const AllEvents = () => {
     window.open(link, '_blank', 'noopener,noreferrer');
   };
 
-  const filteredEvents = (events || []).filter((event: Event) => {
-    const lowestPrice = Math.min(...event.ticketType.map((ticket: TicketType) => parseFloat(ticket.price)));
-    const eventDate = new Date(event.date);
-    
+  const filteredEvents = (events || []).filter((event: AppEvent) => {
+    const tickets: AppTicket[] = event.ticketType || [];
+    const ticketPrices = tickets
+      .map(ticket => parseFloat(ticket.price ?? '0'))
+      .filter(price => !Number.isNaN(price));
+    const lowestPrice = ticketPrices.length ? Math.min(...ticketPrices) : 0;
+
+    const eventDateValue = event.date || event.startTime;
+    const eventDate = eventDateValue ? new Date(eventDateValue) : null;
+
+    if (!eventDate || Number.isNaN(eventDate.getTime())) {
+      return false;
+    }
+
     return (
       (!filters.location || event.location.toLowerCase().includes(filters.location.toLowerCase())) &&
       (!filters.minPrice || lowestPrice >= parseFloat(filters.minPrice)) &&
@@ -271,7 +264,7 @@ const AllEvents = () => {
             className="flex gap-3 sm:gap-6 min-w-max" 
             id="scroll-content"
           >
-            {currentEvents.slice(0, 5).map((event: Event, index: number) => (
+            {currentEvents.slice(0, 5).map((event: AppEvent, index: number) => (
               <div 
                 key={event.id || index}
                 className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer hover:border-[#f54502]/50 min-w-[220px] max-w-[220px] sm:min-w-[300px] sm:max-w-[300px]"
@@ -302,7 +295,7 @@ const AllEvents = () => {
                       
                       <div className="flex items-center text-white/90">
                         <FaCalendarAlt className="text-white mr-2 flex-shrink-0 w-3 h-3 sm:w-4 sm:h-4" />
-                        <span className="text-xs sm:text-sm">{formatEventDate(event.date)}</span>
+                        <span className="text-xs sm:text-sm">{formatEventDate(event.date || event.startTime || '')}</span>
                       </div>
                     </div>
                   </div>
@@ -421,7 +414,7 @@ const AllEvents = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {currentEvents.map((event: Event) => (
+            {currentEvents.map((event: AppEvent) => (
               <div 
                 key={event.id} 
                 className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 p-5 hover:shadow-md transition-all duration-200 cursor-pointer hover:border-[#f54502]/50 overflow-hidden"
@@ -438,7 +431,7 @@ const AllEvents = () => {
                       <div className="space-y-2 mb-4">
                         <div className="flex items-center text-gray-600 dark:text-gray-400">
                           <FaCalendarAlt className="mr-2 flex-shrink-0" />
-                          <span className="text-sm">{formatEventDate(event.date)}</span>
+                          <span className="text-sm">{formatEventDate(event.date || event.startTime || '')}</span>
                         </div>
                         
                         <div className="flex items-center text-gray-600 dark:text-gray-400 min-w-0">
@@ -449,10 +442,15 @@ const AllEvents = () => {
                     </div>
                     
                     <div className="text-[#f54502] font-semibold text-lg">
-                      {Math.min(...event.ticketType.map((ticket: TicketType) => parseFloat(ticket.price))) === 0 
-                        ? 'Free' 
-                        : formatPrice(Math.min(...event.ticketType.map((ticket: TicketType) => parseFloat(ticket.price))), '₦')
-                      }
+                      {(() => {
+                        const prices = (event.ticketType || [])
+                          .map(ticket => parseFloat(ticket.price ?? '0'))
+                          .filter(price => !Number.isNaN(price));
+                        if (!prices.length || Math.min(...prices) === 0) {
+                          return 'Free';
+                        }
+                        return formatPrice(Math.min(...prices), '₦');
+                      })()}
                     </div>
                   </div>
                   

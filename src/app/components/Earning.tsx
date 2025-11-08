@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Toast } from "./Toast";
 import { supabase } from '@/utils/supabaseClient';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import type { Event as AppEvent, Ticket as AppTicket } from '@/types/event';
 // Withdrawals moved to its own tab
 import {
   Chart as ChartJS,
@@ -74,7 +75,7 @@ const Earnings = () => {
   }, [showToastMessage]);
 
   // Fetch events data with React Query
-  const { data: events, isLoading } = useQuery<Event[]>({
+  const { data: events, isLoading } = useQuery<AppEvent[]>({
     queryKey: ['userEvents'],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -106,7 +107,7 @@ const Earnings = () => {
           });
         }
 
-        const list: Event[] = (evs || []).map(e => ({
+        const list: AppEvent[] = (evs || []).map(e => ({
           id: e.id as string,
           slug: (e.slug as string) || (e.id as string),
           title: e.title as string,
@@ -125,7 +126,7 @@ const Earnings = () => {
           address: (e.address as string) || undefined,
           city: (e.city as string) || undefined,
           hostName: undefined,
-          gallery: [],
+          gallery: [] as AppEvent['gallery'],
           isVirtual: (e.is_virtual as boolean) || false,
           country: (e.country as string) || undefined,
           currency: (e.currency as string) || undefined,
@@ -143,7 +144,7 @@ const Earnings = () => {
             quantity: String(t.quantity ?? '0'),
             sold: String(t.sold ?? '0'),
             details: undefined,
-          })),
+          })) as AppTicket[],
         }));
 
         return list;

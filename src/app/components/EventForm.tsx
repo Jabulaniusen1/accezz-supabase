@@ -356,6 +356,8 @@ export default function EventForm({ eventId, onClose, onSuccess }: EventFormProp
         time: '',
         venue: '',
         isVirtual: !!formData.isVirtual,
+        startTime: '',
+        endTime: ''
       });
       onClose();
     } catch (error) {
