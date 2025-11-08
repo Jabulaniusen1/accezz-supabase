@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/utils/supabaseClient';
+import { notifyWithdrawalApproved } from '@/utils/notificationClient';
 import type { WithdrawalRequest, WithdrawalStatus } from '@/types/withdrawal';
 
 type Row = WithdrawalRequest & {
@@ -78,6 +79,9 @@ const AdminWithdrawals: React.FC = () => {
         .update(payload)
         .eq('id', id);
       if (error) throw error;
+      if (status === 'approved') {
+        await notifyWithdrawalApproved(id);
+      }
       await load();
     } catch (e) {
       console.error(e);

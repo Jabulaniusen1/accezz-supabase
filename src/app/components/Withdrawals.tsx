@@ -4,10 +4,11 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/utils/supabaseClient';
-import { Toast } from './Toast';
+import { notifyWithdrawalRequest } from '@/utils/notificationClient';
 import AccountSetupPopup from './AccountSetupPopup';
 import type { Event } from '@/types/event';
 import type { WithdrawalRequest } from '@/types/withdrawal';
+import { Toast } from './Toast';
 
 const PLATFORM_FEE_RATE = 0.06;
 const NET_MULTIPLIER = 1 - PLATFORM_FEE_RATE;
@@ -19,6 +20,8 @@ const calculateNetRevenue = (price: string | number, sold: string | number): num
   }
   return numericPrice * numericSold * NET_MULTIPLIER;
 };
+
+
 
 const Withdrawals: React.FC = () => {
   const router = useRouter();
@@ -162,7 +165,17 @@ const Withdrawals: React.FC = () => {
       .reduce((sum, w) => sum + Number(w.amount || 0), 0);
   }, [myWithdrawals]);
 
-  const availableBalance = useMemo(() => Math.max(0, totalEarnings - pendingTotal), [totalEarnings, pendingTotal]);
+  const approvedTotal = useMemo(() => {
+    const approvedStatuses = new Set(['approved', 'completed', 'paid']);
+    return myWithdrawals
+      .filter(w => approvedStatuses.has((w.status || '').toLowerCase()))
+      .reduce((sum, w) => sum + Number(w.amount || 0), 0);
+  }, [myWithdrawals]);
+
+  const availableBalance = useMemo(
+    () => Math.max(0, totalEarnings - pendingTotal - approvedTotal),
+    [totalEarnings, pendingTotal, approvedTotal]
+  );
 
   const submitWithdrawal = useCallback(async () => {
     if (!hasBankDetails) {
@@ -182,10 +195,15 @@ const Withdrawals: React.FC = () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
-      const { error } = await supabase
+      const { data: inserted, error } = await supabase
         .from('withdrawal_requests')
-        .insert({ user_id: session.user.id, amount: amountNum, currency });
+        .insert({ user_id: session.user.id, amount: amountNum, currency })
+        .select('id')
+        .single();
       if (error) throw error;
+      if (inserted?.id) {
+        await notifyWithdrawalRequest(inserted.id);
+      }
       toast('success', 'Withdrawal request submitted');
       setRawAmount(null);
       setDisplayAmount('');
@@ -213,7 +231,7 @@ const Withdrawals: React.FC = () => {
   };
 
   return (
-    <div className="max-w-5xl px-3 sm:px-0 lg:mt-5">
+    <div className="w-full mx-auto">
       {showToast && (
         <div className="fixed top-4 right-4 z-50 w-full max-w-sm">
           <Toast type={toastProps.type} message={toastProps.message} onClose={() => setShowToast(false)} />
@@ -337,15 +355,15 @@ const Withdrawals: React.FC = () => {
 
       {/* Success Modal */}
       {showSuccessModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border-2 border-[#f54502]/20 dark:border-[#f54502]/30 transform transition-all animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border-2 border-[#f54502]/20 dark:border-[#f54502]/30">
             {/* Decorative gradient header */}
             <div className="bg-gradient-to-r from-[#f54502] to-[#d63a02] p-6 text-center relative overflow-hidden">
               <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-20"></div>
               {/* Success Icon */}
               <div className="relative z-10">
-                <div className="mx-auto w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-4 animate-bounce">
-                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg transform hover:rotate-12 transition-transform">
+                <div className="mx-auto w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-4">
+                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg">
                     <svg className="w-10 h-10 text-[#f54502]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                     </svg>
