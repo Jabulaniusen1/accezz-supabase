@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { FaFacebook, FaInstagram, FaTiktok } from 'react-icons/fa';
+import { FaInstagram, FaTiktok } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
 
 const Footer = () => {
@@ -92,26 +92,26 @@ const Footer = () => {
           <div className="space-y-4">
             <h4 className="text-[#f54502] font-semibold text-lg">Follow Us</h4>
             <ul className="space-y-3">
-              <li>
-                <a href="https://facebook.com" className="flex items-center gap-3 text-gray-700 hover:text-[#f54502] transition-colors">
+              {/* <li>
+                <a target="_blank" href="https://facebook.com" className="flex items-center gap-3 text-gray-700 hover:text-[#f54502] transition-colors">
                   <FaFacebook className="w-4 h-4" />
                   <span>Facebook</span>
                 </a>
-              </li>
+              </li> */}
               <li>
-                <a href="https://x.com" className="flex items-center gap-3 text-gray-700 hover:text-[#f54502] transition-colors">
+                <a target="_blank" href="https://x.com/accezzlive" className="flex items-center gap-3 text-gray-700 hover:text-[#f54502] transition-colors">
                   <FaXTwitter className="w-4 h-4" />
                   <span>X</span>
                 </a>
               </li>
               <li>
-                <a href="https://instagram.com" className="flex items-center gap-3 text-gray-700 hover:text-[#f54502] transition-colors">
+                <a target="_blank" href="https://www.instagram.com/accezzlive/" className="flex items-center gap-3 text-gray-700 hover:text-[#f54502] transition-colors">
                   <FaInstagram className="w-4 h-4" />
                   <span>Instagram</span>
                 </a>
               </li>
               <li>
-                <a href="https://tiktok.com" className="flex items-center gap-3 text-gray-700 hover:text-[#f54502] transition-colors">
+                <a target="_blank" href="https://www.tiktok.com/@accezzlive?lang=en" className="flex items-center gap-3 text-gray-700 hover:text-[#f54502] transition-colors">
                   <FaTiktok className="w-4 h-4" />
                   <span>TikTok</span>
                 </a>

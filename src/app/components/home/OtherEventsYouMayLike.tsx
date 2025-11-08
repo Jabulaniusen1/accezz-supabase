@@ -3,7 +3,6 @@ import React from 'react';
 import Image from 'next/image';
 import { FaCalendarAlt, FaMapMarkerAlt } from 'react-icons/fa';
 import { useLatestEvents } from '@/hooks/useEvents';
-import { useRouter } from 'next/navigation';
 import Loader from '@/components/ui/loader/Loader';
 import { formatPrice } from '@/utils/formatPrice';
 import { formatEventDate } from '@/utils/formatDateTime';
@@ -18,10 +17,10 @@ interface TicketType {
 
 const OtherEventsYouMayLike = () => {
   const { data: events, isLoading } = useLatestEvents();
-  const router = useRouter();
 
   const handleViewDetails = (eventSlug: string) => {
-    router.push(`/${eventSlug}`);
+    const link = `${window.location.origin}/${eventSlug}`;
+    window.open(link, '_blank', 'noopener,noreferrer');
   };
 
   if (isLoading) return <Loader />;

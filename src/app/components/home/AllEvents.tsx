@@ -56,7 +56,7 @@ const AllEvents = () => {
 
   const handleViewDetails = (eventSlug: string) => {
     const link = `${window.location.origin}/${eventSlug}`;
-    window.location.href = link;
+    window.open(link, '_blank', 'noopener,noreferrer');
   };
 
   const filteredEvents = (events || []).filter((event: Event) => {
@@ -154,8 +154,8 @@ const AllEvents = () => {
     if (!scrollContainer || !scrollContent) return;
 
     let scrollPosition = 0;
-    const scrollSpeed = 0.5; // pixels per frame
-    const scrollDirection = 1; // 1 for right, -1 for left
+    const scrollSpeed = 0.5; 
+    const scrollDirection = 1; 
     
     const autoScroll = () => {
       if (scrollContainer && scrollContent) {
@@ -169,7 +169,7 @@ const AllEvents = () => {
             scrollPosition = maxScroll;
             setTimeout(() => {
               scrollPosition = 0;
-            }, 2000); // Pause for 2 seconds at the end
+            }, 2000); 
           }
           
           scrollContainer.scrollLeft = scrollPosition;

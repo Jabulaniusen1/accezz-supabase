@@ -3,7 +3,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { FaCalendar, FaMapMarkerAlt, FaUser, FaArrowRight, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { useLatestEvents } from '@/hooks/useEvents';
-import { useRouter } from 'next/navigation';
 import { formatEventDate } from '@/utils/formatDateTime';
 import Toast from '@/components/ui/Toast';
 import Loader from '@/components/ui/loader/Loader';
@@ -11,13 +10,11 @@ import Loader from '@/components/ui/loader/Loader';
 const LatestEvent = () => {
   const { data: events, isLoading } = useLatestEvents();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [navigating, setNavigating] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [toast, setToast] = useState<{
     type: 'success' | 'error' | 'warning' | 'info';
     message: string;
   } | null>(null);
-  const router = useRouter();
 
   const handleNext = useCallback(() => {
     if (isTransitioning || !events) return;
@@ -48,13 +45,9 @@ const LatestEvent = () => {
     }, 200);
   };
 
-  const handleViewDetails = async (eventSlug: string) => {
-    try {
-      setNavigating(true);
-      await router.push(`/${eventSlug}`);
-    } finally {
-      setNavigating(false);
-    }
+  const handleViewDetails = (eventSlug: string) => {
+    const link = `${window.location.origin}/${eventSlug}`;
+    window.open(link, '_blank', 'noopener,noreferrer');
   };
 
   if (isLoading) return <Loader />;
@@ -64,9 +57,6 @@ const LatestEvent = () => {
 
   return (
     <section className="relative py-12 md:py-20 overflow-hidden bg-white bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 dark:bg-gray-950" id='latestEvents'>
-      {navigating && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>}
       {toast && (
         <Toast
           type={toast.type}
