@@ -1,6 +1,16 @@
 import React from 'react';
 import { formatPrice } from '../../../utils/formatPrice';
 
+const parsePriceValue = (value: string | number | null | undefined): number => {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+  if (typeof value === 'string') {
+    const cleaned = value.replace(/[^\d.-]/g, '');
+    const parsed = Number(cleaned);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  return 0;
+};
+
 // Define the type for a ticket
 interface Ticket {
   id: string;
@@ -62,7 +72,7 @@ const TicketSelectionStep = ({
                 </div>
                 <div className="text-right">
                   <p className="text-lg font-bold text-[#f54502] dark:text-[#f54502]">
-                    {formatPrice(Number(ticket.price), '₦')}
+                    {formatPrice(parsePriceValue(ticket.price), 'NGN')}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
                     {parseInt(ticket.quantity)}  remaining
@@ -131,7 +141,7 @@ const TicketSelectionStep = ({
                       Price per ticket
                     </p>
                     <p className="font-medium text-gray-900 dark:text-white">
-                      {formatPrice(Number(selectedTicket.price), '₦')}
+                      {formatPrice(parsePriceValue(selectedTicket.price), 'NGN')}
                     </p>
                   </div>
                   <div className="flex justify-between items-center">
@@ -139,7 +149,7 @@ const TicketSelectionStep = ({
                       Total Amount
                     </p>
                     <p className="text-xl font-bold text-[#f54502] dark:text-[#f54502]">
-                      {formatPrice(totalPrice, '₦')}
+                      {formatPrice(totalPrice, 'NGN')}
                     </p>
                   </div>
                 </div>

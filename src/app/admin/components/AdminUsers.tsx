@@ -198,7 +198,7 @@ const AdminUsers = () => {
       setLoadingEvents(true);
       const { data: events, error } = await supabase
         .from('events')
-        .select('id, title, slug, date, created_at, status')
+        .select('id, title, slug, start_time, end_time, created_at, status')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
@@ -219,6 +219,7 @@ const AdminUsers = () => {
         const revenue = tickets.reduce((sum, t) => sum + (Number(t.sold || 0) * Number(t.price || 0)), 0);
         return {
           ...event,
+          date: event.start_time,
           tickets_sold: totalSold,
           revenue,
         };

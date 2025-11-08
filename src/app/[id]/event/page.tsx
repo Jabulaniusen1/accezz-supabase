@@ -11,7 +11,6 @@ import { fetchEventBySlug } from '@/utils/eventUtils';
 import { getTicketPurchaseState } from '@/utils/localStorage';
 
 const EventHeroSection = React.lazy(() => import('./components/EventHeroSection').then(module => ({ default: module.EventHeroSection })));
-const EventHostSection = React.lazy(() => import('./components/EventHostSection').then(module => ({ default: module.EventHostSection })));
 const EventTicketsSection = React.lazy(() => import('./components/TicketCard').then(module => ({ default: module.EventTicketsSection })));
 const TicketTypeForm = React.lazy(() => import('../../components/TicketTypeForm'));
 const OtherEventsYouMayLike = React.lazy(() => import('@/app/components/home/OtherEventsYouMayLike'));
@@ -139,7 +138,6 @@ const EventDetail = () => {
             
             {/* Event sections with lazy loading */}
             <EventHeroSection event={event} scrollToTickets={scrollToTickets} />
-            <EventHostSection event={event} />
             
             <div ref={ticketsSectionRef}>
               <EventTicketsSection 

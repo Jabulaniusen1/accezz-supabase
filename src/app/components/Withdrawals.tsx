@@ -6,10 +6,17 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/utils/supabaseClient';
 import { notifyWithdrawalRequest } from '@/utils/notificationClient';
 import AccountSetupPopup from './AccountSetupPopup';
-import type { Event } from '@/types/event';
 import type { WithdrawalRequest } from '@/types/withdrawal';
 import { Toast } from './Toast';
 
+type EventRevenue = {
+  id: string;
+  createdAt: string;
+  ticketType: Array<{
+    price: string | number;
+    sold: string | number;
+  }>;
+};
 const PLATFORM_FEE_RATE = 0.06;
 const NET_MULTIPLIER = 1 - PLATFORM_FEE_RATE;
 const calculateNetRevenue = (price: string | number, sold: string | number): number => {
@@ -70,7 +77,7 @@ const Withdrawals: React.FC = () => {
   };
 
   // Load events to calculate earnings
-  const { data: events } = useQuery<Event[]>({
+  const { data: events } = useQuery<EventRevenue[]>({
     queryKey: ['userEventsForWithdrawals'],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -98,26 +105,12 @@ const Withdrawals: React.FC = () => {
           ticketMap.set(t.event_id as string, arr);
         });
       }
-      const list: Event[] = (evs || []).map(e => ({
+      const list: EventRevenue[] = (evs || []).map(e => ({
         id: e.id as string,
-        slug: e.id as string,
-        title: '',
-        description: '',
-        image: '',
-        date: '',
-        time: '',
-        venue: '',
-        location: '',
-        hostName: '',
-        gallery: [],
-        isVirtual: false,
         createdAt: e.created_at as string,
         ticketType: (ticketMap.get(e.id as string) || []).map(t => ({
-          name: '',
-          price: String(t.price ?? '0'),
-          quantity: '0',
-          sold: String(t.sold ?? '0'),
-          details: undefined,
+          price: t.price ?? '0',
+          sold: t.sold ?? '0',
         })),
       }));
       return list;

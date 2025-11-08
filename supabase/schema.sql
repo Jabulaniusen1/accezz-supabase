@@ -40,7 +40,67 @@ create trigger trg_profiles_updated_at
 before update on public.profiles
 for each row execute function public.handle_updated_at();
 
--- 2) Events
+create or replace function public.generate_event_category_slug()
+returns trigger language plpgsql as $$
+declare
+  base_slug text;
+  candidate text;
+  suffix int := 0;
+begin
+  if new.slug is not null and new.slug <> '' then
+    return new;
+  end if;
+
+  base_slug := regexp_replace(lower(new.name), '[^a-z0-9]+', '-', 'g');
+  base_slug := trim(both '-' from base_slug);
+  candidate := base_slug;
+
+  while exists(select 1 from public.event_categories where slug = candidate and id <> new.id) loop
+    suffix := suffix + 1;
+    candidate := base_slug || '-' || suffix::text;
+  end loop;
+
+  new.slug = candidate;
+  return new;
+end;
+$$;
+
+-- 2a) Event Categories
+create table if not exists public.event_categories (
+  id uuid primary key default gen_random_uuid(),
+  name text not null unique,
+  slug text not null unique,
+  description text,
+  created_by uuid references auth.users(id) on delete set null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+drop trigger if exists trg_event_categories_slug on public.event_categories;
+create trigger trg_event_categories_slug
+before insert or update of name, slug on public.event_categories
+for each row execute function public.generate_event_category_slug();
+
+drop trigger if exists trg_event_categories_updated_at on public.event_categories;
+create trigger trg_event_categories_updated_at
+before update on public.event_categories
+for each row execute function public.handle_updated_at();
+
+insert into public.event_categories (name)
+values
+  ('Community'),
+  ('Art & Culture'),
+  ('Sports & Wellness'),
+  ('Career & Business'),
+  ('Spirituality & Religion'),
+  ('Food & Drink'),
+  ('Music & Entertainment'),
+  ('Education & Workshops'),
+  ('Technology & Innovation'),
+  ('Family & Lifestyle')
+on conflict (name) do nothing;
+
+-- 2b) Events
 create table if not exists public.events (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -48,15 +108,21 @@ create table if not exists public.events (
   title text not null,
   description text not null,
   image_url text,
-  date timestamptz not null,
-  time text,
+  start_time timestamptz not null,
+  end_time timestamptz,
   venue text,
   location text,
+  address text,
+  city text,
   country text,
   currency text,
   is_virtual boolean not null default false,
   virtual_details jsonb,
   social_links jsonb,
+  category_id uuid references public.event_categories(id) on delete set null,
+  category_custom text,
+  latitude numeric(10,7),
+  longitude numeric(10,7),
   status text not null default 'published',
   visibility text not null default 'public',
   gallery_count int not null default 0,
@@ -99,6 +165,9 @@ drop trigger if exists trg_events_updated_at on public.events;
 create trigger trg_events_updated_at
 before update on public.events
 for each row execute function public.handle_updated_at();
+
+create index if not exists idx_events_category_id on public.events(category_id);
+create index if not exists idx_events_start_time on public.events(start_time);
 
 create table if not exists public.event_gallery (
   id uuid primary key default gen_random_uuid(),

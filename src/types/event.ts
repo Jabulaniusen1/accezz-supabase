@@ -31,20 +31,37 @@ export interface Event {
   slug?: string;
   description: string;
   price?: string;
-  date: string;
-  time: string;
-  venue: string;
+  startTime: string;
+  endTime?: string | null;
+  /**
+   * @deprecated Use startTime/endTime instead.
+   * Present for backward compatibility while UI migrates.
+   */
+  date?: string;
+  /**
+   * @deprecated Use startTime/endTime instead.
+   */
+  time?: string;
+  venue?: string;
   location: string;
-  hostName: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  currency?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  categoryId?: string | null;
+  categoryName?: string | null;
+  categoryCustom?: string | null;
+  locationId?: string | null;
+  hostName?: string;
   image: File | string | null;
-  gallery: File[] ;
+  gallery: File[];
   ticketType: Ticket[];
   socialMediaLinks?: SocialMediaLinks;
   userId?: string;
   createdAt?: string;
   updatedAt?: string;
-  country?: string;
-  currency?: string;
   isVirtual: boolean;
   virtualEventDetails?: VirtualEventDetails;
 }

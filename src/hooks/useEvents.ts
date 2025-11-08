@@ -11,10 +11,12 @@ type SupabaseEventRow = {
   title: string;
   slug: string;
   description?: string | null;
-  date: string;
-  time?: string | null;
+  start_time: string;
+  end_time?: string | null;
   venue?: string | null;
   location?: string | null;
+  address?: string | null;
+  city?: string | null;
   image_url?: string | null;
   social_links?: unknown;
   user_id: string;
@@ -24,6 +26,15 @@ type SupabaseEventRow = {
   currency?: string | null;
   is_virtual?: boolean | null;
   virtual_details?: unknown;
+  location_id?: string | null;
+  category_id?: string | null;
+  category_custom?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  category?: {
+    name?: string | null;
+    slug?: string | null;
+  } | null;
 };
 
 type TicketTypeRow = {
@@ -37,16 +48,33 @@ type TicketTypeRow = {
 
 // Helper function to map Supabase event data to Event interface
 const mapSupabaseEventToEvent = (supabaseEvent: SupabaseEventRow, ticketTypes: TicketTypeRow[]): Event => {
+  const startDate = new Date(supabaseEvent.start_time);
+  const startTimeString = Number.isNaN(startDate.getTime())
+    ? ''
+    : `${startDate.getHours().toString().padStart(2, '0')}:${startDate.getMinutes().toString().padStart(2, '0')}`;
+
   return {
     id: supabaseEvent.id,
     title: supabaseEvent.title,
     slug: supabaseEvent.slug,
     description: supabaseEvent.description ?? '',
-    date: supabaseEvent.date,
-    time: supabaseEvent.time ?? '',
-    venue: supabaseEvent.venue ?? '',
+    startTime: supabaseEvent.start_time,
+    endTime: supabaseEvent.end_time ?? null,
+    date: supabaseEvent.start_time,
+    time: startTimeString,
+    venue: supabaseEvent.venue ?? undefined,
     location: supabaseEvent.location ?? '',
-    hostName: '', // We'll need to fetch from profiles if needed
+    address: supabaseEvent.address ?? undefined,
+    city: supabaseEvent.city ?? undefined,
+    country: supabaseEvent.country ?? undefined,
+    currency: supabaseEvent.currency ?? undefined,
+    latitude: typeof supabaseEvent.latitude === 'number' ? supabaseEvent.latitude : null,
+    longitude: typeof supabaseEvent.longitude === 'number' ? supabaseEvent.longitude : null,
+    categoryId: supabaseEvent.category_id ?? undefined,
+    categoryCustom: supabaseEvent.category_custom ?? undefined,
+    categoryName: supabaseEvent.category?.name ?? undefined,
+    locationId: supabaseEvent.location_id ?? undefined,
+    hostName: undefined,
     image: supabaseEvent.image_url || null,
     gallery: [], // We'll fetch gallery separately if needed
     ticketType: ticketTypes.map(ticket => ({
@@ -60,8 +88,6 @@ const mapSupabaseEventToEvent = (supabaseEvent: SupabaseEventRow, ticketTypes: T
     userId: supabaseEvent.user_id,
     createdAt: supabaseEvent.created_at,
     updatedAt: supabaseEvent.updated_at,
-    country: supabaseEvent.country ?? undefined,
-    currency: supabaseEvent.currency ?? undefined,
     isVirtual: supabaseEvent.is_virtual ?? false,
     virtualEventDetails: supabaseEvent.virtual_details ?? undefined,
   };
@@ -71,7 +97,7 @@ const mapSupabaseEventToEvent = (supabaseEvent: SupabaseEventRow, ticketTypes: T
 const fetchEventsFromSupabase = async (): Promise<Event[]> => {
   const { data: events, error: eventsError } = await supabase
     .from('events')
-    .select('*')
+    .select('*, category:event_categories(name, slug)')
     .eq('status', 'published')
     .eq('visibility', 'public')
     .order('created_at', { ascending: false });

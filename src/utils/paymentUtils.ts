@@ -58,7 +58,7 @@ async function sendTicketEmail({
     // Fetch event details
     const { data: event, error: eventError } = await supabase
       .from('events')
-      .select('title, date, time, venue, location, is_virtual, virtual_details')
+      .select('title, start_time, end_time, venue, location, address, city, country, is_virtual, virtual_details')
       .eq('id', order.event_id)
       .single();
 
@@ -88,9 +88,17 @@ async function sendTicketEmail({
         .join(' ');
     };
 
+    const physicalVenueParts = [
+      event.venue,
+      event.location,
+      event.address,
+      event.city,
+      event.country,
+    ].filter((part) => typeof part === 'string' && part.trim().length > 0);
+
     const eventVenue = isVirtualEvent
       ? `${formatPlatform(virtualPlatform)} (Online)`
-      : event.venue || event.location || 'TBD';
+      : physicalVenueParts.join(', ') || 'TBD';
 
     // Fetch primary ticket to get QR code URL and ticket ID
     const { data: primaryTicket } = await supabase
@@ -102,14 +110,33 @@ async function sendTicketEmail({
       .single();
 
     // Format date and time
-    const eventDate = event.date ? new Date(event.date).toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    }) : 'TBD';
+    const startDate = event.start_time ? new Date(event.start_time) : null;
+    const endDate = event.end_time ? new Date(event.end_time) : null;
 
-    const eventTime = event.time || 'TBD';
+    const eventDate = startDate
+      ? startDate.toLocaleDateString('en-US', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })
+      : 'TBD';
+
+    const formatTime = (date: Date | null) =>
+      date
+        ? date.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+          })
+        : null;
+
+    const startTimeFormatted = formatTime(startDate);
+    const endTimeFormatted = formatTime(endDate);
+
+    const eventTime =
+      startTimeFormatted && endTimeFormatted
+        ? `${startTimeFormatted} - ${endTimeFormatted}`
+        : startTimeFormatted || endTimeFormatted || 'TBD';
 
     // Send email via API route
     const baseUrl = typeof window !== 'undefined' 
@@ -501,6 +528,12 @@ export async function createTicketsForOrder(orderId: string): Promise<string[]> 
       ticketCodes,
     }).catch(err => {
       console.error('Failed to send ticket email:', err);
+      // Don't throw - tickets are created successfully
+    });
+
+    // Notify event creator about ticket purchase (non-blocking)
+    notifyTicketPurchase(orderId).catch(err => {
+      console.error('Failed to send ticket purchase notification:', err);
       // Don't throw - tickets are created successfully
     });
 

@@ -18,9 +18,13 @@ interface Event {
   title: string;
   description: string;
   image: string;
+  startTime: string;
+  endTime?: string | null;
   date: string;
   time: string;
   location: string;
+  address?: string;
+  city?: string;
   price: string;
   ticketType: { price: string; name: string; quantity: string; sold: string }[];
 }
@@ -119,7 +123,7 @@ const EventList: React.FC = () => {
       // Fetch user's events
       const { data: eventsData, error: evErr } = await supabase
         .from('events')
-        .select('id, slug, title, description, image_url, date, time, location')
+        .select('id, slug, title, description, image_url, start_time, end_time, location, address, city')
         .eq('user_id', uid)
         .order('created_at', { ascending: false });
       if (evErr) throw evErr;
@@ -144,18 +148,31 @@ const EventList: React.FC = () => {
         });
       }
 
-      const list: Event[] = (eventsData || []).map(e => ({
-        id: e.id as string,
-        slug: (e.slug as string) || e.id as string,
-        title: e.title as string,
-        description: e.description as string,
-        image: (e.image_url as string) || '/images/placeholder.png',
-        date: e.date as string,
-        time: (e.time as string) || '',
-        location: (e.location as string) || '',
-        price: '0',
-        ticketType: ticketTypeMap.get(e.id as string) || [],
-      }));
+      const list: Event[] = (eventsData || []).map(e => {
+        const startTime = (e.start_time as string) || '';
+        const start = startTime ? new Date(startTime) : null;
+        const timeValue =
+          start && !Number.isNaN(start.getTime())
+            ? `${start.getHours().toString().padStart(2, '0')}:${start.getMinutes().toString().padStart(2, '0')}`
+            : '';
+
+        return {
+          id: e.id as string,
+          slug: (e.slug as string) || e.id as string,
+          title: e.title as string,
+          description: e.description as string,
+          image: (e.image_url as string) || '/images/placeholder.png',
+          startTime,
+          endTime: (e.end_time as string) || null,
+          date: startTime,
+          time: timeValue,
+          location: (e.location as string) || '',
+          address: (e.address as string) || undefined,
+          city: (e.city as string) || undefined,
+          price: '0',
+          ticketType: ticketTypeMap.get(e.id as string) || [],
+        };
+      });
       setEvents(list);
     } catch (error) {
       handleError(error, 'Failed to fetch events');

@@ -77,7 +77,7 @@ export const EventHeroSection = ({
                     </div>
                     <div>
                       <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Date</p>
-                      <p className="text-sm sm:text-base font-semibold">{formatEventDate(event.date)}</p>
+                      <p className="text-sm sm:text-base font-semibold">{formatEventDate(event.date ?? '')}</p>
                     </div>
                   </div>
 
@@ -88,7 +88,7 @@ export const EventHeroSection = ({
                     </div>
                     <div>
                       <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Time</p>
-                      <p className="text-sm sm:text-base font-semibold">{formatEventTime(event.time)}</p>
+                      <p className="text-sm sm:text-base font-semibold">{formatEventTime(event.time ?? '')}</p>
                     </div>
                   </div>
 

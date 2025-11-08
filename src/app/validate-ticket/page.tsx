@@ -202,7 +202,7 @@ const ValidateContent = () => {
         // Fetch event data
         const { data: eventData, error: eventError } = await supabase
           .from('events')
-          .select('id, title, image_url, date, time, venue, location')
+          .select('id, title, image_url, start_time, end_time, venue, location, address, city')
           .eq('id', ticket.event_id)
           .single();
 
@@ -211,10 +211,14 @@ const ValidateContent = () => {
             id: eventData.id,
             title: eventData.title,
             description: '',
-            time: eventData.time || '',
+            time: (() => {
+              const start = eventData.start_time ? new Date(eventData.start_time) : null;
+              if (!start || Number.isNaN(start.getTime())) return '';
+              return `${start.getHours().toString().padStart(2, '0')}:${start.getMinutes().toString().padStart(2, '0')}`;
+            })(),
             image: eventData.image_url || '',
-            date: eventData.date,
-            location: eventData.location || '',
+            date: eventData.start_time,
+            location: eventData.location || eventData.address || eventData.city || '',
             ticketType: [],
           };
           setEvent(mappedEvent);

@@ -63,7 +63,7 @@ const EventAnalyticsContent = () => {
       setLoading(true);
       const { data: ev, error: evErr } = await supabase
         .from('events')
-        .select('id, slug, title, description, image_url, date, time, location')
+        .select('id, slug, title, description, image_url, start_time, end_time, location, address, city')
         .eq('id', eventId)
         .single();
       if (evErr) throw evErr;
@@ -80,8 +80,8 @@ const EventAnalyticsContent = () => {
         title: ev.title,
         description: ev.description,
         image: ev.image_url,
-        date: ev.date,
-        location: ev.location || '',
+        date: ev.start_time,
+        location: ev.location || ev.address || ev.city || '',
         ticketType: (types || []).map(t => ({
           name: t.name,
           sold: String(t.sold ?? '0'),

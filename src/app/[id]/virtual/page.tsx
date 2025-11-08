@@ -13,7 +13,6 @@ import { getTicketPurchaseState } from '@/utils/localStorage';
 import { type Event, type Ticket } from '@/types/event';
 
 import { EventHeroSection } from '../event/components/EventHeroSection';
-import { EventHostSection } from '../event/components/EventHostSection';
 import { EventTicketsSection } from '../event/components/TicketCard';
 import EventGallerySection from '../event/components/EventGallerySection';
 import OtherEventsYouMayLike from '@/app/components/home/OtherEventsYouMayLike';
@@ -164,8 +163,6 @@ export default function VirtualEventPage() {
           showMap={false}
           virtualPlatformLabel={getVirtualPlatformLabel(event)}
         />
-          <EventHostSection event={event} />
-
         <div className="bg-white dark:bg-gray-900 py-10">
           <div className="mx-auto px-4 sm:px-6 lg:px-32 grid grid-cols-1 lg:grid-cols-3 gap-10">
             <div className="lg:col-span-2 space-y-10">

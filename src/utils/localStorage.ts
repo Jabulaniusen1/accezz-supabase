@@ -92,6 +92,14 @@ export const clearTicketPurchaseState = () => {
   }
 };
 
+export const clearFormProgress = () => {
+  try {
+    localStorage.removeItem("eventFormProgress");
+  } catch (error) {
+    console.error("Error clearing form progress:", error);
+  }
+};
+
 // FUNCTION TO CLEAN UP ALL EXPIRED LOCALSTORAGE ITEMS
 export const cleanupLocalStorage = () => {
   Object.keys(localStorage).forEach(key => {

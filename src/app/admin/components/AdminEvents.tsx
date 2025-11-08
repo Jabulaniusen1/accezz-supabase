@@ -38,7 +38,7 @@ const AdminEvents = () => {
       // Fetch all events
       const { data: eventsData, error: eventsError } = await supabase
         .from('events')
-        .select('id, title, slug, date, location, status, created_at, user_id')
+        .select('id, title, slug, start_time, end_time, location, address, city, status, created_at, user_id')
         .order('created_at', { ascending: false });
 
       if (eventsError) throw eventsError;
@@ -114,8 +114,8 @@ const AdminEvents = () => {
           id: event.id,
           title: event.title,
           slug: event.slug || event.id,
-          date: event.date,
-          location: event.location,
+          date: event.start_time,
+          location: event.location || event.address || event.city || null,
           status: event.status,
           created_at: event.created_at,
           creator_email: emailMap.get(event.user_id as string) || 'N/A',

@@ -1,64 +1,80 @@
 import { motion } from "framer-motion";
-import {
-  FaLink,
-  FaVideo
-} from "react-icons/fa";
+import { FaLink, FaVideo } from "react-icons/fa";
 import { RiEarthLine } from "react-icons/ri";
-import { Event } from "../../../../types/event";
 import { SiGooglemeet } from "react-icons/si";
 import { BiLogoZoom } from "react-icons/bi";
 import { BsMicrosoftTeams } from "react-icons/bs";
+import { Event } from "../../../../types/event";
 
 interface VirtualEventSettingsProps {
   formData: Event | null;
   setFormData: React.Dispatch<React.SetStateAction<Event | null>>;
 }
 
-export default function VirtualEventSettings({ 
-  formData, 
-  setFormData 
+const platformLocationLabel = (platform: 'google-meet' | 'zoom' | 'meets' | 'custom'): string => {
+  switch (platform) {
+    case 'google-meet':
+      return 'Google Meet';
+    case 'zoom':
+      return 'Zoom Meeting';
+    case 'meets':
+      return 'Meets';
+    default:
+      return 'Virtual Event';
+  }
+};
+
+export default function VirtualEventSettings({
+  formData,
+  setFormData,
 }: VirtualEventSettingsProps) {
   const handleVirtualToggle = (isVirtual: boolean) => {
     if (!formData) return;
-    
+
     setFormData({
       ...formData,
       isVirtual,
-      ...(isVirtual && {
-        location: "Online",
-        venue: "Virtual Event",
-        virtualEventDetails: formData.virtualEventDetails || {
-          platform: undefined,
-          meetingUrl: "",
-          meetingId: ""
-        }
-      }),
-      ...(!isVirtual && {
-        location: "",
-        venue: "",
-        virtualEventDetails: undefined
-      })
+      ...(isVirtual
+        ? {
+            location: "Online",
+            venue: "Virtual Event",
+            address: "",
+            city: "",
+            country: "",
+            locationId: undefined,
+            latitude: null,
+            longitude: null,
+            virtualEventDetails:
+              formData.virtualEventDetails || {
+                platform: undefined,
+                meetingUrl: "",
+                meetingId: "",
+              },
+          }
+        : {
+            virtualEventDetails: undefined,
+          }),
     });
   };
 
-  const handleVirtualPlatformChange = (platform: 'google-meet' | 'zoom' | 'meets' | 'custom') => {
+  const handleVirtualPlatformChange = (
+    platform: "google-meet" | "zoom" | "meets" | "custom"
+  ) => {
     if (!formData || !formData.isVirtual) return;
-    
+
     setFormData({
       ...formData,
       virtualEventDetails: {
         ...(formData.virtualEventDetails || {}),
         platform,
         meetingUrl:
-          platform === 'custom' || platform === 'google-meet' || platform === 'meets'
-            ? formData.virtualEventDetails?.meetingUrl || ''
-            : formData.virtualEventDetails?.meetingUrl || '',
-        meetingId: platform === 'zoom' ? formData.virtualEventDetails?.meetingId || '' : ''
+          platform === "custom" || platform === "google-meet" || platform === "meets"
+            ? formData.virtualEventDetails?.meetingUrl || ""
+            : formData.virtualEventDetails?.meetingUrl || "",
+        meetingId:
+          platform === "zoom" ? formData.virtualEventDetails?.meetingId || "" : "",
       },
-      location: platform === 'google-meet' ? 'Google Meet' : 
-               platform === 'zoom' ? 'Zoom Meeting' : 
-               platform === 'meets' ? 'Meets' : 
-               'Virtual Event'
+      location: platformLocationLabel(platform),
     });
   };
 

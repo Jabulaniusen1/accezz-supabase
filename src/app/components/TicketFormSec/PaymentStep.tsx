@@ -9,7 +9,19 @@ interface PaymentStepProps {
   isLoading: boolean;
 }
 
+const parsePriceValue = (value: string | number | null | undefined): number => {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+  if (typeof value === 'string') {
+    const cleaned = value.replace(/[^\d.-]/g, '');
+    const parsed = Number(cleaned);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  return 0;
+};
+
 const PaymentStep = ({ selectedTicket, quantity, totalPrice, handlePurchase, isLoading } : PaymentStepProps) => {
+  const pricePerTicket = parsePriceValue(selectedTicket?.price);
+  const computedTotal = totalPrice > 0 ? totalPrice : pricePerTicket * quantity;
   return (
     <div className="mb-4 space-y-6">
       <div className="p-6 bg-white/70 dark:bg-gray-800/70 backdrop-blur-md rounded-xl border border-gray-200 dark:border-gray-700 shadow-lg">
@@ -41,7 +53,7 @@ const PaymentStep = ({ selectedTicket, quantity, totalPrice, handlePurchase, isL
               Price per ticket
             </p>
             <p className="font-medium text-gray-900 dark:text-white text-sm">
-              {formatPrice(Number(selectedTicket?.price), '₦')}
+              {formatPrice(pricePerTicket, 'NGN')}
             </p>
           </div>
 
@@ -51,7 +63,7 @@ const PaymentStep = ({ selectedTicket, quantity, totalPrice, handlePurchase, isL
                 Total Amount
               </p>
               <p className="text-lg font-bold text-green-600 dark:text-green-400">
-                {formatPrice(Number(totalPrice), '₦')}
+                {formatPrice(computedTotal, 'NGN')}
               </p>
             </div>
           </div>

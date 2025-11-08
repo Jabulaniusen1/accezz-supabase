@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { supabase } from "@/utils/supabaseClient";
@@ -34,10 +34,10 @@ function Update() {
   const [isLoading, setIsLoading] = useState(false);
   const [shouldRedirect, setShouldRedirect] = useState(false);
 
-  const toast = (type: "success" | "error", message: string) => {
+  const toast = useCallback((type: "success" | "error", message: string) => {
     setToastProps({ type, message });
     setShowToast(true);
-  };
+  }, []);
 
   useEffect(() => {
     if (eventId) {
@@ -45,10 +45,16 @@ function Update() {
         try {
           const { data: ev, error: evErr } = await supabase
             .from('events')
-            .select('*')
+            .select('*, category:event_categories(id, name)')
             .eq('id', eventId)
             .single();
           if (evErr) throw evErr;
+
+          const { data: hostProfile } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('user_id', ev.user_id)
+            .maybeSingle();
 
           const { data: types, error: ttErr } = await supabase
             .from('ticket_types')
@@ -56,41 +62,15 @@ function Update() {
             .eq('event_id', eventId);
           if (ttErr) throw ttErr;
 
-          // Format date from ISO string to YYYY-MM-DD
-          let formattedDate = '';
-          if (ev.date) {
-            try {
-              const dateObj = new Date(ev.date);
-              if (!isNaN(dateObj.getTime())) {
-                formattedDate = dateObj.toISOString().split('T')[0];
-              }
-            } catch (e) {
-              console.error('Error parsing date:', e);
-            }
-          }
-
-          // Format time to HH:MM (24-hour format)
-          let formattedTime = '';
-          if (ev.time) {
-            try {
-              // If time is already in HH:MM format, use it
-              if (/^\d{2}:\d{2}$/.test(ev.time)) {
-                formattedTime = ev.time;
-              } else {
-                // If it's in a different format, try to parse it
-                const timeParts = ev.time.split(':');
-                if (timeParts.length >= 2) {
-                  const hours = parseInt(timeParts[0], 10);
-                  const minutes = parseInt(timeParts[1], 10);
-                  if (!isNaN(hours) && !isNaN(minutes)) {
-                    formattedTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-                  }
-                }
-              }
-            } catch (e) {
-              console.error('Error parsing time:', e);
-            }
-          }
+          const startTimeIso: string | null = ev.start_time;
+          const startDateObj = startTimeIso ? new Date(startTimeIso) : null;
+          const formattedDate = startDateObj && !Number.isNaN(startDateObj.getTime())
+            ? startDateObj.toISOString().split('T')[0]
+            : '';
+          const formattedTime = startDateObj && !Number.isNaN(startDateObj.getTime())
+            ? startDateObj.toISOString().slice(11, 16)
+            : '';
+          const endTimeIso: string | null = ev.end_time;
 
           const eventData: Event = {
             id: ev.id,
@@ -98,11 +78,22 @@ function Update() {
             title: ev.title,
             description: ev.description,
             image: ev.image_url,
+            startTime: startTimeIso || '',
+            endTime: endTimeIso || null,
             date: formattedDate,
             time: formattedTime,
             venue: ev.venue || '',
             location: ev.location || '',
-            hostName: '',
+            address: ev.address || '',
+            city: ev.city || '',
+            country: ev.country || '',
+            latitude: typeof ev.latitude === 'number' ? ev.latitude : null,
+            longitude: typeof ev.longitude === 'number' ? ev.longitude : null,
+            categoryId: ev.category_id ?? undefined,
+            categoryName: ev.category?.name ?? undefined,
+            categoryCustom: ev.category_custom ?? '',
+            locationId: ev.location_id ?? undefined,
+            hostName: hostProfile?.full_name || '',
             gallery: [],
             isVirtual: !!ev.is_virtual,
             virtualEventDetails: ev.virtual_details || (ev.is_virtual ? {
@@ -118,6 +109,10 @@ function Update() {
               sold: String(t.sold || '0'),
               details: t.details || undefined,
             })),
+            currency: ev.currency || undefined,
+            userId: ev.user_id,
+            createdAt: ev.created_at,
+            updatedAt: ev.updated_at,
           };
 
           setEvent(eventData);
@@ -131,7 +126,7 @@ function Update() {
 
       fetchEvent();
     }
-  }, [eventId]);
+  }, [eventId, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -163,16 +158,44 @@ function Update() {
         imageUrl = pub.publicUrl;
       }
 
+      const startTimeIso =
+        formData.startTime ||
+        (formData.date ? new Date(`${formData.date}T${formData.time || '00:00'}`).toISOString() : '');
+
+      if (!startTimeIso) {
+        throw new Error('Please set the event start date and time.');
+      }
+
+      const locationValue = formData.isVirtual
+        ? 'Online'
+        : (formData.location?.trim() || '');
+
+      if (!formData.isVirtual && !locationValue) {
+        throw new Error('Please provide the event location before saving.');
+      }
+
+      const categoryCustomValue = formData.categoryId
+        ? null
+        : (formData.categoryCustom?.trim() || null);
+
       // Update event
       const { error: evErr } = await supabase
         .from('events')
         .update({
           title: formData.title,
           description: formData.description,
-          date: new Date(formData.date).toISOString(),
-          time: formData.time || null,
+          start_time: startTimeIso,
+          end_time: formData.endTime || null,
           venue: formData.venue || null,
-          location: formData.location,
+          location: locationValue,
+          address: formData.address?.trim() || null,
+          city: formData.city?.trim() || null,
+          country: formData.country?.trim() || null,
+          latitude: formData.latitude ?? null,
+          longitude: formData.longitude ?? null,
+          location_id: formData.locationId ?? null,
+          category_id: formData.categoryId ?? null,
+          category_custom: categoryCustomValue,
           is_virtual: !!formData.isVirtual,
           virtual_details: formData.isVirtual && formData.virtualEventDetails ? formData.virtualEventDetails : null,
           social_links: formData.socialMediaLinks || {},
@@ -313,12 +336,10 @@ function Update() {
           {event ? (
             <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8 md:space-y-12">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-10">
-                <EventBasicDetails 
+                <EventBasicDetails
                   formData={formData}
-                  handleInputChange={(e, field) => {
-                    if (!formData) return;
-                    setFormData({ ...formData, [field]: e.target.value });
-                  }}
+                  setFormData={setFormData}
+                  notify={toast}
                 />
 
                 <div className="space-y-6 sm:space-y-8 md:space-y-10">
@@ -330,10 +351,8 @@ function Update() {
                   {!formData?.isVirtual && (
                     <PhysicalEventDetails 
                       formData={formData}
-                      handleInputChange={(e, field) => {
-                        if (!formData) return;
-                        setFormData({ ...formData, [field]: e.target.value });
-                      }}
+                      setFormData={setFormData}
+                      notify={toast}
                     />
                   )}
                 </div>

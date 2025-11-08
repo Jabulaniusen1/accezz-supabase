@@ -54,6 +54,7 @@ const EventTypeModal = ({ isOpen, onClose, onSelectType }: EventTypeModalProps) 
             className="w-full px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white rounded-lg 
               hover:bg-opacity-90 hover:backdrop-blur-md transition-all hover:shadow-lg 
               hover:shadow-[#f54502]/50 hover:bg-gradient-to-r from-[#f54502] to-[#d63a02] disabled:opacity-50"
+              style={{ borderRadius: '5px' }}
           >
             {loading === 'paid' ? (
           <div className="flex items-center justify-center">
@@ -70,6 +71,7 @@ const EventTypeModal = ({ isOpen, onClose, onSelectType }: EventTypeModalProps) 
             className="w-full px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base bg-gradient-to-r from-gray-400 to-gray-600 text-white rounded-lg 
               hover:bg-opacity-90 hover:backdrop-blur-md transition-all hover:shadow-lg 
               hover:shadow-gray-500/50 hover:bg-gradient-to-r from-gray-600 to-gray-400 disabled:opacity-50"
+              style={{ borderRadius: '5px' }}
           >
             {loading === 'free' ? (
           <div className="flex items-center justify-center">

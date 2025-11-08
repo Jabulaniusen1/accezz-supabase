@@ -106,10 +106,13 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
             id,
             title,
             image_url,
-            date,
-            time,
+            start_time,
+            end_time,
             venue,
             location,
+            address,
+            city,
+            country,
             is_virtual,
             virtual_details
           ),
@@ -165,14 +168,33 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
           .join(' ') + ' (Online)';
       };
 
+      const startTimeIso: string | null = ticket.events.start_time;
+      const startDateObj = startTimeIso ? new Date(startTimeIso) : null;
+      const formattedDate = startDateObj && !Number.isNaN(startDateObj.getTime())
+        ? startDateObj.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })
+        : '';
+      const formattedTime = startDateObj && !Number.isNaN(startDateObj.getTime())
+        ? startDateObj.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+          })
+        : '';
+
       const mappedEventData: EventData = {
         id: ticket.events.id,
         title: ticket.events.title,
         image: ticket.events.image_url || '',
-        date: ticket.events.date,
-        time: ticket.events.time || '',
-        venue: ticket.events.is_virtual ? formatPlatformForVenue(platform) : (ticket.events.venue || ''),
-        location: ticket.events.location || '',
+        date: formattedDate,
+        time: formattedTime,
+        venue: ticket.events.is_virtual
+          ? formatPlatformForVenue(platform)
+          : (ticket.events.venue || ticket.events.address || ''),
+        location: ticket.events.location || ticket.events.city || ticket.events.country || '',
         isVirtual: Boolean(ticket.events.is_virtual),
         virtualPlatform: platform,
         virtualAccessLink,

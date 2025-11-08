@@ -87,7 +87,7 @@ export default async function LocationDetailPage({ params }: LocationPageProps) 
       created_at,
       updated_at,
       location_gallery (id, image_url, position),
-      events:events_location_id_fkey (id, title, slug, date, time, image_url, status, visibility)
+      events:events_location_id_fkey (id, title, slug, start_time, end_time, image_url, status, visibility)
     `)
     .eq('slug', slug)
     .maybeSingle();
@@ -114,8 +114,8 @@ export default async function LocationDetailPage({ params }: LocationPageProps) 
       id: event.id,
       title: event.title,
       slug: event.slug,
-      date: event.date,
-      time: event.time,
+      startTime: event.start_time,
+      endTime: event.end_time,
       imageUrl: event.image_url,
       status: event.status,
       visibility: event.visibility,

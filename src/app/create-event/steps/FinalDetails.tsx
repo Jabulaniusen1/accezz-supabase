@@ -8,7 +8,8 @@ import {
 import { FaXTwitter } from "react-icons/fa6";
 import { Event, ToastProps } from '@/types/event';
 import { supabase } from '@/utils/supabaseClient';
-import {useRouter} from "next/navigation";
+import { clearFormProgress } from '@/utils/localStorage';
+import { useRouter } from "next/navigation";
 
 interface FinalDetailsProps {
   formData: Event;
@@ -59,15 +60,45 @@ export default function FinalDetails({
       }
 
       // Create event first (without image)
+      if (!formData.startTime) {
+        setToast({
+          type: "error",
+          message: "Event start time is missing",
+          onClose: () => setToast(null)
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      const locationValue = formData.location?.trim() || (formData.isVirtual ? 'Online' : '');
+
+      if (!formData.isVirtual && !locationValue) {
+        setToast({
+          type: "error",
+          message: "Please confirm your event location before submitting",
+          onClose: () => setToast(null)
+        });
+        setIsLoading(false);
+        return;
+      }
+
       const { data: created, error: evErr } = await supabase.from('events')
         .insert({
           user_id: session.user.id,
           title: formData.title.trim(),
           description: formData.description.trim(),
-          date: new Date(formData.date).toISOString(),
-          time: formatTime(formData.time),
-          venue: formData.venue.trim(),
-          location: formData.location.trim(),
+          start_time: formData.startTime,
+          end_time: formData.endTime || null,
+          venue: formData.isVirtual ? 'Virtual Event' : (formData.venue ?? '').trim(),
+          location: locationValue,
+          address: formData.address?.trim() || null,
+          city: formData.city?.trim() || null,
+          country: formData.country?.trim() || null,
+          latitude: formData.latitude ?? null,
+          longitude: formData.longitude ?? null,
+          location_id: formData.locationId ?? null,
+          category_id: formData.categoryId ?? null,
+          category_custom: formData.categoryId ? null : (formData.categoryCustom?.trim() || null),
           is_virtual: !!formData.isVirtual,
           social_links: {
             twitter: formData.socialMediaLinks?.twitter?.trim() || "",
@@ -127,6 +158,8 @@ export default function FinalDetails({
           }
         }
 
+        clearFormProgress();
+
         setToast({ type: "success", message: "Event created successfully!", onClose: () => setToast(null) });
         router.push('/dashboard');
       } catch (error) {
@@ -146,15 +179,6 @@ export default function FinalDetails({
     }
   };
   
-  // Helper function for time formatting
-  const formatTime = (time: string): string => {
-    const [hours, minutes] = time.split(":");
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? "PM" : "AM";
-    const hour12 = hour % 12 || 12;
-    return `${hour12}:${minutes} ${ampm}`;
-  };
-
   
   return (
     <motion.div

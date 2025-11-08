@@ -52,8 +52,8 @@ type SupabaseEventRow = {
   id: string;
   slug?: string | null;
   title: string;
-  date: string;
-  time?: string | null;
+  start_time: string;
+  end_time?: string | null;
   image_url?: string | null;
   status: string;
   visibility: string;
@@ -84,13 +84,13 @@ const mapLocation = (row: SupabaseLocationRow): Location => {
 
   const upcomingEvents: LocationEventSummary[] = (row.events || [])
     .filter((event) => event.status === 'published' && event.visibility === 'public')
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
     .map((event) => ({
       id: event.id,
       title: event.title,
       slug: event.slug ?? null,
-      date: event.date,
-      time: event.time ?? null,
+      startTime: event.start_time,
+      endTime: event.end_time ?? null,
       imageUrl: event.image_url ?? null,
       status: event.status,
       visibility: event.visibility,
@@ -156,7 +156,7 @@ const buildLocationSelect = () => `
   created_at,
   updated_at,
   location_gallery (*),
-  events:events_location_id_fkey (id, slug, title, date, time, image_url, status, visibility)
+  events:events_location_id_fkey (id, slug, title, start_time, end_time, image_url, status, visibility)
 `;
 
 export const fetchLocations = async (filters: LocationFilter = {}): Promise<Location[]> => {

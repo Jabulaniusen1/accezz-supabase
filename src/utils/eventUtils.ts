@@ -11,7 +11,7 @@ export async function fetchEventBySlug(slug: string): Promise<Event | null> {
     // Fetch event by slug
     const { data: event, error: eventError } = await supabase
       .from('events')
-      .select('*')
+      .select('*, category:event_categories(name, slug)')
       .eq('slug', slug)
       .eq('status', 'published')
       .single();
@@ -42,17 +42,34 @@ export async function fetchEventBySlug(slug: string): Promise<Event | null> {
       console.error('Error fetching gallery:', galleryError);
     }
 
+    const startDate = new Date(event.start_time);
+    const startTimeString = Number.isNaN(startDate.getTime())
+      ? ''
+      : `${startDate.getHours().toString().padStart(2, '0')}:${startDate.getMinutes().toString().padStart(2, '0')}`;
+
     // Map to Event interface
     const mappedEvent: Event = {
       id: event.id,
       title: event.title,
       slug: event.slug || event.id,
       description: event.description,
-      date: event.date,
-      time: event.time || '',
-      venue: event.venue || '',
+      startTime: event.start_time,
+      endTime: event.end_time ?? null,
+      date: event.start_time,
+      time: startTimeString,
+      venue: event.venue || undefined,
       location: event.location || '',
-      hostName: '', // We might need to fetch from profiles if required
+      address: event.address ?? undefined,
+      city: event.city ?? undefined,
+      country: event.country ?? undefined,
+      currency: event.currency ?? undefined,
+      latitude: event.latitude ?? null,
+      longitude: event.longitude ?? null,
+      categoryId: event.category_id ?? undefined,
+      categoryCustom: event.category_custom ?? undefined,
+      categoryName: event.category?.name ?? undefined,
+      locationId: event.location_id ?? undefined,
+      hostName: undefined,
       image: event.image_url || null,
       gallery: (galleryImages || []).map(img => img.image_url),
       ticketType: (ticketTypes || []).map(ticket => ({
@@ -66,8 +83,6 @@ export async function fetchEventBySlug(slug: string): Promise<Event | null> {
       userId: event.user_id,
       createdAt: event.created_at,
       updatedAt: event.updated_at,
-      country: event.country,
-      currency: event.currency,
       isVirtual: event.is_virtual || false,
       virtualEventDetails: event.virtual_details || undefined,
     };

@@ -24,10 +24,22 @@ import { supabase } from '@/utils/supabaseClient';
 const INITIAL_EVENT_DATA: Event = {
   title: '',
   description: '',
+  price: '',
+  startTime: '',
+  endTime: null,
   date: '',
   time: '',
   venue: '',
   location: '',
+  address: '',
+  city: '',
+  country: '',
+  latitude: null,
+  longitude: null,
+  categoryId: undefined,
+  categoryName: undefined,
+  categoryCustom: '',
+  locationId: undefined,
   hostName: '',
   image: null,
   gallery: [],
@@ -40,6 +52,14 @@ const INITIAL_EVENT_DATA: Event = {
     instagram: ''
   },
   currency: 'NGN'
+};
+
+const combineDateAndTime = (date: string, time: string): string => {
+  if (!date) return '';
+  const timeSafe = time || '00:00';
+  const combined = new Date(`${date}T${timeSafe}`);
+  if (Number.isNaN(combined.getTime())) return '';
+  return combined.toISOString();
 };
 
 const STEPS = [
@@ -67,9 +87,12 @@ export default function CreateEventPage() {
     const savedData = getFormProgress();
     if (savedData) {
       try {
+        const derivedStartTime = savedData.startTime || combineDateAndTime(savedData.date || '', savedData.time || '');
         setFormData(prev => ({
           ...prev,
           ...savedData,
+          startTime: derivedStartTime || prev.startTime,
+          endTime: savedData.endTime ?? prev.endTime ?? null,
           image: null,
           gallery: []
         }));
@@ -119,14 +142,27 @@ export default function CreateEventPage() {
         // Check if user has bank account setup
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('account_number')
+          .select('account_number, bank_code, bank_name, full_name, country')
           .eq('user_id', session.user.id)
           .maybeSingle();
 
-        // If no profile exists or no account_number, show setup popup
-        if (profileError || !profile?.account_number) {
-          setShowAccountSetup(true);
+        if (profileError) {
+          throw profileError;
         }
+
+        const hasBankDetails = Boolean(
+          profile?.account_number &&
+          profile?.bank_code &&
+          profile?.bank_name
+        );
+
+        setShowAccountSetup(!hasBankDetails);
+
+        setFormData(prev => ({
+          ...prev,
+          hostName: prev.hostName || profile?.full_name || session.user.user_metadata?.full_name || '',
+          country: prev.country || profile?.country || ''
+        }));
       } catch (error) {
         console.error('Error checking auth:', error);
         setToast({ 
@@ -147,8 +183,19 @@ export default function CreateEventPage() {
         if (!formData.title.trim()) return 'Please enter an event title';
         if (!formData.description.trim()) return 'Please enter an event description';
         if (!formData.image) return 'Please upload an event image';
-        if (!formData.date || !formData.time) return 'Please set event date and time';
-        
+        if (!formData.startTime) return 'Please set event start date and time';
+        if (new Date(formData.startTime).getTime() <= Date.now()) {
+          return 'Event start time must be in the future';
+        }
+        if (!formData.categoryId && !formData.categoryCustom?.toString().trim()) {
+          return 'Please choose an event category';
+        }
+        if (formData.endTime) {
+          const end = new Date(formData.endTime).getTime();
+          if (Number.isNaN(end) || end <= new Date(formData.startTime).getTime()) {
+            return 'Event end time must be after the start time';
+          }
+        }
         if (formData.isVirtual) {
           if (!formData.virtualEventDetails?.platform) return 'Please select a virtual event platform';
           if (formData.virtualEventDetails.platform === 'google-meet' && !formData.virtualEventDetails.meetingUrl) {
@@ -158,7 +205,10 @@ export default function CreateEventPage() {
             return 'Please enter a Meets URL';
           }
         } else {
-          if (!formData.venue || !formData.location) return 'Please enter event venue and location';
+          if (!(formData.venue ?? '').trim()) return 'Please enter a venue';
+          if (!formData.country?.trim()) return 'Please select a country';
+          if (!formData.city?.trim()) return 'Please enter a city';
+          if (!formData.address?.trim()) return 'Please enter an event address';
         }
         return true;
       },

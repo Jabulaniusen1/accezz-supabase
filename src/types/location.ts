@@ -8,8 +8,8 @@ export interface LocationEventSummary {
   id: string;
   title: string;
   slug?: string | null;
-  date: string;
-  time?: string | null;
+  startTime: string;
+  endTime?: string | null;
   imageUrl?: string | null;
   status: string;
   visibility: string;

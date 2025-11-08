@@ -23,15 +23,36 @@ interface LocationDetailContentProps {
 
 const PlaceholderImage = '/accezz logo c.png';
 
-const formatDate = (value: string, time?: string | null) => {
-  const date = new Date(value);
-  const dateLabel = date.toLocaleDateString('en-GB', {
+const formatDate = (startValue: string, endValue?: string | null) => {
+  const start = new Date(startValue);
+  const dateLabel = start.toLocaleDateString('en-GB', {
     weekday: 'short',
     month: 'short',
     day: 'numeric',
     year: 'numeric',
   });
-  return time ? `${dateLabel} • ${time}` : dateLabel;
+
+  const formatTime = (value: Date) =>
+    value.toLocaleTimeString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+  if (!endValue) {
+    return `${dateLabel} • ${formatTime(start)}`;
+  }
+
+  const end = new Date(endValue);
+  if (Number.isNaN(end.getTime())) {
+    return `${dateLabel} • ${formatTime(start)}`;
+  }
+
+  const sameDay = start.toDateString() === end.toDateString();
+  const endSegment = sameDay
+    ? formatTime(end)
+    : `${end.toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })} ${formatTime(end)}`;
+
+  return `${dateLabel} • ${formatTime(start)} - ${endSegment}`;
 };
 
 const formatPrice = (value: string | null | undefined) => {
@@ -224,11 +245,13 @@ export const LocationDetailContent: React.FC<LocationDetailContentProps> = ({ lo
                     className="flex items-center gap-3 rounded-2xl border border-gray-100 dark:border-gray-800 px-4 py-3 hover:border-[#f54502]/30 hover:bg-[#f54502]/5 dark:hover:border-[#f54502]/30"
                   >
                     <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#f54502] to-[#d63a02] text-xs font-semibold text-white">
-                      {new Date(event.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
+                      {new Date(event.startTime).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-1">{event.title}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{formatDate(event.date, event.time)}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {formatDate(event.startTime, event.endTime ?? undefined)}
+                      </p>
                     </div>
                   </Link>
                 ))}

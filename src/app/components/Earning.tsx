@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Toast } from "./Toast";
 import { supabase } from '@/utils/supabaseClient';
-import { Event } from '@/types/event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 // Withdrawals moved to its own tab
 import {
@@ -88,7 +87,7 @@ const Earnings = () => {
       try {
         const { data: evs, error: evErr } = await supabase
           .from('events')
-          .select('id, slug, title, description, image_url, date, created_at, time, venue, location, country, currency, is_virtual')
+          .select('id, slug, title, description, image_url, start_time, end_time, created_at, venue, location, address, city, country, currency, is_virtual, location_id, category_id, category_custom, latitude, longitude')
           .eq('user_id', session.user.id)
           .order('created_at', { ascending: false });
         if (evErr) throw evErr;
@@ -109,20 +108,35 @@ const Earnings = () => {
 
         const list: Event[] = (evs || []).map(e => ({
           id: e.id as string,
-          slug: (e.slug as string) || e.id as string,
+          slug: (e.slug as string) || (e.id as string),
           title: e.title as string,
           description: e.description as string,
-          image: (e.image_url as string) || '',
-          date: e.date as string,
-          time: (e.time as string) || '',
-          venue: (e.venue as string) || '',
+          image: (e.image_url as string) || null,
+          startTime: e.start_time as string,
+          endTime: (e.end_time as string) || null,
+          date: e.start_time as string,
+          time: (() => {
+            const start = new Date(e.start_time as string);
+            if (Number.isNaN(start.getTime())) return '';
+            return `${start.getHours().toString().padStart(2, '0')}:${start.getMinutes().toString().padStart(2, '0')}`;
+          })(),
+          venue: (e.venue as string) || undefined,
           location: (e.location as string) || '',
-          hostName: '',
+          address: (e.address as string) || undefined,
+          city: (e.city as string) || undefined,
+          hostName: undefined,
           gallery: [],
           isVirtual: (e.is_virtual as boolean) || false,
           country: (e.country as string) || undefined,
           currency: (e.currency as string) || undefined,
           createdAt: e.created_at as string,
+          updatedAt: undefined,
+          latitude: typeof e.latitude === 'number' ? e.latitude : null,
+          longitude: typeof e.longitude === 'number' ? e.longitude : null,
+          categoryId: (e.category_id as string) || undefined,
+          categoryCustom: (e.category_custom as string) || undefined,
+          categoryName: undefined,
+          locationId: (e.location_id as string) || undefined,
           ticketType: (ticketMap.get(e.id as string) || []).map(t => ({
             name: t.name as string,
             price: String(t.price ?? '0'),

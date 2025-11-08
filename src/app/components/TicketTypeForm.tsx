@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Receipt from './Receipt';
 import TicketSelectionStep from './TicketFormSec/TicketSelectionStep';
 import OrderInformationStep from './TicketFormSec/OrderInformationStep';
@@ -34,11 +34,20 @@ type TicketTypeFormProps = {
 
 interface Event { id: string; slug: string; }
 
+const parsePriceValue = (value: string | number | null | undefined): number => {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+  if (typeof value === 'string') {
+    const cleaned = value.replace(/[^\d.-]/g, '');
+    const parsed = Number(cleaned);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  return 0;
+};
+
 const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true }: TicketTypeFormProps) => {
   const [activeStep, setActiveStep] = useState(0);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [quantity, setQuantity] = useState(1);
-  const [totalPrice, setTotalPrice] = useState(0);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -52,6 +61,10 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
   }>>([]);
 
   const eventId = events?.id;
+
+  const totalPrice = useMemo(() => {
+    return parsePriceValue(selectedTicket?.price) * quantity;
+  }, [selectedTicket, quantity]);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -91,7 +104,6 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
         if (savedState.fullName) setFullName(savedState.fullName);
         if (savedState.email) setEmail(savedState.email);
         if (savedState.phoneNumber) setPhoneNumber(savedState.phoneNumber);
-        if (savedState.totalPrice !== undefined) setTotalPrice(savedState.totalPrice);
         if (savedState.orderId) setOrderId(savedState.orderId);
         if (savedState.additionalTicketHolders) setAdditionalTicketHolders(savedState.additionalTicketHolders);
       }
@@ -128,7 +140,6 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
         setToast({ type: 'error', message: 'Please select a ticket' });
         return;
       }
-      setTotalPrice(quantity * Number(selectedTicket.price.replace(/[^\d.-]/g, '')));
       setActiveStep(1);
 
     } else if (activeStep === 1) {
@@ -306,12 +317,10 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
       details: ticket.details || ''
     });
     setQuantity(1);
-    setTotalPrice(Number(ticket.price.replace(/[^\d.-]/g, '')));
   }; 
 
   const handleQuantityChange = (newQuantity: number) => {
     setQuantity(newQuantity);
-    setTotalPrice(newQuantity * Number(selectedTicket?.price.replace(/[^\d.-]/g, '') || '0'));
     
     setAdditionalTicketHolders(prev => {
       if (newQuantity <= 1) return [];

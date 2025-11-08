@@ -618,17 +618,23 @@ async function handleTicketPurchase(context: HandlerContext, payload: TicketPurc
     return NextResponse.json({ error: 'Event not found for order' }, { status: 404 });
   }
 
+  if (order.status !== 'paid') {
+    return NextResponse.json({ error: 'Order not paid' }, { status: 400 });
+  }
+
+  // For ticket purchases, allow notification if order is paid (orderId is sufficient verification)
+  // Authorization check is optional - if user is authenticated, verify they're buyer/creator/admin
+  // If not authenticated, still allow notification since order status confirms validity
+  const hasUser = context.user.id && context.user.id.trim() !== '';
   const isAuthorized =
+    !hasUser || // No user context (unauthenticated) - allow for paid orders
     context.user.id === order.buyer_user_id ||
     context.user.id === event.user_id ||
     context.isAdmin;
 
-  if (!isAuthorized) {
+  if (!isAuthorized && hasUser) {
+    // Only block if user is authenticated but not authorized
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
-
-  if (order.status !== 'paid') {
-    return NextResponse.json({ error: 'Order not paid' }, { status: 400 });
   }
 
   const notificationsMap = new Map<string, { user_id: string; type: string; title: string; body: string }>();
@@ -706,12 +712,18 @@ async function handleLocationBooking(context: HandlerContext, payload: LocationB
     return NextResponse.json({ error: 'Location not found' }, { status: 404 });
   }
 
+  // For location bookings, allow notification if booking exists (bookingId is sufficient verification)
+  // Authorization check is optional - if user is authenticated, verify they're requester/owner/admin
+  // If not authenticated, still allow notification since booking existence confirms validity
+  const hasUser = context.user.id && context.user.id.trim() !== '';
   const isAuthorized =
+    !hasUser || // No user context (unauthenticated) - allow for valid bookings
     (booking.requester_user_id && context.user.id === booking.requester_user_id) ||
     context.user.id === location.user_id ||
     context.isAdmin;
 
-  if (!isAuthorized) {
+  if (!isAuthorized && hasUser) {
+    // Only block if user is authenticated but not authorized
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -875,12 +887,6 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { user, isAdmin } = await getRequestUser(request);
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const body = (await request.json()) as { type?: NotificationType['type']; [key: string]: unknown } | null;
     const type = body?.type;
 
@@ -888,10 +894,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing notification type' }, { status: 400 });
     }
 
+    // For ticket purchases and location bookings, allow unauthenticated requests
+    // (orderId/bookingId verification is sufficient)
+    // For other notification types, require authentication
+    const { user, isAdmin } = await getRequestUser(request);
+    
+    if (!user && type !== 'ticket_purchase' && type !== 'location_booking') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const context: HandlerContext = {
       request,
-      user,
-      isAdmin,
+      user: user || { id: '' }, // Provide empty user for unauthenticated ticket purchases/location bookings
+      isAdmin: isAdmin || false,
     };
 
     switch (type) {
