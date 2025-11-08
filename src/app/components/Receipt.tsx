@@ -27,6 +27,10 @@ interface EventData {
   time: string;
   venue: string;
   location: string;
+  isVirtual: boolean;
+  virtualPlatform?: string;
+  virtualAccessLink?: string;
+  virtualMeetingId?: string;
 }
 
 interface TicketData {
@@ -38,7 +42,7 @@ interface TicketData {
   ticketType: string;
   price: number;
   purchaseDate: string;
-  qrCode: string;
+  qrCode?: string | null;
   currency: string;
   attendees: Attendee[];
 }
@@ -51,6 +55,18 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
   const [error, setError] = useState<string | null>(null);
   const hasAutoDownloaded = useRef(false);
   
+  const isVirtualEvent = Boolean(eventData?.isVirtual);
+  const virtualAccessLink = eventData?.virtualAccessLink;
+  const virtualPlatformLabel = eventData?.virtualPlatform;
+  const virtualMeetingId = eventData?.virtualMeetingId;
+  const formatPlatformLabel = (value?: string) => {
+    if (!value) return undefined;
+    return value
+      .split(/[-_]/g)
+      .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+      .join(' ');
+  };
+
   // Generate fallback QR code if not available
   const generateFallbackQR = async (ticketId: string, ticketCode: string): Promise<string> => {
     try {
@@ -93,7 +109,9 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
             date,
             time,
             venue,
-            location
+            location,
+            is_virtual,
+            virtual_details
           ),
           ticket_types!inner(
             name
@@ -120,22 +138,45 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
         ticketType: ticket.ticket_types.name,
         price: Number(ticket.price),
         purchaseDate: ticket.created_at,
-        qrCode: qrCodeUrl,
+        qrCode: qrCodeUrl || null,
         currency: ticket.currency || 'NGN',
         attendees: ticket.orders.meta?.attendees || [],
       };
 
       setTicketData(mappedTicketData);
 
-      // Map event data
+      const virtualDetails = (ticket.events.virtual_details as Record<string, unknown> | null) || null;
+      const rawMeetingUrl = typeof virtualDetails?.meetingUrl === 'string' ? virtualDetails.meetingUrl.trim() : '';
+      const rawMeetingId = typeof virtualDetails?.meetingId === 'string' ? virtualDetails.meetingId.trim() : '';
+      const platform = typeof virtualDetails?.platform === 'string' ? virtualDetails.platform : undefined;
+
+      let virtualAccessLink: string | undefined;
+      if (rawMeetingUrl) {
+        virtualAccessLink = rawMeetingUrl;
+      } else if (platform === 'zoom' && rawMeetingId) {
+        virtualAccessLink = `https://zoom.us/j/${rawMeetingId}`;
+      }
+
+      const formatPlatformForVenue = (value?: string) => {
+        if (!value) return 'Online Event';
+        return value
+          .split(/[-_]/g)
+          .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+          .join(' ') + ' (Online)';
+      };
+
       const mappedEventData: EventData = {
         id: ticket.events.id,
         title: ticket.events.title,
         image: ticket.events.image_url || '',
         date: ticket.events.date,
         time: ticket.events.time || '',
-        venue: ticket.events.venue || '',
+        venue: ticket.events.is_virtual ? formatPlatformForVenue(platform) : (ticket.events.venue || ''),
         location: ticket.events.location || '',
+        isVirtual: Boolean(ticket.events.is_virtual),
+        virtualPlatform: platform,
+        virtualAccessLink,
+        virtualMeetingId: rawMeetingId || undefined,
       };
 
       setEventData(mappedEventData);
@@ -207,7 +248,7 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
   const generatePDF = async () => {
     if (!ticketData) return null;
   
-    const qrCodeBase64 = await fetchQRCodeAsBase64(ticketData.qrCode);
+    const isVirtualEvent = Boolean(eventData?.isVirtual);
     const doc = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
@@ -349,33 +390,90 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
     doc.text(`${ticketData.currency} ${ticketData.price}`, leftMargin + contentWidth - 50, ticketBoxY + 14);
     
     yPos += ticketBoxHeight + 25;
-    
-    // QR Code Section (centered, matching site design)
-    const qrSize = 70; // Mobile-optimized size
-    const qrX = (pageWidth - qrSize) / 2;
-    const qrY = yPos;
-    
-    // White background box with border (matching site)
-    doc.setFillColor(255, 255, 255);
-    doc.roundedRect(qrX - 5, qrY - 5, qrSize + 10, qrSize + 10, 2, 2, 'F');
-    doc.setDrawColor(200, 200, 200);
-    doc.setLineWidth(0.5);
-    doc.roundedRect(qrX - 5, qrY - 5, qrSize + 10, qrSize + 10, 2, 2, 'S');
-    
-    // QR Code
-    doc.addImage(qrCodeBase64, 'PNG', qrX, qrY, qrSize, qrSize);
   
-    // QR Code label
-    yPos += qrSize + 10;
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(128, 128, 128);
-    const qrLabel = 'Present this QR code at the event entrance for verification';
-    const qrLabelLines = doc.splitTextToSize(qrLabel, contentWidth);
-    doc.text(qrLabelLines, pageWidth / 2, yPos, { align: 'center' });
-    
-    yPos += qrLabelLines.length * 5 + 15;
-    
+    if (isVirtualEvent) {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.setTextColor(245, 69, 2);
+      doc.text('Virtual Access Details', leftMargin, yPos);
+      yPos += 8;
+  
+      const formatPlatform = (value?: string) => {
+        if (!value) return 'Online Session';
+        return value
+          .split(/[-_]/g)
+          .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+          .join(' ');
+      };
+  
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.setTextColor(128, 128, 128);
+      doc.text('Platform', leftMargin, yPos);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(29, 29, 29);
+      doc.text(formatPlatform(eventData?.virtualPlatform), leftMargin, yPos + 6);
+      yPos += 14;
+  
+      if (eventData?.virtualMeetingId) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(11);
+        doc.setTextColor(128, 128, 128);
+        doc.text('Meeting ID', leftMargin, yPos);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(12);
+        doc.setTextColor(29, 29, 29);
+        doc.text(eventData.virtualMeetingId, leftMargin, yPos + 6);
+        yPos += 14;
+      }
+  
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.setTextColor(128, 128, 128);
+      doc.text('Access Link', leftMargin, yPos);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11.5);
+      const accessText = eventData?.virtualAccessLink || 'We\'ve emailed your access link. Check your inbox for details.';
+      const accessLines = doc.splitTextToSize(accessText, contentWidth);
+      doc.setTextColor(59, 130, 246);
+      doc.text(accessLines, leftMargin, yPos + 6);
+      doc.setTextColor(29, 29, 29);
+      yPos += Math.max(accessLines.length * 6, 12) + 20;
+    } else if (ticketData.qrCode) {
+      let qrCodeBase64: string | null = null;
+      try {
+        qrCodeBase64 = await fetchQRCodeAsBase64(ticketData.qrCode);
+      } catch (error) {
+        console.error('Error fetching QR code for PDF:', error);
+      }
+
+      if (qrCodeBase64) {
+        const qrSize = 70;
+        const qrX = (pageWidth - qrSize) / 2;
+        const qrY = yPos;
+  
+        doc.setFillColor(255, 255, 255);
+        doc.roundedRect(qrX - 5, qrY - 5, qrSize + 10, qrSize + 10, 2, 2, 'F');
+        doc.setDrawColor(200, 200, 200);
+        doc.setLineWidth(0.5);
+        doc.roundedRect(qrX - 5, qrY - 5, qrSize + 10, qrSize + 10, 2, 2, 'S');
+  
+        doc.addImage(qrCodeBase64, 'PNG', qrX, qrY, qrSize, qrSize);
+  
+        yPos += qrSize + 10;
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(128, 128, 128);
+        const qrLabel = 'Present this QR code at the event entrance for verification';
+        const qrLabelLines = doc.splitTextToSize(qrLabel, contentWidth);
+        doc.text(qrLabelLines, pageWidth / 2, yPos, { align: 'center' });
+        yPos += qrLabelLines.length * 5 + 15;
+      }
+    }
+  
+    // Order Information
+
     // Powered by Accezz section
     const poweredByY = Math.min(280, yPos);
     doc.setFont("helvetica", "normal");
@@ -578,19 +676,59 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
               </div>
             </div>
 
-            {/* Compact QR Code */}
-            <div className="text-center mb-6">
-              <div className="bg-white p-2 rounded-lg inline-block border border-gray-200">
-                <Image
-                  src={ticketData.qrCode}
-                  alt="Ticket QR Code"
-                  width={120}
-                  height={120}
-                  className="rounded-lg"
-                  priority
-                />
+            {isVirtualEvent ? (
+              <div className="bg-[#f54502]/10 border-2 border-[#f54502]/20 rounded-2xl p-10 mb-8 text-left space-y-4">
+                <h2 className="text-xl font-semibold text-[#f54502]">Virtual Access</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {virtualPlatformLabel && (
+                    <p className="text-xs text-gray-600">
+                      Platform: <span className="font-semibold text-gray-800 capitalize">{formatPlatformLabel(virtualPlatformLabel)}</span>
+                    </p>
+                  )}
+                  {virtualMeetingId && (
+                    <div>
+                      <p className="text-sm text-gray-500">Meeting ID</p>
+                      <p className="text-lg font-semibold text-gray-900">{virtualMeetingId}</p>
+                    </div>
+                  )}
+                </div>
+                {virtualAccessLink ? (
+                  <a
+                    href={virtualAccessLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-[#f54502] hover:text-[#d63a02] break-all"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14L21 3m0 0h-7m7 0v7" />
+                    </svg>
+                    Open virtual session link
+                  </a>
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    We&apos;ve emailed your access link. Check your inbox for join instructions.
+                  </p>
+                )}
               </div>
-            </div>
+            ) : (
+              ticketData.qrCode ? (
+                <div className="text-center bg-gray-50 p-10 rounded-2xl border-2 border-[#f54502]/20 mb-8">
+                  <div className="bg-white p-6 rounded-2xl inline-block shadow-lg">
+                    <Image
+                      src={ticketData.qrCode}
+                      alt="Ticket QR Code"
+                      width={150}
+                      height={150}
+                      className="rounded-lg"
+                      priority
+                    />
+                  </div>
+                  <p className="text-gray-500 mt-4 text-base px-4">
+                    Present this QR code at the event entrance for verification
+                  </p>
+                </div>
+              ) : null
+            )}
 
             {/* Compact Action Buttons */}
             <div className="flex gap-3">
@@ -697,24 +835,6 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* Desktop QR Code Section */}
-            <div className="text-center bg-gray-50 p-10 rounded-2xl border-2 border-[#f54502]/20 mb-8">
-              <div className="bg-white p-6 rounded-2xl inline-block shadow-lg">
-            <Image
-              src={ticketData.qrCode}
-              alt="Ticket QR Code"
-              width={150}
-              height={150}
-                  className="rounded-lg"
-              priority
-                />
-              </div>
-              
-              <p className="text-gray-500 mt-4 text-base px-4">
-                Present this QR code at the event entrance for verification
-              </p>
             </div>
 
             {/* Desktop Action Buttons */}

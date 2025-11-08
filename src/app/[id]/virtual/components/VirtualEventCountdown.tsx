@@ -65,7 +65,7 @@ export default function VirtualEventCountdown({ event }: VirtualEventCountdownPr
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700"
+      className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-[#f54502]/15 dark:border-[#f54502]/25"
     >
       <h3 className="text-xl font-bold mb-4 flex items-center">
         {timeLeft.isLive ? (
@@ -77,7 +77,7 @@ export default function VirtualEventCountdown({ event }: VirtualEventCountdownPr
         ) : (
           <>
             {/* COUNTDOWN LABEL */}
-            <FaCalendarAlt className="mr-2 text-blue-500" />
+            <FaCalendarAlt className="mr-2 text-[#f54502]" />
             EVENT STARTS IN
           </>
         )}
@@ -98,8 +98,8 @@ export default function VirtualEventCountdown({ event }: VirtualEventCountdownPr
             { value: timeLeft.minutes, label: 'MINUTES' },
             { value: timeLeft.seconds, label: 'SECONDS' }
           ].map((item, index) => (
-            <div key={index} className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+            <div key={index} className="bg-[#f54502]/10 dark:bg-[#f54502]/20 p-3 rounded-lg">
+              <div className="text-2xl font-bold text-[#f54502] dark:text-[#f54502]">
                 {item.value.toString().padStart(2, '0')}
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-400">{item.label}</div>
@@ -110,7 +110,7 @@ export default function VirtualEventCountdown({ event }: VirtualEventCountdownPr
 
       {/* SHOW EVENT DATE AND TIME */}
       <div className="mt-4 flex items-center text-gray-600 dark:text-gray-300">
-        <FaClock className="mr-2" />
+        <FaClock className="mr-2 text-[#f54502]" />
         {formattedDate} at {event.time}
       </div>
     </motion.div>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import SuccessModal from './modal/successModal';
 import Toast from '../../../components/ui/Toast';
@@ -40,7 +40,7 @@ const Account = () => {
   });
 
   // Country to currency mapping
-  const countryCurrencyMap: Record<string, string> = {
+  const countryCurrencyMap = useMemo<Record<string, string>>(() => ({
     'nigeria': 'NGN',
     'ghana': 'GHS',
     'south africa': 'ZAR',
@@ -65,7 +65,7 @@ const Account = () => {
     'united states': 'USD',
     'us': 'USD',
     'usa': 'USD',
-  };
+  }), []);
 
   // Currency options with full names
   const currencyOptions = [
@@ -119,7 +119,7 @@ const Account = () => {
   // Helper function to get currency for country
   const getCurrencyForCountry = useCallback((country: string): string => {
     return countryCurrencyMap[country.toLowerCase()] || 'NGN';
-  }, []);
+  }, [countryCurrencyMap]);
 
   // Helper function to capitalize country name
   const capitalizeCountry = (country: string): string => {

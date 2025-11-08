@@ -3,11 +3,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { FaCloudUploadAlt, FaExclamationTriangle, FaEye, FaGoogle, FaIdCard, FaInfoCircle, FaKey, FaLink, FaLock, FaTrash, FaVideo } from 'react-icons/fa';
+import { FaCloudUploadAlt, FaExclamationTriangle, FaIdCard, FaInfoCircle, FaLink, FaTrash } from 'react-icons/fa';
 import { type Event } from '@/types/event';
 import { RiEarthLine } from 'react-icons/ri';
 import { ToastProps } from '@/types/event';
 import DateTimePicker from '@/components/ui/DateTimePicker';
+import { SiGooglemeet } from 'react-icons/si';
+import { BiLogoZoom } from 'react-icons/bi';
+import { BsMicrosoftTeams } from 'react-icons/bs';
 
 interface BasicInfoProps {
   formData: Event;
@@ -414,26 +417,34 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
 
                 {/* Platform Selection */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
-                {(['google-meet', 'zoom', 'whereby', 'custom'] as const).map((platform) => (
+                {(['google-meet', 'zoom', 'meets', 'custom'] as const).map((platform) => (
                   <motion.button
                     key={platform}
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => {
+                      const previousDetails = formData.virtualEventDetails || {};
                       updateFormData({
                         virtualEventDetails: {
-                          ...formData.virtualEventDetails,
+                          ...previousDetails,
                           platform,
-                          meetingUrl: platform === 'custom' ? '' : formData.virtualEventDetails?.meetingUrl,
-                          meetingId: platform === 'zoom' ? '' : formData.virtualEventDetails?.meetingId
+                          meetingUrl:
+                            platform === 'zoom'
+                              ? previousDetails.meetingUrl || ''
+                              : platform === 'custom' || platform === 'google-meet' || platform === 'meets'
+                                ? previousDetails.meetingUrl || ''
+                                : '',
+                          meetingId: platform === 'zoom' ? previousDetails.meetingId || '' : ''
                         },
-                        // Update venue based on platform
                         venue: 'Online',
-                        location: 
-                          platform === 'google-meet' ? 'Google Meet' : 
-                          platform === 'zoom' ? 'Zoom Meeting' : 
-                          platform === 'whereby' ? 'Whereby Meeting' :
-                          'Virtual Event'
+                        location:
+                          platform === 'google-meet'
+                            ? 'Google Meet'
+                            : platform === 'zoom'
+                              ? 'Zoom Meeting'
+                              : platform === 'meets'
+                                ? 'Meets'
+                                : 'Virtual Event'
                       });
                     }}
                     className={`p-3 sm:p-4 rounded-[5px] border-2 transition-all duration-200 flex flex-col items-center dark:text-white text-gray-900
@@ -442,14 +453,18 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                       : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-[#f54502]/5 dark:hover:bg-[#f54502]/10 hover:border-[#f54502] dark:hover:border-[#f54502]'
                       }`}
                   >
-                      {platform === 'google-meet' && <FaGoogle className="text-[#f54502] text-xl sm:text-2xl mb-2" />}
-                      {platform === 'zoom' && <FaVideo className="text-[#f54502] text-xl sm:text-2xl mb-2" />}
-                      {platform === 'whereby' && <FaVideo className="text-[#f54502] text-xl sm:text-2xl mb-2" />}
-                      {platform === 'custom' && <FaKey className="text-[#f54502] text-xl sm:text-2xl mb-2" />}
+                      {platform === 'google-meet' && <SiGooglemeet className="text-[#f54502] text-xl sm:text-2xl mb-2" />}
+                      {platform === 'zoom' && <BiLogoZoom className="text-[#f54502] text-xl sm:text-2xl mb-2" />}
+                      {platform === 'meets' && <BsMicrosoftTeams className="text-[#f54502] text-xl sm:text-2xl mb-2" />}
+                      {platform === 'custom' && <FaLink className="text-[#f54502] text-xl sm:text-2xl mb-2" />}
                       <span className="capitalize font-medium text-xs sm:text-sm text-center">
-                        {platform === 'google-meet' ? 'Google Meet' : 
-                        platform === 'whereby' ? 'Whereby' :
-                        platform === 'custom' ? 'Custom Setup' : platform}
+                        {platform === 'google-meet'
+                          ? 'Google Meet'
+                          : platform === 'meets'
+                            ? 'Meets'
+                            : platform === 'custom'
+                              ? 'Custom Setup'
+                              : platform}
                       </span>
                     </motion.button>
                   ))}
@@ -489,53 +504,36 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                   </div>
                 )}
 
-                {/* Whereby Section */}
-                {formData.virtualEventDetails?.platform === 'whereby' && (
+                {/* Meets Section */}
+                {formData.virtualEventDetails?.platform === 'meets' && (
                   <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
                     <div className="bg-[#f54502]/10 dark:bg-[#f54502]/20 p-3 sm:p-4 rounded-[5px] border border-[#f54502]/20 dark:border-[#f54502]/30">
                       <div className="flex items-start">
                         <FaInfoCircle className="text-[#f54502] mt-1 mr-2 flex-shrink-0 text-sm sm:text-base" />
                         <p className="text-xs sm:text-sm text-[#f54502] dark:text-[#f54502]">
-                          A Whereby meeting link will be automatically generated when you publish your event.
-                          You can customize the room name later in your Whereby dashboard.
+                          Share the Meets session link attendees should use after purchasing their tickets.
                         </p>
                       </div>
                     </div>
-                    
                     <div>
-                      <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Meeting Options
+                      <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                        <FaLink className="mr-2 text-sm" /> Meets Link *
                       </label>
-                      <div className="space-y-2 sm:space-y-3">
-                        <label className="flex items-center space-x-2 sm:space-x-3">
-                          <input
-                            type="checkbox"
-                            checked={formData.virtualEventDetails?.enableWaitingRoom || false}
-                            onChange={(e) => updateFormData({
-                              virtualEventDetails: {
-                                ...formData.virtualEventDetails,
-                                enableWaitingRoom: e.target.checked
-                              }
-                            })}
-                            className="h-4 w-4 text-[#f54502] focus:ring-[#f54502] border-gray-300 rounded-[5px]"
-                          />
-                          <span className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">Enable waiting room</span>
-                        </label>
-                        <label className="flex items-center space-x-2 sm:space-x-3">
-                          <input
-                            type="checkbox"
-                            checked={formData.virtualEventDetails?.lockRoom || false}
-                            onChange={(e) => updateFormData({
-                              virtualEventDetails: {
-                                ...formData.virtualEventDetails,
-                                lockRoom: e.target.checked
-                              }
-                            })}
-                            className="h-4 w-4 text-[#f54502] focus:ring-[#f54502] border-gray-300 rounded-[5px]"
-                          />
-                          <span className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">Lock room after start</span>
-                        </label>
-                      </div>
+                      <input
+                        type="url"
+                        value={formData.virtualEventDetails?.meetingUrl || ''}
+                        onChange={(e) => updateFormData({
+                          virtualEventDetails: {
+                            ...formData.virtualEventDetails,
+                            meetingUrl: e.target.value
+                          }
+                        })}
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600
+                                focus:ring-2 focus:ring-[#f54502] focus:border-transparent
+                                bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
+                        placeholder="https://meets.your-platform.com/example"
+                        required
+                      />
                     </div>
                   </div>
                 )}
@@ -562,29 +560,6 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                         placeholder="123 456 7890"
                         required
                       />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-                        <FaLock className="mr-2 text-sm" /> Zoom Passcode (Optional)
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.virtualEventDetails?.passcode || ''}
-                        onChange={(e) => updateFormData({
-                          virtualEventDetails: {
-                            ...formData.virtualEventDetails,
-                            passcode: e.target.value
-                          }
-                        })}
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600
-                                focus:ring-2 focus:ring-[#f54502] focus:border-transparent
-                                bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
-                        placeholder="Leave empty if no passcode required"
-                      />
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        This is different from the event password. Only needed if your Zoom meeting has a passcode.
-                      </p>
                     </div>
                   </div>
                 )}
@@ -624,79 +599,6 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                   </div>
                 )}
 
-                {/* Universal Virtual Password Section */}
-                <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-[5px] border border-gray-200 dark:border-gray-700 shadow-sm">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 gap-2 sm:gap-0">
-                    <label className="flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.virtualEventDetails?.requiresPassword || false}
-                        onChange={(e) => updateFormData({
-                          virtualEventDetails: {
-                            ...formData.virtualEventDetails,
-                            requiresPassword: e.target.checked,
-                            virtualPassword: e.target.checked ? formData.virtualEventDetails?.virtualPassword || '' : ''
-                          }
-                        })}
-                        className="sr-only peer"
-                      />
-                      <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#f54502]/30 dark:peer-focus:ring-[#f54502]/50 rounded-[5px] peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-[5px] after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#f54502]"></div>
-                      <span className="ml-3 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Require Virtual Password
-                      </span>
-                    </label>
-                    {formData.virtualEventDetails?.requiresPassword && (
-                      <span className="text-xs bg-[#f54502]/20 dark:bg-[#f54502]/30 text-[#f54502] dark:text-[#f54502] px-2 py-1 rounded-[5px]">
-                        Extra Security
-                      </span>
-                    )}
-                  </div>
-
-                  {formData.virtualEventDetails?.requiresPassword && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      transition={{ duration: 0.3 }}
-                      className="mt-3"
-                    >
-                      <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-                        <FaLock className="mr-2 text-sm" /> Virtual Event Password
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="password"
-                          value={formData.virtualEventDetails?.virtualPassword || ''}
-                          onChange={(e) => updateFormData({
-                            virtualEventDetails: {
-                              ...formData.virtualEventDetails,
-                              virtualPassword: e.target.value
-                            }
-                          })}
-                          className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600
-                                  focus:ring-2 focus:ring-[#f54502] focus:border-transparent
-                                  bg-white dark:bg-gray-700 text-gray-900 dark:text-white pr-10 text-sm sm:text-base"
-                          placeholder="Create a password for attendees"
-                        />
-                        <button
-                          type="button"
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                          onClick={() => {
-                            const input = document.querySelector('input[type="password"]') as HTMLInputElement;
-                            if (input) {
-                              input.type = input.type === 'password' ? 'text' : 'password';
-                            }
-                          }}
-                        >
-                          <FaEye />
-                        </button>
-                      </div>
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        Attendees will need this password to access the virtual event. 
-                        {formData.virtualEventDetails?.platform === 'zoom' && ' This is separate from the Zoom passcode.'}
-                      </p>
-                    </motion.div>
-                  )}
-                </div>
           </motion.div>
         )}
       </div>

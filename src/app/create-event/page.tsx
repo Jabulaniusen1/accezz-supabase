@@ -151,11 +151,11 @@ export default function CreateEventPage() {
         
         if (formData.isVirtual) {
           if (!formData.virtualEventDetails?.platform) return 'Please select a virtual event platform';
-          if (formData.virtualEventDetails.platform === 'whereby' && !formData.virtualEventDetails.meetingUrl) {
-            return 'Please enter a meeting URL';
+          if (formData.virtualEventDetails.platform === 'google-meet' && !formData.virtualEventDetails.meetingUrl) {
+            return 'Please enter a Google Meet URL';
           }
-          if (formData.virtualEventDetails.platform === 'zoom' && !formData.virtualEventDetails.meetingId) {
-            return 'Please enter a Zoom meeting ID';
+          if (formData.virtualEventDetails.platform === 'meets' && !formData.virtualEventDetails.meetingUrl) {
+            return 'Please enter a Meets URL';
           }
         } else {
           if (!formData.venue || !formData.location) return 'Please enter event venue and location';
