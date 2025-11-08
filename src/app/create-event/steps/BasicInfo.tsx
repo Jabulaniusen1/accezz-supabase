@@ -77,14 +77,42 @@ const normalizeCoordinate = (value?: number | string | null): number | null => {
   return null;
 };
 
-declare global {
-  interface Window {
-    google?: {
-      maps?: any;
+// Google Maps API types
+type GoogleMapsPlacesNamespace = {
+  Autocomplete: new (
+    inputField: HTMLInputElement,
+    options?: { fields?: string[]; types?: string[] }
+  ) => GooglePlacesAutocomplete;
+};
+
+type GoogleMapsNamespace = {
+  places?: GoogleMapsPlacesNamespace;
+};
+
+type GooglePlacesAutocomplete = {
+  getPlace: () => GooglePlace | undefined;
+  addListener: (event: string, callback: () => void) => GoogleMapsEventListener;
+};
+
+type GooglePlace = {
+  formatted_address?: string;
+  address_components?: GoogleAddressComponent[];
+  geometry?: {
+    location?: {
+      lat: () => number;
+      lng: () => number;
     };
-    __googleMapsScriptLoadingPromise?: Promise<any>;
-  }
-}
+  };
+};
+
+type GoogleAddressComponent = {
+  long_name: string;
+  types: string[];
+};
+
+type GoogleMapsEventListener = {
+  remove: () => void;
+};
 
 interface BasicInfoProps {
   formData: Event;
@@ -113,7 +141,7 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
   const [showEndTime, setShowEndTime] = useState<boolean>(Boolean(formData.endTime));
   const [googleMapsError, setGoogleMapsError] = useState<string | null>(null);
   const addressInputRef = useRef<HTMLInputElement | null>(null);
-  const autocompleteRef = useRef<any>(null);
+  const autocompleteRef = useRef<GooglePlacesAutocomplete | null>(null);
   const formDataRef = useRef(formData);
 
   useEffect(() => {
@@ -131,17 +159,17 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
     formDataRef.current = formData;
   }, [formData]);
 
-  const loadGooglePlacesScript = useCallback((): Promise<any | null> => {
+  const loadGooglePlacesScript = useCallback((): Promise<GoogleMapsNamespace | null> => {
     if (typeof window === 'undefined') {
       return Promise.resolve(null);
     }
 
     if (window.google?.maps?.places) {
-      return Promise.resolve(window.google.maps ?? null);
+      return Promise.resolve(window.google.maps as GoogleMapsNamespace | null);
     }
 
     if (window.__googleMapsScriptLoadingPromise) {
-      return window.__googleMapsScriptLoadingPromise;
+      return window.__googleMapsScriptLoadingPromise as Promise<GoogleMapsNamespace | null>;
     }
 
     const apiKey = googleApiKeyRef.current;
@@ -152,13 +180,13 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
       return Promise.resolve(null);
     }
 
-    const scriptPromise: Promise<any | null> = new Promise((resolve, reject) => {
+    const scriptPromise: Promise<GoogleMapsNamespace | null> = new Promise((resolve, reject) => {
       const script = document.createElement('script');
       script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&language=en`;
       script.async = true;
       script.defer = true;
       script.onload = () => {
-        resolve(window.google?.maps ?? null);
+        resolve((window.google?.maps ?? null) as GoogleMapsNamespace | null);
       };
       script.onerror = (event) => {
         window.__googleMapsScriptLoadingPromise = undefined;
@@ -168,9 +196,9 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
       document.head.appendChild(script);
     });
 
-    window.__googleMapsScriptLoadingPromise = scriptPromise;
+    (window as any).__googleMapsScriptLoadingPromise = scriptPromise;
 
-    return scriptPromise.catch(() => null);
+    return scriptPromise.catch(() => null) as Promise<GoogleMapsNamespace | null>;
   }, []);
 
   useEffect(() => {
@@ -254,7 +282,7 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
   useEffect(() => {
     if (locationMode !== 'custom') return;
     let isMounted = true;
-    let listener: any;
+    let listener: GoogleMapsEventListener | undefined;
 
     (async () => {
       setGoogleMapsError(null);
@@ -266,7 +294,7 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
         }
         return;
       }
-      autocompleteRef.current = new maps.places.Autocomplete(addressInputRef.current, {
+      autocompleteRef.current = new maps.places!.Autocomplete(addressInputRef.current, {
         fields: ['geometry', 'formatted_address', 'address_components', 'name'],
         types: ['geocode']
       });
@@ -274,12 +302,12 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
         const place = autocompleteRef.current?.getPlace?.();
         if (!place) return;
         const components = place.address_components || [];
-        const cityComponent = components.find((component: any) =>
+        const cityComponent = components.find((component: GoogleAddressComponent) =>
           component.types.includes('locality') ||
           component.types.includes('administrative_area_level_2') ||
           component.types.includes('administrative_area_level_1')
         );
-        const countryComponent = components.find((component: any) => component.types.includes('country'));
+        const countryComponent = components.find((component: GoogleAddressComponent) => component.types.includes('country'));
         const nextCity = cityComponent?.long_name || '';
         const nextCountry = countryComponent?.long_name || '';
         const lat = place.geometry?.location?.lat ? place.geometry.location.lat() : null;
