@@ -55,6 +55,7 @@ export interface Event {
   categoryCustom?: string | null;
   locationId?: string | null;
   hostName?: string;
+  whatsappLink?: string;
   image: File | string | null;
   gallery: File[];
   ticketType: Ticket[];
