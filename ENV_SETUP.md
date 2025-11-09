@@ -11,6 +11,27 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
 ```
 
+### WhatsApp Purchase Bot (Required)
+```env
+NEXT_PUBLIC_WHATSAPP_BUSINESS_NUMBER=2348123456789
+META_WHATSAPP_ACCESS_TOKEN=your_meta_permanent_access_token
+META_PHONE_NUMBER_ID=your_meta_phone_number_id
+META_WEBHOOK_VERIFY_TOKEN=your_custom_webhook_verify_token
+```
+
+Optional overrides:
+
+```env
+META_GRAPH_API_VERSION=v19.0              # defaults to v19.0
+PAYSTACK_WHATSAPP_CALLBACK_URL=https://your-domain.com
+```
+
+### Paystack (Required for Payments)
+```env
+PAYSTACK_SECRET_KEY=sk_live_xxx
+PAYSTACK_PUBLIC_KEY=pk_live_xxx
+```
+
 ### Gmail SMTP Variables (Required for Email Functionality)
 ```env
 GMAIL_USER=your-email@gmail.com
