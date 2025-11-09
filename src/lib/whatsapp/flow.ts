@@ -149,7 +149,9 @@ function mapSessionRow(row: WhatsappSessionRow): WhatsappSession {
   };
 }
 
-async function saveSession(client: SupabaseClient, session: WhatsappSession | null, updates: Partial<WhatsappSession> & { metadata?: SessionMetadata; lastMessage?: string; phone?: string }): Promise<WhatsappSession> {
+type SessionUpdate = Partial<WhatsappSession> & { metadata?: SessionMetadata; lastMessage?: string; phone?: string };
+
+async function saveSession(client: SupabaseClient, session: WhatsappSession | null, updates: SessionUpdate): Promise<WhatsappSession> {
   const now = new Date().toISOString();
   const stage = updates.stage ?? session?.stage ?? 'initial';
   const eventId = updates.eventId === undefined ? session?.eventId ?? null : updates.eventId;
@@ -164,6 +166,8 @@ async function saveSession(client: SupabaseClient, session: WhatsappSession | nu
   const orderId = updates.orderId === undefined ? session?.orderId ?? null : updates.orderId;
   const paystackReference = updates.paystackReference === undefined ? session?.paystackReference ?? null : updates.paystackReference;
   const paystackAccessCode = updates.paystackAccessCode === undefined ? session?.paystackAccessCode ?? null : updates.paystackAccessCode;
+
+  const phoneValue = updates.phone ?? session?.phone ?? null;
 
   const payload: Record<string, unknown> = {
     stage,
@@ -198,14 +202,14 @@ async function saveSession(client: SupabaseClient, session: WhatsappSession | nu
     return mapSessionRow(data);
   }
 
-  if (!updates.phone && !session?.phone) {
+  if (!phoneValue) {
     throw new Error('Cannot create a session without a phone number');
   }
 
   const { data, error } = await client
     .from('whatsapp_sessions')
     .insert({
-      buyer_phone: updates.phone ?? session?.phone,
+      buyer_phone: phoneValue,
       ...payload,
     })
     .select('*')
