@@ -290,15 +290,6 @@ export default function EventForm({ eventId, onClose, onSuccess }: EventFormProp
         if (error) throw error;
 
         const eventCreated = true;
-
-        const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_BUSINESS_NUMBER;
-        if (whatsappNumber) {
-          const whatsappLink = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`buy-event-${ins.id}`)}`;
-          await supabase
-            .from('events')
-            .update({ whatsapp_link: whatsappLink })
-            .eq('id', ins.id);
-        }
         
         try {
           // Upload image if provided (after we have event ID)

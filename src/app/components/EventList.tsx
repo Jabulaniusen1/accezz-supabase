@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 // import Loader from '@/components/ui/loader/Loader';
 import { formatPrice } from '@/utils/formatPrice';
 import { ChartAreaIcon, PencilIcon, Share2, TrashIcon, MoreVertical } from 'lucide-react';
-import { FaCalendarAlt, FaWhatsapp } from 'react-icons/fa';
+import { FaCalendarAlt } from 'react-icons/fa';
 // Removed REST API usage; using Supabase instead
 
 interface Event {
@@ -27,7 +27,6 @@ interface Event {
   city?: string;
   price: string;
   ticketType: { price: string; name: string; quantity: string; sold: string }[];
-  whatsappLink?: string;
 }
 
 const ConfirmationModal: React.FC<{
@@ -124,7 +123,7 @@ const EventList: React.FC = () => {
       // Fetch user's events
       const { data: eventsData, error: evErr } = await supabase
         .from('events')
-        .select('id, slug, title, description, image_url, start_time, end_time, location, address, city, whatsapp_link')
+        .select('id, slug, title, description, image_url, start_time, end_time, location, address, city')
         .eq('user_id', uid)
         .order('created_at', { ascending: false });
       if (evErr) throw evErr;
@@ -172,7 +171,6 @@ const EventList: React.FC = () => {
           city: (e.city as string) || undefined,
           price: '0',
           ticketType: ticketTypeMap.get(e.id as string) || [],
-          whatsappLink: (e.whatsapp_link as string) || undefined,
         };
       });
       setEvents(list);
@@ -192,15 +190,6 @@ const EventList: React.FC = () => {
     const link = `${window.location.origin}/${eventSlug}`;
     navigator.clipboard.writeText(link);
     showToastMessage('success', `Event link copied to clipboard!`);
-  }, [showToastMessage]);
-
-  const copyWhatsappLink = useCallback((whatsappLink?: string) => {
-    if (!whatsappLink) {
-      showToastMessage('error', 'No WhatsApp purchase link available for this event yet.');
-      return;
-    }
-    navigator.clipboard.writeText(whatsappLink);
-    showToastMessage('success', 'WhatsApp purchase link copied!');
   }, [showToastMessage]);
 
   const handleDeleteClick = useCallback((eventId: string) => {
@@ -325,7 +314,6 @@ const EventList: React.FC = () => {
             key={event.id}
             event={event}
             onCopyLink={copyLink}
-            onCopyWhatsappLink={() => copyWhatsappLink(event.whatsappLink)}
             onEdit={() => handleNavigation(`update/${event.id}`)}
             onDelete={() => handleDeleteClick(event.id)}
           />
@@ -358,10 +346,9 @@ const EventCard: React.FC<{
     totalTickets: number;
   };
   onCopyLink: (slug: string) => void;
-  onCopyWhatsappLink: () => void;
   onEdit: () => void;
   onDelete: () => void;
-}> = ({ event, onCopyLink, onCopyWhatsappLink, onEdit, onDelete }) => {
+}> = ({ event, onCopyLink, onEdit, onDelete }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const progressPercentage = event.totalTickets > 0 
     ? Math.min(100, (event.ticketsSold / event.totalTickets) * 100)
@@ -444,14 +431,6 @@ const EventCard: React.FC<{
             <PencilIcon className="h-4 w-4 mr-2" />
             <span>Edit</span>
           </button>
-          <button
-            onClick={onCopyWhatsappLink}
-            style={{ borderRadius: '5px' }}
-            className="flex-1 flex items-center justify-center px-3 py-2 bg-green-500/10 dark:bg-green-900/30 text-sm text-green-600 dark:text-green-300 hover:bg-green-500/20 dark:hover:bg-green-800/40 transition-colors duration-200"
-          >
-            <FaWhatsapp className="h-4 w-4 mr-2" />
-            <span>Copy WhatsApp Link</span>
-          </button>
           <Link
             href={`/analytics?id=${event.id}`} passHref
             style={{ borderRadius: '5px' }}
@@ -504,16 +483,6 @@ const EventCard: React.FC<{
                   <Share2 className="h-4 w-4 mr-3 text-indigo-500" />
                   <span>Share Event</span>
                 </button>
-              <button
-                onClick={() => {
-                  onCopyWhatsappLink();
-                  setMenuOpen(false);
-                }}
-                className="w-full flex items-center px-4 py-3 text-sm text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors duration-200"
-              >
-                <FaWhatsapp className="h-4 w-4 mr-3" />
-                <span>Copy WhatsApp Link</span>
-              </button>
                 <button
                   onClick={() => {
                     onDelete();
