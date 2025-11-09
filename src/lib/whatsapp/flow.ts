@@ -30,6 +30,20 @@ type SessionMetadata = {
   [key: string]: unknown;
 };
 
+type WhatsappSessionRow = {
+  id: string | number;
+  buyer_phone: string;
+  stage?: string | null;
+  event_id?: string | null;
+  ticket_type_id?: string | null;
+  quantity?: number | null;
+  buyer_email?: string | null;
+  order_id?: string | null;
+  paystack_reference?: string | null;
+  paystack_access_code?: string | null;
+  metadata?: unknown;
+};
+
 type WhatsappSession = {
   id: string;
   phone: string;
@@ -119,7 +133,7 @@ async function getSession(client: SupabaseClient, phone: string): Promise<Whatsa
   return mapSessionRow(data);
 }
 
-function mapSessionRow(row: any): WhatsappSession {
+function mapSessionRow(row: WhatsappSessionRow): WhatsappSession {
   return {
     id: String(row.id),
     phone: String(row.buyer_phone),
@@ -157,7 +171,7 @@ async function saveSession(client: SupabaseClient, session: WhatsappSession | nu
     ticket_type_id: ticketTypeId,
     quantity,
     buyer_email: buyerEmail,
-    order_id,
+    order_id: orderId,
     paystack_reference: paystackReference,
     paystack_access_code: paystackAccessCode,
     metadata: {
