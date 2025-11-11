@@ -54,6 +54,7 @@ export interface Event {
   categoryName?: string | null;
   categoryCustom?: string | null;
   locationId?: string | null;
+  locationVisibility?: 'public' | 'undisclosed' | 'secret';
   hostName?: string;
   image: File | string | null;
   gallery: File[];

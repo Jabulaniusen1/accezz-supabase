@@ -28,6 +28,13 @@ export default function VirtualEventSettings({
   formData,
   setFormData,
 }: VirtualEventSettingsProps) {
+  const locationVisibility = formData?.locationVisibility ?? 'public';
+  const isSecret = locationVisibility === 'secret';
+
+  const handleLocationVisibilityChange = (value: 'public' | 'secret') => {
+    setFormData((prev) => (prev ? { ...prev, locationVisibility: value } : prev));
+  };
+
   const handleVirtualToggle = (isVirtual: boolean) => {
     if (!formData) return;
 
@@ -44,6 +51,7 @@ export default function VirtualEventSettings({
             locationId: undefined,
             latitude: null,
             longitude: null,
+            locationVisibility: formData.locationVisibility === 'secret' ? 'secret' : 'public',
             virtualEventDetails:
               formData.virtualEventDetails || {
                 platform: undefined,
@@ -233,6 +241,43 @@ export default function VirtualEventSettings({
           transition={{ duration: 0.3 }}
           className="bg-[#f54502]/10 dark:bg-[#f54502]/20 p-4 sm:p-6 rounded-[5px] border border-[#f54502]/20 dark:border-[#f54502]/30 space-y-4 sm:space-y-6"
         >
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Access visibility
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {([
+                { value: 'public', label: 'Show access info' },
+                { value: 'secret', label: 'Share after purchase' },
+              ] as const).map((option) => {
+                const isActive = locationVisibility === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => handleLocationVisibilityChange(option.value)}
+                    className={`px-3 py-2 rounded-[5px] border text-xs sm:text-sm transition ${
+                      isActive
+                        ? 'bg-[#f54502] text-white border-[#f54502] shadow-sm'
+                        : 'border-[#f54502]/40 text-[#f54502] bg-white dark:bg-gray-900 hover:border-[#f54502]'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+            {isSecret ? (
+              <p className="text-xs text-gray-600 dark:text-gray-300">
+                Meeting links and IDs stay hidden on the event page. Ticket buyers receive them by email and on their receipt.
+              </p>
+            ) : (
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                Choose “Share after purchase” if you want to keep access details private until attendees buy a ticket.
+              </p>
+            )}
+          </div>
+
           <div>
             <h3 className="text-lg sm:text-xl font-semibold text-[#f54502] dark:text-[#f54502] mb-3 sm:mb-4 flex items-center">
               <RiEarthLine className="mr-2 text-[#f54502]" /> Virtual Event Platform

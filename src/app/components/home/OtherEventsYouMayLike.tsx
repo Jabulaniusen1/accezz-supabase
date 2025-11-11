@@ -118,7 +118,11 @@ const OtherEventsYouMayLike = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-600 dark:text-gray-400 line-clamp-2">
-                          {event.location}
+                          {event.locationVisibility === 'undisclosed'
+                            ? 'Location to be announced'
+                            : event.locationVisibility === 'secret'
+                              ? 'Location shared after purchase'
+                              : event.location || (event.isVirtual ? 'Online event' : 'Location to be announced')}
                         </p>
                       </div>
                     </div>

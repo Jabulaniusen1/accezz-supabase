@@ -137,7 +137,13 @@ const LatestEvent = () => {
                   </div> */}
                   <div className="flex items-center space-x-2 md:space-x-3 text-gray-700 dark:text-gray-300 text-sm md:text-base">
                     <FaMapMarkerAlt className="text-blue-500 text-sm md:text-base" />
-                    <span className="truncate">{currentEvent.location}</span>
+                    <span className="truncate">
+                      {currentEvent.locationVisibility === 'undisclosed'
+                        ? 'Location to be announced'
+                        : currentEvent.locationVisibility === 'secret'
+                          ? 'Location shared after purchase'
+                          : currentEvent.location || (currentEvent.isVirtual ? 'Online event' : 'Location to be announced')}
+                    </span>
                   </div>
                   <div className="flex items-center space-x-2 md:space-x-3 text-gray-700 dark:text-gray-300 text-sm md:text-base sm:col-span-2">
                     <FaUser className="text-blue-500 text-sm md:text-base" />

@@ -69,6 +69,7 @@ export async function fetchEventBySlug(slug: string): Promise<Event | null> {
       categoryCustom: event.category_custom ?? undefined,
       categoryName: event.category?.name ?? undefined,
       locationId: event.location_id ?? undefined,
+      locationVisibility: event.location_visibility ?? 'public',
       hostName: undefined,
       image: event.image_url || null,
       gallery: (galleryImages || []).map(img => img.image_url),

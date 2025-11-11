@@ -34,6 +34,7 @@ export default function EventForm({ eventId, onClose, onSuccess }: EventFormProp
     description: '',
     date: '',
     location: '',
+    locationVisibility: 'public',
     ticketType: [{ name: '', price: '', quantity: '', sold: '0' }],
     isVirtual: false
   });
@@ -48,6 +49,9 @@ export default function EventForm({ eventId, onClose, onSuccess }: EventFormProp
     if (!myLocations || !selectedLocationId) return null;
     return myLocations.find((loc) => loc.id === selectedLocationId) ?? null;
   }, [myLocations, selectedLocationId]);
+  const locationVisibility = formData.locationVisibility ?? 'public';
+  const isUndisclosed = locationVisibility === 'undisclosed';
+  const isSecret = locationVisibility === 'secret';
   const notyf = useMemo(() => new Notyf({ duration: 3000 }), []);
 
   // Load event data if editing
@@ -69,6 +73,7 @@ export default function EventForm({ eventId, onClose, onSuccess }: EventFormProp
           description: data.description,
           date: data.date,
           location: data.location,
+          locationVisibility: data.location_visibility ?? 'public',
           isVirtual: data.is_virtual,
         });
         setSelectedLocationId(data.location_id ?? null);
@@ -99,6 +104,15 @@ export default function EventForm({ eventId, onClose, onSuccess }: EventFormProp
     setEventTypeInput('');
   }, [selectedLocation]);
 
+  useEffect(() => {
+    if (formData.isVirtual && locationVisibility === 'undisclosed') {
+      setFormData((prev) => ({
+        ...prev,
+        locationVisibility: 'public',
+      }));
+    }
+  }, [formData.isVirtual, locationVisibility]);
+
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -117,9 +131,21 @@ export default function EventForm({ eventId, onClose, onSuccess }: EventFormProp
     setImagePreview(URL.createObjectURL(file));
   }, [notyf]);
 
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  }, []);
+
+  const handleLocationVisibilityChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
+    const nextVisibility = (event.target.value || 'public') as 'public' | 'undisclosed' | 'secret';
+    setFormData(prev => ({
+      ...prev,
+      locationVisibility: nextVisibility,
+      location: nextVisibility === 'undisclosed' ? '' : prev.location,
+    }));
+    if (nextVisibility === 'undisclosed') {
+      setSelectedLocationId(null);
+    }
   }, []);
 
   const handleLocationLinkChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -181,8 +207,15 @@ export default function EventForm({ eventId, onClose, onSuccess }: EventFormProp
       notyf.error('Event date must be in the future');
       return false;
     }
-    if (!formData.location?.trim()) {
-      notyf.error('Location is required');
+    const visibility = formData.locationVisibility ?? 'public';
+    const locationValue = formData.location?.trim() ?? '';
+    const needsLocation = visibility !== 'undisclosed' && !formData.isVirtual;
+    if (needsLocation && !locationValue) {
+      notyf.error(visibility === 'secret' ? 'Enter the location attendees will receive after purchase' : 'Location is required');
+      return false;
+    }
+    if (visibility === 'undisclosed' && formData.isVirtual) {
+      notyf.error('Virtual events should use virtual access details instead of undisclosed physical locations.');
       return false;
     }
     if (!formData.ticketType?.some(t => t.name && t.price && t.quantity)) {
@@ -232,6 +265,13 @@ export default function EventForm({ eventId, onClose, onSuccess }: EventFormProp
 
     try {
       setIsLoading(true);
+      const visibility = formData.locationVisibility ?? 'public';
+      const normalizedLocation = visibility === 'undisclosed'
+        ? null
+        : (formData.location?.trim() || null);
+      const normalizedLocationId = visibility === 'undisclosed'
+        ? null
+        : selectedLocationId ?? null;
       let imageUrl: string | undefined;
       const normalizedLocationEventTypes = Array.from(new Set(locationEventTypes.map((item) => item.trim()).filter(Boolean)));
 
@@ -252,8 +292,9 @@ export default function EventForm({ eventId, onClose, onSuccess }: EventFormProp
             title: formData.title,
             description: formData.description,
             date: formData.date,
-            location: formData.location,
-            location_id: selectedLocationId ?? null,
+            location: normalizedLocation,
+            location_visibility: visibility,
+            location_id: normalizedLocationId,
             is_virtual: !!formData.isVirtual,
             image_url: imageUrl ?? undefined,
           })
@@ -280,8 +321,9 @@ export default function EventForm({ eventId, onClose, onSuccess }: EventFormProp
             title: formData.title,
             description: formData.description,
             date: formData.date,
-            location: formData.location,
-            location_id: selectedLocationId ?? null,
+            location: normalizedLocation,
+            location_visibility: visibility,
+            location_id: normalizedLocationId,
             is_virtual: !!formData.isVirtual,
             image_url: null,
           })
@@ -348,7 +390,8 @@ export default function EventForm({ eventId, onClose, onSuccess }: EventFormProp
         title: formData.title || '',
         description: formData.description || '',
         date: formData.date || '',
-        location: formData.location || '',
+        location: normalizedLocation || '',
+        locationVisibility: visibility,
         ticketType: formData.ticketType || [],
         image: imageUrl || null,
         gallery: [],
@@ -425,19 +468,54 @@ export default function EventForm({ eventId, onClose, onSuccess }: EventFormProp
               />
             </div>
 
-            <div>
-              <label>Location*</label>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-4">
+                <label className="font-medium">
+                  {formData.isVirtual ? 'Access details' : 'Location'}
+                  {locationVisibility !== 'undisclosed' && !formData.isVirtual ? '*' : ''}
+                </label>
+                <select
+                  value={locationVisibility}
+                  onChange={handleLocationVisibilityChange}
+                  className="p-2 border rounded text-sm"
+                  aria-label="Location visibility"
+                >
+                  <option value="public">Show publicly</option>
+                  <option value="undisclosed" disabled={formData.isVirtual}>
+                    Keep undisclosed for now
+                  </option>
+                  <option value="secret">Share only after ticket purchase</option>
+                </select>
+              </div>
               <input
                 type="text"
                 name="location"
-                value={formData.location}
+                value={formData.location ?? ''}
                 onChange={handleInputChange}
                 className="w-full p-2 border rounded"
-                required
+                placeholder={
+                  isUndisclosed
+                    ? 'No location required yet'
+                    : formData.isVirtual
+                      ? 'Provide access instructions or meeting link'
+                      : 'e.g. Landmark Centre, Victoria Island, Lagos'
+                }
+                required={locationVisibility !== 'undisclosed' && !formData.isVirtual}
+                disabled={isUndisclosed}
               />
+              {isUndisclosed && (
+                <p className="text-xs text-gray-500">
+                  Attendees will see “Location to be announced.” Update this field later when you’re ready.
+                </p>
+              )}
+              {isSecret && !formData.isVirtual && (
+                <p className="text-xs text-gray-500">
+                  The location isn’t shown publicly. Buyers receive it via their ticket email and receipt.
+                </p>
+              )}
             </div>
 
-            {myLocations && myLocations.length > 0 && (
+            {!isUndisclosed && myLocations && myLocations.length > 0 && (
               <div className="rounded border border-dashed border-gray-300 dark:border-gray-600 p-3 text-sm bg-gray-50 dark:bg-gray-900/40">
                 <label className="block text-sm font-semibold mb-2">Link to saved location (optional)</label>
                 <select
