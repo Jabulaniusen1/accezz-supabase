@@ -3,7 +3,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Layout from "@/components/Layout/Layout";
 import { useAllEvents } from "@/hooks/useEvents";
-import type { Event } from "@/types/event";
 import { supabase } from "@/utils/supabaseClient";
 import { formatEventDate } from "@/utils/formatDateTime";
 import { formatPrice } from "@/utils/formatPrice";
@@ -45,16 +44,6 @@ const normaliseCategoryKey = (slug?: string | null, name?: string | null) => {
 };
 
 const FALLBACK_CATEGORIES: CategoryRecord[] = [
-  { id: "community", name: "Community", slug: "community" },
-  { id: "art", name: "Art & Culture", slug: "art-culture" },
-  { id: "sports", name: "Sports & Wellness", slug: "sports-wellness" },
-  { id: "career", name: "Career & Business", slug: "career-business" },
-  { id: "spirituality", name: "Spirituality & Religion", slug: "spirituality-religion" },
-  { id: "food", name: "Food & Drink", slug: "food-drink" },
-];
-
-const DEFAULT_CATEGORIES: CategoryRecord[] = [
-  { id: "all", name: "All Events", slug: "all" },
   { id: "community", name: "Community", slug: "community" },
   { id: "art", name: "Art & Culture", slug: "art-culture" },
   { id: "sports", name: "Sports & Wellness", slug: "sports-wellness" },
@@ -216,7 +205,7 @@ const EventsExplorerPage = () => {
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <header className="text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#f54502]">Discover Events</p>
-            <h1 className="mt-4 text-3xl font-semibold text-gray-900 sm:text-4xl">Find experiences you’ll love</h1>
+            {/* <h1 className="mt-4 text-3xl font-semibold text-gray-900 sm:text-4xl">Find experiences you’ll love</h1> */}
           </header>
 
           <div className="mt-10 flex flex-col gap-4 sm:flex-row">
@@ -386,15 +375,7 @@ const EventsExplorerPage = () => {
                           </div>
                         </div>
                         <div className="text-lg font-semibold text-[#f54502]">
-                          {(() => {
-                            const prices = (event.ticketType || [])
-                              .map((ticket) => parseFloat(ticket.price ?? "0"))
-                              .filter((price) => !Number.isNaN(price));
-                            if (!prices.length || Math.min(...prices) === 0) {
-                              return "Free";
-                            }
-                            return formatPrice(Math.min(...prices), event.currency || "₦");
-                          })()}
+                          {minPrice <= 0 ? "Free" : formatPrice(minPrice, event.currency || "₦")}
                         </div>
                       </div>
 

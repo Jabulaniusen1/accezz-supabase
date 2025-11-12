@@ -368,8 +368,6 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
     closeForm();
   };
 
-  const steps = ['Select Ticket', 'Order Info', 'Payment'];
-
   return (
     <div className="fixed inset-0 z-50 flex flex-col justify-end bg-gray-900/80 backdrop-blur-sm transition-colors duration-300 dark:text-white">
       <div
