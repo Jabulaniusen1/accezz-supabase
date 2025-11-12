@@ -348,7 +348,7 @@ const EventsExplorerPage = () => {
                       onClick={() => handleViewDetails(event.slug)}
                       className="flex cursor-pointer gap-3 rounded-[24px] border border-gray-200 bg-white p-4 transition-all duration-200 hover:border-[#f54502]/50 hover:shadow-lg sm:flex-row sm:items-center sm:gap-4 sm:p-6"
                     >
-                      <div className="relative overflow-hidden rounded-2xl h-40 w-40 sm:flex-shrink-0">
+                      <div className="relative overflow-hidden rounded-2xl lg:h-40 lg:w-40 h-32 w-32 sm:flex-shrink-0">
                         <Image
                           src={typeof event.image === "string" && event.image ? event.image : "/placeholder.jpg"}
                           alt={event.title}
