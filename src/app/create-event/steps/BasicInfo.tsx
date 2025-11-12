@@ -181,13 +181,13 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
     __accezzMapsScriptPromise?: Promise<MapsLibrary | null>;
   };
 
-  const getExtendedWindow = (): ExtendedWindow | null => {
+  const getExtendedWindow = useCallback((): ExtendedWindow | null => {
     if (typeof window === 'undefined') {
       return null;
     }
 
     return window as ExtendedWindow;
-  };
+  }, []);
 
   const loadGooglePlacesScript = useCallback((): Promise<MapsLibrary | null> => {
     const extendedWindow = getExtendedWindow();
@@ -230,7 +230,7 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
     extendedWindow.__accezzMapsScriptPromise = scriptPromise;
 
     return scriptPromise.catch(() => null);
-  }, []);
+  }, [getExtendedWindow]);
 
   useEffect(() => {
     let isMounted = true;

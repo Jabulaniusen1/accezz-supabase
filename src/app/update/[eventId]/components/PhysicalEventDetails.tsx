@@ -194,13 +194,13 @@ export default function PhysicalEventDetails({
     __accezzMapsScriptPromise?: Promise<MapsLibrary | null>;
   };
 
-  const getExtendedWindow = (): ExtendedWindow | null => {
+  const getExtendedWindow = useCallback((): ExtendedWindow | null => {
     if (typeof window === "undefined") {
       return null;
     }
 
     return window as ExtendedWindow;
-  };
+  }, []);
 
   const loadGooglePlacesScript = useCallback((): Promise<MapsLibrary | null> => {
     const extendedWindow = getExtendedWindow();
@@ -241,7 +241,7 @@ export default function PhysicalEventDetails({
     extendedWindow.__accezzMapsScriptPromise = scriptPromise;
 
     return scriptPromise.catch(() => null);
-  }, []);
+  }, [getExtendedWindow]);
 
   useEffect(() => {
     if (locationMode !== "custom") return;

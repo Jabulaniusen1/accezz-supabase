@@ -16,29 +16,29 @@ type CountdownState = {
   isLive: boolean;
 };
 
+const DEFAULT_COUNTDOWN_STATE: CountdownState = {
+  days: 0,
+  hours: 0,
+  minutes: 0,
+  seconds: 0,
+  isLive: false,
+};
+
 export default function VirtualEventCountdown({ event }: VirtualEventCountdownProps) {
   // STATE TO TRACK TIME LEFT UNTIL EVENT STARTS
-  const defaultCountdownState: CountdownState = {
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-    isLive: false
-  };
-
-  const [timeLeft, setTimeLeft] = useState<CountdownState>(defaultCountdownState);
+  const [timeLeft, setTimeLeft] = useState<CountdownState>(DEFAULT_COUNTDOWN_STATE);
 
   useEffect(() => {
     const calculateTimeLeft = () => {
       const now = new Date();
 
       if (!event?.date) {
-        return { ...defaultCountdownState };
+        return { ...DEFAULT_COUNTDOWN_STATE };
       }
 
       const eventDateTime = new Date(event.date);
       if (isNaN(eventDateTime.getTime())) {
-        return { ...defaultCountdownState };
+        return { ...DEFAULT_COUNTDOWN_STATE };
       }
 
       let hours: number | null = null;
@@ -63,7 +63,7 @@ export default function VirtualEventCountdown({ event }: VirtualEventCountdownPr
       }
 
       if (hours === null || minutes === null) {
-        return { ...defaultCountdownState };
+        return { ...DEFAULT_COUNTDOWN_STATE };
       }
 
       // COMBINE DATE AND TIME STRINGS INTO A VALID ISO STRING
@@ -71,7 +71,7 @@ export default function VirtualEventCountdown({ event }: VirtualEventCountdownPr
 
       // CHECK IF PARSED DATE IS VALID
       if (isNaN(eventDateTime.getTime())) {
-        return { ...defaultCountdownState };
+        return { ...DEFAULT_COUNTDOWN_STATE };
       }
 
       // CALCULATE DIFFERENCE IN SECONDS

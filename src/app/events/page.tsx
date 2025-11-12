@@ -205,11 +205,10 @@ const EventsExplorerPage = () => {
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <header className="text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#f54502]">Discover Events</p>
-            {/* <h1 className="mt-4 text-3xl font-semibold text-gray-900 sm:text-4xl">Find experiences you’ll love</h1> */}
           </header>
 
-          <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-            <div className="flex flex-1 items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-4">
+            <div className="flex flex-1 items-center gap-3 rounded-[14px] border border-gray-200 bg-white px-3 py-2.5 shadow-sm sm:px-4 sm:py-3">
               <Search className="h-5 w-5 text-gray-400" />
               <input
                 value={searchTerm}
@@ -272,7 +271,7 @@ const EventsExplorerPage = () => {
           </div>
 
           <section className="relative mt-6">
-            <div className="-mx-4 flex items-center gap-3 sm:mx-0">
+            <div className="-mx-4 flex items-center gap-2 sm:mx-0 sm:gap-3">
               <button
                 onClick={() => scrollCategories("left")}
                 className="hidden rounded-full border border-gray-200 bg-white p-2 text-gray-500 transition hover:border-[#f54502] hover:text-[#f54502] sm:flex"
@@ -282,7 +281,7 @@ const EventsExplorerPage = () => {
               </button>
               <div
                 ref={categoryScrollRef}
-                className="scrollbar-hide flex w-full gap-3 overflow-x-auto py-2"
+                className="scrollbar-hide flex w-full gap-2 overflow-x-auto py-1 sm:gap-3 sm:py-2"
               >
                 {categoriesLoading
                   ? FALLBACK_CATEGORIES.slice(0, 6).map((category) => (
@@ -328,30 +327,42 @@ const EventsExplorerPage = () => {
                 </p>
               </div>
             ) : (
-              <div className="mt-10 grid gap-6 sm:grid-cols-2">
+              <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 space-y-2">
                 {paginatedEvents.map((event) => {
-                  const minPrice = Math.min(
-                    ...(event.ticketType || [])
-                      .map((ticket) => parseFloat(ticket.price ?? "0"))
-                      .filter((price) => !Number.isNaN(price)),
-                    0
-                  );
+                  const parsedPrices =
+                    (event.ticketType || [])
+                      .map((ticket) => parseFloat(ticket.price ?? ""))
+                      .filter((price) => !Number.isNaN(price) && price >= 0) ?? [];
+                  const hasValidPrices = parsedPrices.length > 0;
+                  const minPrice = hasValidPrices ? Math.min(...parsedPrices) : undefined;
+                  const displayPrice =
+                    !hasValidPrices || minPrice === undefined
+                      ? "Free"
+                      : minPrice === 0
+                        ? "Free"
+                        : formatPrice(minPrice, event.currency || "₦");
 
                   return (
                     <div
                       key={event.id}
                       onClick={() => handleViewDetails(event.slug)}
-                      className="flex cursor-pointer flex-col justify-between gap-6 rounded-[28px] border border-gray-200 bg-white px-6 py-6 transition-all duration-200 hover:border-[#f54502]/50 hover:shadow-lg sm:flex-row"
+                      className="flex cursor-pointer gap-3 rounded-[24px] border border-gray-200 bg-white p-4 transition-all duration-200 hover:border-[#f54502]/50 hover:shadow-lg sm:flex-row sm:items-center sm:gap-4 sm:p-6"
                     >
-                      <div className="flex min-w-0 flex-1 flex-col justify-between gap-4">
+                      <div className="relative overflow-hidden rounded-2xl h-40 w-40 sm:flex-shrink-0">
+                        <Image
+                          src={typeof event.image === "string" && event.image ? event.image : "/placeholder.jpg"}
+                          alt={event.title}
+                          width={160}
+                          height={160}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+
+                      <div className="flex min-w-0 flex-1 flex-col justify-between gap-3">
                         <div>
-                          <div className="flex items-center justify-between gap-3">
-                            <h3 className="truncate flex-1 text-xl font-semibold text-gray-900">
-                              {event.title}
-                            </h3>
-                            
-                          </div>
-                          <div className="mt-3 space-y-3 text-sm text-gray-600">
+                          <h3 className="truncate text-lg font-semibold text-gray-900 sm:text-xl">{event.title}</h3>
+
+                          <div className="mt-3 space-y-2 text-sm text-gray-600 sm:space-y-3">
                             <div className="flex items-center gap-2">
                               <span className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gray-100 text-[#f54502]">
                                 <Calendar className="h-4 w-4" />
@@ -375,18 +386,8 @@ const EventsExplorerPage = () => {
                           </div>
                         </div>
                         <div className="text-lg font-semibold text-[#f54502]">
-                          {minPrice <= 0 ? "Free" : formatPrice(minPrice, event.currency || "₦")}
+                          {displayPrice}
                         </div>
-                      </div>
-
-                      <div className="h-40 w-full flex-shrink-0 overflow-hidden rounded-2xl sm:h-40 sm:w-40">
-                        <Image
-                          src={typeof event.image === "string" && event.image ? event.image : "/placeholder.jpg"}
-                          alt={event.title}
-                          width={160}
-                          height={160}
-                          className="h-full w-full object-cover"
-                        />
                       </div>
                     </div>
                   );

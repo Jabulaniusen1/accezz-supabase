@@ -7,6 +7,7 @@ import { formatPrice } from '@/utils/formatPrice';
 import { formatEventDate } from '@/utils/formatDateTime';
 import Toast from '@/components/ui/Toast';
 import type { Event as AppEvent, Ticket as AppTicket } from '@/types/event';
+import Link from 'next/link';
 
 const AllEvents = () => {
   const { data: events, isLoading } = useAllEvents();
@@ -20,7 +21,6 @@ const AllEvents = () => {
     eventType: ''
   });
   const [toast, setToast] = useState<{ type: 'error' | 'success'; message: string } | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
   const eventsPerPage = 4;
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [showPriceModal, setShowPriceModal] = useState(false);
@@ -66,15 +66,7 @@ const AllEvents = () => {
     );
   });
 
-  const indexOfLastEvent = currentPage * eventsPerPage;
-  const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
   const currentEvents = filteredEvents.slice(0, eventsPerPage);
-  const totalPages = Math.ceil(filteredEvents.length / eventsPerPage);
-
-  const handlePageChange = (pageNumber: number) => {
-    setCurrentPage(pageNumber);
-    document.getElementById('events')?.scrollIntoView({ behavior: 'smooth' });
-  };
 
   const openLocationModal = () => {
     setTempFilters({ ...filters });
@@ -94,19 +86,16 @@ const AllEvents = () => {
   const applyLocationFilter = () => {
     setFilters({ ...tempFilters });
     setShowLocationModal(false);
-    setCurrentPage(1); // Reset to first page when filter changes
   };
 
   const applyPriceFilter = () => {
     setFilters({ ...tempFilters });
     setShowPriceModal(false);
-    setCurrentPage(1); // Reset to first page when filter changes
   };
 
   const applyDateFilter = () => {
     setFilters({ ...tempFilters });
     setShowDateModal(false);
-    setCurrentPage(1); // Reset to first page when filter changes
   };
 
   const clearFilters = () => {
@@ -128,7 +117,6 @@ const AllEvents = () => {
       endDate: '',
       eventType: ''
     });
-    setCurrentPage(1); // Reset to first page when filters are cleared
   };
 
   const getActiveFilterCount = () => {
@@ -492,12 +480,12 @@ const AllEvents = () => {
         )}
       </div>
       <div className="max-w-7xl mx-auto mt-8 flex justify-center">
-        <a
+        <Link
           href="/events"
           className="inline-flex items-center gap-2 rounded-full border-2 border-[#f54502] px-5 py-2 text-sm font-semibold text-[#f54502] transition hover:bg-[#f54502] hover:text-white"
         >
           View all events
-        </a>
+        </Link>
       </div>
 
       {/* Location Filter Modal */}
