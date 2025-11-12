@@ -53,6 +53,7 @@ export interface Event {
   categoryId?: string | null;
   categoryName?: string | null;
   categoryCustom?: string | null;
+  categorySlug?: string | null;
   locationId?: string | null;
   locationVisibility?: 'public' | 'undisclosed' | 'secret';
   hostName?: string;

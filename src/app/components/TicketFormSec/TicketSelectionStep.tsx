@@ -40,7 +40,7 @@ const TicketSelectionStep = ({
   totalPrice,
 }: TicketSelectionStepProps) => {
   return (
-    <div className="mb-4 space-y-8 overflow-y-scroll max-h-[60vh] pr-4 scrollbar-thin scrollbar-thumb-gray-300">
+    <div className="mb-4 space-y-8 pr-1 sm:pr-2">
       <div className="space-y-4">
         <h3 className="font-medium text-gray-700 dark:text-gray-200 mb-3">
           Available Tickets
@@ -103,11 +103,11 @@ const TicketSelectionStep = ({
                   <h4 className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">
                     Quantity
                   </h4>
-                  <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-3">
                     <button
                       onClick={() => handleQuantityChange(Math.max(1, quantity - 1))}
                       disabled={quantity <= 1}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center border transition-colors
+                      className={`w-9 h-9 rounded-[5px] flex items-center justify-center border transition-colors
                         ${quantity <= 1 
                           ? 'border-gray-200 text-gray-400 cursor-not-allowed' 
                           : 'border-[#f54502] text-[#f54502] hover:bg-[#f54502]/10 dark:hover:bg-[#f54502]/20'
@@ -124,7 +124,7 @@ const TicketSelectionStep = ({
                         quantity + 1
                       ))}
                       disabled={quantity >= parseInt(selectedTicket.quantity) - parseInt(selectedTicket.sold)}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center border transition-colors
+                      className={`w-9 h-9 rounded-[5px] flex items-center justify-center border transition-colors
                         ${quantity >= parseInt(selectedTicket.quantity) - parseInt(selectedTicket.sold)
                           ? 'border-gray-200 text-gray-400 cursor-not-allowed'
                           : 'border-[#f54502] text-[#f54502] hover:bg-[#f54502]/10 dark:hover:bg-[#f54502]/20'

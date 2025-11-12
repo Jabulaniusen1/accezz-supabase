@@ -74,6 +74,7 @@ const mapSupabaseEventToEvent = (supabaseEvent: SupabaseEventRow, ticketTypes: T
     categoryId: supabaseEvent.category_id ?? undefined,
     categoryCustom: supabaseEvent.category_custom ?? undefined,
     categoryName: supabaseEvent.category?.name ?? undefined,
+    categorySlug: supabaseEvent.category?.slug ?? undefined,
     locationId: supabaseEvent.location_id ?? undefined,
     locationVisibility: supabaseEvent.location_visibility ?? 'public',
     hostName: undefined,
