@@ -13,6 +13,7 @@ import { BiLogoZoom } from 'react-icons/bi';
 import { BsMicrosoftTeams } from 'react-icons/bs';
 import SearchableSelect from '@/components/ui/SearchableSelect';
 import { supabase } from '@/utils/supabaseClient';
+import { useCountryCityOptions } from '@/hooks/useCountryCityOptions';
 
 type EventCategory = {
   id: string;
@@ -30,18 +31,6 @@ type PlatformLocation = {
 };
 
 type LocationMode = 'platform' | 'custom';
-
-const COUNTRY_OPTIONS = [
-  'Nigeria',
-  'Ghana',
-  'South Africa',
-  'Kenya',
-  'United States',
-  'United Kingdom',
-  'Canada',
-  'United Arab Emirates',
-  'Germany'
-];
 
 const toDateInputValue = (iso?: string | null): string => {
   if (!iso) return '';
@@ -146,6 +135,17 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
   const addressInputRef = useRef<HTMLInputElement | null>(null);
   const autocompleteRef = useRef<GooglePlacesAutocomplete | null>(null);
   const formDataRef = useRef(formData);
+  const {
+    countries: countryOptions,
+    getCitiesForCountry,
+    isLoading: locationDataLoading,
+    error: locationDataError,
+  } = useCountryCityOptions();
+  const cityOptions = useMemo(() => {
+    if (!formData.country) return [];
+    return getCitiesForCountry(formData.country).map((city) => ({ value: city, label: city }));
+  }, [formData.country, getCitiesForCountry]);
+  const hasCityOptions = cityOptions.length > 0;
 
   useEffect(() => {
     if (formData.image instanceof File) {
@@ -161,6 +161,18 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
   useEffect(() => {
     formDataRef.current = formData;
   }, [formData]);
+
+  useEffect(() => {
+    if (!formData.country || !formData.city) return;
+    const availableCities = getCitiesForCountry(formData.country);
+    if (!availableCities.length) return;
+    if (!availableCities.includes(formData.city)) {
+      updateFormData({
+        city: '',
+        location: buildLocationLabel('', formData.country),
+      });
+    }
+  }, [formData.country, formData.city, getCitiesForCountry, updateFormData]);
 
   type ExtendedWindow = typeof window & {
     google?: {
@@ -386,11 +398,6 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
       { value: '__custom__', label: 'Other (add my own)' }
     ],
     [categories]
-  );
-
-  const countryOptions = useMemo(
-    () => COUNTRY_OPTIONS.map((country) => ({ value: country, label: country })),
-    []
   );
 
   const platformLocationOptions = useMemo(
@@ -834,13 +841,17 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
 
   const handleCountryChange = useCallback(
     (value: string) => {
+      const availableCities = getCitiesForCountry(value);
+      const normalizedCity =
+        formData.city && availableCities.includes(formData.city) ? formData.city : '';
       updateFormData({
         country: value,
-        location: buildLocationLabel(formData.city, value),
-        locationId: locationMode === 'platform' ? formData.locationId : undefined
+        city: normalizedCity,
+        location: buildLocationLabel(normalizedCity, value),
+        locationId: locationMode === 'platform' ? formData.locationId : undefined,
       });
     },
-    [formData.city, formData.locationId, locationMode, updateFormData]
+    [formData.city, formData.locationId, getCitiesForCountry, locationMode, updateFormData]
   );
 
   const handleCityChange = useCallback(
@@ -848,7 +859,7 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
       updateFormData({
         city: value,
         location: buildLocationLabel(value, formData.country),
-        locationId: locationMode === 'platform' ? formData.locationId : undefined
+        locationId: locationMode === 'platform' ? formData.locationId : undefined,
       });
     },
     [formData.country, formData.locationId, locationMode, updateFormData]
@@ -1323,21 +1334,49 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                           options={countryOptions}
                           value={formData.country || ''}
                           onChange={handleCountryChange}
-                          placeholder="Select country"
+                      placeholder={locationDataLoading ? 'Loading countries...' : 'Select country'}
+                      disabled={locationDataLoading || countryOptions.length === 0}
                         />
+                    {locationDataError && (
+                      <p className="mt-2 text-xs text-red-500 dark:text-red-400">
+                        {locationDataError}
+                      </p>
+                    )}
                       </div>
                       <div>
                         <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          City{!isUndisclosed ? ' *' : ''}
+                      City{!isUndisclosed ? ' *' : ''}
                         </label>
+                    {hasCityOptions ? (
+                      <SearchableSelect
+                        options={cityOptions}
+                        value={formData.city || ''}
+                        onChange={handleCityChange}
+                        placeholder={
+                          formData.country ? 'Select city' : 'Select a country first'
+                        }
+                        disabled={!formData.country}
+                      />
+                    ) : (
+                      <>
                         <input
                           type="text"
                           value={formData.city || ''}
                           onChange={(e) => handleCityChange(e.target.value)}
                           className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
-                          placeholder="e.g., Lagos"
+                          placeholder={
+                            formData.country ? 'Enter city manually' : 'Select a country first'
+                          }
+                          disabled={!formData.country}
                           required={!isUndisclosed}
                         />
+                        {formData.country && (
+                          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                            City list unavailable for this country. Enter the city manually.
+                          </p>
+                        )}
+                      </>
+                    )}
                       </div>
                     </div>
                     <div>

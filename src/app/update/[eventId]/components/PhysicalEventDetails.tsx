@@ -4,6 +4,7 @@ import { FaGlobe, FaMapMarkerAlt } from "react-icons/fa";
 import SearchableSelect from "@/components/ui/SearchableSelect";
 import { supabase } from "@/utils/supabaseClient";
 import { Event } from "../../../../types/event";
+import { useCountryCityOptions } from "@/hooks/useCountryCityOptions";
 
 type PlatformLocation = {
   id: string;
@@ -16,18 +17,6 @@ type PlatformLocation = {
 };
 
 type LocationMode = "platform" | "custom";
-
-const COUNTRY_OPTIONS = [
-  "Nigeria",
-  "Ghana",
-  "South Africa",
-  "Kenya",
-  "United States",
-  "United Kingdom",
-  "Canada",
-  "United Arab Emirates",
-  "Germany",
-];
 
 const buildLocationLabel = (city?: string | null, country?: string | null): string =>
   [city, country].filter(Boolean).join(", ");
@@ -110,6 +99,17 @@ export default function PhysicalEventDetails({
       process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ??
       process.env.GOOGLE_MAP_API_KEY
   );
+  const {
+    countries: countryOptions,
+    getCitiesForCountry,
+    isLoading: locationDataLoading,
+    error: locationDataError,
+  } = useCountryCityOptions();
+  const cityOptions = useMemo(() => {
+    if (!formData?.country) return [];
+    return getCitiesForCountry(formData.country).map((city) => ({ value: city, label: city }));
+  }, [formData?.country, getCitiesForCountry]);
+  const hasCityOptions = cityOptions.length > 0;
 
   useEffect(() => {
     formDataRef.current = formData;
@@ -133,6 +133,18 @@ export default function PhysicalEventDetails({
     },
     [setFormData]
   );
+
+  useEffect(() => {
+    if (!formData?.country || !formData.city) return;
+    const cities = getCitiesForCountry(formData.country);
+    if (!cities.length) return;
+    if (!cities.includes(formData.city)) {
+      updateForm({
+        city: "",
+        location: buildLocationLabel("", formData.country),
+      });
+    }
+  }, [formData?.country, formData?.city, getCitiesForCountry, updateForm]);
 
   useEffect(() => {
     let isMounted = true;
@@ -328,13 +340,17 @@ export default function PhysicalEventDetails({
 
   const handleCountryChange = useCallback(
     (value: string) => {
+      const availableCities = getCitiesForCountry(value);
+      const normalizedCity =
+        formData?.city && availableCities.includes(formData.city) ? formData.city : "";
       updateForm({
         country: value,
-        location: buildLocationLabel(formData?.city, value),
+        city: normalizedCity,
+        location: buildLocationLabel(normalizedCity, value),
         locationId: locationMode === "platform" ? formData?.locationId : undefined,
       });
     },
-    [formData?.city, formData?.locationId, locationMode, updateForm]
+    [formData?.city, formData?.locationId, getCitiesForCountry, locationMode, updateForm]
   );
 
   const handleCityChange = useCallback(
@@ -523,27 +539,52 @@ export default function PhysicalEventDetails({
                   Country{!isUndisclosed ? " *" : ""}
                 </label>
                 <SearchableSelect
-                  options={COUNTRY_OPTIONS.map((country) => ({
-                    value: country,
-                    label: country,
-                  }))}
+                  options={countryOptions}
                   value={formData.country || ""}
                   onChange={handleCountryChange}
-                  placeholder="Select country"
+                  placeholder={locationDataLoading ? "Loading countries..." : "Select country"}
+                  disabled={locationDataLoading || countryOptions.length === 0}
                 />
+                {locationDataError && (
+                  <p className="mt-2 text-xs text-red-500 dark:text-red-400">
+                    {locationDataError}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   City{!isUndisclosed ? " *" : ""}
-          </label>
-          <input
-            type="text"
-                  value={formData.city || ""}
-                  onChange={(e) => handleCityChange(e.target.value)}
-            className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#f54502] focus:border-transparent transition-all duration-200 text-sm sm:text-base"
-                  placeholder="e.g., Lagos"
-                  required={!isUndisclosed}
-          />
+                </label>
+                {hasCityOptions ? (
+                  <SearchableSelect
+                    options={cityOptions}
+                    value={formData.city || ""}
+                    onChange={handleCityChange}
+                    placeholder={
+                      formData?.country ? "Select city" : "Select a country first"
+                    }
+                    disabled={!formData?.country}
+                  />
+                ) : (
+                  <>
+                    <input
+                      type="text"
+                      value={formData.city || ""}
+                      onChange={(e) => handleCityChange(e.target.value)}
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#f54502] focus:border-transparent transition-all duration-200 text-sm sm:text-base"
+                      placeholder={
+                        formData?.country ? "Enter city manually" : "Select a country first"
+                      }
+                      disabled={!formData?.country}
+                      required={!isUndisclosed}
+                    />
+                    {formData?.country && (
+                      <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        City list unavailable for this country. Enter the city manually.
+                      </p>
+                    )}
+                  </>
+                )}
         </div>
             </div>
 
