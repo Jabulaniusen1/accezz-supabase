@@ -23,6 +23,8 @@ interface Event {
   date: string;
   time: string;
   location: string;
+  locationVisibility?: 'public' | 'undisclosed' | 'secret';
+  isVirtual?: boolean;
   address?: string;
   city?: string;
   price: string;
