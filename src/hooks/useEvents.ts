@@ -31,6 +31,7 @@ type SupabaseEventRow = {
   category_custom?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  location_visibility?: 'public' | 'undisclosed' | 'secret' | null;
   category?: {
     name?: string | null;
     slug?: string | null;
@@ -74,6 +75,7 @@ const mapSupabaseEventToEvent = (supabaseEvent: SupabaseEventRow, ticketTypes: T
     categoryCustom: supabaseEvent.category_custom ?? undefined,
     categoryName: supabaseEvent.category?.name ?? undefined,
     locationId: supabaseEvent.location_id ?? undefined,
+    locationVisibility: supabaseEvent.location_visibility ?? 'public',
     hostName: undefined,
     image: supabaseEvent.image_url || null,
     gallery: [], // We'll fetch gallery separately if needed

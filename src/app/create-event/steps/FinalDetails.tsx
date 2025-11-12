@@ -70,12 +70,34 @@ export default function FinalDetails({
         return;
       }
 
-      const locationValue = formData.location?.trim() || (formData.isVirtual ? 'Online' : '');
+      const locationVisibility = formData.locationVisibility ?? 'public';
+      const rawLocation = formData.location?.trim() || '';
+      const locationValue =
+        locationVisibility === 'undisclosed'
+          ? null
+          : rawLocation || (formData.isVirtual ? 'Online' : '');
+      const venueValue = formData.isVirtual ? 'Virtual Event' : (formData.venue ?? '').trim();
+      const finalVenue = locationVisibility === 'undisclosed' ? null : (venueValue || null);
+      const addressValue = locationVisibility === 'undisclosed' ? null : formData.address?.trim() || null;
+      const cityValue = locationVisibility === 'undisclosed' ? null : formData.city?.trim() || null;
+      const countryValue = locationVisibility === 'undisclosed' ? null : formData.country?.trim() || null;
+      const latitudeValue = locationVisibility === 'undisclosed' ? null : formData.latitude ?? null;
+      const longitudeValue = locationVisibility === 'undisclosed' ? null : formData.longitude ?? null;
 
-      if (!formData.isVirtual && !locationValue) {
+      if (!formData.isVirtual && locationVisibility !== 'undisclosed' && !rawLocation) {
         setToast({
           type: "error",
           message: "Please confirm your event location before submitting",
+          onClose: () => setToast(null)
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      if (formData.isVirtual && locationVisibility === 'undisclosed') {
+        setToast({
+          type: "error",
+          message: "Virtual events should provide access instructions instead of using an undisclosed location.",
           onClose: () => setToast(null)
         });
         setIsLoading(false);
@@ -89,14 +111,15 @@ export default function FinalDetails({
           description: formData.description.trim(),
           start_time: formData.startTime,
           end_time: formData.endTime || null,
-          venue: formData.isVirtual ? 'Virtual Event' : (formData.venue ?? '').trim(),
+          venue: finalVenue,
           location: locationValue,
-          address: formData.address?.trim() || null,
-          city: formData.city?.trim() || null,
-          country: formData.country?.trim() || null,
-          latitude: formData.latitude ?? null,
-          longitude: formData.longitude ?? null,
-          location_id: formData.locationId ?? null,
+          location_visibility: locationVisibility,
+          address: addressValue,
+          city: cityValue,
+          country: countryValue,
+          latitude: latitudeValue,
+          longitude: longitudeValue,
+          location_id: locationVisibility === 'undisclosed' ? null : formData.locationId ?? null,
           category_id: formData.categoryId ?? null,
           category_custom: formData.categoryId ? null : (formData.categoryCustom?.trim() || null),
           is_virtual: !!formData.isVirtual,

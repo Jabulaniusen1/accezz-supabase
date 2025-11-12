@@ -40,6 +40,7 @@ const INITIAL_EVENT_DATA: Event = {
   categoryName: undefined,
   categoryCustom: '',
   locationId: undefined,
+  locationVisibility: 'public',
   hostName: '',
   image: null,
   gallery: [],
@@ -205,6 +206,10 @@ export default function CreateEventPage() {
             return 'Please enter a Meets URL';
           }
         } else {
+          const visibility = formData.locationVisibility ?? 'public';
+          if (visibility === 'undisclosed') {
+            return true;
+          }
           if (!(formData.venue ?? '').trim()) return 'Please enter a venue';
           if (!formData.country?.trim()) return 'Please select a country';
           if (!formData.city?.trim()) return 'Please enter a city';

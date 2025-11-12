@@ -436,7 +436,13 @@ const AllEvents = () => {
                         
                         <div className="flex items-center text-gray-600 dark:text-gray-400 min-w-0">
                           <FaMapMarkerAlt className="mr-2 flex-shrink-0" />
-                          <span className="text-sm truncate flex-1 min-w-0">{event.location}</span>
+                          <span className="text-sm truncate flex-1 min-w-0">
+                            {event.locationVisibility === 'undisclosed'
+                              ? 'Location to be announced'
+                              : event.locationVisibility === 'secret'
+                                ? 'Location shared after purchase'
+                                : event.location || (event.isVirtual ? 'Online event' : 'Location to be announced')}
+                          </span>
                         </div>
                       </div>
                     </div>

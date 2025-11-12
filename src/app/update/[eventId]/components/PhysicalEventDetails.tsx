@@ -4,6 +4,7 @@ import { FaGlobe, FaMapMarkerAlt } from "react-icons/fa";
 import SearchableSelect from "@/components/ui/SearchableSelect";
 import { supabase } from "@/utils/supabaseClient";
 import { Event } from "../../../../types/event";
+import { useCountryCityOptions } from "@/hooks/useCountryCityOptions";
 
 type PlatformLocation = {
   id: string;
@@ -16,18 +17,6 @@ type PlatformLocation = {
 };
 
 type LocationMode = "platform" | "custom";
-
-const COUNTRY_OPTIONS = [
-  "Nigeria",
-  "Ghana",
-  "South Africa",
-  "Kenya",
-  "United States",
-  "United Kingdom",
-  "Canada",
-  "United Arab Emirates",
-  "Germany",
-];
 
 const buildLocationLabel = (city?: string | null, country?: string | null): string =>
   [city, country].filter(Boolean).join(", ");
@@ -97,6 +86,10 @@ export default function PhysicalEventDetails({
   const [selectedPlatformLocation, setSelectedPlatformLocation] = useState<string>(
     formData?.locationId ?? ""
   );
+  const locationVisibility: "public" | "undisclosed" | "secret" =
+    formData?.locationVisibility ?? "public";
+  const isUndisclosed = locationVisibility === "undisclosed";
+  const isSecret = locationVisibility === "secret";
   const [googleMapsError, setGoogleMapsError] = useState<string | null>(null);
   const addressInputRef = useRef<HTMLInputElement | null>(null);
   const autocompleteRef = useRef<GooglePlacesAutocomplete | null>(null);
@@ -106,6 +99,17 @@ export default function PhysicalEventDetails({
       process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ??
       process.env.GOOGLE_MAP_API_KEY
   );
+  const {
+    countries: countryOptions,
+    getCitiesForCountry,
+    isLoading: locationDataLoading,
+    error: locationDataError,
+  } = useCountryCityOptions();
+  const cityOptions = useMemo(() => {
+    if (!formData?.country) return [];
+    return getCitiesForCountry(formData.country).map((city) => ({ value: city, label: city }));
+  }, [formData?.country, getCitiesForCountry]);
+  const hasCityOptions = cityOptions.length > 0;
 
   useEffect(() => {
     formDataRef.current = formData;
@@ -116,12 +120,31 @@ export default function PhysicalEventDetails({
     setSelectedPlatformLocation(formData?.locationId ?? "");
   }, [formData?.locationId]);
 
+  useEffect(() => {
+    if (isUndisclosed) {
+      setLocationMode("custom");
+      setSelectedPlatformLocation("");
+    }
+  }, [isUndisclosed]);
+
   const updateForm = useCallback(
     (changes: Partial<Event>) => {
       setFormData((prev) => (prev ? { ...prev, ...changes } : prev));
     },
     [setFormData]
   );
+
+  useEffect(() => {
+    if (!formData?.country || !formData.city) return;
+    const cities = getCitiesForCountry(formData.country);
+    if (!cities.length) return;
+    if (!cities.includes(formData.city)) {
+      updateForm({
+        city: "",
+        location: buildLocationLabel("", formData.country),
+      });
+    }
+  }, [formData?.country, formData?.city, getCitiesForCountry, updateForm]);
 
   useEffect(() => {
     let isMounted = true;
@@ -317,13 +340,17 @@ export default function PhysicalEventDetails({
 
   const handleCountryChange = useCallback(
     (value: string) => {
+      const availableCities = getCitiesForCountry(value);
+      const normalizedCity =
+        formData?.city && availableCities.includes(formData.city) ? formData.city : "";
       updateForm({
         country: value,
-        location: buildLocationLabel(formData?.city, value),
+        city: normalizedCity,
+        location: buildLocationLabel(normalizedCity, value),
         locationId: locationMode === "platform" ? formData?.locationId : undefined,
       });
     },
-    [formData?.city, formData?.locationId, locationMode, updateForm]
+    [formData?.city, formData?.locationId, getCitiesForCountry, locationMode, updateForm]
   );
 
   const handleCityChange = useCallback(
@@ -348,6 +375,21 @@ export default function PhysicalEventDetails({
     [formData?.city, formData?.country, updateForm]
   );
 
+  const handleVisibilitySelect = useCallback(
+    (value: "public" | "undisclosed" | "secret") => {
+      if (!formData) return;
+      updateForm({
+        locationVisibility: value,
+        locationId: value === "undisclosed" ? undefined : formData.locationId,
+      });
+      if (value === "undisclosed") {
+        setLocationMode("custom");
+        setSelectedPlatformLocation("");
+      }
+    },
+    [formData, updateForm]
+  );
+
   if (!formData || formData.isVirtual) {
     return null;
   }
@@ -366,8 +408,49 @@ export default function PhysicalEventDetails({
 
       <div className="space-y-4 sm:space-y-6">
         <div className="space-y-2">
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Location visibility
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {([
+              { value: "public", label: "Show publicly" },
+              { value: "undisclosed", label: "Undisclosed for now" },
+              { value: "secret", label: "Share after purchase" },
+            ] as const).map((option) => {
+              const isActive = locationVisibility === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => handleVisibilitySelect(option.value)}
+                  className={`px-3 py-2 rounded-[5px] border text-xs sm:text-sm transition ${
+                    isActive
+                      ? "bg-[#f54502] text-white border-[#f54502] shadow-sm"
+                      : "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:border-[#f54502] dark:hover:border-[#f54502]"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+          {isUndisclosed && (
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Attendees will see “Location to be announced.” Come back later to share the final venue.
+            </p>
+          )}
+          {isSecret && (
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              The venue stays hidden on your event page. Ticket buyers receive the details via email and their receipt.
+            </p>
+          )}
+        </div>
+
+        {!isUndisclosed ? (
+          <>
+        <div className="space-y-2">
           <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
-            Venue Name *
+                Venue Name{!isUndisclosed ? " *" : ""}
           </label>
           <input
             type="text"
@@ -375,7 +458,7 @@ export default function PhysicalEventDetails({
             onChange={(e) => updateForm({ venue: e.target.value })}
             className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#f54502] focus:border-transparent transition-all duration-200 text-sm sm:text-base"
             placeholder="e.g., Madison Square Garden"
-            required
+                required={!isUndisclosed}
           />
         </div>
 
@@ -453,36 +536,61 @@ export default function PhysicalEventDetails({
               <div>
                 <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
                   <FaGlobe className="text-[#f54502]" />
-                  Country *
+                  Country{!isUndisclosed ? " *" : ""}
                 </label>
                 <SearchableSelect
-                  options={COUNTRY_OPTIONS.map((country) => ({
-                    value: country,
-                    label: country,
-                  }))}
+                  options={countryOptions}
                   value={formData.country || ""}
                   onChange={handleCountryChange}
-                  placeholder="Select country"
+                  placeholder={locationDataLoading ? "Loading countries..." : "Select country"}
+                  disabled={locationDataLoading || countryOptions.length === 0}
                 />
+                {locationDataError && (
+                  <p className="mt-2 text-xs text-red-500 dark:text-red-400">
+                    {locationDataError}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  City *
-          </label>
-          <input
-            type="text"
-                  value={formData.city || ""}
-                  onChange={(e) => handleCityChange(e.target.value)}
-            className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#f54502] focus:border-transparent transition-all duration-200 text-sm sm:text-base"
-                  placeholder="e.g., Lagos"
-            required
-          />
+                  City{!isUndisclosed ? " *" : ""}
+                </label>
+                {hasCityOptions ? (
+                  <SearchableSelect
+                    options={cityOptions}
+                    value={formData.city || ""}
+                    onChange={handleCityChange}
+                    placeholder={
+                      formData?.country ? "Select city" : "Select a country first"
+                    }
+                    disabled={!formData?.country}
+                  />
+                ) : (
+                  <>
+                    <input
+                      type="text"
+                      value={formData.city || ""}
+                      onChange={(e) => handleCityChange(e.target.value)}
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#f54502] focus:border-transparent transition-all duration-200 text-sm sm:text-base"
+                      placeholder={
+                        formData?.country ? "Enter city manually" : "Select a country first"
+                      }
+                      disabled={!formData?.country}
+                      required={!isUndisclosed}
+                    />
+                    {formData?.country && (
+                      <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        City list unavailable for this country. Enter the city manually.
+                      </p>
+                    )}
+                  </>
+                )}
         </div>
             </div>
 
             <div>
               <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Address *
+                Address{!isUndisclosed ? " *" : ""}
               </label>
               <div className="relative">
                 <FaMapMarkerAlt className="absolute left-3 top-1/2 -translate-y-1/2 text-[#f54502]" />
@@ -493,7 +601,7 @@ export default function PhysicalEventDetails({
                   onChange={(e) => handleAddressChange(e.target.value)}
                   className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                   placeholder="Start typing to find your address"
-                  required
+                  required={!isUndisclosed}
                 />
               </div>
               <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-2">
@@ -503,6 +611,12 @@ export default function PhysicalEventDetails({
                 <p className="text-xs text-red-500 dark:text-red-400 mt-1">{googleMapsError}</p>
               )}
             </div>
+          </div>
+        )}
+          </>
+        ) : (
+          <div className="rounded-[5px] border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/40 p-4 text-sm text-gray-600 dark:text-gray-300">
+            You can publish and sell tickets while you finalize the venue. Update the precise location anytime from this page.
           </div>
         )}
       </div>

@@ -19,8 +19,19 @@ export const EventHeroSection = ({
   showMap = true,
   virtualPlatformLabel,
 }: EventHeroSectionProps) => {
+  const locationVisibility = event.locationVisibility ?? 'public';
+  const isUndisclosed = locationVisibility === 'undisclosed';
+  const isSecret = locationVisibility === 'secret';
   const locationSummary = [event.venue, event.location].filter(Boolean).join(', ');
+  const locationLabel = event.isVirtual
+    ? (virtualPlatformLabel || 'Online event')
+    : isUndisclosed
+      ? 'Location to be announced'
+      : isSecret
+        ? 'Location shared after purchase'
+        : locationSummary || 'Location to be announced';
   const mapQuery = locationSummary || event.location || event.venue || event.title;
+  const shouldShowMap = showMap && !event.isVirtual && !isUndisclosed && !isSecret;
   return (
     <div className="bg-white dark:bg-gray-800 py-12">
       <div className="mx-auto px-4 sm:px-6 lg:px-32">
@@ -99,13 +110,16 @@ export const EventHeroSection = ({
                     </div>
                     <div>
                       <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                        {showMap ? 'Location' : 'Hosted on'}
+                        {event.isVirtual ? 'Hosted on' : 'Location'}
                       </p>
                       <p className="text-sm sm:text-base font-semibold">
-                        {showMap
-                          ? locationSummary || 'Location to be announced'
-                          : virtualPlatformLabel || 'Online event'}
+                        {locationLabel}
                       </p>
+                    {isSecret && (
+                      <p className="text-xs text-[#f54502] mt-1">
+                        Exact venue revealed after ticket purchase.
+                      </p>
+                    )}
                     </div>
                   </div>
                 </div>
@@ -121,7 +135,7 @@ export const EventHeroSection = ({
                 </div>
 
                 {/* Simple Map Section */}
-                {showMap && (
+                {shouldShowMap && (
                   <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 border border-gray-200 dark:border-gray-600">
                     <h4 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
                       Location

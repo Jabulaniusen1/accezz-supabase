@@ -125,6 +125,7 @@ create table if not exists public.events (
   longitude numeric(10,7),
   status text not null default 'published',
   visibility text not null default 'public',
+  location_visibility text not null default 'public',
   gallery_count int not null default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -165,6 +166,23 @@ drop trigger if exists trg_events_updated_at on public.events;
 create trigger trg_events_updated_at
 before update on public.events
 for each row execute function public.handle_updated_at();
+
+alter table public.events
+  add column if not exists location_visibility text not null default 'public';
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'events_location_visibility_check'
+      and conrelid = 'public.events'::regclass
+  ) then
+    alter table public.events
+      add constraint events_location_visibility_check
+      check (location_visibility in ('public','undisclosed','secret'));
+  end if;
+end; $$;
 
 create index if not exists idx_events_category_id on public.events(category_id);
 create index if not exists idx_events_start_time on public.events(start_time);

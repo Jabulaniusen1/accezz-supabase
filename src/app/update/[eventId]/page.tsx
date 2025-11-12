@@ -93,6 +93,7 @@ function Update() {
             categoryName: ev.category?.name ?? undefined,
             categoryCustom: ev.category_custom ?? '',
             locationId: ev.location_id ?? undefined,
+            locationVisibility: ev.location_visibility ?? 'public',
             hostName: hostProfile?.full_name || '',
             gallery: [],
             isVirtual: !!ev.is_virtual,
@@ -166,17 +167,32 @@ function Update() {
         throw new Error('Please set the event start date and time.');
       }
 
-      const locationValue = formData.isVirtual
-        ? 'Online'
-        : (formData.location?.trim() || '');
+      const visibility = formData.locationVisibility ?? 'public';
+      const rawLocation = formData.location?.trim() || '';
+      const locationValue =
+        visibility === 'undisclosed'
+          ? null
+          : (rawLocation || (formData.isVirtual ? 'Online' : ''));
 
-      if (!formData.isVirtual && !locationValue) {
+      if (!formData.isVirtual && visibility !== 'undisclosed' && !rawLocation) {
         throw new Error('Please provide the event location before saving.');
+      }
+
+      if (formData.isVirtual && visibility === 'undisclosed') {
+        throw new Error('Virtual events require access details instead of an undisclosed location.');
       }
 
       const categoryCustomValue = formData.categoryId
         ? null
         : (formData.categoryCustom?.trim() || null);
+      const venueValue = formData.isVirtual ? 'Virtual Event' : (formData.venue?.trim() || null);
+      const finalVenue = visibility === 'undisclosed' ? null : venueValue;
+      const addressValue = visibility === 'undisclosed' ? null : formData.address?.trim() || null;
+      const cityValue = visibility === 'undisclosed' ? null : formData.city?.trim() || null;
+      const countryValue = visibility === 'undisclosed' ? null : formData.country?.trim() || null;
+      const latitudeValue = visibility === 'undisclosed' ? null : formData.latitude ?? null;
+      const longitudeValue = visibility === 'undisclosed' ? null : formData.longitude ?? null;
+      const locationIdValue = visibility === 'undisclosed' ? null : formData.locationId ?? null;
 
       // Update event
       const { error: evErr } = await supabase
@@ -186,14 +202,15 @@ function Update() {
           description: formData.description,
           start_time: startTimeIso,
           end_time: formData.endTime || null,
-          venue: formData.venue || null,
+          venue: finalVenue,
           location: locationValue,
-          address: formData.address?.trim() || null,
-          city: formData.city?.trim() || null,
-          country: formData.country?.trim() || null,
-          latitude: formData.latitude ?? null,
-          longitude: formData.longitude ?? null,
-          location_id: formData.locationId ?? null,
+          location_visibility: visibility,
+          address: addressValue,
+          city: cityValue,
+          country: countryValue,
+          latitude: latitudeValue,
+          longitude: longitudeValue,
+          location_id: locationIdValue,
           category_id: formData.categoryId ?? null,
           category_custom: categoryCustomValue,
           is_virtual: !!formData.isVirtual,
