@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { type Event, type Ticket } from '@/types/event';
@@ -25,9 +25,21 @@ const EventDetail = () => {
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<ToastType>(null);
   const [showTicketForm, setShowTicketForm] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [event, setEvent] = useState<Event | null>(null);
+
+  const selectedTicketOption = useMemo(() => {
+    if (!selectedTicket) return undefined;
+
+    return {
+      id: event?.id || '',
+      name: selectedTicket.name,
+      price: selectedTicket.price,
+      quantity: selectedTicket.quantity,
+      sold: selectedTicket.sold,
+      details: selectedTicket.details || ''
+    };
+  }, [selectedTicket, event?.id]);
   
   // Refs and routing
   const ticketsSectionRef = useRef<HTMLDivElement>(null);
@@ -170,6 +182,7 @@ const EventDetail = () => {
               eventSlug={eventSlug as string}
               setToast={showToast}
               isOpen={showTicketForm}
+              initialTicket={selectedTicketOption}
             />
           </React.Suspense>
         )}

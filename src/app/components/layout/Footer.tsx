@@ -130,10 +130,10 @@ const Footer = () => {
               <Link href="/term&condition" className="text-gray-600 hover:text-[#f54502] transition-colors">
                 Terms & Conditions
               </Link>
-              <Link href="/privacy" className="text-gray-600 hover:text-[#f54502] transition-colors">
+              <Link href="/privacy-policy" className="text-gray-600 hover:text-[#f54502] transition-colors">
                 Privacy Policy
               </Link>
-              <Link href="/refund" className="text-gray-600 hover:text-[#f54502] transition-colors">
+              <Link href="/refund-policy" className="text-gray-600 hover:text-[#f54502] transition-colors">
                 Refund Policy
               </Link>
             </div>

@@ -7,7 +7,7 @@ import { fetchEventBySlug } from '@/utils/eventUtils';
 import { createOrder, createFreeTickets } from '@/utils/paymentUtils';
 import { saveTicketPurchaseState, getTicketPurchaseState, clearTicketPurchaseState } from '@/utils/localStorage';
 
-interface Ticket {
+type TicketOption = {
   id: string;
   name: string;
   price: string;
@@ -15,21 +15,15 @@ interface Ticket {
   sold: string;
   details?: string; // Made optional
   attendees?: { name: string; email: string }[];
-}
+};
 
 type TicketTypeFormProps = {
   closeForm: () => void;
-  tickets: {
-    id: string;
-    name: string;
-    price: string;
-    quantity: string;
-    sold: string;
-    details?: string;
-  }[];
+  tickets: TicketOption[];
   eventSlug: string;
   setToast: (toast: { type: 'success' | 'error'; message: string } | null) => void;
   isOpen?: boolean;
+  initialTicket?: TicketOption;
 };
 
 interface Event { id: string; slug: string; }
@@ -44,9 +38,9 @@ const parsePriceValue = (value: string | number | null | undefined): number => {
   return 0;
 };
 
-const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true }: TicketTypeFormProps) => {
+const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true, initialTicket }: TicketTypeFormProps) => {
   const [activeStep, setActiveStep] = useState(0);
-  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
+  const [selectedTicket, setSelectedTicket] = useState<TicketOption | null>(initialTicket ?? null);
   const [quantity, setQuantity] = useState(1);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -58,7 +52,10 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
   const [additionalTicketHolders, setAdditionalTicketHolders] = useState<Array<{
     name: string;
     email: string;
+    phone?: string;
   }>>([]);
+
+  const [isSheetVisible, setIsSheetVisible] = useState(false);
 
   const eventId = events?.id;
 
@@ -93,6 +90,10 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventSlug]);
 
+  useEffect(() => {
+    setIsSheetVisible(true);
+  }, []);
+
   // Restore saved state on mount
   useEffect(() => {
     try {
@@ -111,6 +112,20 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
       console.error('Error restoring ticket purchase state:', error);
     }
   }, [eventSlug]);
+
+  useEffect(() => {
+    if (!initialTicket) return;
+
+    setSelectedTicket(prev => {
+      if (prev && prev.name === initialTicket.name && prev.price === initialTicket.price) {
+        return prev;
+      }
+      return { ...initialTicket };
+    });
+    setActiveStep(0);
+    setQuantity(1);
+    setAdditionalTicketHolders([]);
+  }, [initialTicket]);
 
   // Save state whenever it changes (only when modal is open)
   useEffect(() => {
@@ -356,104 +371,124 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
   const steps = ['Select Ticket', 'Order Info', 'Payment'];
 
   return (
-    <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 dark:text-white">
-      <div className="relative w-full max-w-3xl bg-white dark:bg-gray-900 rounded-2xl shadow-2xl">
-        <div className="p-4 sm:p-6">
-          <button
-            onClick={handleCloseForm}
-            className="absolute top-4 right-4 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+    <div className="fixed inset-0 z-50 flex flex-col justify-end bg-gray-900/80 backdrop-blur-sm transition-colors duration-300 dark:text-white">
+      <div
+        className={`relative w-full max-w-3xl mx-auto h-[85vh] max-h-[90vh] sm:h-[70vh] bg-white dark:bg-gray-900 rounded-t-3xl shadow-2xl transform transition-transform duration-300 ease-out flex flex-col ${
+          isSheetVisible ? 'translate-y-0' : 'translate-y-full'
+        }`}
+      >
+        <div className="absolute top-3 left-1/2 h-1.5 w-12 -translate-x-1/2 rounded-full bg-gray-300 dark:bg-gray-600" />
+        <button
+          onClick={handleCloseForm}
+          aria-label="Close ticket purchase"
+          className="absolute top-4 right-4 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
 
+        <div className="flex-1 overflow-y-auto pt-12 pb-6 px-4 sm:px-6">
           {isPurchased ? (
-            <Receipt closeReceipt={closeReceipt} />
+            <div className="h-full">
+              <Receipt closeReceipt={closeReceipt} />
+            </div>
           ) : (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold mb-10 text-center text-gray-900 dark:text-white">
+            <div className="flex h-full flex-col space-y-6">
+              <h2 className="text-xl sm:text-2xl font-semibold text-center text-gray-900 dark:text-white">
                 Purchase Ticket
               </h2>
 
               {/* Custom Stepper */}
-              <div className="flex justify-center mb-8">
+              {/* <div className="flex justify-center">
                 <div className="flex items-center space-x-4 justify-between">
                   {steps.map((step, index) => (
                     <div key={step} className="flex items-center gap-1">
-                      <div className={`flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 text-sm ${
-                        index <= activeStep 
-                          ? 'bg-[#f54502] border-[#f54502] text-white' 
-                          : 'border-gray-300 text-gray-500'
-                      }`}>
+                      <div
+                        className={`flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 text-sm ${
+                          index <= activeStep
+                            ? 'bg-[#f54502] border-[#f54502] text-white'
+                            : 'border-gray-300 text-gray-500'
+                        }`}
+                      >
                         {index < activeStep ? (
                           <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                         ) : (
                           <span className="text-xs sm:text-sm font-medium">{index + 1}</span>
                         )}
                       </div>
-                      <span className={`lg:ml-2 text-xs sm:text-sm font-medium ${
-                        index <= activeStep ? 'text-[#f54502]' : 'text-gray-500'
-                      }`}>
+                      <span
+                        className={`lg:ml-2 text-xs sm:text-sm font-medium ${
+                          index <= activeStep ? 'text-[#f54502]' : 'text-gray-500'
+                        }`}
+                      >
                         {step}
                       </span>
                       {index < steps.length - 1 && (
-                        <div className={`hidden sm:block w-12 h-0.5 mx-2 ${
-                          index < activeStep ? 'bg-blue-600' : 'bg-gray-300'
-                        }`} />
+                        <div
+                          className={`hidden sm:block w-12 h-0.5 mx-2 ${
+                            index < activeStep ? 'bg-blue-600' : 'bg-gray-300'
+                          }`}
+                        />
                       )}
                     </div>
                   ))}
                 </div>
-              </div>
+              </div> */}
 
-              <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
-                {activeStep === 0 && (
-                  <TicketSelectionStep
-                    tickets={tickets}
-                    selectedTicket={selectedTicket}
-                    handleTicketSelection={handleTicketSelection}
-                    quantity={quantity}
-                    handleQuantityChange={handleQuantityChange}
-                    totalPrice={totalPrice}
-                  />
-                )}
+              <form onSubmit={(e) => e.preventDefault()} className="flex flex-1 flex-col space-y-6">
+                <div className="flex-1 space-y-6 pr-1">
+                  {activeStep === 0 && (
+                    <TicketSelectionStep
+                      tickets={tickets}
+                      selectedTicket={selectedTicket}
+                      handleTicketSelection={handleTicketSelection}
+                      quantity={quantity}
+                      handleQuantityChange={handleQuantityChange}
+                      totalPrice={totalPrice}
+                    />
+                  )}
 
-                {activeStep === 1 && (
-                  <OrderInformationStep
-                    fullName={fullName}
-                    setFullName={setFullName}
-                    email={email}
-                    setEmail={setEmail}
-                    phoneNumber={phoneNumber}
-                    setPhoneNumber={setPhoneNumber}
-                    quantity={quantity}
-                    additionalTicketHolders={additionalTicketHolders}
-                    handleAdditionalTicketHolderChange={handleAdditionalTicketHolderChange}
-                  />
-                )}
+                  {activeStep === 1 && (
+                    <OrderInformationStep
+                      fullName={fullName}
+                      setFullName={setFullName}
+                      email={email}
+                      setEmail={setEmail}
+                      phoneNumber={phoneNumber}
+                      setPhoneNumber={setPhoneNumber}
+                      quantity={quantity}
+                      additionalTicketHolders={additionalTicketHolders}
+                      handleAdditionalTicketHolderChange={handleAdditionalTicketHolderChange}
+                    />
+                  )}
 
-                {activeStep === 2 && (
-                  <PaymentStep
-                    selectedTicket={selectedTicket}
-                    quantity={quantity}
-                    totalPrice={totalPrice}
-                    handlePurchase={handlePurchase}
-                    isLoading={isLoading}
-                  />
-                )}
+                  {activeStep === 2 && (
+                    <PaymentStep
+                      selectedTicket={selectedTicket}
+                      quantity={quantity}
+                      totalPrice={totalPrice}
+                      handlePurchase={handlePurchase}
+                      isLoading={isLoading}
+                    />
+                  )}
+                </div>
 
-                <div className="flex justify-between pt-6 border-t border-gray-200 dark:border-gray-700">
+                <div className="sticky bottom-0 bg-white/50 backdrop-blur-md flex justify-between p-3 rounded-full border-gray-200 dark:border-gray-700">
                   <button
                     type="button"
                     onClick={handleBack}
                     disabled={activeStep === 0}
-                    className={`px-4 py-2  rounded-xl hover:scale-105 shadow-lg hover:shadow-xl transition-colors ${
+                    className={`px-6 py-2 rounded-full hover:scale-[1.02] hover:shadow-xl transition-colors ${
                       activeStep === 0
-                        ? 'border-gray-300 text-gray-400 cursor-not-allowed'
-                        : 'border-[#f54502] text-[#f54502] hover:bg-[#f54502]/10 dark:hover:bg-[#f54502]/20'
+                        ? 'border border-gray-300 text-gray-400 cursor-not-allowed'
+                        : ' bg-[#f54502]/20 text-[#f54502] hover:bg-[#f54502]/10 dark:hover:bg-[#f54502]/20'
                     }`}
                   >
                     Back
@@ -462,9 +497,9 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
                     type="button"
                     onClick={handleNext}
                     disabled={activeStep === 2 || isLoading}
-                    className={`px-4 py-2 rounded-xl hover:scale-105 shadow-lg hover:shadow-xl transition-colors flex items-center justify-center gap-2 ${
+                    className={`px-6 py-2 rounded-full hover:scale-[1.02] hover:shadow-xl transition-colors flex items-center justify-center gap-2 ${
                       activeStep === 2 || isLoading
-                        ? ' hidden cursor-not-allowed'
+                        ? 'hidden cursor-not-allowed'
                         : 'bg-[#f54502] text-white hover:bg-[#f54502]/90'
                     }`}
                   >

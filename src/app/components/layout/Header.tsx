@@ -25,11 +25,11 @@ const Header = () => {
   const pathname = usePathname();
 
   const navItems = [
-    { name: "Discover events", href: "/#events" },
-    { name: "Event Centers", href: "/locations" },
-    { name: "How Accezz Works", href: "/#tutorial" },
+    { name: "Discover", href: "/#events" },
+    { name: "Locations", href: "/locations" },
+    { name: "How it Works", href: "/#tutorial" },
     { name: "About", href: "/about" },
-    { name: "Blog", href: "/blog" },
+    // { name: "Blog", href: "/blog" },
     { name: "Pricing", href: "/pricing" },
   ];
 
@@ -123,13 +123,6 @@ const Header = () => {
               </div>
 
               <div className="flex items-center space-x-6">
-                {/* Search Icon */}
-                <button className="text-gray-700 dark:text-gray-300 hover:text-[#f54502] transition-colors">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </button>
-                
                 {isLoggedIn ? (
                   <>
                     <button
