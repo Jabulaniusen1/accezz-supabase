@@ -21,7 +21,7 @@ const AllEvents = () => {
   });
   const [toast, setToast] = useState<{ type: 'error' | 'success'; message: string } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const eventsPerPage = 6;
+  const eventsPerPage = 4;
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [showPriceModal, setShowPriceModal] = useState(false);
   const [showDateModal, setShowDateModal] = useState(false);
@@ -68,7 +68,7 @@ const AllEvents = () => {
 
   const indexOfLastEvent = currentPage * eventsPerPage;
   const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
-  const currentEvents = filteredEvents.slice(indexOfFirstEvent, indexOfLastEvent);
+  const currentEvents = filteredEvents.slice(0, eventsPerPage);
   const totalPages = Math.ceil(filteredEvents.length / eventsPerPage);
 
   const handlePageChange = (pageNumber: number) => {
@@ -491,67 +491,14 @@ const AllEvents = () => {
           </div>
         )}
       </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="max-w-7xl mx-auto mt-12 flex items-center justify-center gap-2">
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className={`px-4 py-2 rounded-lg font-medium transition-all ${
-              currentPage === 1
-                ? 'bg-gray-200 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-600'
-                : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-300 hover:border-[#f54502] dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:border-[#f54502]'
-            }`}
-            style={{ borderRadius: '10px' }}
-          >
-            Previous
-          </button>
-          
-          <div className="flex items-center gap-2">
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              let pageNum;
-              if (totalPages <= 5) {
-                pageNum = i + 1;
-              } else if (currentPage <= 3) {
-                pageNum = i + 1;
-              } else if (currentPage >= totalPages - 2) {
-                pageNum = totalPages - 4 + i;
-              } else {
-                pageNum = currentPage - 2 + i;
-              }
-              
-              return (
-                <button
-                  key={pageNum}
-                  onClick={() => handlePageChange(pageNum)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                    currentPage === pageNum
-                      ? 'bg-[#f54502] text-white border-2 border-[#f54502]'
-                      : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-300 hover:border-[#f54502] dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:border-[#f54502]'
-                  }`}
-                  style={{ borderRadius: '10px' }}
-                >
-                  {pageNum}
-                </button>
-              );
-            })}
-          </div>
-          
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className={`px-4 py-2 rounded-lg font-medium transition-all ${
-              currentPage === totalPages
-                ? 'bg-gray-200 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-600'
-                : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-300 hover:border-[#f54502] dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:border-[#f54502]'
-            }`}
-            style={{ borderRadius: '10px' }}
-          >
-            Next
-          </button>
-        </div>
-      )}
+      <div className="max-w-7xl mx-auto mt-8 flex justify-center">
+        <a
+          href="/events"
+          className="inline-flex items-center gap-2 rounded-full border-2 border-[#f54502] px-5 py-2 text-sm font-semibold text-[#f54502] transition hover:bg-[#f54502] hover:text-white"
+        >
+          View all events
+        </a>
+      </div>
 
       {/* Location Filter Modal */}
       {showLocationModal && (
