@@ -126,6 +126,12 @@ const Footer = () => {
             <p className="text-gray-600 text-sm">
               Copyright © {currentYear}. Accezz Technology Inc. All rights reserved.
             </p>
+            <a
+              href="mailto:support@accezzlive.com"
+              className="text-gray-600 hover:text-[#f54502] transition-colors text-sm"
+            >
+              support@accezzlive.com
+            </a>
             <div className="flex gap-6 text-sm">
               <Link href="/term&condition" className="text-gray-600 hover:text-[#f54502] transition-colors">
                 Terms & Conditions
