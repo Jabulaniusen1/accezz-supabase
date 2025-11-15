@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendEmail, generateAbandonedCartEmailHTML } from '@/utils/emailUtils';
-import { supabase } from '@/utils/supabaseClient';
 
 export async function POST(req: NextRequest) {
   try {
