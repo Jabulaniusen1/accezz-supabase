@@ -8,32 +8,9 @@ import { supabase } from '@/utils/supabaseClient';
  * Query params:
  * - minutes: Number of minutes to wait before considering an order abandoned (default: 5)
  * - limit: Maximum number of emails to send in one run (default: 50)
- * 
- * Security: This endpoint checks for Vercel Cron authorization header
  */
 export async function POST(req: NextRequest) {
   try {
-    // Security check: Verify this is a Vercel Cron request
-    const authHeader = req.headers.get('authorization');
-    const cronSecret = process.env.CRON_SECRET;
-    
-    // If CRON_SECRET is set, require it in the Authorization header
-    if (cronSecret) {
-      if (authHeader !== `Bearer ${cronSecret}`) {
-        return NextResponse.json(
-          { error: 'Unauthorized' },
-          { status: 401 }
-        );
-      }
-    } else {
-      // If no CRON_SECRET is set, check for Vercel's cron header
-      const vercelCronHeader = req.headers.get('x-vercel-cron');
-      if (!vercelCronHeader) {
-        // Allow manual testing but log a warning
-        console.warn('Cron endpoint called without proper authorization. Set CRON_SECRET for production.');
-      }
-    }
-
     const body = await req.json().catch(() => ({}));
     const minutes = body.minutes || 5;
     const limit = body.limit || 50;
@@ -263,27 +240,6 @@ export async function POST(req: NextRequest) {
 
 // Also support GET for easy cron job calls
 export async function GET(req: NextRequest) {
-  // Security check: Verify this is a Vercel Cron request
-  const authHeader = req.headers.get('authorization');
-  const cronSecret = process.env.CRON_SECRET;
-  
-  // If CRON_SECRET is set, require it in the Authorization header
-  if (cronSecret) {
-    if (authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-  } else {
-    // If no CRON_SECRET is set, check for Vercel's cron header
-    const vercelCronHeader = req.headers.get('x-vercel-cron');
-    if (!vercelCronHeader) {
-      // Allow manual testing but log a warning
-      console.warn('Cron endpoint called without proper authorization. Set CRON_SECRET for production.');
-    }
-  }
-
   const searchParams = req.nextUrl.searchParams;
   const minutes = parseInt(searchParams.get('minutes') || '5', 10);
   const limit = parseInt(searchParams.get('limit') || '50', 10);
@@ -291,10 +247,7 @@ export async function GET(req: NextRequest) {
   // Create a POST request body and call the POST handler logic
   const request = new NextRequest(req.url, {
     method: 'POST',
-    headers: { 
-      'Content-Type': 'application/json',
-      'authorization': authHeader || '',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ minutes, limit }),
   });
 
