@@ -894,3 +894,370 @@ export function generateTicketEmailHTML(data: {
     </html>
   `;
 }
+
+/**
+ * Generate abandoned cart email HTML
+ */
+export function generateAbandonedCartEmailHTML(data: {
+  fullName: string;
+  eventTitle: string;
+  eventDate: string;
+  eventTime: string;
+  venue: string;
+  ticketType: string;
+  quantity: number;
+  totalAmount: number;
+  currency: string;
+  orderId: string;
+  eventSlug: string;
+}): string {
+  const firstName = data.fullName?.split(' ')[0] || 'there';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://accezz.com';
+  const completePurchaseUrl = `${baseUrl}/${data.eventSlug}?orderId=${data.orderId}`;
+
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Complete Your Purchase - ${data.eventTitle}</title>
+      <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+          line-height: 1.6;
+          color: #1a1a1a;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          padding: 40px 20px;
+        }
+        .email-wrapper {
+          max-width: 650px;
+          margin: 0 auto;
+          background-color: #ffffff;
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        .header {
+          background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+          padding: 40px 40px 60px;
+          text-align: center;
+          position: relative;
+        }
+        .header::after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          height: 40px;
+          background: #ffffff;
+          border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+        }
+        .logo {
+          margin-bottom: 20px;
+        }
+        .logo img {
+          max-width: 140px;
+          height: auto;
+          filter: brightness(0) invert(1);
+        }
+        .header h1 {
+          color: #ffffff;
+          font-size: 28px;
+          font-weight: 700;
+          margin: 0;
+          position: relative;
+          z-index: 1;
+        }
+        .sad-icon {
+          width: 80px;
+          height: 80px;
+          background: #ffffff;
+          border-radius: 50%;
+          margin: 20px auto 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 40px;
+          position: relative;
+          z-index: 1;
+        }
+        .content {
+          padding: 40px 40px 20px;
+        }
+        .greeting {
+          font-size: 20px;
+          color: #1a1a1a;
+          font-weight: 600;
+          margin-bottom: 16px;
+        }
+        .message {
+          font-size: 16px;
+          color: #4a5568;
+          margin-bottom: 16px;
+          line-height: 1.8;
+        }
+        .sad-message {
+          font-size: 18px;
+          color: #6b7280;
+          margin-bottom: 24px;
+          line-height: 1.8;
+          text-align: center;
+          font-style: italic;
+        }
+        .event-card {
+          background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+          border-radius: 16px;
+          padding: 30px;
+          margin: 30px 0;
+          border: 2px solid #e2e8f0;
+        }
+        .event-title {
+          font-size: 22px;
+          color: #2d3748;
+          font-weight: 700;
+          margin-bottom: 24px;
+          text-align: center;
+          padding-bottom: 16px;
+          border-bottom: 2px solid #cbd5e0;
+        }
+        .detail-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 12px 0;
+          border-bottom: 1px solid #e2e8f0;
+        }
+        .detail-row:last-child {
+          border-bottom: none;
+        }
+        .detail-label {
+          color: #718096;
+          font-size: 14px;
+          font-weight: 500;
+        }
+        .detail-value {
+          color: #2d3748;
+          font-size: 15px;
+          font-weight: 600;
+          text-align: right;
+        }
+        .summary-box {
+          background: linear-gradient(135deg, #f54502 0%, #ff6b35 100%);
+          color: #ffffff;
+          border-radius: 12px;
+          padding: 24px;
+          margin: 30px 0;
+          text-align: center;
+        }
+        .summary-box .amount {
+          font-size: 36px;
+          font-weight: 700;
+          margin: 12px 0;
+        }
+        .summary-box .label {
+          font-size: 14px;
+          opacity: 0.9;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+        .cta-container {
+          text-align: center;
+          margin: 40px 0;
+        }
+        .cta-button {
+          display: inline-block;
+          padding: 18px 48px;
+          background: linear-gradient(135deg, #f54502 0%, #ff6b35 100%);
+          color: #ffffff !important;
+          text-decoration: none;
+          border-radius: 50px;
+          font-weight: 600;
+          font-size: 18px;
+          box-shadow: 0 10px 30px rgba(245, 69, 2, 0.3);
+          transition: all 0.3s ease;
+        }
+        .cta-button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 15px 40px rgba(245, 69, 2, 0.4);
+        }
+        .support-section {
+          background: #fff8f3;
+          border-left: 4px solid #f54502;
+          padding: 24px;
+          border-radius: 8px;
+          margin: 30px 0;
+        }
+        .support-section p {
+          color: #4a5568;
+          font-size: 15px;
+          margin: 8px 0;
+          line-height: 1.6;
+        }
+        .support-section a {
+          color: #f54502;
+          text-decoration: none;
+          font-weight: 600;
+        }
+        .support-section a:hover {
+          text-decoration: underline;
+        }
+        .footer {
+          background: #f7fafc;
+          padding: 30px 40px;
+          text-align: center;
+          border-top: 1px solid #e2e8f0;
+        }
+        .footer-signature {
+          font-size: 15px;
+          color: #2d3748;
+          font-weight: 600;
+          margin-bottom: 8px;
+        }
+        .footer-team {
+          font-size: 15px;
+          color: #718096;
+          margin-bottom: 20px;
+        }
+        .footer-note {
+          font-size: 13px;
+          color: #a0aec0;
+          margin: 0;
+        }
+        .divider {
+          height: 1px;
+          background: linear-gradient(to right, transparent, #e2e8f0, transparent);
+          margin: 30px 0;
+        }
+        @media only screen and (max-width: 600px) {
+          body {
+            padding: 20px 10px;
+          }
+          .content {
+            padding: 30px 20px 15px;
+          }
+          .header {
+            padding: 30px 20px 50px;
+          }
+          .header h1 {
+            font-size: 24px;
+          }
+          .event-card {
+            padding: 20px;
+          }
+          .summary-box .amount {
+            font-size: 28px;
+          }
+          .footer {
+            padding: 25px 20px;
+          }
+          .detail-row {
+            flex-direction: column;
+            gap: 4px;
+          }
+          .detail-value {
+            text-align: left;
+          }
+          .cta-button {
+            padding: 16px 36px;
+            font-size: 16px;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="email-wrapper">
+        <div class="header">
+          <div class="logo">
+            <img src="https://kckdkipdodkfszakqwui.supabase.co/storage/v1/object/public/logo/accezz%20logo.png" alt="Accezz Logo">
+          </div>
+          <h1>We Miss You! 😢</h1>
+          <div class="sad-icon">😔</div>
+        </div>
+        
+        <div class="content">
+          <p class="greeting">Hi ${firstName}!</p>
+          
+          <p class="sad-message">
+            😞 We noticed you started to purchase tickets but didn't complete your order...
+          </p>
+          
+          <p class="message">
+            We're a little sad that you didn't finish your purchase! 😢 You were so close to securing your spot at <strong>${data.eventTitle}</strong>. 
+          </p>
+          
+          <p class="message">
+            Don't worry though – your order is still waiting for you! We've saved your selection, and you can complete your purchase with just one click. 🎫
+          </p>
+          
+          <div class="event-card">
+            <div class="event-title">${data.eventTitle}</div>
+            <div class="detail-row">
+              <span class="detail-label">📅 Date</span>
+              <span class="detail-value">${data.eventDate}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">🕐 Time</span>
+              <span class="detail-value">${data.eventTime}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">📍 Venue</span>
+              <span class="detail-value">${data.venue}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">🎫 Ticket Type</span>
+              <span class="detail-value">${data.ticketType}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">🔢 Quantity</span>
+              <span class="detail-value">${data.quantity}</span>
+            </div>
+          </div>
+
+          <div class="summary-box">
+            <div class="label">Total Amount</div>
+            <div class="amount">${data.currency} ${data.totalAmount.toLocaleString()}</div>
+          </div>
+
+          <div class="cta-container">
+            <a href="${completePurchaseUrl}" class="cta-button">
+              Complete Purchase
+            </a>
+          </div>
+
+          <div class="support-section">
+            <p style="font-weight: 600; color: #2d3748; margin-bottom: 12px;">
+              💬 Had an issue? We're here to help!
+            </p>
+            <p>
+              If you encountered any problems during checkout or have questions, please don't hesitate to reach out to our support team. We're always happy to assist! 😊
+            </p>
+            <p style="margin-top: 12px;">
+              Email us at: <a href="mailto:support@accezzlive.com">support@accezzlive.com</a>
+            </p>
+          </div>
+          
+          <div class="divider"></div>
+          
+          <p class="message" style="text-align: center; font-weight: 600; color: #2d3748;">
+            We hope to see you at the event! 🎉
+          </p>
+        </div>
+        
+        <div class="footer">
+          <p class="footer-signature">Best regards,</p>
+          <p class="footer-team">The Accezz Team</p>
+          <p class="footer-note">
+            This is an automated message. Please do not reply to this email.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
