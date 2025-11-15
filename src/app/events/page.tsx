@@ -327,7 +327,7 @@ const EventsExplorerPage = () => {
                 </p>
               </div>
             ) : (
-              <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 space-y-2">
+              <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-2">
                 {paginatedEvents.map((event) => {
                   const parsedPrices =
                     (event.ticketType || [])
