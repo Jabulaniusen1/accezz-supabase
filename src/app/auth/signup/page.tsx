@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   FaUser,
@@ -21,7 +21,7 @@ import Link from "next/link";
 
 const AgreeTerms = React.lazy(() => import("../../components/home/agreeTerms"));
 
-function Signup() {
+function SignupContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
@@ -489,4 +489,10 @@ function Signup() {
   );
 }
 
-export default Signup;
+export default function Signup() {
+  return (
+    <Suspense fallback={<div><Loader/></div>}>
+      <SignupContent />
+    </Suspense>
+  );
+}
