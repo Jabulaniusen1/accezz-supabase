@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaEye, FaEyeSlash, FaEnvelope, FaLock, FaRedo, FaArrowLeft } from 'react-icons/fa';
 import Loader from '../../../components/ui/loader/Loader';
@@ -15,7 +15,7 @@ type FormData = {
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
 
-export default function Login() {
+function LoginContent() {
   const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
@@ -294,5 +294,13 @@ export default function Login() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Login() {
+  return (
+    <Suspense fallback={<div><Loader/></div>}>
+      <LoginContent />
+    </Suspense>
   );
 }
