@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import SearchableSelect from '../SearchableSelect';
+// Removed searchable select for country code per requirement
 
 interface TicketHolderProps {
   fullName: string;
@@ -17,45 +17,45 @@ interface TicketHolderProps {
 
 // Country codes list with common African countries first, then international
 const countryCodes = [
-  { value: '+234', label: '+234 Nigeria 🇳🇬' },
-  { value: '+233', label: '+233 Ghana 🇬🇭' },
-  { value: '+27', label: '+27 South Africa 🇿🇦' },
-  { value: '+254', label: '+254 Kenya 🇰🇪' },
-  { value: '+255', label: '+255 Tanzania 🇹🇿' },
-  { value: '+256', label: '+256 Uganda 🇺🇬' },
-  { value: '+260', label: '+260 Zambia 🇿🇲' },
-  { value: '+250', label: '+250 Rwanda 🇷🇼' },
-  { value: '+221', label: '+221 Senegal 🇸🇳' },
-  { value: '+237', label: '+237 Cameroon 🇨🇲' },
-  { value: '+225', label: '+225 Ivory Coast 🇨🇮' },
-  { value: '+251', label: '+251 Ethiopia 🇪🇹' },
-  { value: '+20', label: '+20 Egypt 🇪🇬' },
-  { value: '+212', label: '+212 Morocco 🇲🇦' },
-  { value: '+213', label: '+213 Algeria 🇩🇿' },
-  { value: '+216', label: '+216 Tunisia 🇹🇳' },
-  { value: '+244', label: '+244 Angola 🇦🇴' },
-  { value: '+258', label: '+258 Mozambique 🇲🇿' },
-  { value: '+267', label: '+267 Botswana 🇧🇼' },
-  { value: '+263', label: '+263 Zimbabwe 🇿🇼' },
-  { value: '+44', label: '+44 United Kingdom 🇬🇧' },
-  { value: '+1', label: '+1 United States 🇺🇸' },
-  { value: '+33', label: '+33 France 🇫🇷' },
-  { value: '+49', label: '+49 Germany 🇩🇪' },
-  { value: '+39', label: '+39 Italy 🇮🇹' },
-  { value: '+34', label: '+34 Spain 🇪🇸' },
-  { value: '+31', label: '+31 Netherlands 🇳🇱' },
-  { value: '+32', label: '+32 Belgium 🇧🇪' },
-  { value: '+41', label: '+41 Switzerland 🇨🇭' },
-  { value: '+971', label: '+971 UAE 🇦🇪' },
-  { value: '+966', label: '+966 Saudi Arabia 🇸🇦' },
-  { value: '+91', label: '+91 India 🇮🇳' },
-  { value: '+86', label: '+86 China 🇨🇳' },
-  { value: '+81', label: '+81 Japan 🇯🇵' },
-  { value: '+82', label: '+82 South Korea 🇰🇷' },
-  { value: '+61', label: '+61 Australia 🇦🇺' },
-  { value: '+64', label: '+64 New Zealand 🇳🇿' },
-  { value: '+55', label: '+55 Brazil 🇧🇷' },
-  { value: '+52', label: '+52 Mexico 🇲🇽' },
+  { value: '+234', label: '🇳🇬 +234 ' },
+  { value: '+233', label: '🇬🇭 +233 ' },
+  { value: '+27', label: '🇿🇦 +27 ' },
+  { value: '+254', label: '🇰🇪 +254 ' },
+  { value: '+255', label: '🇹🇿 +255 ' },
+  { value: '+256', label: '🇺🇬 +256 ' },
+  { value: '+260', label: '🇿🇲 +260 ' },
+  { value: '+250', label: '🇷🇼 +250 ' },
+  { value: '+221', label: '🇸🇳 +221 ' },
+  { value: '+237', label: '🇨🇲 +237 ' },
+  { value: '+225', label: '🇨🇮 +225 ' },
+  { value: '+251', label: '🇪🇹 +251 ' },
+  { value: '+20', label: '🇪🇬 +20 ' },
+  { value: '+212', label: '🇲🇦 +212 ' },
+  { value: '+213', label: '🇩🇿 +213 ' },
+  { value: '+216', label: '🇹🇳 +216 ' },
+  { value: '+244', label: '🇦🇴 +244 ' },
+  { value: '+258', label: '🇲🇿 +258 ' },
+  { value: '+267', label: '🇧🇼 +267 ' },
+  { value: '+263', label: '🇿🇼 +263 ' },
+  { value: '+44', label: '🇬🇧 +44 ' },
+  { value: '+1', label: '🇺🇸 +1 ' },
+  { value: '+33', label: '🇫🇷 +33 ' },
+  { value: '+49', label: '🇩🇪 +49 ' },
+  { value: '+39', label: '🇮🇹 +39 ' },
+  { value: '+34', label: '🇪🇸 +34 ' },
+  { value: '+31', label: '🇳🇱 +31 ' },
+  { value: '+32', label: '🇧🇪 +32 ' },
+  { value: '+41', label: '🇨🇭 +41 ' },
+  { value: '+971', label: '🇦🇪 +971 ' },
+  { value: '+966', label: '🇸🇦 +966 ' },
+  { value: '+91', label: '🇮🇳 +91 ' },
+  { value: '+86', label: '🇨🇳 +86 ' },
+  { value: '+81', label: '🇯🇵 +81 ' },
+  { value: '+82', label: '🇰🇷 +82 ' },
+  { value: '+61', label: '🇦🇺 +61 ' },
+  { value: '+64', label: '🇳🇿 +64 ' },
+  { value: '+55', label: '🇧🇷 +55 ' },
+  { value: '+52', label: '🇲🇽 +52 ' },
 ];
 
 const OrderInformationStep = ({ 
@@ -224,15 +224,18 @@ const OrderInformationStep = ({
               Phone Number
             </span>
             <div className="flex gap-2 w-full min-w-0">
-              <div className="w-20 sm:w-24 flex-shrink-0 min-w-0">
-                <div className="w-full [&>div]:h-full [&>div]:w-full [&_button]:h-[42px] [&_button]:py-2.5 [&_button]:px-2 [&_button]:text-sm [&_button]:border-gray-300 [&_button]:bg-white [&_button]:dark:bg-gray-900 [&_button]:dark:border-gray-700 [&_button]:rounded-[5px] [&_button_span]:truncate [&_button_span]:block [&_button]:w-full">
-                  <SearchableSelect
-                    options={countryCodes}
-                    value={countryCode}
-                    onChange={(value) => setCountryCode(value)}
-                    placeholder="+234"
-                  />
-                </div>
+              <div className="w-24 sm:w-28 flex-shrink-0 min-w-0">
+                <select
+                  value={countryCode}
+                  onChange={(e) => setCountryCode(e.target.value)}
+                  className="w-full h-[42px] rounded-[5px] border border-gray-300 bg-white px-2 text-sm text-gray-900 outline-none transition focus:border-[#f54502] focus:ring-2 focus:ring-[#f54502]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                >
+                  {countryCodes.map((code) => (
+                    <option key={code.value} value={code.value}>
+                      {code.label}
+                    </option>
+                  ))}
+                </select>
               </div>
               <input
                 type="tel"

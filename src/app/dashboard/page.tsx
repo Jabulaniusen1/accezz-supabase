@@ -236,44 +236,7 @@ const Dashboard = () => {
           } md:translate-x-0`}
         >
           <div className="flex flex-col h-full pt-20">
-            {/* Mode Switcher - Only show if user is a creator */}
-            {userType === "creator" && (
-              <div className="px-4 py-4 border-b border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
-                    View Mode
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => {
-                      setCurrentMode("customer");
-                      setActiveTab(8);
-                    }}
-                    className={`px-3 py-2 text-xs rounded-lg transition-all ${
-                      currentMode === "customer"
-                        ? "bg-[#f54502] text-white"
-                        : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
-                    }`}
-                  >
-                    Customer
-                  </button>
-                  <button
-                    onClick={() => {
-                      setCurrentMode("creator");
-                      setActiveTab(0);
-                    }}
-                    className={`px-3 py-2 text-xs rounded-lg transition-all ${
-                      currentMode === "creator"
-                        ? "bg-[#f54502] text-white"
-                        : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
-                    }`}
-                  >
-                    Creator
-                  </button>
-                </div>
-              </div>
-            )}
+            {/* Mode Switcher removed: creators remain in creator mode; customers see their tickets */}
 
             {/* Navigation */}
             <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
