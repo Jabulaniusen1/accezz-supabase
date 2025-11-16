@@ -223,7 +223,7 @@ const Earnings = () => {
   // Calculate total revenue with memoization (from actual tickets)
   const totalEarnings = useMemo(() => {
     if (!events || !eventAggregates) return 0;
-    return events.reduce((sum, e) => sum + (eventAggregates[e.id]?.revenue || 0), 0);
+    return events.reduce((sum, e) => sum + (e.id ? (eventAggregates[e.id]?.revenue || 0) : 0), 0);
   }, [events, eventAggregates]);
 
   // Process chart data with memoization
@@ -232,6 +232,7 @@ const Earnings = () => {
     const monthlyUsers = new Array(12).fill(0);
 
     events?.forEach(event => {
+      if (!event.id) return;
       const eventDate = event.createdAt ? new Date(event.createdAt) : new Date();
       const month = eventDate.getMonth();
       
@@ -497,6 +498,7 @@ const Earnings = () => {
                 </thead>
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {events?.map((event, index) => {
+                    if (!event.id) return null;
                     const eventRevenue = eventAggregates?.[event.id]?.revenue || 0;
                     const ticketsSold = eventAggregates?.[event.id]?.sold || 0;
                     const eventDate = event.createdAt ? new Date(event.createdAt).toLocaleDateString() : "N/A";
@@ -563,7 +565,7 @@ const Earnings = () => {
                                     </thead>
                                     <tbody>
                                       {event.ticketType.map((ticket, i) => {
-                                        const typeAgg = eventAggregates?.[event.id]?.byType?.[ticket.name];
+                                        const typeAgg = (ticket.name && event.id) ? eventAggregates?.[event.id]?.byType?.[ticket.name] : undefined;
                                         const sold = typeAgg?.sold ?? (Number.isFinite(parseFloat(ticket.sold)) ? parseFloat(ticket.sold) : 0);
                                         const computedRevenue = calculateGrossRevenue(ticket.price, ticket.sold);
                                         const revenue = typeof typeAgg?.revenue === 'number' ? typeAgg.revenue : computedRevenue;

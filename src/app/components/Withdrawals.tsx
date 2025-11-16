@@ -143,10 +143,20 @@ const Withdrawals: React.FC = () => {
       .reduce((sum, w) => sum + Number(w.amount || 0), 0);
   }, [myWithdrawals]);
 
-  const approvedTotal = useMemo(() => {
-    const approvedStatuses = new Set(['approved', 'completed', 'paid']);
+  // const approvedTotal = useMemo(() => {
+  //   const approvedStatuses = new Set(['approved', 'completed', 'paid']);
+  //   return myWithdrawals
+  //     .filter(w => approvedStatuses.has((w.status || '').toLowerCase()))
+  //     .reduce((sum, w) => sum + Number(w.amount || 0), 0);
+  // }, [myWithdrawals]);
+
+  // Total withdrawn amount (all withdrawals that have been processed or are pending)
+  // This includes both approved/completed/paid AND pending/processing withdrawals
+  const totalWithdrawn = useMemo(() => {
+    // Include all withdrawals except rejected ones (as they don't actually deduct balance)
+    const excludedStatuses = new Set(['rejected']);
     return myWithdrawals
-      .filter(w => approvedStatuses.has((w.status || '').toLowerCase()))
+      .filter(w => !excludedStatuses.has((w.status || '').toLowerCase()))
       .reduce((sum, w) => sum + Number(w.amount || 0), 0);
   }, [myWithdrawals]);
 
@@ -156,10 +166,12 @@ const Withdrawals: React.FC = () => {
     return myWithdrawals.some(w => pendingStatuses.has((w.status || '').toLowerCase()));
   }, [myWithdrawals]);
 
-  // Available balance should equal total revenue so it can be withdrawn
+  // Available balance = Total Revenue - Total Withdrawn Amount
+  // Total Revenue remains constant (never decreases)
+  // Available Balance decreases when withdrawals are made
   const availableBalance = useMemo(
-    () => Math.max(0, totalEarnings || 0),
-    [totalEarnings]
+    () => Math.max(0, (totalEarnings || 0) - totalWithdrawn),
+    [totalEarnings, totalWithdrawn]
   );
 
   const submitWithdrawal = useCallback(async () => {
@@ -237,6 +249,7 @@ const Withdrawals: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 shadow-md p-4 md:p-6 border-l-4 border-green-500" style={{ borderRadius: '5px' }}>
           <h3 className="text-gray-500 dark:text-gray-400 text-sm font-medium">Total Revenue</h3>
           <p className="text-2xl font-bold text-gray-800 dark:text-white">{formatCurrency(totalEarnings || 0)}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Total revenue generated (never decreases)</p>
         </div>
         <div className="bg-white dark:bg-gray-800 shadow-md p-4 md:p-6 border-l-4 border-yellow-500" style={{ borderRadius: '5px' }}>
           <h3 className="text-gray-500 dark:text-gray-400 text-sm font-medium">Pending Requests</h3>
@@ -246,7 +259,7 @@ const Withdrawals: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 shadow-md p-4 md:p-6 border-l-4 border-[#f54502]" style={{ borderRadius: '5px' }}>
           <h3 className="text-gray-500 dark:text-gray-400 text-sm font-medium">Available Balance</h3>
           <p className="text-2xl font-bold text-gray-800 dark:text-white">{formatCurrency(availableBalance)}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Amount you can withdraw now</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Total Revenue minus all withdrawals</p>
         </div>
       </div>
 
@@ -300,7 +313,7 @@ const Withdrawals: React.FC = () => {
           )}
           {availableBalance <= 0 && (
             <p className="mt-2 text-xs text-yellow-700 dark:text-yellow-300">
-              You currently have no available balance after pending/approved withdrawals.
+              You currently have no available balance. Total revenue minus withdrawals equals zero.
             </p>
           )}
           {!hasBankDetails && (
