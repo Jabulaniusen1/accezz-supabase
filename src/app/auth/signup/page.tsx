@@ -1,6 +1,6 @@
 "use client";
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   FaUser,
   FaEnvelope,
@@ -9,10 +9,14 @@ import {
   FaEyeSlash,
   FaPhone,
   FaArrowLeft,
+  FaGlobe,
+  FaMapMarkerAlt,
 } from "react-icons/fa";
 import Loader from "../../../components/ui/loader/Loader";
 import Toast from "../../../components/ui/Toast";
 import { signUpWithEmail } from "@/utils/supabaseAuth";
+import { useCountryCityOptions } from "@/hooks/useCountryCityOptions";
+import SearchableSelect from "../../components/SearchableSelect";
 import Link from "next/link";
 
 const AgreeTerms = React.lazy(() => import("../../components/home/agreeTerms"));
@@ -22,7 +26,12 @@ function Signup() {
   const [loading, setLoading] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [showTermsPopup, setShowTermsPopup] = useState(false);
+  const [accountType, setAccountType] = useState<"creator" | "customer">("customer");
+  const [selectedCountry, setSelectedCountry] = useState<string>("Nigeria");
+  const [selectedCity, setSelectedCity] = useState<string>("Uyo, Akwa Ibom state");
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { countries, getCitiesForCountry, isLoading: isLoadingLocations } = useCountryCityOptions();
   const [showToast, setShowToast] = useState(false);
   const [toastProps, setToastProps] = useState<{
     type: "success" | "error" | "warning" | "info";
@@ -41,9 +50,70 @@ function Signup() {
     setTimeout(() => setShowToast(false), 3000);
   };
 
+  // Pre-fill email from URL params if available
+  useEffect(() => {
+    const emailParam = searchParams.get('email');
+    if (emailParam && typeof window !== 'undefined') {
+      const emailInput = document.getElementById('email') as HTMLInputElement;
+      if (emailInput) {
+        emailInput.value = emailParam;
+      }
+    }
+  }, [searchParams]);
+
+  // Auto-detect user's country on mount
+  useEffect(() => {
+    const detectCountry = async () => {
+      try {
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+        if (data.country_name && countries.some(c => c.label === data.country_name)) {
+          setSelectedCountry(data.country_name);
+        }
+      } catch (error) {
+        console.error('Error detecting country:', error);
+        // Default to Nigeria if detection fails
+        setSelectedCountry("Nigeria");
+      }
+    };
+    
+    if (countries.length > 0) {
+      detectCountry();
+    }
+  }, [countries]);
+
+  // Update city when country changes
+  useEffect(() => {
+    const cities = getCitiesForCountry(selectedCountry);
+    if (selectedCountry === "Nigeria") {
+      // Default to "Uyo, Akwa Ibom state" for Nigeria
+      setSelectedCity("Uyo, Akwa Ibom state");
+    } else if (cities.length > 0) {
+      setSelectedCity(cities[0]);
+    } else {
+      setSelectedCity("");
+    }
+  }, [selectedCountry, getCitiesForCountry]);
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
+
+  // const linkOrderToUser = async (userId: string, orderId: string) => {
+  //   try {
+  //     const { error } = await supabase
+  //       .from('orders')
+  //       .update({ buyer_user_id: userId })
+  //       .eq('id', orderId)
+  //       .is('buyer_user_id', null);
+      
+  //     if (error) {
+  //       console.error('Error linking order:', error);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error linking order:', error);
+  //   }
+  // };
 
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -57,7 +127,7 @@ function Signup() {
       const phone = formData.get("phone")?.toString().trim() || "";
       const password = formData.get("password")?.toString().trim() || "";
 
-      if (!firstName || !lastName || !email || !phone || !password) {
+      if (!firstName || !lastName || !email || !phone || !password || !selectedCountry || !selectedCity) {
         toast("warning", "All fields are required.");
         return;
       }
@@ -67,8 +137,22 @@ function Signup() {
         return;
       }
 
-      await signUpWithEmail({ email, password, fullName: `${firstName} ${lastName}`, phone });
+      await signUpWithEmail({ 
+        email, 
+        password, 
+        fullName: `${firstName} ${lastName}`, 
+        phone,
+        userType: accountType,
+        country: selectedCountry,
+        city: selectedCity
+      });
       localStorage.setItem("userEmail", email);
+      
+      // Store orderId in localStorage to link after email verification and login
+      const orderId = searchParams.get('orderId');
+      if (orderId) {
+        localStorage.setItem('pendingOrderLink', orderId);
+      }
       
       // Send welcome email (non-blocking)
       try {
@@ -86,8 +170,11 @@ function Signup() {
       }
       
       toast("success", "Signup successful! Please check your email for verification.");
+      
+      // Redirect to dashboard or specified redirect URL
+      const redirectUrl = searchParams.get('redirect') || '/dashboard';
       setTimeout(() => {
-        router.push("/auth/login?verify=true");
+        router.push(`/auth/login?verify=true${orderId ? `&orderId=${orderId}` : ''}${redirectUrl !== '/dashboard' ? `&redirect=${encodeURIComponent(redirectUrl)}` : ''}`);
       }, 1200);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Signup failed. Please try again.";
@@ -97,8 +184,29 @@ function Signup() {
     }
   };
 
+  const cities = getCitiesForCountry(selectedCountry);
+  
+  // Prepare options for searchable selects
+  const countryOptions = countries.map((c) => ({
+    value: c.label,
+    label: c.label,
+  }));
+
+  const cityOptions = selectedCountry === "Nigeria"
+    ? [
+        { value: "Uyo, Akwa Ibom state", label: "Uyo, Akwa Ibom state" },
+        ...cities
+          .filter((city) => {
+            // Filter out "Uyo" if it exists in the API response since we have "Uyo, Akwa Ibom state"
+            const cityLower = city.toLowerCase().trim();
+            return cityLower !== "uyo";
+          })
+          .map((city) => ({ value: city, label: city })),
+      ]
+    : cities.map((city) => ({ value: city, label: city }));
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 relative overflow-hidden">
+    <div className="h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 relative overflow-hidden flex flex-col">
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Animated Background Shapes */}
@@ -111,12 +219,12 @@ function Signup() {
         <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
       </div>
 
-      {/* Main Content */}
-      <div className="relative z-10 flex items-center justify-center min-h-screen p-4 sm:p-8">
+      {/* Main Content - Scrollable container */}
+      <div className="relative z-10 flex items-center justify-center flex-1 overflow-y-auto p-4 sm:p-8">
         {/* Back Button */}
         <button
           onClick={() => router.push('/')}
-          className="absolute top-4 left-4 sm:top-6 sm:left-6 flex items-center gap-1 sm:gap-2 text-gray-600 hover:text-[#f54502] transition-colors group"
+          className="fixed top-4 left-4 sm:top-6 sm:left-6 z-20 flex items-center gap-1 sm:gap-2 text-gray-600 hover:text-[#f54502] transition-colors group bg-white/80 backdrop-blur-sm px-3 py-2 rounded-lg"
         >
           <FaArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 group-hover:-translate-x-1 transition-transform" />
           <span className="text-xs sm:text-sm font-medium">Back to Home</span>
@@ -139,25 +247,25 @@ function Signup() {
         )}
 
         {/* Form Container */}
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-md my-auto py-4">
           {/* Header Section */}
-          <div className="text-center mb-4 sm:mb-8">
+          <div className="text-center mb-4 sm:mb-6">
             <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-[#f54502] rounded-[5px] mb-3 sm:mb-4 shadow-lg">
               <svg className="w-5 h-5 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
               </svg>
             </div>
-            <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-1 sm:mb-2">Join Accezz</h1>
-            <p className="text-gray-600 text-sm sm:text-lg">Create your account and start your journey</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">Join Accezz</h1>
+            <p className="text-gray-600 text-xs sm:text-sm">Create your account and start your journey</p>
           </div>
 
           {/* Form Card */}
-          <div className="bg-white/80 backdrop-blur-xl rounded-[5px] rounded-xl shadow-2xl border border-white/20 p-4 sm:p-8 animate-fadeIn">
-            <div className="space-y-4 sm:space-y-6">
+          <div className="bg-white/80 backdrop-blur-xl rounded-[5px] rounded-xl shadow-2xl border border-white/20 p-4 sm:p-6 animate-fadeIn">
+            <div className="space-y-3 sm:space-y-4">
 
-              <form onSubmit={handleSignup} className="space-y-4 sm:space-y-6">
+              <form onSubmit={handleSignup} className="space-y-2.5 sm:space-y-3">
                 {/* Name Fields */}
-                <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
                   <div className="space-y-1 sm:space-y-2">
                     <label htmlFor="firstName" className="text-xs sm:text-sm font-medium text-gray-700">
                       First Name
@@ -253,6 +361,69 @@ function Signup() {
                   </div>
                 </div>
 
+                {/* Country Field */}
+                <div className="space-y-1 sm:space-y-2">
+                  <label htmlFor="country" className="text-xs sm:text-sm font-medium text-gray-700">
+                    Country
+                  </label>
+                  <SearchableSelect
+                    options={countryOptions}
+                    value={selectedCountry}
+                    onChange={(value) => setSelectedCountry(value)}
+                    placeholder="Select country..."
+                    disabled={isLoadingLocations}
+                    icon={<FaGlobe className="w-3 h-3 sm:w-4 sm:h-4" />}
+                  />
+                </div>
+
+                {/* City Field */}
+                <div className="space-y-1 sm:space-y-2">
+                  <label htmlFor="city" className="text-xs sm:text-sm font-medium text-gray-700">
+                    City
+                  </label>
+                  <SearchableSelect
+                    options={cityOptions}
+                    value={selectedCity}
+                    onChange={(value) => setSelectedCity(value)}
+                    placeholder="Select city..."
+                    disabled={isLoadingLocations || cityOptions.length === 0}
+                    icon={<FaMapMarkerAlt className="w-3 h-3 sm:w-4 sm:h-4" />}
+                  />
+                </div>
+
+                {/* Account Type Selection */}
+                <div className="space-y-1 sm:space-y-2">
+                  <label className="text-xs sm:text-sm font-medium text-gray-700">
+                    Account Type
+                  </label>
+                  <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setAccountType("customer")}
+                      className={`px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border-2 transition-all duration-200 ${
+                        accountType === "customer"
+                          ? "border-[#f54502] bg-[#f54502]/10 text-[#f54502] font-semibold"
+                          : "border-gray-200 bg-white/50 text-gray-600 hover:border-gray-300"
+                      }`}
+                    >
+                      <div className="text-xs sm:text-sm font-medium">Customer</div>
+                      <div className="text-xs text-gray-500 mt-0.5">Buy tickets</div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAccountType("creator")}
+                      className={`px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border-2 transition-all duration-200 ${
+                        accountType === "creator"
+                          ? "border-[#f54502] bg-[#f54502]/10 text-[#f54502] font-semibold"
+                          : "border-gray-200 bg-white/50 text-gray-600 hover:border-gray-300"
+                      }`}
+                    >
+                      <div className="text-xs sm:text-sm font-medium">Creator</div>
+                      <div className="text-xs text-gray-500 mt-0.5">Create events</div>
+                    </button>
+                  </div>
+                </div>
+
                 <div className="flex items-start space-x-2 sm:space-x-3">
                   <input
                     type="checkbox"
@@ -275,18 +446,23 @@ function Signup() {
 
                 <button
                   type="submit"
-                  disabled={!agreeTerms || loading}
-                  className={`w-full px-4 sm:px-6 py-2.5 sm:py-4 flex items-center justify-center rounded-[5px] font-semibold text-sm sm:text-lg transition-all duration-300 transform
+                  disabled={!agreeTerms || loading || isLoadingLocations}
+                  className={`w-full px-4 sm:px-6 py-2.5 sm:py-3 flex items-center justify-center rounded-[5px] font-semibold text-sm sm:text-base transition-all duration-300 transform
                   ${
-                    !agreeTerms || loading
+                    !agreeTerms || loading || isLoadingLocations
                       ? "bg-gray-400 cursor-not-allowed"
                       : "bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 text-white shadow-lg hover:shadow-xl hover:scale-105"
                   }`}
                 >
                   {loading ? (
                     <div className="flex items-center">
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
+                      <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
                       Creating Account...
+                    </div>
+                  ) : isLoadingLocations ? (
+                    <div className="flex items-center">
+                      <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
+                      Loading locations...
                     </div>
                   ) : (
                     "Create Account"

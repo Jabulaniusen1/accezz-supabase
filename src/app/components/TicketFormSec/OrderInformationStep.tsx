@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import SearchableSelect from '../SearchableSelect';
 
 interface TicketHolderProps {
   fullName: string;
@@ -7,10 +8,55 @@ interface TicketHolderProps {
   setEmail: (value: string) => void;
   phoneNumber: string;
   setPhoneNumber: (value: string) => void;
+  gender: string;
+  setGender: (value: string) => void;
   quantity: number;
-  additionalTicketHolders: Array<{ name: string; email: string }>;
+  additionalTicketHolders: Array<{ name: string; email: string; phone?: string; gender?: string }>;
   handleAdditionalTicketHolderChange: (index: number, field: string, value: string) => void;
 }
+
+// Country codes list with common African countries first, then international
+const countryCodes = [
+  { value: '+234', label: '+234 Nigeria 🇳🇬' },
+  { value: '+233', label: '+233 Ghana 🇬🇭' },
+  { value: '+27', label: '+27 South Africa 🇿🇦' },
+  { value: '+254', label: '+254 Kenya 🇰🇪' },
+  { value: '+255', label: '+255 Tanzania 🇹🇿' },
+  { value: '+256', label: '+256 Uganda 🇺🇬' },
+  { value: '+260', label: '+260 Zambia 🇿🇲' },
+  { value: '+250', label: '+250 Rwanda 🇷🇼' },
+  { value: '+221', label: '+221 Senegal 🇸🇳' },
+  { value: '+237', label: '+237 Cameroon 🇨🇲' },
+  { value: '+225', label: '+225 Ivory Coast 🇨🇮' },
+  { value: '+251', label: '+251 Ethiopia 🇪🇹' },
+  { value: '+20', label: '+20 Egypt 🇪🇬' },
+  { value: '+212', label: '+212 Morocco 🇲🇦' },
+  { value: '+213', label: '+213 Algeria 🇩🇿' },
+  { value: '+216', label: '+216 Tunisia 🇹🇳' },
+  { value: '+244', label: '+244 Angola 🇦🇴' },
+  { value: '+258', label: '+258 Mozambique 🇲🇿' },
+  { value: '+267', label: '+267 Botswana 🇧🇼' },
+  { value: '+263', label: '+263 Zimbabwe 🇿🇼' },
+  { value: '+44', label: '+44 United Kingdom 🇬🇧' },
+  { value: '+1', label: '+1 United States 🇺🇸' },
+  { value: '+33', label: '+33 France 🇫🇷' },
+  { value: '+49', label: '+49 Germany 🇩🇪' },
+  { value: '+39', label: '+39 Italy 🇮🇹' },
+  { value: '+34', label: '+34 Spain 🇪🇸' },
+  { value: '+31', label: '+31 Netherlands 🇳🇱' },
+  { value: '+32', label: '+32 Belgium 🇧🇪' },
+  { value: '+41', label: '+41 Switzerland 🇨🇭' },
+  { value: '+971', label: '+971 UAE 🇦🇪' },
+  { value: '+966', label: '+966 Saudi Arabia 🇸🇦' },
+  { value: '+91', label: '+91 India 🇮🇳' },
+  { value: '+86', label: '+86 China 🇨🇳' },
+  { value: '+81', label: '+81 Japan 🇯🇵' },
+  { value: '+82', label: '+82 South Korea 🇰🇷' },
+  { value: '+61', label: '+61 Australia 🇦🇺' },
+  { value: '+64', label: '+64 New Zealand 🇳🇿' },
+  { value: '+55', label: '+55 Brazil 🇧🇷' },
+  { value: '+52', label: '+52 Mexico 🇲🇽' },
+];
 
 const OrderInformationStep = ({ 
   fullName, 
@@ -18,13 +64,76 @@ const OrderInformationStep = ({
   email, 
   setEmail, 
   phoneNumber, 
-  setPhoneNumber, 
+  setPhoneNumber,
+  gender,
+  setGender,
   quantity, 
   additionalTicketHolders, 
   handleAdditionalTicketHolderChange 
 }: TicketHolderProps) => {
   const [emailErrors, setEmailErrors] = useState<Record<number, string>>({});
   const [primaryEmailError, setPrimaryEmailError] = useState('');
+  const [countryCode, setCountryCode] = useState('+234'); // Default to Nigeria
+  const [localPhoneNumber, setLocalPhoneNumber] = useState('');
+  const isInternalChange = useRef(false);
+
+  // Extract country code and local number from phoneNumber when component mounts or phoneNumber changes externally
+  useEffect(() => {
+    if (isInternalChange.current) {
+      isInternalChange.current = false;
+      return;
+    }
+
+    if (phoneNumber) {
+      // Check if phoneNumber already starts with a country code
+      const matchedCode = countryCodes.find(code => 
+        phoneNumber.startsWith(code.value)
+      );
+      
+      if (matchedCode) {
+        const localNum = phoneNumber.replace(matchedCode.value, '').trim();
+        setCountryCode(matchedCode.value);
+        setLocalPhoneNumber(localNum);
+      } else if (phoneNumber.startsWith('+')) {
+        // Has a country code but not in our list, extract it
+        const match = phoneNumber.match(/^(\+\d{1,4})\s*(.*)$/);
+        if (match) {
+          setCountryCode(match[1]);
+          setLocalPhoneNumber(match[2].trim());
+        } else {
+          // Just set as local number if it doesn't match pattern
+          setLocalPhoneNumber(phoneNumber);
+        }
+      } else {
+        // No country code, assume it's just the local number
+        setLocalPhoneNumber(phoneNumber);
+      }
+    } else {
+      // Reset to default if phoneNumber is empty
+      setCountryCode('+234');
+      setLocalPhoneNumber('');
+    }
+  }, [phoneNumber]);
+
+  // Update phoneNumber when country code or local number changes
+  useEffect(() => {
+    // Only update if there's a local phone number, or if we're changing the country code
+    if (localPhoneNumber.trim()) {
+      const fullPhone = `${countryCode} ${localPhoneNumber.trim()}`.trim();
+      if (fullPhone !== phoneNumber) {
+        isInternalChange.current = true;
+        setPhoneNumber(fullPhone);
+      }
+    } else if (phoneNumber && !localPhoneNumber.trim()) {
+      // If phoneNumber exists but localPhoneNumber is empty, clear it
+      const currentCode = countryCodes.find(code => phoneNumber.startsWith(code.value));
+      if (!currentCode || currentCode.value !== countryCode) {
+        // Country code changed but no local number, clear phoneNumber
+        isInternalChange.current = true;
+        setPhoneNumber('');
+      }
+    }
+  }, [countryCode, localPhoneNumber, phoneNumber, setPhoneNumber]);
 
   const validateEmail = (email: string): boolean => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -53,10 +162,10 @@ const OrderInformationStep = ({
   };
 
   return (
-    <div className="space-y-6 pr-1 sm:pr-2">
-      <div className="rounded-2xl border border-gray-200 bg-white/95 p-5 shadow-sm dark:border-gray-700 dark:bg-gray-900/70">
+    <div className="space-y-6 w-full min-w-0">
+      <div className="rounded-2xl border border-gray-200 bg-white/95 p-5 shadow-sm dark:border-gray-700 dark:bg-gray-900/70 w-full min-w-0">
         <div className="mb-4 flex items-center gap-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f54502]/15 text-[#f54502] dark:bg-[#f54502]/20">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f54502]/15 text-[#f54502] dark:bg-[#f54502]/20 flex-shrink-0">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
@@ -66,7 +175,7 @@ const OrderInformationStep = ({
               />
             </svg>
           </span>
-          <div>
+          <div className="min-w-0">
             <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
               Primary Details
             </p>
@@ -76,8 +185,8 @@ const OrderInformationStep = ({
           </div>
         </div>
 
-        <div className="grid gap-4">
-          <label className="grid gap-2">
+        <div className="grid gap-4 w-full min-w-0">
+          <label className="grid gap-2 w-full min-w-0">
             <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
               Full Name
             </span>
@@ -87,11 +196,11 @@ const OrderInformationStep = ({
               onChange={(e) => setFullName(e.target.value)}
               required
               placeholder="Enter full name"
-              className="w-full rounded-[5px] border border-gray-300 bg-white px-4 py-2.5 text-gray-900 outline-none transition focus:border-[#f54502] focus:ring-2 focus:ring-[#f54502]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              className="w-full min-w-0 rounded-[5px] border border-gray-300 bg-white px-4 py-2.5 text-gray-900 outline-none transition focus:border-[#f54502] focus:ring-2 focus:ring-[#f54502]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
             />
           </label>
 
-          <label className="grid gap-2">
+          <label className="grid gap-2 w-full min-w-0">
             <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
               Email Address
             </span>
@@ -101,7 +210,7 @@ const OrderInformationStep = ({
               onChange={handlePrimaryEmailChange}
               required
               placeholder="name@example.com"
-              className={`w-full rounded-[5px] border bg-white px-4 py-2.5 text-gray-900 outline-none transition focus:border-[#f54502] focus:ring-2 focus:ring-[#f54502]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white ${
+              className={`w-full min-w-0 rounded-[5px] border bg-white px-4 py-2.5 text-gray-900 outline-none transition focus:border-[#f54502] focus:ring-2 focus:ring-[#f54502]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white ${
                 primaryEmailError ? 'border-red-500 focus:ring-red-100 dark:border-red-500' : 'border-gray-300'
               }`}
             />
@@ -110,26 +219,60 @@ const OrderInformationStep = ({
             )}
           </label>
 
-          <label className="grid gap-2">
+          <label className="grid gap-2 w-full min-w-0">
             <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
               Phone Number
             </span>
-            <input
-              type="tel"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
+            <div className="flex gap-2 w-full min-w-0">
+              <div className="w-20 sm:w-24 flex-shrink-0 min-w-0">
+                <div className="w-full [&>div]:h-full [&>div]:w-full [&_button]:h-[42px] [&_button]:py-2.5 [&_button]:px-2 [&_button]:text-sm [&_button]:border-gray-300 [&_button]:bg-white [&_button]:dark:bg-gray-900 [&_button]:dark:border-gray-700 [&_button]:rounded-[5px] [&_button_span]:truncate [&_button_span]:block [&_button]:w-full">
+                  <SearchableSelect
+                    options={countryCodes}
+                    value={countryCode}
+                    onChange={(value) => setCountryCode(value)}
+                    placeholder="+234"
+                  />
+                </div>
+              </div>
+              <input
+                type="tel"
+                value={localPhoneNumber}
+                onChange={(e) => {
+                  // Allow only digits, spaces, and hyphens
+                  const value = e.target.value.replace(/[^\d\s-]/g, '');
+                  setLocalPhoneNumber(value);
+                }}
+                required
+                placeholder="000 0000 000"
+                className="flex-1 min-w-0 rounded-[5px] border border-gray-300 bg-white px-4 py-2.5 text-gray-900 outline-none transition focus:border-[#f54502] focus:ring-2 focus:ring-[#f54502]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              />
+            </div>
+          </label>
+
+          <label className="grid gap-2 w-full min-w-0">
+            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+              Gender
+            </span>
+            <select
+              value={gender}
+              onChange={(e) => setGender(e.target.value)}
               required
-              placeholder="+234 000 0000 000"
-              className="w-full rounded-[5px] border border-gray-300 bg-white px-4 py-2.5 text-gray-900 outline-none transition focus:border-[#f54502] focus:ring-2 focus:ring-[#f54502]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-            />
+              className="w-full min-w-0 rounded-[5px] border border-gray-300 bg-white px-4 py-2.5 text-gray-900 outline-none transition focus:border-[#f54502] focus:ring-2 focus:ring-[#f54502]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+            >
+              <option value="">Select Gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+              <option value="prefer-not-to-say">Prefer not to say</option>
+            </select>
           </label>
         </div>
       </div>
 
       {quantity > 1 && (
-        <div className="space-y-4">
+        <div className="space-y-4 w-full min-w-0">
           <div className="flex items-center gap-3">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 flex-shrink-0">
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
@@ -139,7 +282,7 @@ const OrderInformationStep = ({
                 />
               </svg>
             </span>
-            <div>
+            <div className="min-w-0">
               <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
                 Additional Guests
               </p>
@@ -152,14 +295,14 @@ const OrderInformationStep = ({
           {Array.from({ length: quantity - 1 }, (_, index) => (
             <div
               key={index}
-              className="rounded-2xl border border-gray-200 bg-white/80 p-4 shadow-sm transition hover:shadow-md dark:border-gray-700 dark:bg-gray-900/60"
+              className="rounded-2xl border border-gray-200 bg-white/80 p-4 shadow-sm transition hover:shadow-md dark:border-gray-700 dark:bg-gray-900/60 w-full min-w-0"
             >
               <h3 className="mb-4 text-sm font-semibold text-gray-600 dark:text-gray-300">
                 Ticket Holder #{index + 2}
               </h3>
 
-              <div className="grid gap-4">
-                <label className="grid gap-2">
+              <div className="grid gap-4 w-full min-w-0">
+                <label className="grid gap-2 w-full min-w-0">
                   <span className="text-sm text-gray-600 dark:text-gray-400">Full Name</span>
                   <input
                     type="text"
@@ -168,24 +311,40 @@ const OrderInformationStep = ({
                     onChange={(e) =>
                       handleAdditionalTicketHolderChange(index, 'name', e.target.value)
                     }
-                    className="w-full rounded-[5px] border border-gray-300 bg-white px-4 py-2.5 text-gray-900 outline-none transition focus:border-[#f54502] focus:ring-2 focus:ring-[#f54502]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                    className="w-full min-w-0 rounded-[5px] border border-gray-300 bg-white px-4 py-2.5 text-gray-900 outline-none transition focus:border-[#f54502] focus:ring-2 focus:ring-[#f54502]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                   />
                 </label>
 
-                <label className="grid gap-2">
+                <label className="grid gap-2 w-full min-w-0">
                   <span className="text-sm text-gray-600 dark:text-gray-400">Email Address</span>
                   <input
                     type="email"
                     placeholder="name@example.com"
                     value={additionalTicketHolders[index]?.email || ''}
                     onChange={(e) => handleAdditionalEmailChange(index, e.target.value)}
-                    className={`w-full rounded-[5px] border bg-white px-4 py-2.5 text-gray-900 outline-none transition focus:border-[#f54502] focus:ring-2 focus:ring-[#f54502]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white ${
+                    className={`w-full min-w-0 rounded-[5px] border bg-white px-4 py-2.5 text-gray-900 outline-none transition focus:border-[#f54502] focus:ring-2 focus:ring-[#f54502]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white ${
                       emailErrors[index] ? 'border-red-500 focus:ring-red-100 dark:border-red-500' : 'border-gray-300'
                     }`}
                   />
                   {emailErrors[index] && (
                     <p className="text-sm text-red-600 dark:text-red-400">{emailErrors[index]}</p>
                   )}
+                </label>
+
+                <label className="grid gap-2 w-full min-w-0">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Gender</span>
+                  <select
+                    value={additionalTicketHolders[index]?.gender || ''}
+                    onChange={(e) => handleAdditionalTicketHolderChange(index, 'gender', e.target.value)}
+                    required
+                    className="w-full min-w-0 rounded-[5px] border border-gray-300 bg-white px-4 py-2.5 text-gray-900 outline-none transition focus:border-[#f54502] focus:ring-2 focus:ring-[#f54502]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                  >
+                    <option value="">Select Gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                    <option value="prefer-not-to-say">Prefer not to say</option>
+                  </select>
                 </label>
               </div>
             </div>

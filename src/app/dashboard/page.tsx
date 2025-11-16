@@ -10,6 +10,7 @@ import Setting from "../components/Setting";
 import Profile from "../components/settings/Profile";
 import LocationManager from "../components/LocationManager";
 import LocationBookings from "../components/LocationBookings";
+import CustomerTickets from "../components/CustomerTickets";
 import ToggleMode from "../../components/ui/mode/toggleMode";
 import { BiMenuAltLeft, BiX, BiMoneyWithdraw } from "react-icons/bi";
 import { FiLogOut } from "react-icons/fi";
@@ -18,12 +19,13 @@ import "notyf/notyf.min.css";
 import { useRouter, usePathname } from "next/navigation";
 import axios, { AxiosError } from "axios";
 import { getSession, signOut } from "@/utils/supabaseAuth";
+import { supabase } from "@/utils/supabaseClient";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import EventTypeModal from "@/components/Modal/EventType";
 import Link from "next/link";
 import Image from "next/image";
 import { GiTakeMyMoney } from "react-icons/gi";
-import { BsBell, BsCalendar2Event, BsGear, BsPerson } from "react-icons/bs";
+import { BsBell, BsCalendar2Event, BsGear, BsPerson, BsTicketPerforated } from "react-icons/bs";
 import { MdOutlineLocationCity } from "react-icons/md";
 import { RiCalendarCheckLine } from "react-icons/ri";
 
@@ -35,6 +37,8 @@ const Dashboard = () => {
   const notyfRef = useRef<Notyf | null>(null);
   const [showSessionModal, setShowSessionModal] = useState(false);
   const [isAddEventLoading, setIsAddEventLoading] = useState(false);
+  const [userType, setUserType] = useState<"creator" | "customer" | null>(null);
+  const [currentMode, setCurrentMode] = useState<"creator" | "customer">("customer");
   const router = useRouter();
   const pathname = usePathname();
   const isMounted = useRef(true);
@@ -67,6 +71,30 @@ const Dashboard = () => {
           router.push("/auth/login");
           return;
         }
+
+        // Fetch user profile to get user_type
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("user_type")
+          .eq("user_id", session.user.id)
+          .single();
+
+        if (profileError) {
+          console.error("Error fetching profile:", profileError);
+        }
+
+        const type = (profile?.user_type as "creator" | "customer") || "customer";
+        setUserType(type);
+        
+        // Set initial mode based on user type
+        // Customers see customer view by default, creators see creator view
+        setCurrentMode(type === "creator" ? "creator" : "customer");
+        
+        // For customers, set active tab to tickets (tab 8)
+        if (type === "customer") {
+          setActiveTab(8);
+        }
+
         const welcomeShown = localStorage.getItem("welcomeShown");
         const displayName = session.user.user_metadata?.full_name || session.user.email;
         if (displayName && welcomeShown !== "true") {
@@ -208,72 +236,145 @@ const Dashboard = () => {
           } md:translate-x-0`}
         >
           <div className="flex flex-col h-full pt-20">
+            {/* Mode Switcher - Only show if user is a creator */}
+            {userType === "creator" && (
+              <div className="px-4 py-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
+                    View Mode
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => {
+                      setCurrentMode("customer");
+                      setActiveTab(8);
+                    }}
+                    className={`px-3 py-2 text-xs rounded-lg transition-all ${
+                      currentMode === "customer"
+                        ? "bg-[#f54502] text-white"
+                        : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
+                    }`}
+                  >
+                    Customer
+                  </button>
+                  <button
+                    onClick={() => {
+                      setCurrentMode("creator");
+                      setActiveTab(0);
+                    }}
+                    className={`px-3 py-2 text-xs rounded-lg transition-all ${
+                      currentMode === "creator"
+                        ? "bg-[#f54502] text-white"
+                        : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
+                    }`}
+                  >
+                    Creator
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Navigation */}
-            <nav className="flex-1 px-4 py-6 space-y-2">
-          <button
-                className={`w-full flex items-center space-x-3 px-4 py-3 transition-all duration-200 ${
-              activeTab === 0
-                    ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
-                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-            }`}
-                style={{ borderRadius: '5px' }}
-            onClick={() => setActiveTab(0)}
-          >
-                <BsCalendar2Event size={20} />
-                <span className="font-medium">Events</span>
-          </button>
+            <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+              {/* Customer View - My Tickets */}
+              {(currentMode === "customer" || userType === "customer") && (
+                <button
+                  className={`w-full flex items-center space-x-3 px-4 py-3 transition-all duration-200 ${
+                    activeTab === 8
+                      ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
+                      : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  }`}
+                  style={{ borderRadius: '5px' }}
+                  onClick={() => setActiveTab(8)}
+                >
+                  <BsTicketPerforated size={20} />
+                  <span className="font-medium">My Tickets</span>
+                </button>
+              )}
 
-          <button
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-              activeTab === 6
-                    ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
-                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-            }`}
-            style={{ borderRadius: '5px' }}
-            onClick={() => setActiveTab(6)}
-          >
-                <MdOutlineLocationCity size={20} />
-                <span className="font-medium">Locations</span>
-          </button>
+              {/* Creator View - Only show when in creator mode */}
+              {currentMode === "creator" && (
+                <>
+                  <button
+                    className={`w-full flex items-center space-x-3 px-4 py-3 transition-all duration-200 ${
+                      activeTab === 0
+                        ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
+                        : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    }`}
+                    style={{ borderRadius: '5px' }}
+                    onClick={() => setActiveTab(0)}
+                  >
+                    <BsCalendar2Event size={20} />
+                    <span className="font-medium">Events</span>
+                  </button>
 
-          <button
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-              activeTab === 7
-                    ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
-                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-            }`}
-            style={{ borderRadius: '5px' }}
-            onClick={() => setActiveTab(7)}
-          >
-                <RiCalendarCheckLine size={20} />
-                <span className="font-medium">Bookings</span>
-          </button>
+                  <button
+                    className={`w-full flex items-center space-x-3 px-4 py-3 transition-all duration-200 ${
+                      activeTab === 9
+                        ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
+                        : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    }`}
+                    style={{ borderRadius: '5px' }}
+                    onClick={() => setActiveTab(9)}
+                  >
+                    <BsTicketPerforated size={20} />
+                    <span className="font-medium">Tickets</span>
+                  </button>
 
-          <button
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-              activeTab === 1
-                    ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
-                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-            }`}
-            style={{ borderRadius: '5px' }}
-            onClick={() => setActiveTab(1)}
-          >
-                <GiTakeMyMoney size={20} />
-                <span className="font-medium">Earnings</span>
-          </button>
+                  <button
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                      activeTab === 6
+                        ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
+                        : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    }`}
+                    style={{ borderRadius: '5px' }}
+                    onClick={() => setActiveTab(6)}
+                  >
+                    <MdOutlineLocationCity size={20} />
+                    <span className="font-medium">Locations</span>
+                  </button>
 
-          <button
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-              activeTab === 5
-                    ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
-                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-            }`}
-            style={{ borderRadius: '5px' }}
-            onClick={() => setActiveTab(5)}
-          >
-                <BiMoneyWithdraw size={20} />
-                <span className="font-medium">Withdrawals</span>
-          </button>
+                  <button
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                      activeTab === 7
+                        ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
+                        : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    }`}
+                    style={{ borderRadius: '5px' }}
+                    onClick={() => setActiveTab(7)}
+                  >
+                    <RiCalendarCheckLine size={20} />
+                    <span className="font-medium">Bookings</span>
+                  </button>
+
+                  <button
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                      activeTab === 1
+                        ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
+                        : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    }`}
+                    style={{ borderRadius: '5px' }}
+                    onClick={() => setActiveTab(1)}
+                  >
+                    <GiTakeMyMoney size={20} />
+                    <span className="font-medium">Earnings</span>
+                  </button>
+
+                  <button
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                      activeTab === 5
+                        ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
+                        : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    }`}
+                    style={{ borderRadius: '5px' }}
+                    onClick={() => setActiveTab(5)}
+                  >
+                    <BiMoneyWithdraw size={20} />
+                    <span className="font-medium">Withdrawals</span>
+                  </button>
+                </>
+              )}
 
           <button
                 className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
@@ -358,37 +459,41 @@ const Dashboard = () => {
                   transition={{ duration: 0.3 }}
                   className="p-6"
                 >
-                  {activeTab === 0 && <EventList />}
-                  {activeTab === 1 && <Earnings />}
-                  {activeTab === 5 && <Withdrawals />}
-                  {activeTab === 6 && <LocationManager />}
-                  {activeTab === 7 && <LocationBookings />}
+                  {activeTab === 0 && currentMode === "creator" && <EventList />}
+                  {activeTab === 1 && currentMode === "creator" && <Earnings />}
+                  {activeTab === 5 && currentMode === "creator" && <Withdrawals />}
+                  {activeTab === 6 && currentMode === "creator" && <LocationManager />}
+                  {activeTab === 7 && currentMode === "creator" && <LocationBookings />}
+                  {activeTab === 9 && currentMode === "creator" && <CustomerTickets />}
                   {activeTab === 2 && <Notifications />}
                   {activeTab === 3 && <Setting />}
                   {activeTab === 4 && <Profile />}
+                  {activeTab === 8 && <CustomerTickets />}
                 </motion.div>
               </AnimatePresence>
             )}
           </div>
 
-        {/* Add Event Button */}
-        <button
-          onClick={handleAddEvent}
-          disabled={isAddEventLoading}
+        {/* Add Event Button - Only show in creator mode */}
+        {currentMode === "creator" && (
+          <button
+            onClick={handleAddEvent}
+            disabled={isAddEventLoading}
             className="fixed bottom-6 right-6 px-6 py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 flex items-center space-x-2 transform hover:scale-105"
-        >
-          {isAddEventLoading ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              <span>Loading...</span>
-            </>
-          ) : (
+          >
+            {isAddEventLoading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Loading...</span>
+              </>
+            ) : (
               <>
                 <span className="text-lg">+</span>
                 <span>Add Event</span>
               </>
-          )}
-        </button>
+            )}
+          </button>
+        )}
       </main>
       </div>
 

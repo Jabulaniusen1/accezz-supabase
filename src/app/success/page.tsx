@@ -9,6 +9,8 @@ import { markOrderAsPaid, createTicketsForOrder } from "@/utils/paymentUtils";
 import { supabase } from "@/utils/supabaseClient";
 import { clearTicketPurchaseState } from "@/utils/localStorage";
 import { notifyTicketPurchase } from "@/utils/notificationClient";
+import CreateAccountPrompt from "../components/CreateAccountPrompt";
+import { getSession } from "@/utils/supabaseAuth";
 
 const SuccessContent = () => {
   const router = useRouter();
@@ -17,6 +19,9 @@ const SuccessContent = () => {
   const [ticketId, setTicketId] = useState<string | null>(null);
   const [showFailureModal, setShowFailureModal] = useState(false);
   const [eventSlug, setEventSlug] = useState<string | null>(null);
+  const [showAccountPrompt, setShowAccountPrompt] = useState(false);
+  const [orderEmail, setOrderEmail] = useState<string | null>(null);
+  const [orderId, setOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     const verifyPayment = async () => {
@@ -96,6 +101,25 @@ const SuccessContent = () => {
         // If ticketId exists in URL, ticket is already created (free ticket or reload)
         if (urlTicketId) {
           setTicketId(urlTicketId);
+          
+          // Check if we should show account prompt for reloaded page
+          // Get order from ticket to check if user is logged in
+          const { data: ticketData } = await supabase
+            .from('tickets')
+            .select('order_id, orders!inner(buyer_email, buyer_user_id)')
+            .eq('id', urlTicketId)
+            .single();
+          
+          if (ticketData) {
+            const order = (ticketData as { orders?: { buyer_email?: string | null; buyer_user_id?: string | null; order_id?: string | null } | null }).orders;
+            const session = await getSession();
+            if (!session && order && order.buyer_email && !order.buyer_user_id) {
+              setOrderEmail(order.buyer_email || null);
+              setOrderId(order.order_id || null);
+              setShowAccountPrompt(true);
+            }
+          }
+          
           setIsVerifying(false);
           return;
         }
@@ -137,12 +161,33 @@ const SuccessContent = () => {
 
           const firstTicketId = tickets[0].id;
           
+          // Get order details to check if user is logged in
+          const { data: orderData, error: orderDataError } = await supabase
+            .from('orders')
+            .select('buyer_email, buyer_user_id, id')
+            .eq('id', resolvedOrderId)
+            .single();
+          if (orderDataError) {
+            console.error('Order fetch error:', orderDataError);
+          }
+
           // Clear saved purchase state since payment is complete
           try { clearTicketPurchaseState(); } catch {}
           try { localStorage.removeItem('pendingPayment'); } catch {}
           
           // Store in state immediately and update URL (non-blocking navigation)
           setTicketId(firstTicketId);
+          setOrderId(resolvedOrderId);
+          
+          // Check if user is logged in
+          const session = await getSession();
+          // Only show prompt if user is not logged in AND order doesn't already have a buyer_user_id
+          if (!session && orderData && orderData.buyer_email && !orderData.buyer_user_id) {
+            // User is not logged in, show account creation prompt
+            setOrderEmail(orderData.buyer_email);
+            setShowAccountPrompt(true);
+          }
+          
           setIsVerifying(false);
           
           // Update URL for bookmarking/sharing (async, won't block render)
@@ -219,6 +264,14 @@ const SuccessContent = () => {
             // Fallback: go back to previous page
             router.back();
           }}
+        />
+      )}
+      {showAccountPrompt && orderEmail && orderId && (
+        <CreateAccountPrompt
+          isOpen={showAccountPrompt}
+          onClose={() => setShowAccountPrompt(false)}
+          buyerEmail={orderEmail}
+          orderId={orderId}
         />
       )}
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-8">

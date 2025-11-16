@@ -37,3 +37,51 @@ export const formatEventDate = (dateString: string): string => {
     timeZone: 'UTC'
   });
 };
+
+export const formatDateTime = (startTime: string, endTime?: string | null): string => {
+  if (!startTime) return '';
+  
+  const start = new Date(startTime);
+  if (isNaN(start.getTime())) return '';
+
+  const startDate = start.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  const startTimeFormatted = start.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+
+  if (!endTime) {
+    return `${startDate} at ${startTimeFormatted}`;
+  }
+
+  const end = new Date(endTime);
+  if (isNaN(end.getTime())) {
+    return `${startDate} at ${startTimeFormatted}`;
+  }
+
+  const endDate = end.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  const endTimeFormatted = end.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+
+  // If same day, show date once
+  if (startDate === endDate) {
+    return `${startDate} from ${startTimeFormatted} to ${endTimeFormatted}`;
+  }
+
+  // Different days
+  return `${startDate} at ${startTimeFormatted} - ${endDate} at ${endTimeFormatted}`;
+};
