@@ -2,7 +2,7 @@ import { inngest } from '@/utils/inngest';
 import { supabase } from '@/utils/supabaseClient';
 
 /**
- * Inngest function to send abandoned cart email 30 seconds after order creation
+ * Inngest function to send abandoned cart email 1 hour after order creation
  */
 export const sendAbandonedCartEmail = inngest.createFunction(
   {
@@ -13,8 +13,8 @@ export const sendAbandonedCartEmail = inngest.createFunction(
   async ({ event, step }) => {
     const { orderId } = event.data;
 
-    // Wait 30 seconds before checking if order is still pending
-    await step.sleep('wait-30-seconds', '30s');
+    // Wait 1 hour before checking if order is still pending
+    await step.sleep('wait-1-hour', '1h');
 
     // Check if order is still pending (not paid)
     const orderStatus = await step.run('check-order-status', async () => {
@@ -142,7 +142,7 @@ export const sendAbandonedCartEmail = inngest.createFunction(
     const quantity = (meta.quantity as number) || 1;
 
     // Send abandoned cart email
-    const emailResult = await step.run('send-abandoned-cart-email', async () => {
+    await step.run('send-abandoned-cart-email', async () => {
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
       const response = await fetch(`${baseUrl}/api/emails/abandoned-cart`, {
         method: 'POST',
