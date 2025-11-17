@@ -378,10 +378,16 @@ export async function createOrder(params: CreateOrderParams): Promise<{ orderId:
 
         if (!response.ok) {
           const errorText = await response.text();
+          console.error('[createOrder] Inngest trigger failed:', {
+            status: response.status,
+            statusText: response.statusText,
+            error: errorText,
+          });
           throw new Error(`Failed to trigger Inngest event: ${response.status} ${response.statusText}`);
         }
 
         const result = await response.json();
+        console.log('[createOrder] Inngest event triggered for abandoned cart email:', result);
       } catch (inngestError) {
         console.error('[createOrder] Error triggering Inngest event:', inngestError);
       }
