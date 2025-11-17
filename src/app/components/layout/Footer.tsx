@@ -11,7 +11,6 @@ const Footer = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle newsletter subscription
     console.log('Newsletter subscription:', email);
     setEmail('');
   };
@@ -76,13 +75,18 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/#tutorial" className="text-gray-700 hover:text-[#f54502] transition-colors">
-                  How Accezz Works
+                <Link href="/blog" className="text-gray-700 hover:text-[#f54502] transition-colors">
+                  Blog
                 </Link>
               </li>
               <li>
-                <Link href="/blog" className="text-gray-700 hover:text-[#f54502] transition-colors">
-                  Blog
+                <Link href="/privacy-policy" className="text-gray-700 hover:text-[#f54502] transition-colors">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/refund-policy" className="text-gray-700 hover:text-[#f54502] transition-colors">
+                  Refund Policy
                 </Link>
               </li>
             </ul>
@@ -133,11 +137,11 @@ const Footer = () => {
 
         {/* Bottom Section - Copyright and Legal Links */}
         <div className="border-t border-gray-300 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex flex-col md:flex-row justify-center items-center gap-4">
             <p className="text-gray-600 text-sm">
               Copyright © {currentYear}. Accezz Technology Inc. All rights reserved.
             </p>
-            <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-6">
+            {/* <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-6">
               <a
                 href="mailto:support@accezzlive.com"
                 className="text-gray-600 hover:text-[#f54502] transition-colors text-sm"
@@ -153,8 +157,8 @@ const Footer = () => {
                 <FaWhatsapp className="w-4 h-4" />
                 <span>+234 701 861 0048</span>
               </a>
-            </div>
-            <div className="flex gap-6 text-sm">
+            </div> */}
+            {/* <div className="flex gap-6 text-sm">
               <Link href="/term&condition" className="text-gray-600 hover:text-[#f54502] transition-colors">
                 Terms & Conditions
               </Link>
@@ -164,7 +168,7 @@ const Footer = () => {
               <Link href="/refund-policy" className="text-gray-600 hover:text-[#f54502] transition-colors">
                 Refund Policy
               </Link>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
