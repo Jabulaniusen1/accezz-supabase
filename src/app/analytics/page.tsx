@@ -19,7 +19,7 @@ import { FaMoneyBill, FaTicketAlt } from 'react-icons/fa';
 // import { Line } from 'react-chartjs-2';
 
 const PLATFORM_FEE_RATE = 0.06;
-const NET_MULTIPLIER = 1 - PLATFORM_FEE_RATE;
+// const NET_MULTIPLIER = 1 - PLATFORM_FEE_RATE;
 // const calculateNetRevenue = (price: string | number, sold: string | number): number => {
 //   const numericPrice = typeof price === 'number' ? price : parseFloat(price || '0');
 //   const numericSold = typeof sold === 'number' ? sold : parseFloat(sold || '0');
