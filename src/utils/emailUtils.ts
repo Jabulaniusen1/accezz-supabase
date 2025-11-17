@@ -930,157 +930,206 @@ export function generateAbandonedCartEmailHTML(data: {
         }
         body {
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-          line-height: 1.5;
-          color: #333333;
-          background-color: #f5f5f5;
-          padding: 20px;
+          line-height: 1.6;
+          color: #1a1a1a;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          padding: 40px 20px;
         }
         .email-wrapper {
           max-width: 600px;
           margin: 0 auto;
           background-color: #ffffff;
-          border-radius: 8px;
+          border-radius: 16px;
           overflow: hidden;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        .header {
+          background: linear-gradient(135deg, #f54502 0%, #ff6b35 100%);
+          padding: 40px 40px 60px;
+          text-align: center;
+          position: relative;
+        }
+        .header::after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          height: 40px;
+          background: #ffffff;
+          border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+        }
+        .logo {
+          margin-bottom: 20px;
+        }
+        .logo img {
+          max-width: 140px;
+          height: auto;
+          filter: brightness(0) invert(1);
+        }
+        .header h1 {
+          color: #ffffff;
+          font-size: 28px;
+          font-weight: 700;
+          margin: 0;
+          position: relative;
+          z-index: 1;
         }
         .content {
-          padding: 40px 30px;
-          text-align: left;
+          padding: 40px 40px 20px;
         }
         .greeting {
-          font-size: 18px;
-          color: #333333;
+          font-size: 20px;
+          color: #1a1a1a;
           font-weight: 600;
           margin-bottom: 20px;
         }
         .message {
           font-size: 16px;
-          color: #666666;
-          margin-bottom: 20px;
-          line-height: 1.6;
+          color: #4a5568;
+          margin-bottom: 16px;
+          line-height: 1.8;
+        }
+        .event-card {
+          background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+          border-radius: 16px;
+          padding: 24px;
+          margin: 30px 0;
+          border: 2px solid #e2e8f0;
+        }
+        .event-title {
+          font-size: 20px;
+          color: #2d3748;
+          font-weight: 700;
+          margin-bottom: 16px;
+          text-align: center;
+        }
+        .detail-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 10px 0;
+          border-bottom: 1px solid #e2e8f0;
+        }
+        .detail-row:last-child {
+          border-bottom: none;
+        }
+        .detail-label {
+          color: #718096;
+          font-size: 14px;
+          font-weight: 500;
+        }
+        .detail-value {
+          color: #2d3748;
+          font-size: 15px;
+          font-weight: 600;
+          text-align: right;
+        }
+        .cta-container {
+          text-align: center;
+          margin: 40px 0;
         }
         .cta-button {
           display: inline-block;
-          padding: 16px 40px;
-          background-color: #f54502;
+          padding: 16px 48px;
+          background: linear-gradient(135deg, #f54502 0%, #ff6b35 100%);
           color: #ffffff !important;
           text-decoration: none;
-          border-radius: 6px;
+          border-radius: 50px;
           font-weight: 600;
           font-size: 16px;
-          margin: 20px 0;
+          box-shadow: 0 10px 30px rgba(245, 69, 2, 0.3);
+          transition: all 0.3s ease;
         }
-        .logo-footer {
-          margin-bottom: 15px;
-        }
-        .logo-footer img {
-          max-width: 120px;
-          height: auto;
+        .cta-button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 15px 40px rgba(245, 69, 2, 0.4);
         }
         .footer {
-          background-color: #f9f9f9;
-          padding: 30px;
-          text-align: left;
-          border-top: 1px solid #e5e5e5;
+          background: #f7fafc;
+          padding: 30px 40px;
+          text-align: center;
+          border-top: 1px solid #e2e8f0;
         }
-        .contact-section {
+        .footer-signature {
+          font-size: 15px;
+          color: #2d3748;
+          font-weight: 600;
+          margin-bottom: 8px;
+        }
+        .footer-team {
+          font-size: 15px;
+          color: #718096;
           margin-bottom: 20px;
         }
-        .contact-title {
-          font-size: 14px;
-          color: #666666;
-          font-weight: 600;
-          margin-bottom: 15px;
+        .footer-note {
+          font-size: 13px;
+          color: #a0aec0;
+          margin: 0;
         }
         .social-links {
-          display: flex;
-          justify-content: flex-start;
-          gap: 15px;
-          margin-bottom: 20px;
-          flex-wrap: wrap;
+          margin: 20px 0;
         }
-        .social-link {
+        .social-links a {
           display: inline-block;
+          width: 36px;
+          height: 36px;
+          background: #e2e8f0;
+          border-radius: 50%;
+          margin: 0 6px;
+          line-height: 36px;
+          color: #4a5568;
           text-decoration: none;
-          padding: 8px;
-          border: 1px solid #e5e5e5;
-          border-radius: 6px;
-          transition: all 0.2s;
-          background-color: #ffffff;
+          transition: all 0.3s ease;
         }
-        .social-link:hover {
-          background-color: #f5f5f5;
-          border-color: #f54502;
-        }
-        .social-icon {
-          width: 24px;
-          height: 24px;
-          display: block;
-          border: none;
-        }
-        .support-email {
-          margin-top: 15px;
-          padding-top: 15px;
-          border-top: 1px solid #e5e5e5;
-        }
-        .support-email a {
-          color: #f54502;
-          text-decoration: none;
-          font-size: 14px;
-        }
-        .support-email a:hover {
-          text-decoration: underline;
-        }
-        .footer-text {
-          font-size: 12px;
-          color: #999999;
-          margin: 10px 0 0 0;
-        }
-        .emoji {
-          font-size: 18px;
+        .social-links a:hover {
+          background: #f54502;
+          color: #ffffff;
+          transform: translateY(-2px);
         }
         @media only screen and (max-width: 600px) {
           body {
-            padding: 10px;
+            padding: 20px 10px;
           }
           .content {
-            padding: 30px 20px;
-            text-align: left;
+            padding: 30px 20px 15px;
           }
-          .greeting {
-            font-size: 16px;
+          .header {
+            padding: 30px 20px 50px;
           }
-          .message {
-            font-size: 15px;
+          .header h1 {
+            font-size: 24px;
+          }
+          .event-card {
+            padding: 20px;
           }
           .cta-button {
-            padding: 14px 32px;
+            padding: 14px 36px;
             font-size: 15px;
-            display: block;
-            width: 100%;
-            text-align: center;
           }
           .footer {
-            padding: 20px;
+            padding: 25px 20px;
+          }
+          .detail-row {
+            flex-direction: column;
+            gap: 4px;
+          }
+          .detail-value {
             text-align: left;
-          }
-          .social-links {
-            gap: 10px;
-            justify-content: flex-start;
-          }
-          .social-link {
-            padding: 6px;
-          }
-          .social-icon {
-            width: 20px;
-            height: 20px;
           }
         }
       </style>
     </head>
     <body>
       <div class="email-wrapper">
+        <div class="header">
+          <div class="logo">
+            <img src="https://kckdkipdodkfszakqwui.supabase.co/storage/v1/object/public/logo/accezz%20logo.png" alt="Accezz Logo">
+          </div>
+          <h1>Complete Your Purchase</h1>
+        </div>
+        
         <div class="content">
-          <p class="greeting">Hey ${firstName}! <span class="emoji">👋</span></p>
+          <p class="greeting">Hey ${firstName}! 👋</p>
           
           <p class="message">
             We noticed you started grabbing your <strong>${data.eventTitle}</strong> tickets but didn't finish your order.
@@ -1090,6 +1139,34 @@ export function generateAbandonedCartEmailHTML(data: {
             Everything okay?
           </p>
           
+          <div class="event-card">
+            <div class="event-title">${data.eventTitle}</div>
+            <div class="detail-row">
+              <span class="detail-label">📅 Date</span>
+              <span class="detail-value">${data.eventDate}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">🕐 Time</span>
+              <span class="detail-value">${data.eventTime}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">📍 Venue</span>
+              <span class="detail-value">${data.venue}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">🎫 Ticket Type</span>
+              <span class="detail-value">${data.ticketType}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">🔢 Quantity</span>
+              <span class="detail-value">${data.quantity}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">💰 Total</span>
+              <span class="detail-value">${data.currency} ${data.totalAmount.toLocaleString()}</span>
+            </div>
+          </div>
+          
           <p class="message">
             If you ran into any issue, we're here to help — just reach out to our support team and we'll sort it out fast.
           </p>
@@ -1098,45 +1175,27 @@ export function generateAbandonedCartEmailHTML(data: {
             But if you're good to go, you can pick up right where you left off:
           </p>
 
-          <a href="${completePurchaseUrl}" class="cta-button">
-             Complete your purchase
-          </a>
+          <div class="cta-container">
+            <a href="${completePurchaseUrl}" class="cta-button">
+              Complete your purchase
+            </a>
+          </div>
           
-          <p class="message" style="margin-top: 30px;">
-            Can't wait to have you with us!
+          <p class="message" style="text-align: center; font-weight: 600; color: #2d3748; margin-top: 30px;">
+            Can't wait to have you with us! 🎊
           </p>
         </div>
         
         <div class="footer">
-          <div class="logo-footer">
-            <img src="https://kckdkipdodkfszakqwui.supabase.co/storage/v1/object/public/logo/accezz%20logo.png" alt="Accezz Logo">
+          <p class="footer-signature">Best regards,</p>
+          <p class="footer-team">The Accezz Team</p>
+          <div class="social-links">
+            <a href="https://x.com/accezzlive">𝕏</a>
+            <a href="https://www.instagram.com/accezzlive/">in</a>
+            <a href="https://www.facebook.com/accezzlive/">fb</a>
           </div>
-          
-          <div class="contact-section">
-            <p class="contact-title">Follow Us</p>
-            <div class="social-links">
-              <a href="https://x.com/accezzlive" class="social-link" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: #000000;">
-                <img src="https://img.icons8.com/ios-filled/50/000000/twitterx.png" alt="X (Twitter)" class="social-icon" width="24" height="24" style="display: block; border: none;" />
-              </a>
-              <a href="https://www.instagram.com/accezzlive/" class="social-link" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: #E4405F;">
-                <img src="https://img.icons8.com/ios-filled/50/E4405F/instagram-new.png" alt="Instagram" class="social-icon" width="24" height="24" style="display: block; border: none;" />
-              </a>
-              <a href="https://www.tiktok.com/@accezzlive?lang=en" class="social-link" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: #000000;">
-                <img src="https://img.icons8.com/ios-filled/50/000000/tiktok.png" alt="TikTok" class="social-icon" width="24" height="24" style="display: block; border: none;" />
-              </a>
-              <a href="https://wa.me/2347018610048" class="social-link" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: #25D366;">
-                <img src="https://img.icons8.com/ios-filled/50/25D366/whatsapp.png" alt="WhatsApp" class="social-icon" width="24" height="24" style="display: block; border: none;" />
-              </a>
-            </div>
-          </div>
-          
-          <div class="support-email">
-            <p style="font-size: 14px; color: #666666; margin-bottom: 8px;">Need help?</p>
-            <a href="mailto:support@accezzlive.com">support@accezzlive.com</a>
-          </div>
-          
-          <p class="footer-text">
-            The Accezz Team
+          <p class="footer-note">
+            This is an automated message. Please do not reply to this email.
           </p>
         </div>
       </div>

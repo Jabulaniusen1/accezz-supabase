@@ -5,93 +5,189 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Confirm Your Signup</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             line-height: 1.6;
-            color: #333;
+            color: #1a1a1a;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+        }
+        .email-wrapper {
             max-width: 600px;
             margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
             background-color: #ffffff;
-            border-radius: 12px;
-            padding: 40px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        .header {
+            background: linear-gradient(135deg, #f54502 0%, #ff6b35 100%);
+            padding: 40px 40px 60px;
+            text-align: center;
+            position: relative;
+        }
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: #ffffff;
+            border-radius: 50% 50% 0 0 / 100% 100% 0 0;
         }
         .logo {
-            text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         .logo img {
-            max-width: 150px;
+            max-width: 140px;
             height: auto;
+            filter: brightness(0) invert(1);
         }
-        h2 {
-            color: #f54502;
-            font-size: 24px;
+        .header h1 {
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+        }
+        .content {
+            padding: 40px 40px 20px;
+        }
+        .greeting {
+            font-size: 20px;
+            color: #1a1a1a;
+            font-weight: 600;
             margin-bottom: 20px;
-            text-align: center;
         }
-        p {
-            margin-bottom: 16px;
+        .message {
             font-size: 16px;
-            color: #555;
+            color: #4a5568;
+            margin-bottom: 16px;
+            line-height: 1.8;
         }
-        .button {
+        .cta-container {
+            text-align: center;
+            margin: 40px 0;
+        }
+        .cta-button {
             display: inline-block;
-            padding: 14px 32px;
-            background-color: #f54502;
+            padding: 16px 48px;
+            background: linear-gradient(135deg, #f54502 0%, #ff6b35 100%);
             color: #ffffff !important;
             text-decoration: none;
-            border-radius: 8px;
+            border-radius: 50px;
             font-weight: 600;
-            text-align: center;
-            margin: 20px 0;
-            transition: background-color 0.3s;
+            font-size: 16px;
+            box-shadow: 0 10px 30px rgba(245, 69, 2, 0.3);
+            transition: all 0.3s ease;
         }
-        .button:hover {
-            background-color: #d63a02;
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(245, 69, 2, 0.4);
         }
-        .button-container {
-            text-align: center;
-            margin: 30px 0;
+        .link-fallback {
+            font-size: 14px;
+            color: #718096;
+            margin-top: 24px;
+            padding: 16px;
+            background: #f7fafc;
+            border-radius: 8px;
+            word-break: break-all;
+        }
+        .link-fallback a {
+            color: #f54502;
+            text-decoration: none;
+        }
+        .link-fallback a:hover {
+            text-decoration: underline;
         }
         .footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-            font-size: 14px;
-            color: #999;
+            background: #f7fafc;
+            padding: 30px 40px;
             text-align: center;
+            border-top: 1px solid #e2e8f0;
         }
-        .footer p {
-            margin: 5px 0;
+        .footer-note {
+            font-size: 13px;
+            color: #a0aec0;
+            margin: 0;
+        }
+        .info-box {
+            background: linear-gradient(135deg, #fef5e7 0%, #fdebd0 100%);
+            border-left: 4px solid #f39c12;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 30px 0;
+        }
+        .info-box p {
+            color: #875a28;
+            font-size: 14px;
+            margin: 0;
+        }
+        @media only screen and (max-width: 600px) {
+            body {
+                padding: 20px 10px;
+            }
+            .content {
+                padding: 30px 20px 15px;
+            }
+            .header {
+                padding: 30px 20px 50px;
+            }
+            .header h1 {
+                font-size: 24px;
+            }
+            .cta-button {
+                padding: 14px 36px;
+                font-size: 15px;
+            }
+            .footer {
+                padding: 25px 20px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="logo">
-            <img src="https://kckdkipdodkfszakqwui.supabase.co/storage/v1/object/public/logo/accezzlogoc%20(2).webp" alt="Accezz Logo" width="150" height="auto">
-        </div>
-        <h2>Confirm your signup</h2>
-        <p>Thank you for signing up! We're excited to have you on board.</p>
-        <p>To complete your registration, please click the button below to confirm your email address:</p>
-        
-        <div class="button-container">
-            <a href="{{ .ConfirmationURL }}" class="button">Confirm your email</a>
+    <div class="email-wrapper">
+        <div class="header">
+            <div class="logo">
+                <img src="https://kckdkipdodkfszakqwui.supabase.co/storage/v1/object/public/logo/accezz%20logo.png" alt="Accezz Logo">
+            </div>
+            <h1>Confirm your signup</h1>
         </div>
         
-        <p style="font-size: 14px; color: #777;">
-            If the button doesn't work, copy and paste this link into your browser:<br>
-            <a href="{{ .ConfirmationURL }}" style="color: #f54502; word-break: break-all;">{{ .ConfirmationURL }}</a>
-        </p>
+        <div class="content">
+            <p class="greeting">Thank you for signing up! 🎉</p>
+            
+            <p class="message">
+                We're excited to have you on board! To complete your registration, please confirm your email address by clicking the button below.
+            </p>
+            
+            <div class="cta-container">
+                <a href="{{ .ConfirmationURL }}" class="cta-button">Confirm your email</a>
+            </div>
+            
+            <div class="link-fallback">
+                If the button doesn't work, copy and paste this link into your browser:<br>
+                <a href="{{ .ConfirmationURL }}">{{ .ConfirmationURL }}</a>
+            </div>
+            
+            <div class="info-box">
+                <p><strong>⚠️ Important:</strong> This link will expire in 24 hours. If you didn't create an account, you can safely ignore this email.</p>
+            </div>
+        </div>
         
         <div class="footer">
-            <p>This link will expire in 24 hours.</p>
-            <p>If you didn't create an account, you can safely ignore this email.</p>
+            <p class="footer-note">
+                This is an automated message. Please do not reply to this email.
+            </p>
         </div>
     </div>
 </body>
