@@ -9,6 +9,7 @@ import { createOrder, createFreeTickets } from '@/utils/paymentUtils';
 import { saveTicketPurchaseState, getTicketPurchaseState, clearTicketPurchaseState } from '@/utils/localStorage';
 import { supabase } from '@/utils/supabaseClient';
 import { getSession } from '@/utils/supabaseAuth';
+import { useTicketPurchase } from '@/contexts/TicketPurchaseContext';
 
 type TicketOption = {
   id: string;
@@ -42,6 +43,7 @@ const parsePriceValue = (value: string | number | null | undefined): number => {
 };
 
 const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true, initialTicket }: TicketTypeFormProps) => {
+  const { setIsPurchasing } = useTicketPurchase();
   const [activeStep, setActiveStep] = useState(0);
   const [selectedTicket, setSelectedTicket] = useState<TicketOption | null>(initialTicket ?? null);
   const [quantity, setQuantity] = useState(1);
@@ -216,6 +218,16 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
       // Silently fail - user can still fill manually
     }
   };
+
+  // Update ticket purchase context when form opens/closes
+  useEffect(() => {
+    setIsPurchasing(isOpen);
+    
+    // Cleanup: reset when component unmounts
+    return () => {
+      setIsPurchasing(false);
+    };
+  }, [isOpen, setIsPurchasing]);
 
   // Pre-fill user information when form opens
   useEffect(() => {

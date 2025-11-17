@@ -4,21 +4,23 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaWhatsapp } from 'react-icons/fa';
+import { useTicketPurchase } from '@/contexts/TicketPurchaseContext';
 
 const WhatsAppFloatingButton = () => {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
+  const { isPurchasing } = useTicketPurchase();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Hide on dashboard routes
+  // Hide on dashboard routes or when purchasing tickets
   const isDashboard = pathname?.startsWith('/dashboard') || 
                       pathname?.startsWith('/admin') || 
                       pathname?.startsWith('/analytics');
 
-  if (!mounted || isDashboard) {
+  if (!mounted || isDashboard || isPurchasing) {
     return null;
   }
 

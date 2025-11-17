@@ -4,6 +4,7 @@ import QueryProvider from '@/providers/QueryProvider';
 import Script from 'next/script';
 import { Analytics } from "@vercel/analytics/next"
 import WhatsAppFloatingButton from '@/components/WhatsAppFloatingButton';
+import { TicketPurchaseProvider } from '@/contexts/TicketPurchaseContext';
 
 export const metadata: Metadata = {
   title: {
@@ -153,8 +154,10 @@ export default function RootLayout({
         
         <Analytics />
         <QueryProvider>
-          {children}
-          <WhatsAppFloatingButton />
+          <TicketPurchaseProvider>
+            {children}
+            <WhatsAppFloatingButton />
+          </TicketPurchaseProvider>
         </QueryProvider>
       </body>
     </html>
