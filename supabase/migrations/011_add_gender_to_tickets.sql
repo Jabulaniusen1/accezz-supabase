@@ -22,6 +22,3 @@ end $$;
 
 -- Add comment to the column
 comment on column public.tickets.gender is 'Gender of the ticket holder: male, female, other, or prefer-not-to-say';
-
-
-

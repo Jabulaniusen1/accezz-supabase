@@ -6,10 +6,17 @@ import { sendAbandonedCartEmail } from '@/inngest/functions';
 // 1. GET: Inngest Cloud syncs functions from here (discovers available functions)
 // 2. POST: Inngest Cloud invokes functions here (executes functions when events trigger)
 // 
-// IMPORTANT: In your Inngest Cloud dashboard, make sure the sync URL is set to:
-// https://yourdomain.com/api/inngest
+// IMPORTANT FOR PRODUCTION:
+// 1. In your Inngest Cloud dashboard, manually set the sync URL to your production domain:
+//    https://accezzlive.com/api/inngest (NOT a preview/deployment URL)
+// 2. Ensure INNGEST_SIGNING_KEY is set in your production environment variables
+// 3. Set INNGEST_BASE_URL or NEXT_PUBLIC_BASE_URL to your production domain
 //
-// Also ensure INNGEST_SIGNING_KEY is set in your production environment variables
+// To fix "Unattached Syncs" errors:
+// - Go to Inngest Dashboard → Your App → Settings
+// - Find the sync URL configuration
+// - Delete any preview/deployment URLs
+// - Add ONLY your production URL: https://accezzlive.com/api/inngest
 const handler = serve({
   client: inngest,
   functions: [
