@@ -13,9 +13,8 @@ interface Event {
   id: string;
   title: string;
   description: string;
-  time: string;
   image: string;
-  date: string;
+  start_time: string;
   location: string;
   ticketType: TicketType[];
 }
@@ -164,8 +163,7 @@ const ValidateContent = () => {
               id,
               title,
               image_url,
-              date,
-              time,
+              start_time,
               venue,
               location
             ),
@@ -211,13 +209,8 @@ const ValidateContent = () => {
             id: eventData.id,
             title: eventData.title,
             description: '',
-            time: (() => {
-              const start = eventData.start_time ? new Date(eventData.start_time) : null;
-              if (!start || Number.isNaN(start.getTime())) return '';
-              return `${start.getHours().toString().padStart(2, '0')}:${start.getMinutes().toString().padStart(2, '0')}`;
-            })(),
             image: eventData.image_url || '',
-            date: eventData.start_time,
+            start_time: eventData.start_time,
             location: eventData.location || eventData.address || eventData.city || '',
             ticketType: [],
           };
@@ -316,11 +309,14 @@ const ValidateContent = () => {
       >
         <div className="absolute inset-0 bg-gradient-to-br from-black/60 to-black/40 flex flex-col justify-center items-center text-center p-4 sm:p-6">
           <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-white leading-tight">{event.title}</h1>
-          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-200 mt-2">{new Date(event.date).toLocaleDateString('en-GB', {
+          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-200 mt-2">{new Date(event.start_time).toLocaleDateString('en-GB', {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric',
-          })}, {event.time}</p>
+          })}, {new Date(event.start_time).toLocaleTimeString('en-GB', {
+            hour: '2-digit',
+            minute: '2-digit',
+          })}</p>
         </div>
       </div>
     )}

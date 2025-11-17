@@ -266,7 +266,7 @@ const Earnings = () => {
         }]
       }
     };
-  }, [events]);
+  }, [events, eventAggregates]);
 
   // Handle row expansion
   const toggleExpandRow = useCallback((index: number) => {
