@@ -1,11 +1,14 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import Receipt from './Receipt';
 import TicketSelectionStep from './TicketFormSec/TicketSelectionStep';
 import OrderInformationStep from './TicketFormSec/OrderInformationStep';
 import PaymentStep from './TicketFormSec/PaymentStep';
+import CreateAccountPrompt from './CreateAccountPrompt';
 import { fetchEventBySlug } from '@/utils/eventUtils';
 import { createOrder, createFreeTickets } from '@/utils/paymentUtils';
 import { saveTicketPurchaseState, getTicketPurchaseState, clearTicketPurchaseState } from '@/utils/localStorage';
+import { supabase } from '@/utils/supabaseClient';
+import { getSession } from '@/utils/supabaseAuth';
 
 type TicketOption = {
   id: string;
@@ -45,17 +48,23 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [gender, setGender] = useState('');
   const [events, setEvent] = useState<Event | null>(null);
   const [isPurchased, setIsPurchased] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [showAccountPrompt, setShowAccountPrompt] = useState(false);
+  const [purchaseOrderId, setPurchaseOrderId] = useState<string | null>(null);
   const [additionalTicketHolders, setAdditionalTicketHolders] = useState<Array<{
     name: string;
     email: string;
     phone?: string;
+    gender?: string;
   }>>([]);
 
   const [isSheetVisible, setIsSheetVisible] = useState(false);
+  const [hasLoadedUserInfo, setHasLoadedUserInfo] = useState(false);
+  const fieldsRef = useRef({ fullName, email, phoneNumber });
 
   const eventId = events?.id;
 
@@ -102,16 +111,148 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
         if (savedState.activeStep !== undefined) setActiveStep(savedState.activeStep);
         if (savedState.selectedTicket) setSelectedTicket(savedState.selectedTicket);
         if (savedState.quantity !== undefined) setQuantity(savedState.quantity);
-        if (savedState.fullName) setFullName(savedState.fullName);
-        if (savedState.email) setEmail(savedState.email);
-        if (savedState.phoneNumber) setPhoneNumber(savedState.phoneNumber);
-        if (savedState.orderId) setOrderId(savedState.orderId);
-        if (savedState.additionalTicketHolders) setAdditionalTicketHolders(savedState.additionalTicketHolders);
+          if (savedState.fullName) setFullName(savedState.fullName);
+          if (savedState.email) setEmail(savedState.email);
+          if (savedState.phoneNumber) setPhoneNumber(savedState.phoneNumber);
+          if (savedState.gender) setGender(savedState.gender);
+          if (savedState.orderId) setOrderId(savedState.orderId);
+          if (savedState.additionalTicketHolders) setAdditionalTicketHolders(savedState.additionalTicketHolders);
       }
     } catch (error) {
       console.error('Error restoring ticket purchase state:', error);
     }
   }, [eventSlug]);
+
+  // Update ref whenever fields change
+  useEffect(() => {
+    fieldsRef.current = { fullName, email, phoneNumber };
+  }, [fullName, email, phoneNumber]);
+
+  // Helper function to pre-fill user information
+  const preFillUserInfo = async () => {
+    if (hasLoadedUserInfo) {
+      return;
+    }
+
+    try {
+      // Check if there's saved state with actual user input - if so, don't pre-fill
+      const savedState = getTicketPurchaseState();
+      const hasSavedUserInput = savedState && 
+                                savedState.eventSlug === eventSlug && 
+                                savedState.showTicketForm &&
+                                savedState.fullName?.trim() && 
+                                savedState.email?.trim() && 
+                                savedState.phoneNumber?.trim();
+      
+      if (hasSavedUserInput) {
+        // Saved state has user input, don't pre-fill
+        console.log('Skipping pre-fill: saved state has user input', savedState);
+        setHasLoadedUserInfo(true);
+        return;
+      }
+
+      const session = await getSession();
+      if (!session) {
+        console.log('Skipping pre-fill: no session');
+        setHasLoadedUserInfo(true);
+        return;
+      }
+
+      // Check current field values using ref to get latest values
+      const currentFullName = fieldsRef.current.fullName.trim();
+      const currentEmail = fieldsRef.current.email.trim();
+      const currentPhone = fieldsRef.current.phoneNumber.trim();
+
+      if (currentFullName || currentEmail || currentPhone) {
+        // Fields already have values, don't pre-fill
+        console.log('Skipping pre-fill: fields already have values', { currentFullName, currentEmail, currentPhone });
+        setHasLoadedUserInfo(true);
+        return;
+      }
+
+      console.log('Pre-filling user info from database...');
+      
+      // Get user profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('full_name, phone')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
+      }
+
+      // Pre-fill from profile or user metadata
+      const userFullName = profile?.full_name || 
+                          session.user.user_metadata?.full_name || 
+                          session.user.user_metadata?.fullName || 
+                          '';
+      const userEmail = session.user.email || '';
+      const userPhone = profile?.phone || 
+                       session.user.user_metadata?.phone || 
+                       '';
+
+      console.log('User info to pre-fill:', { userFullName, userEmail, userPhone });
+
+      // Pre-fill the fields
+      if (userFullName && !currentFullName) {
+        setFullName(userFullName);
+        console.log('Pre-filled full name:', userFullName);
+      }
+      if (userEmail && !currentEmail) {
+        setEmail(userEmail);
+        console.log('Pre-filled email:', userEmail);
+      }
+      if (userPhone && !currentPhone) {
+        setPhoneNumber(userPhone);
+        console.log('Pre-filled phone:', userPhone);
+      }
+      
+      setHasLoadedUserInfo(true);
+    } catch (error) {
+      console.error('Error loading user info:', error);
+      setHasLoadedUserInfo(true);
+      // Silently fail - user can still fill manually
+    }
+  };
+
+  // Pre-fill user information when form opens
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    // Wait a bit to ensure saved state restoration happens first
+    const timer = setTimeout(() => {
+      preFillUserInfo();
+    }, 300);
+
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, eventSlug]);
+
+  // Pre-fill user information when user reaches step 1 (order information step)
+  useEffect(() => {
+    if (!isOpen || activeStep !== 1 || hasLoadedUserInfo) {
+      return;
+    }
+
+    // Small delay to ensure form is rendered
+    const timer = setTimeout(() => {
+      preFillUserInfo();
+    }, 100);
+
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeStep, isOpen]);
+
+  // Reset hasLoadedUserInfo when form closes
+  useEffect(() => {
+    if (!isOpen) {
+      setHasLoadedUserInfo(false);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (!initialTicket) return;
@@ -140,6 +281,7 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
         fullName,
         email,
         phoneNumber,
+        gender,
         totalPrice,
         orderId: orderId || undefined,
         additionalTicketHolders: additionalTicketHolders.length > 0 ? additionalTicketHolders : undefined,
@@ -147,7 +289,7 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
     } catch (error) {
       console.error('Error saving ticket purchase state:', error);
     }
-  }, [activeStep, selectedTicket, quantity, fullName, email, phoneNumber, totalPrice, orderId, additionalTicketHolders, eventSlug, isOpen]);
+  }, [activeStep, selectedTicket, quantity, fullName, email, phoneNumber, gender, totalPrice, orderId, additionalTicketHolders, eventSlug, isOpen]);
 
   const handleNext = async () => {
     if (activeStep === 0) {
@@ -158,21 +300,22 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
       setActiveStep(1);
 
     } else if (activeStep === 1) {
-      if (!fullName || !phoneNumber || !email) {
+      if (!fullName || !phoneNumber || !email || !gender) {
         setToast({ type: 'error', message: 'All fields are required.' });
         return;
       }
 
-      const allAttendees = [
-        { name: fullName, email: email }
-      ];
+        const allAttendees = [
+          { name: fullName, email: email, gender: gender || undefined }
+        ];
 
-      if (additionalTicketHolders.length > 0) {
-        allAttendees.push(...additionalTicketHolders.map(holder => ({
-          name: holder.name,
-          email: holder.email
-        })));
-      }
+        if (additionalTicketHolders.length > 0) {
+          allAttendees.push(...additionalTicketHolders.map(holder => ({
+            name: holder.name,
+            email: holder.email,
+            gender: holder.gender || undefined
+          })));
+        }
 
       if (!eventId || !selectedTicket) {
         setToast({ type: 'error', message: 'Missing event or ticket information' });
@@ -204,7 +347,8 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
           email: email,
           phone: phoneNumber,
           fullName: fullName,
-          attendees: additionalTicketHolders.length > 0 ? additionalTicketHolders : null,
+          gender: gender,
+          attendees: allAttendees.length > 1 ? allAttendees.slice(1) : null,
           currency: 'NGN',
         });
 
@@ -251,7 +395,19 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
       return;
     }
 
-    const attendees = additionalTicketHolders.length > 0 ? additionalTicketHolders : null;
+    const allAttendees = [
+      { name: fullName, email: email, gender: gender || undefined }
+    ];
+
+    if (additionalTicketHolders.length > 0) {
+      allAttendees.push(...additionalTicketHolders.map(holder => ({
+        name: holder.name,
+        email: holder.email,
+        gender: holder.gender || undefined
+      })));
+    }
+
+    const attendees = allAttendees.length > 1 ? allAttendees.slice(1) : null;
     const ticketPrice = Number(selectedTicket.price.replace(/[^\d.-]/g, ''));
 
     try {
@@ -260,18 +416,32 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
       // Handle free tickets
       if (ticketPrice === 0) {
         try {
-          const { ticketId } = await createFreeTickets({
+          const { ticketId, orderId: createdOrderId } = await createFreeTickets({
             eventId: eventId,
             ticketTypeName: selectedTicket.name,
             quantity: quantity,
             email: email,
             phone: phoneNumber,
             fullName: fullName,
+            gender: gender,
             attendees: attendees,
             currency: 'NGN',
           });
 
           clearTicketPurchaseState();
+          
+          // Check if user is logged in
+          const session = await getSession();
+          
+          // If user is not logged in, show account creation prompt
+          if (!session) {
+            setPurchaseOrderId(createdOrderId);
+            setShowAccountPrompt(true);
+            // Don't redirect yet - wait for user to close the prompt
+            return;
+          }
+          
+          // User is logged in, redirect to success page
           window.location.href = `/success?ticketId=${ticketId}`;
           return;
         } catch (error: unknown) {
@@ -340,7 +510,7 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
     setAdditionalTicketHolders(prev => {
       if (newQuantity <= 1) return [];
       if (newQuantity - 1 > prev.length) {
-        return [...prev, ...Array(newQuantity - 1 - prev.length).fill({ name: '', email: '', phone: '' })];
+        return [...prev, ...Array(newQuantity - 1 - prev.length).fill({ name: '', email: '', phone: '', gender: '' })];
       }
       return prev.slice(0, newQuantity - 1);
     });
@@ -363,18 +533,48 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
     closeForm();
   };
 
+  const handleAccountPromptClose = () => {
+    setShowAccountPrompt(false);
+    // After closing the prompt, get the ticketId from the order and redirect
+    if (purchaseOrderId) {
+      supabase
+        .from('tickets')
+        .select('id')
+        .eq('order_id', purchaseOrderId)
+        .limit(1)
+        .single()
+        .then(({ data: ticket, error }) => {
+          if (!error && ticket) {
+            window.location.href = `/success?ticketId=${ticket.id}`;
+          } else {
+            // Fallback: redirect to success page without ticketId
+            window.location.href = '/success';
+          }
+        });
+    }
+  };
+
   const handleCloseForm = () => {
     clearTicketPurchaseState();
     closeForm();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end bg-gray-900/80 backdrop-blur-sm transition-colors duration-300 dark:text-white">
-      <div
-        className={`relative w-full max-w-3xl mx-auto h-[85vh] max-h-[90vh] sm:h-[70vh] bg-white dark:bg-gray-900 rounded-t-3xl shadow-2xl transform transition-transform duration-300 ease-out flex flex-col ${
-          isSheetVisible ? 'translate-y-0' : 'translate-y-full'
-        }`}
-      >
+    <>
+      {showAccountPrompt && purchaseOrderId && email && (
+        <CreateAccountPrompt
+          isOpen={showAccountPrompt}
+          onClose={handleAccountPromptClose}
+          buyerEmail={email}
+          orderId={purchaseOrderId}
+        />
+      )}
+      <div className="fixed inset-0 z-50 flex flex-col justify-end bg-gray-900/80 backdrop-blur-sm transition-colors duration-300 dark:text-white">
+        <div
+          className={`relative w-full max-w-3xl mx-auto h-[85vh] max-h-[90vh] sm:h-[70vh] bg-white dark:bg-gray-900 rounded-t-3xl shadow-2xl transform transition-transform duration-300 ease-out flex flex-col ${
+            isSheetVisible ? 'translate-y-0' : 'translate-y-full'
+          }`}
+        >
         <div className="absolute top-3 left-1/2 h-1.5 w-12 -translate-x-1/2 rounded-full bg-gray-300 dark:bg-gray-600" />
         <button
           onClick={handleCloseForm}
@@ -453,19 +653,21 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
                     />
                   )}
 
-                  {activeStep === 1 && (
-                    <OrderInformationStep
-                      fullName={fullName}
-                      setFullName={setFullName}
-                      email={email}
-                      setEmail={setEmail}
-                      phoneNumber={phoneNumber}
-                      setPhoneNumber={setPhoneNumber}
-                      quantity={quantity}
-                      additionalTicketHolders={additionalTicketHolders}
-                      handleAdditionalTicketHolderChange={handleAdditionalTicketHolderChange}
-                    />
-                  )}
+                     {activeStep === 1 && (
+                       <OrderInformationStep
+                         fullName={fullName}
+                         setFullName={setFullName}
+                         email={email}
+                         setEmail={setEmail}
+                         phoneNumber={phoneNumber}
+                         setPhoneNumber={setPhoneNumber}
+                         gender={gender}
+                         setGender={setGender}
+                         quantity={quantity}
+                         additionalTicketHolders={additionalTicketHolders}
+                         handleAdditionalTicketHolderChange={handleAdditionalTicketHolderChange}
+                       />
+                     )}
 
                   {activeStep === 2 && (
                     <PaymentStep
@@ -518,7 +720,8 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

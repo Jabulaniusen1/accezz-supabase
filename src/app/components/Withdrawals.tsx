@@ -9,24 +9,7 @@ import AccountSetupPopup from './AccountSetupPopup';
 import type { WithdrawalRequest } from '@/types/withdrawal';
 import { Toast } from './Toast';
 
-type EventRevenue = {
-  id: string;
-  createdAt: string;
-  ticketType: Array<{
-    price: string | number;
-    sold: string | number;
-  }>;
-};
-const PLATFORM_FEE_RATE = 0.06;
-const NET_MULTIPLIER = 1 - PLATFORM_FEE_RATE;
-const calculateNetRevenue = (price: string | number, sold: string | number): number => {
-  const numericPrice = typeof price === 'number' ? price : parseFloat(price || '0');
-  const numericSold = typeof sold === 'number' ? sold : parseFloat(sold || '0');
-  if (Number.isNaN(numericPrice) || Number.isNaN(numericSold)) {
-    return 0;
-  }
-  return numericPrice * numericSold * NET_MULTIPLIER;
-};
+type EventRow = { id: string; created_at: string };
 
 
 
@@ -76,8 +59,8 @@ const Withdrawals: React.FC = () => {
     }
   };
 
-  // Load events to calculate earnings
-  const { data: events } = useQuery<EventRevenue[]>({
+  // Load user's events
+  const { data: events } = useQuery<EventRow[]>({
     queryKey: ['userEventsForWithdrawals'],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -92,38 +75,40 @@ const Withdrawals: React.FC = () => {
         .eq('user_id', session.user.id)
         .order('created_at', { ascending: false });
       if (evErr) throw evErr;
-      const eventIds = (evs || []).map(e => e.id);
-      const ticketMap = new Map<string, Array<{ event_id: string; price: number | string; sold: number | string }>>();
-      if (eventIds.length) {
-        const { data: tickets } = await supabase
-          .from('ticket_types')
-          .select('event_id, price, sold')
-          .in('event_id', eventIds);
-        (tickets || []).forEach(t => {
-          const arr = ticketMap.get(t.event_id as string) || [];
-          arr.push(t);
-          ticketMap.set(t.event_id as string, arr);
-        });
-      }
-      const list: EventRevenue[] = (evs || []).map(e => ({
-        id: e.id as string,
-        createdAt: e.created_at as string,
-        ticketType: (ticketMap.get(e.id as string) || []).map(t => ({
-          price: t.price ?? '0',
-          sold: t.sold ?? '0',
-        })),
-      }));
-      return list;
+      return (evs || []) as EventRow[];
     },
     staleTime: 1000 * 60 * 5,
   });
 
-  const totalEarnings = useMemo(() => {
-    return events?.reduce((total, event) => {
-      const eventNet = event.ticketType?.reduce((subtotal, ticket) => subtotal + calculateNetRevenue(ticket.price, ticket.sold), 0) || 0;
-      return total + eventNet;
-    }, 0) || 0;
-  }, [events]);
+  // Compute total revenue from actual paid + valid tickets for user's events
+  const { data: totalEarnings } = useQuery<number>({
+    queryKey: ['withdrawalsTotalEarnings', (events || []).map(e => e.id)],
+    enabled: !!events && events.length > 0,
+    queryFn: async () => {
+      const eventIds = (events || []).map(e => e.id);
+      if (!eventIds.length) return 0;
+      const { data: tickets } = await supabase
+        .from('tickets')
+        .select('event_id, price, validation_status, order_id')
+        .in('event_id', eventIds);
+      const orderIds = Array.from(new Set((tickets || []).map(t => t.order_id as string).filter(Boolean)));
+      let orderMap = new Map<string, string>();
+      if (orderIds.length) {
+        const { data: orders } = await supabase
+          .from('orders')
+          .select('id, status')
+          .in('id', orderIds);
+        orderMap = new Map<string, string>((orders || []).map(o => [o.id as string, o.status as string]));
+      }
+      return (tickets || []).reduce((sum, t) => {
+        const isPaid = orderMap.get(t.order_id as string) === 'paid';
+        const isValid = (t.validation_status as string) === 'valid';
+        const price = Number(t.price || 0);
+        return sum + (isPaid && isValid && Number.isFinite(price) ? price : 0);
+      }, 0);
+    },
+    staleTime: 60_000
+  });
 
   useEffect(() => {
     (async () => {
@@ -158,19 +143,42 @@ const Withdrawals: React.FC = () => {
       .reduce((sum, w) => sum + Number(w.amount || 0), 0);
   }, [myWithdrawals]);
 
-  const approvedTotal = useMemo(() => {
-    const approvedStatuses = new Set(['approved', 'completed', 'paid']);
+  // const approvedTotal = useMemo(() => {
+  //   const approvedStatuses = new Set(['approved', 'completed', 'paid']);
+  //   return myWithdrawals
+  //     .filter(w => approvedStatuses.has((w.status || '').toLowerCase()))
+  //     .reduce((sum, w) => sum + Number(w.amount || 0), 0);
+  // }, [myWithdrawals]);
+
+  // Total withdrawn amount (all withdrawals that have been processed or are pending)
+  // This includes both approved/completed/paid AND pending/processing withdrawals
+  const totalWithdrawn = useMemo(() => {
+    // Include all withdrawals except rejected ones (as they don't actually deduct balance)
+    const excludedStatuses = new Set(['rejected']);
     return myWithdrawals
-      .filter(w => approvedStatuses.has((w.status || '').toLowerCase()))
+      .filter(w => !excludedStatuses.has((w.status || '').toLowerCase()))
       .reduce((sum, w) => sum + Number(w.amount || 0), 0);
   }, [myWithdrawals]);
 
+  // Block new requests if there is any unapproved (pending/processing) request
+  const hasPendingRequest = useMemo(() => {
+    const pendingStatuses = new Set(['pending', 'processing']);
+    return myWithdrawals.some(w => pendingStatuses.has((w.status || '').toLowerCase()));
+  }, [myWithdrawals]);
+
+  // Available balance = Total Revenue - Total Withdrawn Amount
+  // Total Revenue remains constant (never decreases)
+  // Available Balance decreases when withdrawals are made
   const availableBalance = useMemo(
-    () => Math.max(0, totalEarnings - pendingTotal - approvedTotal),
-    [totalEarnings, pendingTotal, approvedTotal]
+    () => Math.max(0, (totalEarnings || 0) - totalWithdrawn),
+    [totalEarnings, totalWithdrawn]
   );
 
   const submitWithdrawal = useCallback(async () => {
+    if (hasPendingRequest) {
+      toast('warning', 'You already have a pending withdrawal request. Please wait until it is approved.');
+      return;
+    }
     if (!hasBankDetails) {
       setShowAccountPopup(true);
       return;
@@ -213,7 +221,7 @@ const Withdrawals: React.FC = () => {
     } finally {
       setSubmitting(false);
     }
-  }, [availableBalance, currency, hasBankDetails, rawAmount, toast]);
+  }, [availableBalance, currency, hasBankDetails, hasPendingRequest, rawAmount, toast]);
 
   const setQuickAmount = (ratio: number | 'all') => {
     const base = availableBalance || 0;
@@ -239,9 +247,9 @@ const Withdrawals: React.FC = () => {
       {/* Balance Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
         <div className="bg-white dark:bg-gray-800 shadow-md p-4 md:p-6 border-l-4 border-green-500" style={{ borderRadius: '5px' }}>
-          <h3 className="text-gray-500 dark:text-gray-400 text-sm font-medium">Total Net Earnings</h3>
-          <p className="text-2xl font-bold text-gray-800 dark:text-white">{formatCurrency(totalEarnings)}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">After 6% platform fee</p>
+          <h3 className="text-gray-500 dark:text-gray-400 text-sm font-medium">Total Revenue</h3>
+          <p className="text-2xl font-bold text-gray-800 dark:text-white">{formatCurrency(totalEarnings || 0)}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Total revenue generated (never decreases)</p>
         </div>
         <div className="bg-white dark:bg-gray-800 shadow-md p-4 md:p-6 border-l-4 border-yellow-500" style={{ borderRadius: '5px' }}>
           <h3 className="text-gray-500 dark:text-gray-400 text-sm font-medium">Pending Requests</h3>
@@ -251,7 +259,7 @@ const Withdrawals: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 shadow-md p-4 md:p-6 border-l-4 border-[#f54502]" style={{ borderRadius: '5px' }}>
           <h3 className="text-gray-500 dark:text-gray-400 text-sm font-medium">Available Balance</h3>
           <p className="text-2xl font-bold text-gray-800 dark:text-white">{formatCurrency(availableBalance)}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Amount you can withdraw now</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Total Revenue minus all withdrawals</p>
         </div>
       </div>
 
@@ -275,8 +283,8 @@ const Withdrawals: React.FC = () => {
               className="px-4 py-2 text-white bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 disabled:opacity-60 w-full sm:w-auto"
               style={{ borderRadius: '5px' }}
               onClick={submitWithdrawal}
-              disabled={submitting}
-            >{submitting ? 'Submitting...' : 'Confirm'}</button>
+              disabled={submitting || hasPendingRequest}
+            >{submitting ? 'Submitting...' : hasPendingRequest ? 'Pending request' : 'Confirm'}</button>
           </div>
           <div className="flex flex-wrap gap-2 mt-3">
             <button
@@ -298,9 +306,14 @@ const Withdrawals: React.FC = () => {
               onClick={() => setQuickAmount(0.3)}
             >30%</button>
           </div>
+          {hasPendingRequest && (
+            <p className="mt-2 text-xs text-yellow-700 dark:text-yellow-300">
+              You have a pending withdrawal request. You can submit another once it is approved.
+            </p>
+          )}
           {availableBalance <= 0 && (
             <p className="mt-2 text-xs text-yellow-700 dark:text-yellow-300">
-              Your current earnings are fully covered by the 6% platform fee or pending withdrawals.
+              You currently have no available balance. Total revenue minus withdrawals equals zero.
             </p>
           )}
           {!hasBankDetails && (

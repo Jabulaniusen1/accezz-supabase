@@ -25,16 +25,14 @@ import {
 
 const queryClient = new QueryClient();
 
-const PLATFORM_FEE_RATE = 0.06;
-const NET_MULTIPLIER = 1 - PLATFORM_FEE_RATE;
-
-const calculateNetRevenue = (price: string | number, sold: string | number): number => {
+// Use gross revenue (no deductions)
+const calculateGrossRevenue = (price: string | number, sold: string | number): number => {
   const numericPrice = typeof price === 'number' ? price : parseFloat(price || '0');
   const numericSold = typeof sold === 'number' ? sold : parseFloat(sold || '0');
   if (Number.isNaN(numericPrice) || Number.isNaN(numericSold)) {
     return 0;
   }
-  return numericPrice * numericSold * NET_MULTIPLIER;
+  return numericPrice * numericSold;
 };
 
 const Earnings = () => {
@@ -157,6 +155,60 @@ const Earnings = () => {
   });
 
   // Withdrawals logic moved to dedicated tab
+  // Compute per-event aggregates from actual tickets (paid + valid)
+  const { data: eventAggregates } = useQuery<Record<string, { revenue: number; sold: number; byType: Record<string, { revenue: number; sold: number }> }>>({
+    queryKey: ['eventAggregates', (events || []).map(e => e.id)],
+    enabled: !!events && events.length > 0,
+    queryFn: async () => {
+      const eventIds = (events || []).map(e => e.id);
+      if (!eventIds.length) return {};
+
+      // Fetch tickets for these events
+      const { data: tickets } = await supabase
+        .from('tickets')
+        .select('event_id, price, validation_status, order_id, ticket_type_id')
+        .in('event_id', eventIds);
+
+      // Fetch ticket type names for mapping
+      const { data: ticketTypes } = await supabase
+        .from('ticket_types')
+        .select('id, name, event_id')
+        .in('event_id', eventIds);
+      const typeIdToName = new Map<string, string>((ticketTypes || []).map(tt => [tt.id as string, tt.name as string]));
+
+      const orderIds = Array.from(new Set((tickets || []).map(t => t.order_id as string).filter(Boolean)));
+      let orderMap = new Map<string, string>();
+      if (orderIds.length) {
+        const { data: orders } = await supabase
+          .from('orders')
+          .select('id, status')
+          .in('id', orderIds);
+        orderMap = new Map<string, string>((orders || []).map(o => [o.id as string, o.status as string]));
+      }
+
+      const aggregates: Record<string, { revenue: number; sold: number; byType: Record<string, { revenue: number; sold: number }> }> = {};
+      (tickets || []).forEach(t => {
+        const eventId = t.event_id as string;
+        const status = orderMap.get(t.order_id as string);
+        const isPaid = status === 'paid';
+        const isValid = (t.validation_status as string) === 'valid';
+        if (isPaid && isValid) {
+          const price = Number(t.price || 0);
+          const typeName = typeIdToName.get(t.ticket_type_id as string) || 'Unknown';
+          if (!aggregates[eventId]) aggregates[eventId] = { revenue: 0, sold: 0, byType: {} };
+          aggregates[eventId].revenue += Number.isFinite(price) ? price : 0;
+          aggregates[eventId].sold += 1;
+          if (!aggregates[eventId].byType[typeName]) aggregates[eventId].byType[typeName] = { revenue: 0, sold: 0 };
+          aggregates[eventId].byType[typeName].revenue += Number.isFinite(price) ? price : 0;
+          aggregates[eventId].byType[typeName].sold += 1;
+        }
+      });
+      return aggregates;
+    },
+    staleTime: 1000 * 60 // 1 minute
+  });
+
+  // Withdrawals logic moved to dedicated tab
 
   // Format currency with memoization
   const formatCurrency = useCallback((amount: number) => {
@@ -168,15 +220,11 @@ const Earnings = () => {
     }).format(amount);
   }, []);
 
-  // Calculate total earnings with memoization
+  // Calculate total revenue with memoization (from actual tickets)
   const totalEarnings = useMemo(() => {
-    return events?.reduce((total, event) => {
-      const eventNetRevenue = event.ticketType?.reduce((subtotal, ticket) => {
-        return subtotal + calculateNetRevenue(ticket.price, ticket.sold);
-      }, 0) || 0;
-      return total + eventNetRevenue;
-    }, 0) || 0;
-  }, [events]);
+    if (!events || !eventAggregates) return 0;
+    return events.reduce((sum, e) => sum + (e.id ? (eventAggregates[e.id]?.revenue || 0) : 0), 0);
+  }, [events, eventAggregates]);
 
   // Process chart data with memoization
   const chartData = useMemo(() => {
@@ -184,14 +232,13 @@ const Earnings = () => {
     const monthlyUsers = new Array(12).fill(0);
 
     events?.forEach(event => {
+      if (!event.id) return;
       const eventDate = event.createdAt ? new Date(event.createdAt) : new Date();
       const month = eventDate.getMonth();
       
-      const revenue = event.ticketType.reduce((netTotal, ticket) => 
-        netTotal + calculateNetRevenue(ticket.price, ticket.sold), 0);
+      const revenue = eventAggregates?.[event.id]?.revenue || 0;
       
-      const attendees = event.ticketType.reduce((total, ticket) => 
-        total + parseFloat(ticket.sold), 0);
+      const attendees = eventAggregates?.[event.id]?.sold || 0;
       
       monthlyRevenue[month] += revenue;
       monthlyUsers[month] += attendees;
@@ -201,7 +248,7 @@ const Earnings = () => {
       revenue: {
         labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
         datasets: [{
-          label: "Monthly Net Revenue (₦)",
+          label: "Monthly Revenue (₦)",
           data: monthlyRevenue,
           borderColor: "#3b82f6",
           backgroundColor: "rgba(59, 130, 246, 0.3)",
@@ -308,18 +355,13 @@ const Earnings = () => {
                   <FaMoneyBillWave className="text-[#f54502] dark:text-[#f54502] text-2xl" />
                 </div>
                 <div>
-                  <h3 className="text-gray-500 dark:text-gray-400 text-sm font-medium">Total Net Earnings</h3>
+                  <h3 className="text-gray-500 dark:text-gray-400 text-sm font-medium">Total Revenue</h3>
                   <p className="text-2xl font-bold text-gray-800 dark:text-white">
                     {formatCurrency(totalEarnings)}
                   </p>
                 </div>
               </div>
-              <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                Your lifetime earnings after our 6% platform fee
-              </p>
-              <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
-                We automatically deduct a 6% platform fee from ticket sales.
-              </p>
+              {/* Removed platform fee description */}
             </div>
 
             {/* Events Count Card */}
@@ -353,9 +395,7 @@ const Earnings = () => {
                   </p>
                 </div>
               </div>
-              <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                Average net earnings per event after the 6% fee
-              </p>
+              {/* Removed fee explanation */}
             </div>
           </div>
 
@@ -446,7 +486,7 @@ const Earnings = () => {
                       Date
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Net Revenue
+                      Revenue
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Tickets Sold
@@ -458,10 +498,9 @@ const Earnings = () => {
                 </thead>
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {events?.map((event, index) => {
-                    const eventRevenue = event.ticketType.reduce((total, ticket) => 
-                      total + calculateNetRevenue(ticket.price, ticket.sold), 0);
-                    const ticketsSold = event.ticketType.reduce((total, ticket) => 
-                      total + parseFloat(ticket.sold), 0);
+                    if (!event.id) return null;
+                    const eventRevenue = eventAggregates?.[event.id]?.revenue || 0;
+                    const ticketsSold = eventAggregates?.[event.id]?.sold || 0;
                     const eventDate = event.createdAt ? new Date(event.createdAt).toLocaleDateString() : "N/A";
 
                     return (
@@ -520,27 +559,33 @@ const Earnings = () => {
                                           Sold
                                         </th>
                                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                          Net Revenue
+                                          Revenue
                                         </th>
                                       </tr>
                                     </thead>
                                     <tbody>
-                                      {event.ticketType.map((ticket, i) => (
-                                        <tr key={i}>
-                                          <td className="px-4 py-2 text-sm text-gray-800 dark:text-gray-200">
-                                            {ticket.name}
-                                          </td>
-                                          <td className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
-                                            {formatCurrency(parseFloat(ticket.price))}
-                                          </td>
-                                          <td className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
-                                            {ticket.sold}
-                                          </td>
-                                          <td className="px-4 py-2 text-sm font-medium text-gray-900 dark:text-white">
-                                            {formatCurrency(calculateNetRevenue(ticket.price, ticket.sold))}
-                                          </td>
-                                        </tr>
-                                      ))}
+                                      {event.ticketType.map((ticket, i) => {
+                                        const typeAgg = (ticket.name && event.id) ? eventAggregates?.[event.id]?.byType?.[ticket.name] : undefined;
+                                        const sold = typeAgg?.sold ?? (Number.isFinite(parseFloat(ticket.sold)) ? parseFloat(ticket.sold) : 0);
+                                        const computedRevenue = calculateGrossRevenue(ticket.price, ticket.sold);
+                                        const revenue = typeof typeAgg?.revenue === 'number' ? typeAgg.revenue : computedRevenue;
+                                        return (
+                                          <tr key={i}>
+                                            <td className="px-4 py-2 text-sm text-gray-800 dark:text-gray-200">
+                                              {ticket.name}
+                                            </td>
+                                            <td className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                                              {formatCurrency(parseFloat(ticket.price))}
+                                            </td>
+                                            <td className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                                              {sold}
+                                            </td>
+                                            <td className="px-4 py-2 text-sm font-medium text-gray-900 dark:text-white">
+                                              {formatCurrency(revenue)}
+                                            </td>
+                                          </tr>
+                                        );
+                                      })}
                                     </tbody>
                                   </table>
                                 </div>

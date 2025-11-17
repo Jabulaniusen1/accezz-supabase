@@ -538,7 +538,8 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
         return false;
       }
     } else {
-      if (!(formData.venue ?? '').trim()) {
+      // Skip venue validation if location is undisclosed
+      if (locationVisibility !== 'undisclosed' && !(formData.venue ?? '').trim()) {
         setToast({
           type: 'error',
           message: 'Please enter the venue name',
@@ -546,39 +547,42 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
         });
         return false;
       }
-      if (locationMode === 'platform') {
-        if (!selectedPlatformLocation) {
-          setToast({
-            type: 'error',
-            message: 'Select a venue from the platform list or switch to custom location',
-            onClose: () => setToast(null)
-          });
-          return false;
-        }
-      } else {
-        if (!formData.country?.trim()) {
-          setToast({
-            type: 'error',
-            message: 'Please select your event country',
-            onClose: () => setToast(null)
-          });
-          return false;
-        }
-        if (!formData.city?.trim()) {
-          setToast({
-            type: 'error',
-            message: 'Please enter your event city',
-            onClose: () => setToast(null)
-          });
-          return false;
-        }
-        if (!formData.address?.trim()) {
-          setToast({
-            type: 'error',
-            message: 'Please provide the event address',
-            onClose: () => setToast(null)
-          });
-          return false;
+      // Skip location validation if location is undisclosed
+      if (locationVisibility !== 'undisclosed') {
+        if (locationMode === 'platform') {
+          if (!selectedPlatformLocation) {
+            setToast({
+              type: 'error',
+              message: 'Select a venue from the platform list or switch to custom location',
+              onClose: () => setToast(null)
+            });
+            return false;
+          }
+        } else {
+          if (!formData.country?.trim()) {
+            setToast({
+              type: 'error',
+              message: 'Please select your event country',
+              onClose: () => setToast(null)
+            });
+            return false;
+          }
+          if (!formData.city?.trim()) {
+            setToast({
+              type: 'error',
+              message: 'Please enter your event city',
+              onClose: () => setToast(null)
+            });
+            return false;
+          }
+          if (!formData.address?.trim()) {
+            setToast({
+              type: 'error',
+              message: 'Please provide the event address',
+              onClose: () => setToast(null)
+            });
+            return false;
+          }
         }
       }
     }

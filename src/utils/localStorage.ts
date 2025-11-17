@@ -46,9 +46,10 @@ export const saveTicketPurchaseState = (state: {
   fullName?: string;
   email?: string;
   phoneNumber?: string;
+  gender?: string;
   totalPrice?: number;
   orderId?: string;
-  additionalTicketHolders?: Array<{ name: string; email: string }>;
+  additionalTicketHolders?: Array<{ name: string; email: string; phone?: string; gender?: string }>;
 }) => {
   try {
     localStorage.setItem(

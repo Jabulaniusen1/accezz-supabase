@@ -188,7 +188,8 @@ interface CreateOrderParams {
   email: string;
   phone: string;
   fullName: string;
-  attendees?: Array<{ name: string; email: string }> | null;
+  gender?: string;
+  attendees?: Array<{ name: string; email: string; gender?: string }> | null;
   currency?: string;
 }
 
@@ -341,6 +342,7 @@ export async function createOrder(params: CreateOrderParams): Promise<{ orderId:
           ticketTypeName: params.ticketTypeName,
           quantity: params.quantity,
           attendees: params.attendees || null,
+          primaryBuyerGender: params.gender || null,
         },
       })
       .select('id')
@@ -382,10 +384,16 @@ export async function createTicketsForOrder(orderId: string): Promise<string[]> 
       throw new Error('Order must be paid before creating tickets');
     }
 
-    const meta = order.meta as { ticketTypeName?: string; quantity?: number; attendees?: Array<{ name: string; email: string }>; } | null;
+    const meta = order.meta as { 
+      ticketTypeName?: string; 
+      quantity?: number; 
+      attendees?: Array<{ name: string; email: string; gender?: string }>; 
+      primaryBuyerGender?: string;
+    } | null;
     const ticketTypeName = meta?.ticketTypeName;
     const quantity = meta?.quantity || 1;
     const attendees = meta?.attendees || [];
+    const primaryBuyerGender = meta?.primaryBuyerGender || null;
 
     console.log('[createTicketsForOrder] Fetching ticket type:', { ticketTypeName, eventId: order.event_id });
 
@@ -424,6 +432,7 @@ export async function createTicketsForOrder(orderId: string): Promise<string[]> 
         qr_code_url: '', // Will be updated after generation
         attendee_name: order.buyer_full_name,
         attendee_email: order.buyer_email,
+        gender: primaryBuyerGender,
         price: ticketType.price,
         currency: order.currency,
         validation_status: 'valid',
@@ -442,6 +451,7 @@ export async function createTicketsForOrder(orderId: string): Promise<string[]> 
       qr_code_url: string;
       attendee_name: string;
       attendee_email: string;
+      gender: string | null;
       price: number;
       currency: string;
       validation_status: string;
@@ -460,6 +470,7 @@ export async function createTicketsForOrder(orderId: string): Promise<string[]> 
         qr_code_url: '', // Will be generated in background
         attendee_name: attendee.name,
         attendee_email: attendee.email,
+        gender: attendee.gender || null,
         price: ticketType.price,
         currency: order.currency,
         validation_status: 'valid',
@@ -569,7 +580,7 @@ export async function markOrderAsPaid(orderId: string, paymentReference?: string
 /**
  * Create free tickets (for price = 0)
  */
-export async function createFreeTickets(params: CreateOrderParams): Promise<{ ticketId: string }> {
+export async function createFreeTickets(params: CreateOrderParams): Promise<{ ticketId: string; orderId: string }> {
   try {
     // Create order with paid status immediately for free tickets
     const { orderId } = await createOrder(params);
@@ -591,7 +602,7 @@ export async function createFreeTickets(params: CreateOrderParams): Promise<{ ti
 
     if (ticketError) throw ticketError;
 
-    return { ticketId: ticket.id };
+    return { ticketId: ticket.id, orderId };
   } catch (error: unknown) {
     console.error('Error creating free tickets:', error);
     throw error;

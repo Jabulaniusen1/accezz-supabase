@@ -6,8 +6,8 @@ export async function signInWithEmail(email: string, password: string) {
   return data;
 }
 
-export async function signUpWithEmail(params: { email: string; password: string; fullName?: string; phone?: string; }) {
-  const { email, password, fullName, phone } = params;
+export async function signUpWithEmail(params: { email: string; password: string; fullName?: string; phone?: string; userType?: "creator" | "customer"; country?: string; city?: string; }) {
+  const { email, password, fullName, phone, userType = "customer", country, city } = params;
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -15,6 +15,9 @@ export async function signUpWithEmail(params: { email: string; password: string;
       data: {
         full_name: fullName,
         phone,
+        user_type: userType,
+        country,
+        city,
       },
       emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/login?verify=true` : undefined,
     },

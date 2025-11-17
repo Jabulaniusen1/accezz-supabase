@@ -1,11 +1,12 @@
 'use client';
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { FaEye, FaEyeSlash, FaEnvelope, FaLock, FaRedo, FaArrowLeft } from 'react-icons/fa';
 import Loader from '../../../components/ui/loader/Loader';
 import Toast from '../../../components/ui/Toast';
 import Link from 'next/link';
 import { signInWithEmail, getSession } from '@/utils/supabaseAuth';
+import { supabase } from '@/utils/supabaseClient';
 
 type FormData = {
   email: string;
@@ -14,7 +15,7 @@ type FormData = {
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
 
-export default function Login() {
+function LoginContent() {
   const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
@@ -32,16 +33,37 @@ export default function Login() {
   const [resendLoading, setResendLoading] = useState(false);
   const [showVerificationNotice, setShowVerificationNotice] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  // Check for verification param
-  React.useEffect(() => {
+  // Check for verification param and pre-fill email
+  useEffect(() => {
     if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('verify') === 'true') {
+      const emailParam = searchParams.get('email');
+      if (emailParam) {
+        setFormData(prev => ({ ...prev, email: emailParam }));
+      }
+      
+      if (searchParams.get('verify') === 'true') {
         setShowVerificationNotice(true);
       }
     }
-  }, []);
+  }, [searchParams]);
+
+  const linkOrderToUser = async (userId: string, orderId: string) => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ buyer_user_id: userId })
+        .eq('id', orderId)
+        .is('buyer_user_id', null); // Only update if buyer_user_id is null
+      
+      if (error) {
+        console.error('Error linking order:', error);
+      }
+    } catch (error) {
+      console.error('Error linking order:', error);
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -70,8 +92,21 @@ export default function Login() {
           fullName: session.user.user_metadata?.full_name,
           id: session.user.id,
         }));
+
+        // Link order if orderId is present in URL or localStorage
+        const orderId = searchParams.get('orderId') || (typeof window !== 'undefined' ? localStorage.getItem('pendingOrderLink') : null);
+        if (orderId) {
+          await linkOrderToUser(session.user.id, orderId);
+          // Clear the pending order link from localStorage
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('pendingOrderLink');
+          }
+        }
       }
-      router.push('/dashboard');
+      
+      // Redirect to dashboard or specified redirect URL
+      const redirectUrl = searchParams.get('redirect') || '/dashboard';
+      router.push(redirectUrl);
     } catch (error: unknown) {
       const err = error as { status?: number; code?: string; message?: string };
       const code = err?.status || err?.code;
@@ -259,5 +294,13 @@ export default function Login() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Login() {
+  return (
+    <Suspense fallback={<div><Loader/></div>}>
+      <LoginContent />
+    </Suspense>
   );
 }

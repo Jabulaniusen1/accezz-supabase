@@ -3,6 +3,7 @@ import './globals.css';
 import QueryProvider from '@/providers/QueryProvider';
 import Script from 'next/script';
 import { Analytics } from "@vercel/analytics/next"
+import WhatsAppFloatingButton from '@/components/WhatsAppFloatingButton';
 
 export const metadata: Metadata = {
   title: {
@@ -153,6 +154,7 @@ export default function RootLayout({
         <Analytics />
         <QueryProvider>
           {children}
+          <WhatsAppFloatingButton />
         </QueryProvider>
       </body>
     </html>

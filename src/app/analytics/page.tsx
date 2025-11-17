@@ -18,16 +18,16 @@ import { EmailMarketing } from './components/EmailMarketing';
 import { FaMoneyBill, FaTicketAlt } from 'react-icons/fa';
 // import { Line } from 'react-chartjs-2';
 
-const PLATFORM_FEE_RATE = 0.06;
-const NET_MULTIPLIER = 1 - PLATFORM_FEE_RATE;
-const calculateNetRevenue = (price: string | number, sold: string | number): number => {
-  const numericPrice = typeof price === 'number' ? price : parseFloat(price || '0');
-  const numericSold = typeof sold === 'number' ? sold : parseFloat(sold || '0');
-  if (Number.isNaN(numericPrice) || Number.isNaN(numericSold)) {
-    return 0;
-  }
-  return numericPrice * numericSold * NET_MULTIPLIER;
-};
+// const PLATFORM_FEE_RATE = 0.06;
+// const NET_MULTIPLIER = 1 - PLATFORM_FEE_RATE;
+// const calculateNetRevenue = (price: string | number, sold: string | number): number => {
+//   const numericPrice = typeof price === 'number' ? price : parseFloat(price || '0');
+//   const numericSold = typeof sold === 'number' ? sold : parseFloat(sold || '0');
+//   if (Number.isNaN(numericPrice) || Number.isNaN(numericSold)) {
+//     return 0;
+//   }
+//   return numericPrice * numericSold * NET_MULTIPLIER;
+// };
 
 const EventAnalyticsContent = () => {
   const [toast, setToast] = useState<{ type: 'error' | 'success'; message: string } | null>(null);
@@ -336,21 +336,20 @@ const EventAnalyticsContent = () => {
   //     }, 0)
   // , [filteredTickets]);
 
-  // Calculate total tickets sold from event data
+  // Calculate total tickets sold from live tickets (paid + valid) to ensure accuracy
   const totalTicketsSoldFromEvent = useMemo(() => {
-    if (!event?.ticketType) return 0;
-    return event.ticketType.reduce((total, ticketType) => {
-      return total + parseInt(ticketType.sold || '0');
-    }, 0);
-  }, [event]);
+    if (!tickets.length) return 0;
+    return tickets.filter(t => t.paid && t.validationStatus === 'valid').length;
+  }, [tickets]);
 
-  // Calculate total revenue from event data
+  // Calculate total revenue from live tickets (paid + valid) - no deductions
   const totalRevenueFromEvent = useMemo(() => {
-    if (!event?.ticketType) return 0;
-    return event.ticketType.reduce((total, ticketType) => {
-      return total + calculateNetRevenue(ticketType.price, ticketType.sold);
-    }, 0);
-  }, [event]);
+    if (!tickets.length) return 0;
+    const gross = tickets
+      .filter(t => t.paid && t.validationStatus === 'valid')
+      .reduce((sum, t) => sum + (Number.isFinite(t.price) ? t.price : 0), 0);
+    return gross;
+  }, [tickets]);
 
   // const statsCards = useMemo(() => [
     // {
