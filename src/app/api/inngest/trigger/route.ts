@@ -10,32 +10,55 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { eventName, data } = body;
 
+    console.log('[Inngest Trigger] Received request:', { eventName, hasData: !!data });
+
     if (!eventName) {
+      console.error('[Inngest Trigger] Missing eventName');
       return NextResponse.json(
         { error: 'Missing eventName' },
         { status: 400 }
       );
     }
 
-    // Trigger the Inngest event
-    // In production, this requires INNGEST_EVENT_KEY to be set
+    // Check if eventKey is configured
+    if (!process.env.INNGEST_EVENT_KEY) {
+      console.warn('[Inngest Trigger] INNGEST_EVENT_KEY not set - events may not be sent in production');
+    }
+
+    console.log('[Inngest Trigger] Sending event to Inngest:', { eventName, data });
+    
     const result = await inngest.send({
       name: eventName,
       data: data || {},
     });
 
-    // Log the result for debugging
-    console.log('[Inngest] Event sent:', { eventName, ids: result.ids });
+    console.log('[Inngest Trigger] Event sent successfully:', { 
+      eventName, 
+      ids: result.ids,
+      hasEventKey: !!process.env.INNGEST_EVENT_KEY 
+    });
 
     return NextResponse.json(
-      { message: 'Event triggered successfully' },
+      { 
+        message: 'Event triggered successfully',
+        ids: result.ids,
+      },
       { status: 200 }
     );
   } catch (error: unknown) {
-    console.error('Error triggering Inngest event:', error);
+    console.error('[Inngest Trigger] Error triggering Inngest event:', error);
     const message = error instanceof Error ? error.message : 'Failed to trigger event';
+    const errorDetails = error instanceof Error ? {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+    } : { error: String(error) };
+    
     return NextResponse.json(
-      { error: message },
+      { 
+        error: message,
+        details: process.env.NODE_ENV === 'development' ? errorDetails : undefined,
+      },
       { status: 500 }
     );
   }

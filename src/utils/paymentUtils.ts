@@ -356,7 +356,7 @@ export async function createOrder(params: CreateOrderParams): Promise<{ orderId:
 
     console.log('[createOrder] Order created successfully:', order.id);
 
-    // Trigger Inngest event to send abandoned cart email after 2 minutes
+    // Trigger Inngest event to send abandoned cart email after 20 seconds
     // Only trigger for paid tickets (not free tickets)
     if (totalAmount > 0) {
       try {
@@ -365,7 +365,15 @@ export async function createOrder(params: CreateOrderParams): Promise<{ orderId:
           ? window.location.origin 
           : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
         
-        const response = await fetch(`${baseUrl}/api/inngest/trigger`, {
+        const triggerUrl = `${baseUrl}/api/inngest/trigger`;
+        console.log('[createOrder] Attempting to trigger Inngest event:', {
+          url: triggerUrl,
+          orderId: order.id,
+          baseUrl,
+          isClient: typeof window !== 'undefined',
+        });
+        
+        const response = await fetch(triggerUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -378,18 +386,35 @@ export async function createOrder(params: CreateOrderParams): Promise<{ orderId:
 
         if (!response.ok) {
           const errorText = await response.text();
+          let errorData;
+          try {
+            errorData = JSON.parse(errorText);
+          } catch {
+            errorData = { raw: errorText };
+          }
+          
           console.error('[createOrder] Inngest trigger failed:', {
             status: response.status,
             statusText: response.statusText,
-            error: errorText,
+            error: errorData,
+            url: triggerUrl,
           });
           throw new Error(`Failed to trigger Inngest event: ${response.status} ${response.statusText}`);
         }
 
         const result = await response.json();
-        console.log('[createOrder] Inngest event triggered for abandoned cart email:', result);
+        console.log('[createOrder] Inngest event triggered successfully:', {
+          orderId: order.id,
+          result,
+        });
       } catch (inngestError) {
-        console.error('[createOrder] Error triggering Inngest event:', inngestError);
+        // Log detailed error but don't fail order creation
+        console.error('[createOrder] Error triggering Inngest event:', {
+          error: inngestError,
+          orderId: order.id,
+          errorMessage: inngestError instanceof Error ? inngestError.message : String(inngestError),
+          errorStack: inngestError instanceof Error ? inngestError.stack : undefined,
+        });
       }
     }
 
