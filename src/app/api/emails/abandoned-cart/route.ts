@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
 
     await sendEmail({
       to: email,
-      subject: `Complete Your Purchase - ${eventTitle}`,
+      subject: `What's wrong ${fullName.split(' ')[0]}?`,
       html,
     });
 

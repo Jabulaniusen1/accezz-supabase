@@ -355,6 +355,38 @@ export async function createOrder(params: CreateOrderParams): Promise<{ orderId:
     }
 
     console.log('[createOrder] Order created successfully:', order.id);
+
+    // Trigger Inngest event to send abandoned cart email after 2 minutes
+    // Only trigger for paid tickets (not free tickets)
+    if (totalAmount > 0) {
+      try {
+        // Use API route to trigger Inngest event (works from both client and server)
+        const baseUrl = typeof window !== 'undefined' 
+          ? window.location.origin 
+          : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+        
+        const response = await fetch(`${baseUrl}/api/inngest/trigger`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            eventName: 'order/created',
+            data: {
+              orderId: order.id,
+            },
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to trigger Inngest event');
+        }
+
+        console.log('[createOrder] Inngest event triggered for abandoned cart email');
+      } catch (inngestError) {
+        // Don't fail order creation if Inngest fails
+        console.error('[createOrder] Error triggering Inngest event:', inngestError);
+      }
+    }
+
     return {
       orderId: order.id,
       totalAmount: totalAmount,
