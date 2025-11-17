@@ -18,10 +18,14 @@ export async function POST(req: NextRequest) {
     }
 
     // Trigger the Inngest event
-    await inngest.send({
+    // In production, this requires INNGEST_EVENT_KEY to be set
+    const result = await inngest.send({
       name: eventName,
       data: data || {},
     });
+
+    // Log the result for debugging
+    console.log('[Inngest] Event sent:', { eventName, ids: result.ids });
 
     return NextResponse.json(
       { message: 'Event triggered successfully' },
