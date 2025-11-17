@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { FaInstagram, FaTiktok } from 'react-icons/fa';
+import { FaInstagram, FaTiktok, FaWhatsapp } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
 
 const Footer = () => {
@@ -88,7 +88,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Right Section - Social Media */}
+          {/* Right Section - Social Media & Contact */}
           <div className="space-y-4">
             <h4 className="text-[#f54502] font-semibold text-lg">Follow Us</h4>
             <ul className="space-y-3">
@@ -116,6 +116,17 @@ const Footer = () => {
                   <span>TikTok</span>
                 </a>
               </li>
+              <li>
+                <a 
+                  target="_blank" 
+                  href="https://wa.me/2347018610048" 
+                  className="flex items-center gap-3 text-gray-700 hover:text-[#25D366] transition-colors"
+                  rel="noopener noreferrer"
+                >
+                  <FaWhatsapp className="w-4 h-4" />
+                  <span>+234 701 861 0048</span>
+                </a>
+              </li>
             </ul>
           </div>
         </div>
@@ -126,12 +137,23 @@ const Footer = () => {
             <p className="text-gray-600 text-sm">
               Copyright © {currentYear}. Accezz Technology Inc. All rights reserved.
             </p>
-            <a
-              href="mailto:support@accezzlive.com"
-              className="text-gray-600 hover:text-[#f54502] transition-colors text-sm"
-            >
-              support@accezzlive.com
-            </a>
+            <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-6">
+              <a
+                href="mailto:support@accezzlive.com"
+                className="text-gray-600 hover:text-[#f54502] transition-colors text-sm"
+              >
+                support@accezzlive.com
+              </a>
+              <a
+                href="https://wa.me/2347018610048"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-gray-600 hover:text-[#25D366] transition-colors text-sm"
+              >
+                <FaWhatsapp className="w-4 h-4" />
+                <span>+234 701 861 0048</span>
+              </a>
+            </div>
             <div className="flex gap-6 text-sm">
               <Link href="/term&condition" className="text-gray-600 hover:text-[#f54502] transition-colors">
                 Terms & Conditions
