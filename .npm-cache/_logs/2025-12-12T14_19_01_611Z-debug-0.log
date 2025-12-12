@@ -5,13 +5,13 @@
 4 silly config load:file:/Users/mac/Desktop/accezz-supabase/.npmrc
 5 silly config load:file:/Users/mac/.npmrc
 6 silly config load:file:/usr/local/etc/npmrc
-7 verbose title npm view next@15 version
-8 verbose argv "view" "next@15" "version"
-9 verbose logfile logs-max:10 dir:/Users/mac/Desktop/accezz-supabase/.npm-cache/_logs/2025-12-12T14_02_04_877Z-
-10 verbose logfile /Users/mac/Desktop/accezz-supabase/.npm-cache/_logs/2025-12-12T14_02_04_877Z-debug-0.log
+7 verbose title npm list react react-dom
+8 verbose argv "list" "react" "react-dom"
+9 verbose logfile logs-max:10 dir:/Users/mac/Desktop/accezz-supabase/.npm-cache/_logs/2025-12-12T14_19_01_611Z-
+10 verbose logfile /Users/mac/Desktop/accezz-supabase/.npm-cache/_logs/2025-12-12T14_19_01_611Z-debug-0.log
 11 silly logfile start cleaning logs, removing 1 files
-12 silly logfile done cleaning log files
-13 http fetch GET 200 https://registry.npmjs.org/next 1049ms (cache revalidated)
+12 silly packumentCache heap:4345298944 maxSize:1086324736 maxEntrySize:543162368
+13 silly logfile done cleaning log files
 14 verbose cwd /Users/mac/Desktop/accezz-supabase
 15 verbose os Darwin 24.6.0
 16 verbose node v22.20.0
