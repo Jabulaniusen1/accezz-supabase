@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 /* ============== && •TWO-FACTOR AUTHENTICATION• && ================= */
@@ -15,8 +15,7 @@ const TwoFacAuth = () => {
   const router = useRouter();
 
   const logSecurityEvent = async (event: string) => {
-    console.log(`Security Event Logged: ${event}`);
-    // Simulate API call
+    // TODO: Implement proper security event logging
     // await fetch('/api/log-security-event', {
     //   method: 'POST',
     //   headers: { 'Content-Type': 'application/json' },

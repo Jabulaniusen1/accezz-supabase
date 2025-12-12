@@ -594,16 +594,8 @@ export async function createTicketsForOrder(orderId: string): Promise<string[]> 
       // Don't throw - tickets are created, we can fix inventory later
     }
 
-    // Send ticket email (non-blocking, don't wait for it)
-    sendTicketEmail({
-      orderId,
-      order,
-      ticketType,
-      ticketCodes,
-    }).catch(err => {
-      console.error('Failed to send ticket email:', err);
-      // Don't throw - tickets are created successfully
-    });
+    // Note: Ticket email is now sent via the notifications API with PDF attachment
+    // The detailed ticket email has been replaced with the simpler confirmation email
 
     // Notify event creator about ticket purchase (non-blocking)
     notifyTicketPurchase(orderId).catch(err => {

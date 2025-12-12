@@ -1,0 +1,25 @@
+0 verbose cli /usr/local/bin/node /usr/local/bin/npm
+1 info using npm@10.9.3
+2 info using node@v22.20.0
+3 silly config load:file:/usr/local/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/mac/Desktop/accezz-supabase/.npmrc
+5 silly config load:file:/Users/mac/.npmrc
+6 silly config load:file:/usr/local/etc/npmrc
+7 verbose title npm run build
+8 verbose argv "run" "build"
+9 verbose logfile logs-max:10 dir:/Users/mac/Desktop/accezz-supabase/.npm-cache/_logs/2025-12-12T10_27_37_162Z-
+10 verbose logfile /Users/mac/Desktop/accezz-supabase/.npm-cache/_logs/2025-12-12T10_27_37_162Z-debug-0.log
+11 silly logfile start cleaning logs, removing 1 files
+12 silly logfile done cleaning log files
+13 http fetch GET 200 https://registry.npmjs.org/npm 1544ms
+14 verbose cwd /Users/mac/Desktop/accezz-supabase
+15 verbose os Darwin 24.6.0
+16 verbose node v22.20.0
+17 verbose npm  v10.9.3
+18 notice
+18 notice New [31mmajor[39m version of npm available! [31m10.9.3[39m -> [34m11.7.0[39m
+18 notice Changelog: [34mhttps://github.com/npm/cli/releases/tag/v11.7.0[39m
+18 notice To update run: [4mnpm install -g npm@11.7.0[24m
+18 notice  { force: true, [Symbol(proc-log.meta)]: true }
+19 verbose exit 1
+20 verbose code 1

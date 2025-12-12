@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { sendEmail } from '@/utils/emailUtils';
+import { generateReceiptPDF } from '@/utils/receiptPDF';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
@@ -127,10 +128,16 @@ async function getUserContact(userId: string | null | undefined): Promise<UserCo
   }
 }
 
-async function safeSendEmail(to: string | null | undefined, subject: string, html: string, text?: string) {
+async function safeSendEmail(
+  to: string | null | undefined,
+  subject: string,
+  html: string,
+  text?: string,
+  attachments?: Array<{ filename: string; content: Buffer; contentType: string }>
+) {
   if (!to) return;
   try {
-    await sendEmail({ to, subject, html, text });
+    await sendEmail({ to, subject, html, text, attachments });
   } catch (error) {
     console.error('[notifications API] Failed to send email', subject, to, error);
   }
@@ -143,11 +150,153 @@ async function sendTicketPurchaseEmails(params: {
   eventTitle: string | null;
   totalAmount: number;
   currency: string | null;
+  orderId?: string;
 }) {
   const subjectForBuyer = 'Your ticket purchase is confirmed';
   const formattedAmount = formatCurrency(params.totalAmount, params.currency || 'NGN');
   const eventTitle = params.eventTitle || 'your event';
   const buyerGreeting = params.buyerName ? `Hi ${params.buyerName.split(' ')[0]},` : 'Hi there,';
+
+  // Generate PDF attachment if orderId is provided
+  let pdfAttachment = null;
+  if (params.orderId && supabaseAdmin) {
+    try {
+      // Fetch order and event details for PDF
+      const { data: order } = await supabaseAdmin
+        .from('orders')
+        .select('id, event_id, buyer_full_name, meta, total_amount, currency')
+        .eq('id', params.orderId)
+        .single();
+
+      if (order) {
+        const { data: event } = await supabaseAdmin
+          .from('events')
+          .select('title, start_time, end_time, venue, location, address, city, country, is_virtual, virtual_details')
+          .eq('id', order.event_id)
+          .single();
+
+        if (event) {
+          // Get primary ticket for QR code and ticket code
+          const { data: primaryTicket } = await supabaseAdmin
+            .from('tickets')
+            .select('qr_code_url, id, ticket_code, ticket_type_id')
+            .eq('order_id', params.orderId)
+            .eq('attendee_email', params.buyerEmail)
+            .limit(1)
+            .single();
+
+          const meta = order.meta as { ticketTypeName?: string } | null;
+          let ticketTypeName = meta?.ticketTypeName || 'General';
+          
+          // If we don't have ticket type name from meta, fetch it from ticket_type_id
+          if (!meta?.ticketTypeName && primaryTicket?.ticket_type_id) {
+            const { data: ticketType } = await supabaseAdmin
+              .from('ticket_types')
+              .select('name')
+              .eq('id', primaryTicket.ticket_type_id)
+              .single();
+            
+            if (ticketType) {
+              ticketTypeName = ticketType.name;
+            }
+          }
+
+          // Format date and time
+          const startDate = event.start_time ? new Date(event.start_time) : null;
+          const eventDate = startDate
+            ? startDate.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })
+            : undefined;
+
+          const formatTime = (date: Date | null) =>
+            date
+              ? date.toLocaleTimeString('en-US', {
+                  hour: 'numeric',
+                  minute: '2-digit',
+                })
+              : null;
+
+          const startTimeFormatted = formatTime(startDate);
+          const endDate = event.end_time ? new Date(event.end_time) : null;
+          const endTimeFormatted = formatTime(endDate);
+          const eventTime =
+            startTimeFormatted && endTimeFormatted
+              ? `${startTimeFormatted} - ${endTimeFormatted}`
+              : startTimeFormatted || endTimeFormatted || undefined;
+
+          const physicalVenueParts = [
+            event.venue,
+            event.location,
+            event.address,
+            event.city,
+            event.country,
+          ].filter((part) => typeof part === 'string' && part.trim().length > 0);
+
+          const isVirtualEvent = Boolean(event.is_virtual);
+          const virtualDetails = (event.virtual_details as Record<string, unknown> | null) || null;
+          const rawMeetingUrl = typeof virtualDetails?.meetingUrl === 'string' ? virtualDetails.meetingUrl.trim() : '';
+          const rawMeetingId = typeof virtualDetails?.meetingId === 'string' ? virtualDetails.meetingId.trim() : '';
+          const virtualPlatform = typeof virtualDetails?.platform === 'string' ? virtualDetails.platform : undefined;
+
+          let virtualAccessLink: string | undefined;
+          if (rawMeetingUrl) {
+            virtualAccessLink = rawMeetingUrl;
+          } else if (virtualPlatform === 'zoom' && rawMeetingId) {
+            virtualAccessLink = `https://zoom.us/j/${rawMeetingId}`;
+          }
+
+          const formatPlatform = (value?: string) => {
+            if (!value) return 'Online Event';
+            return value
+              .split(/[-_]/g)
+              .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+              .join(' ');
+          };
+
+          const eventVenue = isVirtualEvent
+            ? `${formatPlatform(virtualPlatform)} (Online)`
+            : physicalVenueParts.join(', ') || undefined;
+
+          // Generate PDF
+          const pdfBuffer = await generateReceiptPDF({
+            eventTitle: event.title || eventTitle,
+            eventDate,
+            eventTime,
+            venue: eventVenue,
+            ticketType: ticketTypeName,
+            price: order.total_amount || params.totalAmount,
+            currency: order.currency || params.currency || 'NGN',
+            qrCodeUrl: isVirtualEvent ? undefined : primaryTicket?.qr_code_url || undefined,
+            fullName: order.buyer_full_name || params.buyerName || '',
+            orderId: params.orderId,
+            ticketCode: primaryTicket?.ticket_code,
+            ticketId: primaryTicket?.id,
+            isVirtual: isVirtualEvent,
+            virtualAccessLink,
+            virtualPlatform,
+            virtualMeetingId: rawMeetingId || undefined,
+          });
+
+          const safeEventTitle = (event.title || eventTitle).replace(/[^a-z0-9]/gi, '_').substring(0, 50);
+          const fileName = `${safeEventTitle}_Receipt_${params.orderId}.pdf`;
+
+          pdfAttachment = {
+            filename: fileName,
+            content: pdfBuffer,
+            contentType: 'application/pdf',
+          };
+        }
+      }
+    } catch (pdfError) {
+      console.error('[notifications API] Error generating PDF:', pdfError);
+      // Continue without PDF if generation fails
+    }
+  }
+
   const buyerHtml = `
     <div style="
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -194,6 +343,7 @@ async function sendTicketPurchaseEmails(params: {
             <p style="margin: 0 0 16px; font-size: 15px; color: #374151;">
               Your tickets are ready in your dashboard. Head over anytime to see all the details.
             </p>
+            ${pdfAttachment ? '<p style="margin: 0 0 16px; font-size: 14px; color: #6b7280;">Your ticket PDF is attached to this email.</p>' : ''}
             <div style="text-align: center; margin: 32px 0;">
               <a href="${process.env.NEXT_PUBLIC_BASE_URL || ''}/dashboard" style="
                 display: inline-block;
@@ -215,15 +365,63 @@ async function sendTicketPurchaseEmails(params: {
           </td>
         </tr>
         <tr>
-          <td style="padding: 20px 32px 32px; text-align: center; background: #f9fafb; color: #6b7280; font-size: 12px;">
-            © ${new Date().getFullYear()} Accezz. All rights reserved.
+          <td style="padding: 30px 40px; text-align: center; background: #f7fafc; border-top: 1px solid #e2e8f0;">
+            <p style="margin: 0 0 8px; font-size: 15px; color: #2d3748; font-weight: 600;">Best regards,</p>
+            <p style="margin: 0 0 20px; font-size: 15px; color: #718096;">The Accezz Team</p>
+            <div style="margin: 20px 0;">
+              <a href="https://x.com/accezz_live" target="_blank" rel="noopener noreferrer" style="
+                display: inline-block;
+                width: 36px;
+                height: 36px;
+                background: #e2e8f0;
+                border-radius: 50%;
+                margin: 0 6px;
+                line-height: 36px;
+                color: #4a5568;
+                text-decoration: none;
+                transition: all 0.3s ease;
+              ">𝕏</a>
+              <a href="https://www.instagram.com/accezzlive/" target="_blank" rel="noopener noreferrer" style="
+                display: inline-block;
+                width: 36px;
+                height: 36px;
+                background: #e2e8f0;
+                border-radius: 50%;
+                margin: 0 6px;
+                line-height: 36px;
+                color: #4a5568;
+                text-decoration: none;
+                transition: all 0.3s ease;
+              ">in</a>
+              <a href="https://www.facebook.com/accezzlive/" target="_blank" rel="noopener noreferrer" style="
+                display: inline-block;
+                width: 36px;
+                height: 36px;
+                background: #e2e8f0;
+                border-radius: 50%;
+                margin: 0 6px;
+                line-height: 36px;
+                color: #4a5568;
+                text-decoration: none;
+                transition: all 0.3s ease;
+              ">fb</a>
+            </div>
+            <p style="margin: 0; font-size: 13px; color: #a0aec0;">
+              This is an automated message. Please do not reply to this email.
+            </p>
           </td>
         </tr>
       </table>
     </div>
   `;
 
-  await safeSendEmail(params.buyerEmail, subjectForBuyer, buyerHtml, `${buyerGreeting} Your ticket purchase for ${eventTitle} is confirmed.`);
+  await safeSendEmail(
+    params.buyerEmail,
+    subjectForBuyer,
+    buyerHtml,
+    `${buyerGreeting} Your ticket purchase for ${eventTitle} is confirmed.`,
+    pdfAttachment ? [pdfAttachment] : undefined
+  );
 
   const host = await getUserContact(params.hostUserId);
   if (host.email) {
@@ -678,6 +876,7 @@ async function handleTicketPurchase(context: HandlerContext, payload: TicketPurc
     eventTitle: event.title,
     totalAmount: Number(order.total_amount || 0),
     currency: order.currency,
+    orderId: order.id,
   });
 
   return NextResponse.json({ success: true });
