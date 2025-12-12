@@ -26,7 +26,7 @@ interface LogoProps {
  * This ensures a logo always displays, even if some image files are missing.
  */
 export default function Logo({
-  variant: _variant = 'default',
+  variant: _variant = 'default', // eslint-disable-line @typescript-eslint/no-unused-vars
   width = 180,
   height = 130,
   fill = false,
@@ -82,6 +82,6 @@ export default function Logo({
     imageProps.height = height;
   }
 
-  return <Image {...imageProps} />;
+  return <Image {...imageProps} alt={alt} />;
 }
 

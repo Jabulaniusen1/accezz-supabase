@@ -224,26 +224,83 @@ function Update() {
         throw new Error('Failed to update event. Please try again.');
       }
 
-      // Handle ticket types: delete existing and insert new ones
-      const { error: delErr } = await supabase.from('ticket_types').delete().eq('event_id', eventId);
-      if (delErr) {
-        console.error('Failed to delete existing tickets:', delErr);
-        throw new Error('Failed to update tickets. Please try again.');
-      }
-
+      // Handle ticket types: update existing or insert new ones (preserve IDs to maintain ticket relationships)
       if (formData.ticketType?.length) {
-        const ticketRows = formData.ticketType.map(t => ({
-          event_id: eventId,
-          name: t.name,
-          price: Number(t.price || 0),
-          quantity: Number(t.quantity || 0),
-          sold: Number(t.sold || 0),
-          details: t.details || null,
-        }));
-        const { error: insErr } = await supabase.from('ticket_types').insert(ticketRows);
-        if (insErr) {
-          console.error('Failed to insert new tickets:', insErr);
-          throw new Error('Failed to save tickets. Please try again.');
+        // Fetch existing ticket types to match by name and preserve sold count
+        const { data: existingTypes, error: fetchErr } = await supabase
+          .from('ticket_types')
+          .select('id, name, sold')
+          .eq('event_id', eventId);
+        
+        if (fetchErr) {
+          console.error('Failed to fetch existing ticket types:', fetchErr);
+          throw new Error('Failed to update tickets. Please try again.');
+        }
+
+        // Create maps for efficient lookup
+        const existingMap = new Map((existingTypes || []).map(t => [t.name, { id: t.id, sold: Number(t.sold || 0) }]));
+        const newTicketNames = new Set(formData.ticketType.map(t => t.name));
+        
+        // Delete ticket types that are no longer in the form (only if they have no sold tickets)
+        const typesToDelete = (existingTypes || []).filter(t => !newTicketNames.has(t.name));
+        if (typesToDelete.length > 0) {
+          const idsToDelete = typesToDelete.map(t => t.id);
+          // Only delete if sold count is 0 to preserve analytics
+          const { error: delErr } = await supabase
+            .from('ticket_types')
+            .delete()
+            .in('id', idsToDelete)
+            .eq('sold', 0);
+          if (delErr) {
+            console.error('Failed to delete unused ticket types:', delErr);
+            // Don't throw - allow update to continue even if deletion fails
+          }
+        }
+
+        // Update or insert ticket types
+        for (const ticket of formData.ticketType) {
+          const existing = existingMap.get(ticket.name);
+          const ticketData = {
+            event_id: eventId,
+            name: ticket.name,
+            price: Number(ticket.price || 0),
+            quantity: Number(ticket.quantity || 0),
+            // Preserve the actual sold count from database, not from form (form may be stale)
+            sold: existing ? existing.sold : Number(ticket.sold || 0),
+            details: ticket.details || null,
+          };
+
+          if (existing) {
+            // Update existing ticket type (preserves ID and maintains relationship with tickets)
+            const { error: updateErr } = await supabase
+              .from('ticket_types')
+              .update(ticketData)
+              .eq('id', existing.id);
+            if (updateErr) {
+              console.error('Failed to update ticket type:', updateErr);
+              throw new Error('Failed to update tickets. Please try again.');
+            }
+          } else {
+            // Insert new ticket type
+            const { error: insErr } = await supabase
+              .from('ticket_types')
+              .insert(ticketData);
+            if (insErr) {
+              console.error('Failed to insert new ticket type:', insErr);
+              throw new Error('Failed to save tickets. Please try again.');
+            }
+          }
+        }
+      } else {
+        // If no ticket types in form, only delete ones with no sales
+        const { error: delErr } = await supabase
+          .from('ticket_types')
+          .delete()
+          .eq('event_id', eventId)
+          .eq('sold', 0);
+        if (delErr) {
+          console.error('Failed to delete ticket types:', delErr);
+          // Don't throw - allow update to continue
         }
       }
 

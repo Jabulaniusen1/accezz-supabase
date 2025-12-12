@@ -5,8 +5,9 @@ import { supabase } from '@/utils/supabaseClient';
 import Toast from '@/components/ui/Toast';
 import { Skeleton, CardSkeleton } from '@/components/ui/Skeleton';
 import ConfirmationModal from '@/components/ConfirmationModal';
-import { FiSearch, FiTrash2, FiExternalLink } from 'react-icons/fi';
+import { FiSearch, FiTrash2, FiExternalLink, FiBarChart2 } from 'react-icons/fi';
 import Link from 'next/link';
+import TicketTypesModal from './TicketTypesModal';
 
 interface Event {
   id: string;
@@ -30,6 +31,8 @@ const AdminEvents = () => {
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<string | null>(null);
+  const [ticketTypesModalOpen, setTicketTypesModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<{ id: string; title: string } | null>(null);
 
   const fetchEvents = useCallback(async () => {
     try {
@@ -89,23 +92,34 @@ const AdminEvents = () => {
       // Calculate stats per event
       const eventStats = new Map<string, { tickets: number; revenue: number }>();
       
+      // First, calculate tickets sold from ticket_types
       (ticketTypes || []).forEach(tt => {
         const eventId = tt.event_id as string;
         const current = eventStats.get(eventId) || { tickets: 0, revenue: 0 };
         current.tickets += Number(tt.sold || 0);
-        current.revenue += Number(tt.sold || 0) * Number(tt.price || 0);
         eventStats.set(eventId, current);
       });
 
-      // Also use orders for more accurate revenue (if available)
+      // Calculate revenue from actual paid orders (most accurate source)
+      // Sum all paid orders for each event
       (orders || []).forEach(order => {
         const eventId = order.event_id as string;
         const current = eventStats.get(eventId) || { tickets: 0, revenue: 0 };
-        // Use order total if higher (more accurate)
-        if (Number(order.total_amount || 0) > current.revenue) {
-          current.revenue = Number(order.total_amount || 0);
-        }
+        // Sum all order totals for accurate revenue
+        current.revenue += Number(order.total_amount || 0);
         eventStats.set(eventId, current);
+      });
+
+      // If no orders found, fall back to ticket_types calculation
+      // This handles cases where orders might not exist yet
+      eventStats.forEach((stats, eventId) => {
+        if (stats.revenue === 0) {
+          // Calculate from ticket_types as fallback
+          const eventTicketTypes = (ticketTypes || []).filter(tt => tt.event_id === eventId);
+          stats.revenue = eventTicketTypes.reduce((sum, tt) => {
+            return sum + (Number(tt.sold || 0) * Number(tt.price || 0));
+          }, 0);
+        }
       });
 
       const eventsWithStats: Event[] = (eventsData || []).map(event => {
@@ -297,10 +311,20 @@ const AdminEvents = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center space-x-3">
+                      <button
+                        onClick={() => {
+                          setSelectedEvent({ id: event.id, title: event.title });
+                          setTicketTypesModalOpen(true);
+                        }}
+                        className="text-[#f54502] hover:text-[#d63a02] dark:text-[#f54502] dark:hover:text-[#d63a02] transition-colors"
+                        title="View Ticket Types & Revenue"
+                      >
+                        <FiBarChart2 />
+                      </button>
                       <Link
                         href={`/${event.slug}`}
                         target="_blank"
-                        className="text-[#f54502] hover:text-[#d63a02]"
+                        className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                         title="View Event"
                       >
                         <FiExternalLink />
@@ -337,6 +361,19 @@ const AdminEvents = () => {
         confirmText="Delete Event"
         confirmButtonClass="bg-red-500 hover:bg-red-600"
       />
+
+      {/* Ticket Types Modal */}
+      {selectedEvent && (
+        <TicketTypesModal
+          isOpen={ticketTypesModalOpen}
+          onClose={() => {
+            setTicketTypesModalOpen(false);
+            setSelectedEvent(null);
+          }}
+          eventId={selectedEvent.id}
+          eventTitle={selectedEvent.title}
+        />
+      )}
     </div>
   );
 };
