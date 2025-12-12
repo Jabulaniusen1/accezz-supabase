@@ -23,7 +23,6 @@ import { supabase } from "@/utils/supabaseClient";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import EventTypeModal from "@/components/Modal/EventType";
 import Link from "next/link";
-import Image from "next/image";
 import { GiTakeMyMoney } from "react-icons/gi";
 import { BsBell, BsCalendar2Event, BsGear, BsPerson, BsTicketPerforated } from "react-icons/bs";
 import { MdOutlineLocationCity } from "react-icons/md";
