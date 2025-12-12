@@ -1,0 +1,527 @@
+'Log files:
+/Users/mac/Desktop/accezz-supabase/.npm-cache/_logs/2025-12-12T14_02_08_762Z-debug-0.log
+
+# npm resolution error report
+
+While resolving: react-chartjs-2@5.2.0
+Found: react@19.2.3
+node_modules/react
+  peer react@">=16.8.0" from @emotion/react@11.14.0
+  node_modules/@emotion/react
+    peer @emotion/react@"^11.0.0-rc.0" from @emotion/styled@11.14.0
+    node_modules/@emotion/styled
+      peerOptional @emotion/styled@"^11.3.0" from @mui/material@6.4.11
+      node_modules/@mui/material
+        peer @mui/material@"^6.3.0" from @mui/icons-material@6.3.0
+        node_modules/@mui/icons-material
+          @mui/icons-material@"^6.1.6" from the root project
+        @mui/material@"^6.4.11" from the root project
+      peerOptional @emotion/styled@"^11.3.0" from @mui/styled-engine@6.4.11
+      node_modules/@mui/styled-engine
+        @mui/styled-engine@"^6.4.11" from @mui/system@6.4.11
+        node_modules/@mui/system
+          @mui/system@"^6.4.11" from @mui/material@6.4.11
+          node_modules/@mui/material
+            peer @mui/material@"^6.3.0" from @mui/icons-material@6.3.0
+            node_modules/@mui/icons-material
+              @mui/icons-material@"^6.1.6" from the root project
+            @mui/material@"^6.4.11" from the root project
+      peerOptional @emotion/styled@"^11.3.0" from @mui/system@6.4.11
+      node_modules/@mui/system
+        @mui/system@"^6.4.11" from @mui/material@6.4.11
+        node_modules/@mui/material
+          peer @mui/material@"^6.3.0" from @mui/icons-material@6.3.0
+          node_modules/@mui/icons-material
+            @mui/icons-material@"^6.1.6" from the root project
+          @mui/material@"^6.4.11" from the root project
+      @emotion/styled@"^11.13.0" from the root project
+    peerOptional @emotion/react@"^11.5.0" from @mui/material@6.4.11
+    node_modules/@mui/material
+      peer @mui/material@"^6.3.0" from @mui/icons-material@6.3.0
+      node_modules/@mui/icons-material
+        @mui/icons-material@"^6.1.6" from the root project
+      @mui/material@"^6.4.11" from the root project
+    peerOptional @emotion/react@"^11.4.1" from @mui/styled-engine@6.4.11
+    node_modules/@mui/styled-engine
+      @mui/styled-engine@"^6.4.11" from @mui/system@6.4.11
+      node_modules/@mui/system
+        @mui/system@"^6.4.11" from @mui/material@6.4.11
+        node_modules/@mui/material
+          peer @mui/material@"^6.3.0" from @mui/icons-material@6.3.0
+          node_modules/@mui/icons-material
+            @mui/icons-material@"^6.1.6" from the root project
+          @mui/material@"^6.4.11" from the root project
+    peerOptional @emotion/react@"^11.5.0" from @mui/system@6.4.11
+    node_modules/@mui/system
+      @mui/system@"^6.4.11" from @mui/material@6.4.11
+      node_modules/@mui/material
+        peer @mui/material@"^6.3.0" from @mui/icons-material@6.3.0
+        node_modules/@mui/icons-material
+          @mui/icons-material@"^6.1.6" from the root project
+        @mui/material@"^6.4.11" from the root project
+    @emotion/react@"^11.13.3" from the root project
+  peer react@">=16.8.0" from @emotion/styled@11.14.0
+  node_modules/@emotion/styled
+    peerOptional @emotion/styled@"^11.3.0" from @mui/material@6.4.11
+    node_modules/@mui/material
+      peer @mui/material@"^6.3.0" from @mui/icons-material@6.3.0
+      node_modules/@mui/icons-material
+        @mui/icons-material@"^6.1.6" from the root project
+      @mui/material@"^6.4.11" from the root project
+    peerOptional @emotion/styled@"^11.3.0" from @mui/styled-engine@6.4.11
+    node_modules/@mui/styled-engine
+      @mui/styled-engine@"^6.4.11" from @mui/system@6.4.11
+      node_modules/@mui/system
+        @mui/system@"^6.4.11" from @mui/material@6.4.11
+        node_modules/@mui/material
+          peer @mui/material@"^6.3.0" from @mui/icons-material@6.3.0
+          node_modules/@mui/icons-material
+            @mui/icons-material@"^6.1.6" from the root project
+          @mui/material@"^6.4.11" from the root project
+    peerOptional @emotion/styled@"^11.3.0" from @mui/system@6.4.11
+    node_modules/@mui/system
+      @mui/system@"^6.4.11" from @mui/material@6.4.11
+      node_modules/@mui/material
+        peer @mui/material@"^6.3.0" from @mui/icons-material@6.3.0
+        node_modules/@mui/icons-material
+          @mui/icons-material@"^6.1.6" from the root project
+        @mui/material@"^6.4.11" from the root project
+    @emotion/styled@"^11.13.0" from the root project
+  peer react@">=16.8.0" from @emotion/use-insertion-effect-with-fallbacks@1.2.0
+  node_modules/@emotion/use-insertion-effect-with-fallbacks
+    @emotion/use-insertion-effect-with-fallbacks@"^1.2.0" from @emotion/react@11.14.0
+    node_modules/@emotion/react
+      peer @emotion/react@"^11.0.0-rc.0" from @emotion/styled@11.14.0
+      node_modules/@emotion/styled
+        peerOptional @emotion/styled@"^11.3.0" from @mui/material@6.4.11
+        node_modules/@mui/material
+          peer @mui/material@"^6.3.0" from @mui/icons-material@6.3.0
+          node_modules/@mui/icons-material
+            @mui/icons-material@"^6.1.6" from the root project
+          @mui/material@"^6.4.11" from the root project
+        peerOptional @emotion/styled@"^11.3.0" from @mui/styled-engine@6.4.11
+        node_modules/@mui/styled-engine
+          @mui/styled-engine@"^6.4.11" from @mui/system@6.4.11
+          node_modules/@mui/system
+            @mui/system@"^6.4.11" from @mui/material@6.4.11
+            node_modules/@mui/material
+              peer @mui/material@"^6.3.0" from @mui/icons-material@6.3.0
+              node_modules/@mui/icons-material
+                @mui/icons-material@"^6.1.6" from the root project
+              @mui/material@"^6.4.11" from the root project
+        peerOptional @emotion/styled@"^11.3.0" from @mui/system@6.4.11
+        node_modules/@mui/system
+          @mui/system@"^6.4.11" from @mui/material@6.4.11
+          node_modules/@mui/material
+            peer @mui/material@"^6.3.0" from @mui/icons-material@6.3.0
+            node_modules/@mui/icons-material
+              @mui/icons-material@"^6.1.6" from the root project
+            @mui/material@"^6.4.11" from the root project
+        @emotion/styled@"^11.13.0" from the root project
+      peerOptional @emotion/react@"^11.5.0" from @mui/material@6.4.11
+      node_modules/@mui/material
+        peer @mui/material@"^6.3.0" from @mui/icons-material@6.3.0
+        node_modules/@mui/icons-material
+          @mui/icons-material@"^6.1.6" from the root project
+        @mui/material@"^6.4.11" from the root project
+      peerOptional @emotion/react@"^11.4.1" from @mui/styled-engine@6.4.11
+      node_modules/@mui/styled-engine
+        @mui/styled-engine@"^6.4.11" from @mui/system@6.4.11
+        node_modules/@mui/system
+          @mui/system@"^6.4.11" from @mui/material@6.4.11
+          node_modules/@mui/material
+            peer @mui/material@"^6.3.0" from @mui/icons-material@6.3.0
+            node_modules/@mui/icons-material
+              @mui/icons-material@"^6.1.6" from the root project
+            @mui/material@"^6.4.11" from the root project
+      peerOptional @emotion/react@"^11.5.0" from @mui/system@6.4.11
+      node_modules/@mui/system
+        @mui/system@"^6.4.11" from @mui/material@6.4.11
+        node_modules/@mui/material
+          peer @mui/material@"^6.3.0" from @mui/icons-material@6.3.0
+          node_modules/@mui/icons-material
+            @mui/icons-material@"^6.1.6" from the root project
+          @mui/material@"^6.4.11" from the root project
+      @emotion/react@"^11.13.3" from the root project
+    @emotion/use-insertion-effect-with-fallbacks@"^1.2.0" from @emotion/styled@11.14.0
+    node_modules/@emotion/styled
+      peerOptional @emotion/styled@"^11.3.0" from @mui/material@6.4.11
+      node_modules/@mui/material
+        peer @mui/material@"^6.3.0" from @mui/icons-material@6.3.0
+        node_modules/@mui/icons-material
+          @mui/icons-material@"^6.1.6" from the root project
+        @mui/material@"^6.4.11" from the root project
+      peerOptional @emotion/styled@"^11.3.0" from @mui/styled-engine@6.4.11
+      node_modules/@mui/styled-engine
+        @mui/styled-engine@"^6.4.11" from @mui/system@6.4.11
+        node_modules/@mui/system
+          @mui/system@"^6.4.11" from @mui/material@6.4.11
+          node_modules/@mui/material
+            peer @mui/material@"^6.3.0" from @mui/icons-material@6.3.0
+            node_modules/@mui/icons-material
+              @mui/icons-material@"^6.1.6" from the root project
+            @mui/material@"^6.4.11" from the root project
+      peerOptional @emotion/styled@"^11.3.0" from @mui/system@6.4.11
+      node_modules/@mui/system
+        @mui/system@"^6.4.11" from @mui/material@6.4.11
+        node_modules/@mui/material
+          peer @mui/material@"^6.3.0" from @mui/icons-material@6.3.0
+          node_modules/@mui/icons-material
+            @mui/icons-material@"^6.1.6" from the root project
+          @mui/material@"^6.4.11" from the root project
+      @emotion/styled@"^11.13.0" from the root project
+  peer react@">=16.8.0" from @floating-ui/react@0.26.28
+  node_modules/@floating-ui/react
+    @floating-ui/react@"^0.26.16" from @headlessui/react@2.2.0
+    node_modules/@headlessui/react
+      @headlessui/react@"^2.2.0" from the root project
+  peer react@">=16.8.0" from @floating-ui/react-dom@2.1.6
+  node_modules/@floating-ui/react-dom
+    @floating-ui/react-dom@"^2.1.2" from @floating-ui/react@0.26.28
+    node_modules/@floating-ui/react
+      @floating-ui/react@"^0.26.16" from @headlessui/react@2.2.0
+      node_modules/@headlessui/react
+        @headlessui/react@"^2.2.0" from the root project
+  peer react@"^18 || ^19 || ^19.0.0-rc" from @headlessui/react@2.2.0
+  node_modules/@headlessui/react
+    @headlessui/react@"^2.2.0" from the root project
+  peer react@"^17.0.0 || ^18.0.0 || ^19.0.0" from @mui/icons-material@6.3.0
+  node_modules/@mui/icons-material
+    @mui/icons-material@"^6.1.6" from the root project
+  peer react@"^17.0.0 || ^18.0.0 || ^19.0.0" from @mui/material@6.4.11
+  node_modules/@mui/material
+    peer @mui/material@"^6.3.0" from @mui/icons-material@6.3.0
+    node_modules/@mui/icons-material
+      @mui/icons-material@"^6.1.6" from the root project
+    @mui/material@"^6.4.11" from the root project
+  peer react@"^17.0.0 || ^18.0.0 || ^19.0.0" from @mui/private-theming@6.4.9
+  node_modules/@mui/private-theming
+    @mui/private-theming@"^6.4.9" from @mui/system@6.4.11
+    node_modules/@mui/system
+      @mui/system@"^6.4.11" from @mui/material@6.4.11
+      node_modules/@mui/material
+        peer @mui/material@"^6.3.0" from @mui/icons-material@6.3.0
+        node_modules/@mui/icons-material
+          @mui/icons-material@"^6.1.6" from the root project
+        @mui/material@"^6.4.11" from the root project
+  peer react@"^17.0.0 || ^18.0.0 || ^19.0.0" from @mui/styled-engine@6.4.11
+  node_modules/@mui/styled-engine
+    @mui/styled-engine@"^6.4.11" from @mui/system@6.4.11
+    node_modules/@mui/system
+      @mui/system@"^6.4.11" from @mui/material@6.4.11
+      node_modules/@mui/material
+        peer @mui/material@"^6.3.0" from @mui/icons-material@6.3.0
+        node_modules/@mui/icons-material
+          @mui/icons-material@"^6.1.6" from the root project
+        @mui/material@"^6.4.11" from the root project
+  peer react@"^17.0.0 || ^18.0.0 || ^19.0.0" from @mui/system@6.4.11
+  node_modules/@mui/system
+    @mui/system@"^6.4.11" from @mui/material@6.4.11
+    node_modules/@mui/material
+      peer @mui/material@"^6.3.0" from @mui/icons-material@6.3.0
+      node_modules/@mui/icons-material
+        @mui/icons-material@"^6.1.6" from the root project
+      @mui/material@"^6.4.11" from the root project
+  peer react@"^17.0.0 || ^18.0.0 || ^19.0.0" from @mui/utils@6.4.9
+  node_modules/@mui/utils
+    @mui/utils@"^6.4.9" from @mui/material@6.4.11
+    node_modules/@mui/material
+      peer @mui/material@"^6.3.0" from @mui/icons-material@6.3.0
+      node_modules/@mui/icons-material
+        @mui/icons-material@"^6.1.6" from the root project
+      @mui/material@"^6.4.11" from the root project
+    @mui/utils@"^6.4.9" from @mui/private-theming@6.4.9
+    node_modules/@mui/private-theming
+      @mui/private-theming@"^6.4.9" from @mui/system@6.4.11
+      node_modules/@mui/system
+        @mui/system@"^6.4.11" from @mui/material@6.4.11
+        node_modules/@mui/material
+          peer @mui/material@"^6.3.0" from @mui/icons-material@6.3.0
+          node_modules/@mui/icons-material
+            @mui/icons-material@"^6.1.6" from the root project
+          @mui/material@"^6.4.11" from the root project
+    @mui/utils@"^6.4.9" from @mui/system@6.4.11
+    node_modules/@mui/system
+      @mui/system@"^6.4.11" from @mui/material@6.4.11
+      node_modules/@mui/material
+        peer @mui/material@"^6.3.0" from @mui/icons-material@6.3.0
+        node_modules/@mui/icons-material
+          @mui/icons-material@"^6.1.6" from the root project
+        @mui/material@"^6.4.11" from the root project
+  peer react@"^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1" from @react-aria/focus@3.19.0
+  node_modules/@react-aria/focus
+    @react-aria/focus@"^3.17.1" from @headlessui/react@2.2.0
+    node_modules/@headlessui/react
+      @headlessui/react@"^2.2.0" from the root project
+  peer react@"^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1" from @react-aria/interactions@3.22.5
+  node_modules/@react-aria/interactions
+    @react-aria/interactions@"^3.21.3" from @headlessui/react@2.2.0
+    node_modules/@headlessui/react
+      @headlessui/react@"^2.2.0" from the root project
+    @react-aria/interactions@"^3.22.5" from @react-aria/focus@3.19.0
+    node_modules/@react-aria/focus
+      @react-aria/focus@"^3.17.1" from @headlessui/react@2.2.0
+      node_modules/@headlessui/react
+        @headlessui/react@"^2.2.0" from the root project
+  peer react@"^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1" from @react-aria/ssr@3.9.7
+  node_modules/@react-aria/ssr
+    @react-aria/ssr@"^3.9.7" from @react-aria/interactions@3.22.5
+    node_modules/@react-aria/interactions
+      @react-aria/interactions@"^3.21.3" from @headlessui/react@2.2.0
+      node_modules/@headlessui/react
+        @headlessui/react@"^2.2.0" from the root project
+      @react-aria/interactions@"^3.22.5" from @react-aria/focus@3.19.0
+      node_modules/@react-aria/focus
+        @react-aria/focus@"^3.17.1" from @headlessui/react@2.2.0
+        node_modules/@headlessui/react
+          @headlessui/react@"^2.2.0" from the root project
+    @react-aria/ssr@"^3.9.7" from @react-aria/utils@3.26.0
+    node_modules/@react-aria/utils
+      @react-aria/utils@"^3.26.0" from @react-aria/focus@3.19.0
+      node_modules/@react-aria/focus
+        @react-aria/focus@"^3.17.1" from @headlessui/react@2.2.0
+        node_modules/@headlessui/react
+          @headlessui/react@"^2.2.0" from the root project
+      @react-aria/utils@"^3.26.0" from @react-aria/interactions@3.22.5
+      node_modules/@react-aria/interactions
+        @react-aria/interactions@"^3.21.3" from @headlessui/react@2.2.0
+        node_modules/@headlessui/react
+          @headlessui/react@"^2.2.0" from the root project
+        @react-aria/interactions@"^3.22.5" from @react-aria/focus@3.19.0
+        node_modules/@react-aria/focus
+          @react-aria/focus@"^3.17.1" from @headlessui/react@2.2.0
+          node_modules/@headlessui/react
+            @headlessui/react@"^2.2.0" from the root project
+  peer react@"^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1" from @react-aria/utils@3.26.0
+  node_modules/@react-aria/utils
+    @react-aria/utils@"^3.26.0" from @react-aria/focus@3.19.0
+    node_modules/@react-aria/focus
+      @react-aria/focus@"^3.17.1" from @headlessui/react@2.2.0
+      node_modules/@headlessui/react
+        @headlessui/react@"^2.2.0" from the root project
+    @react-aria/utils@"^3.26.0" from @react-aria/interactions@3.22.5
+    node_modules/@react-aria/interactions
+      @react-aria/interactions@"^3.21.3" from @headlessui/react@2.2.0
+      node_modules/@headlessui/react
+        @headlessui/react@"^2.2.0" from the root project
+      @react-aria/interactions@"^3.22.5" from @react-aria/focus@3.19.0
+      node_modules/@react-aria/focus
+        @react-aria/focus@"^3.17.1" from @headlessui/react@2.2.0
+        node_modules/@headlessui/react
+          @headlessui/react@"^2.2.0" from the root project
+  peer react@"^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1" from @react-stately/utils@3.10.5
+  node_modules/@react-stately/utils
+    @react-stately/utils@"^3.10.5" from @react-aria/utils@3.26.0
+    node_modules/@react-aria/utils
+      @react-aria/utils@"^3.26.0" from @react-aria/focus@3.19.0
+      node_modules/@react-aria/focus
+        @react-aria/focus@"^3.17.1" from @headlessui/react@2.2.0
+        node_modules/@headlessui/react
+          @headlessui/react@"^2.2.0" from the root project
+      @react-aria/utils@"^3.26.0" from @react-aria/interactions@3.22.5
+      node_modules/@react-aria/interactions
+        @react-aria/interactions@"^3.21.3" from @headlessui/react@2.2.0
+        node_modules/@headlessui/react
+          @headlessui/react@"^2.2.0" from the root project
+        @react-aria/interactions@"^3.22.5" from @react-aria/focus@3.19.0
+        node_modules/@react-aria/focus
+          @react-aria/focus@"^3.17.1" from @headlessui/react@2.2.0
+          node_modules/@headlessui/react
+            @headlessui/react@"^2.2.0" from the root project
+  peer react@"^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1" from @react-types/shared@3.26.0
+  node_modules/@react-types/shared
+    @react-types/shared@"^3.26.0" from @react-aria/focus@3.19.0
+    node_modules/@react-aria/focus
+      @react-aria/focus@"^3.17.1" from @headlessui/react@2.2.0
+      node_modules/@headlessui/react
+        @headlessui/react@"^2.2.0" from the root project
+    @react-types/shared@"^3.26.0" from @react-aria/interactions@3.22.5
+    node_modules/@react-aria/interactions
+      @react-aria/interactions@"^3.21.3" from @headlessui/react@2.2.0
+      node_modules/@headlessui/react
+        @headlessui/react@"^2.2.0" from the root project
+      @react-aria/interactions@"^3.22.5" from @react-aria/focus@3.19.0
+      node_modules/@react-aria/focus
+        @react-aria/focus@"^3.17.1" from @headlessui/react@2.2.0
+        node_modules/@headlessui/react
+          @headlessui/react@"^2.2.0" from the root project
+    @react-types/shared@"^3.26.0" from @react-aria/utils@3.26.0
+    node_modules/@react-aria/utils
+      @react-aria/utils@"^3.26.0" from @react-aria/focus@3.19.0
+      node_modules/@react-aria/focus
+        @react-aria/focus@"^3.17.1" from @headlessui/react@2.2.0
+        node_modules/@headlessui/react
+          @headlessui/react@"^2.2.0" from the root project
+      @react-aria/utils@"^3.26.0" from @react-aria/interactions@3.22.5
+      node_modules/@react-aria/interactions
+        @react-aria/interactions@"^3.21.3" from @headlessui/react@2.2.0
+        node_modules/@headlessui/react
+          @headlessui/react@"^2.2.0" from the root project
+        @react-aria/interactions@"^3.22.5" from @react-aria/focus@3.19.0
+        node_modules/@react-aria/focus
+          @react-aria/focus@"^3.17.1" from @headlessui/react@2.2.0
+          node_modules/@headlessui/react
+            @headlessui/react@"^2.2.0" from the root project
+  peer react@"^18 || ^19" from @tanstack/react-query@5.80.7
+  node_modules/@tanstack/react-query
+    @tanstack/react-query@"^5.80.7" from the root project
+  peer react@"^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0" from @tanstack/react-virtual@3.13.13
+  node_modules/@tanstack/react-virtual
+    @tanstack/react-virtual@"^3.8.1" from @headlessui/react@2.2.0
+    node_modules/@headlessui/react
+      @headlessui/react@"^2.2.0" from the root project
+  peerOptional react@"^18 || ^19 || ^19.0.0-rc" from @vercel/analytics@1.5.0
+  node_modules/@vercel/analytics
+    @vercel/analytics@"^1.5.0" from the root project
+  peerOptional react@"^18.0.0 || ^19.0.0" from framer-motion@11.15.0
+  node_modules/framer-motion
+    framer-motion@"^11.15.0" from the root project
+  peer react@"^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0-rc" from lucide-react@0.468.0
+  node_modules/lucide-react
+    lucide-react@"^0.468.0" from the root project
+  peer react@"^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0" from qrcode.react@4.2.0
+  node_modules/qrcode.react
+    qrcode.react@"^4.1.0" from the root project
+  peer react@"^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0" from react-calendar@5.1.0
+  node_modules/react-calendar
+    react-calendar@"*" from @types/react-calendar@4.1.0
+    node_modules/@types/react-calendar
+      @types/react-calendar@"^4.1.0" from the root project
+    react-calendar@"^5.1.0" from the root project
+  peer react@"^19.2.3" from react-dom@19.2.3
+  node_modules/react-dom
+    peer react-dom@">=16.8.0" from @floating-ui/react@0.26.28
+    node_modules/@floating-ui/react
+      @floating-ui/react@"^0.26.16" from @headlessui/react@2.2.0
+      node_modules/@headlessui/react
+        @headlessui/react@"^2.2.0" from the root project
+    peer react-dom@">=16.8.0" from @floating-ui/react-dom@2.1.6
+    node_modules/@floating-ui/react-dom
+      @floating-ui/react-dom@"^2.1.2" from @floating-ui/react@0.26.28
+      node_modules/@floating-ui/react
+        @floating-ui/react@"^0.26.16" from @headlessui/react@2.2.0
+        node_modules/@headlessui/react
+          @headlessui/react@"^2.2.0" from the root project
+    peer react-dom@"^18 || ^19 || ^19.0.0-rc" from @headlessui/react@2.2.0
+    node_modules/@headlessui/react
+      @headlessui/react@"^2.2.0" from the root project
+    peer react-dom@"^17.0.0 || ^18.0.0 || ^19.0.0" from @mui/material@6.4.11
+    node_modules/@mui/material
+      peer @mui/material@"^6.3.0" from @mui/icons-material@6.3.0
+      node_modules/@mui/icons-material
+        @mui/icons-material@"^6.1.6" from the root project
+      @mui/material@"^6.4.11" from the root project
+    peer react-dom@"^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0" from @tanstack/react-virtual@3.13.13
+    node_modules/@tanstack/react-virtual
+      @tanstack/react-virtual@"^3.8.1" from @headlessui/react@2.2.0
+      node_modules/@headlessui/react
+        @headlessui/react@"^2.2.0" from the root project
+    peerOptional react-dom@"^18.0.0 || ^19.0.0" from framer-motion@11.15.0
+    node_modules/framer-motion
+      framer-motion@"^11.15.0" from the root project
+    peer react-dom@"^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0" from react-calendar@5.1.0
+    node_modules/react-calendar
+      react-calendar@"*" from @types/react-calendar@4.1.0
+      node_modules/@types/react-calendar
+        @types/react-calendar@"^4.1.0" from the root project
+      react-calendar@"^5.1.0" from the root project
+    peer react-dom@">=16.8" from react-router-dom@6.28.1
+    node_modules/react-router-dom
+      react-router-dom@"^6.28.0" from the root project
+    peer react-dom@">=18" from react-toastify@10.0.6
+    node_modules/react-toastify
+      react-toastify@"^10.0.6" from the root project
+    peer react-dom@">=16.6.0" from react-transition-group@4.4.5
+    node_modules/react-transition-group
+      react-transition-group@"^4.4.5" from @mui/material@6.4.11
+      node_modules/@mui/material
+        peer @mui/material@"^6.3.0" from @mui/icons-material@6.3.0
+        node_modules/@mui/icons-material
+          @mui/icons-material@"^6.1.6" from the root project
+        @mui/material@"^6.4.11" from the root project
+    react-dom@"^19.2.3" from the root project
+    peer react-dom@"^18.2.0 || 19.0.0-rc-de68d2f4-20241204 || ^19.0.0" from next@15.3.8
+    node_modules/next
+      next@"15.3.8" from the root project
+      peer next@">=14.0.0" from @ducanh2912/next-pwa@10.2.9
+      node_modules/@ducanh2912/next-pwa
+        @ducanh2912/next-pwa@"^10.2.9" from the root project
+      peerOptional next@">= 13" from @vercel/analytics@1.5.0
+      node_modules/@vercel/analytics
+        @vercel/analytics@"^1.5.0" from the root project
+      peerOptional next@">=12.0.0" from inngest@3.45.1
+      node_modules/inngest
+        inngest@"^3.45.1" from the root project
+      peer next@">=9.0.0" from next-pwa@5.6.0
+      node_modules/next-pwa
+        next-pwa@"^5.6.0" from the root project
+  peer react@"*" from react-icons@5.5.0
+  node_modules/react-icons
+    react-icons@"^5.5.0" from the root project
+  peer react@">=16.8" from react-router@6.28.1
+  node_modules/react-router
+    react-router@"6.28.1" from react-router-dom@6.28.1
+    node_modules/react-router-dom
+      react-router-dom@"^6.28.0" from the root project
+  peer react@">=16.8" from react-router-dom@6.28.1
+  node_modules/react-router-dom
+    react-router-dom@"^6.28.0" from the root project
+  peer react@">=18" from react-toastify@10.0.6
+  node_modules/react-toastify
+    react-toastify@"^10.0.6" from the root project
+  peer react@">=16.6.0" from react-transition-group@4.4.5
+  node_modules/react-transition-group
+    react-transition-group@"^4.4.5" from @mui/material@6.4.11
+    node_modules/@mui/material
+      peer @mui/material@"^6.3.0" from @mui/icons-material@6.3.0
+      node_modules/@mui/icons-material
+        @mui/icons-material@"^6.1.6" from the root project
+      @mui/material@"^6.4.11" from the root project
+  peer react@">= 16.8.0 || 17.x.x || ^18.0.0-0 || ^19.0.0-0" from styled-jsx@5.1.6
+  node_modules/styled-jsx
+    styled-jsx@"5.1.6" from next@15.3.8
+    node_modules/next
+      next@"15.3.8" from the root project
+      peer next@">=14.0.0" from @ducanh2912/next-pwa@10.2.9
+      node_modules/@ducanh2912/next-pwa
+        @ducanh2912/next-pwa@"^10.2.9" from the root project
+      peerOptional next@">= 13" from @vercel/analytics@1.5.0
+      node_modules/@vercel/analytics
+        @vercel/analytics@"^1.5.0" from the root project
+      peerOptional next@">=12.0.0" from inngest@3.45.1
+      node_modules/inngest
+        inngest@"^3.45.1" from the root project
+      peer next@">=9.0.0" from next-pwa@5.6.0
+      node_modules/next-pwa
+        next-pwa@"^5.6.0" from the root project
+  react@"^19.2.3" from the root project
+  peer react@"^18.2.0 || 19.0.0-rc-de68d2f4-20241204 || ^19.0.0" from next@15.3.8
+  node_modules/next
+    next@"15.3.8" from the root project
+    peer next@">=14.0.0" from @ducanh2912/next-pwa@10.2.9
+    node_modules/@ducanh2912/next-pwa
+      @ducanh2912/next-pwa@"^10.2.9" from the root project
+    peerOptional next@">= 13" from @vercel/analytics@1.5.0
+    node_modules/@vercel/analytics
+      @vercel/analytics@"^1.5.0" from the root project
+    peerOptional next@">=12.0.0" from inngest@3.45.1
+    node_modules/inngest
+      inngest@"^3.45.1" from the root project
+    peer next@">=9.0.0" from next-pwa@5.6.0
+    node_modules/next-pwa
+      next-pwa@"^5.6.0" from the root project
+
+Could not resolve dependency:
+peer react@"^16.8.0 || ^17.0.0 || ^18.0.0" from react-chartjs-2@5.2.0
+node_modules/react-chartjs-2
+  react-chartjs-2@"^5.2.0" from the root project
+
+Conflicting peer dependency: react@18.3.1
+node_modules/react
+  peer react@"^16.8.0 || ^17.0.0 || ^18.0.0" from react-chartjs-2@5.2.0
+  node_modules/react-chartjs-2
+    react-chartjs-2@"^5.2.0" from the root project
+
+Fix the upstream dependency conflict, or retry
+this command with --force or --legacy-peer-deps
+to accept an incorrect (and potentially broken) dependency resolution.

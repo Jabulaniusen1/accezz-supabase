@@ -11,6 +11,7 @@ import { Location } from '@/types/location';
 import Loader from '@/components/ui/loader/Loader';
 import Toast from '@/components/ui/Toast';
 import ConfirmationModal from '@/components/ConfirmationModal';
+import { getLogoPath } from '@/utils/logoUtils';
 
 export const LocationManager: React.FC = () => {
   const { data, isLoading, isError, error, refetch, isFetching } = useMyLocations();
@@ -132,7 +133,7 @@ export const LocationManager: React.FC = () => {
             >
               <div className="relative h-48 w-full overflow-hidden">
                 <Image
-                  src={location.gallery[0]?.imageUrl || location.defaultImageUrl || '/accezz logo c.png'}
+                  src={location.gallery[0]?.imageUrl || location.defaultImageUrl || getLogoPath()}
                   alt={location.name}
                   fill
                   className="object-cover"

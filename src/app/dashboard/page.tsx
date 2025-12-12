@@ -23,11 +23,11 @@ import { supabase } from "@/utils/supabaseClient";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import EventTypeModal from "@/components/Modal/EventType";
 import Link from "next/link";
-import Image from "next/image";
 import { GiTakeMyMoney } from "react-icons/gi";
 import { BsBell, BsCalendar2Event, BsGear, BsPerson, BsTicketPerforated } from "react-icons/bs";
 import { MdOutlineLocationCity } from "react-icons/md";
 import { RiCalendarCheckLine } from "react-icons/ri";
+import Logo from "@/components/ui/Logo";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState(0);
@@ -212,9 +212,8 @@ const Dashboard = () => {
             className="flex items-center justify-center space-x-3 group"
           >
             <div className="relative">
-              <Image
-                src="/accezz logo c.png"
-                alt="Accezz Logo"
+              <Logo
+                variant="default"
                 width={80}
                 height={80}
                 className="object-contain group-hover:scale-105 w-24 h-24 transition-transform duration-200"

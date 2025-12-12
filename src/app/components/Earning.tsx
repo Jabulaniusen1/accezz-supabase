@@ -163,10 +163,10 @@ const Earnings = () => {
       const eventIds = (events || []).map(e => e.id);
       if (!eventIds.length) return {};
 
-      // Fetch tickets for these events
+      // Fetch tickets for these events (including currency for orphaned ticket recovery)
       const { data: tickets } = await supabase
         .from('tickets')
-        .select('event_id, price, validation_status, order_id, ticket_type_id')
+        .select('event_id, price, currency, validation_status, order_id, ticket_type_id')
         .in('event_id', eventIds);
 
       // Fetch ticket type names for mapping
@@ -175,6 +175,43 @@ const Earnings = () => {
         .select('id, name, event_id')
         .in('event_id', eventIds);
       const typeIdToName = new Map<string, string>((ticketTypes || []).map(tt => [tt.id as string, tt.name as string]));
+      
+      // Handle orphaned tickets (tickets with missing ticket_type records)
+      const ticketTypeIds = Array.from(new Set((tickets || []).map(t => t.ticket_type_id as string).filter(Boolean)));
+      const orphanedTypeIds = ticketTypeIds.filter(id => !typeIdToName.has(id));
+      
+      if (orphanedTypeIds.length > 0) {
+        // Reconstruct ticket type names from ticket data
+        const orphanedTickets = (tickets || []).filter(t => orphanedTypeIds.includes(t.ticket_type_id as string));
+        const typeGroups = new Map<string, { price: number; currency: string }>();
+        
+        orphanedTickets.forEach(t => {
+          const typeId = t.ticket_type_id as string;
+          const price = Number(t.price || 0);
+          const currency = (t.currency as string) || 'USD';
+          
+          if (!typeGroups.has(typeId)) {
+            typeGroups.set(typeId, { price, currency });
+          } else {
+            // Use the most common non-zero price
+            const existing = typeGroups.get(typeId)!;
+            if (price > 0 && existing.price === 0) {
+              existing.price = price;
+              existing.currency = currency;
+            }
+          }
+        });
+        
+        // Generate inferred names for orphaned ticket types
+        typeGroups.forEach((group, typeId) => {
+          if (!typeIdToName.has(typeId)) {
+            const inferredName = group.price > 0 
+              ? `${group.currency} ${group.price.toFixed(2)} (Recovered)`
+              : `Free Ticket (Recovered)`;
+            typeIdToName.set(typeId, inferredName);
+          }
+        });
+      }
 
       const orderIds = Array.from(new Set((tickets || []).map(t => t.order_id as string).filter(Boolean)));
       let orderMap = new Map<string, string>();
@@ -194,7 +231,17 @@ const Earnings = () => {
         const isValid = (t.validation_status as string) === 'valid';
         if (isPaid && isValid) {
           const price = Number(t.price || 0);
-          const typeName = typeIdToName.get(t.ticket_type_id as string) || 'Unknown';
+          // Use recovered name if available, otherwise create a fallback from ticket data
+          const typeId = t.ticket_type_id as string;
+          let typeName = typeIdToName.get(typeId);
+          if (!typeName) {
+            // Last resort: create name from ticket price
+            const price = Number(t.price || 0);
+            typeName = price > 0 
+              ? `Ticket ${price.toFixed(2)} (Recovered)`
+              : 'Free Ticket (Recovered)';
+            typeIdToName.set(typeId, typeName);
+          }
           if (!aggregates[eventId]) aggregates[eventId] = { revenue: 0, sold: 0, byType: {} };
           aggregates[eventId].revenue += Number.isFinite(price) ? price : 0;
           aggregates[eventId].sold += 1;

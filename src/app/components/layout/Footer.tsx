@@ -1,9 +1,9 @@
 'use client';
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { FaInstagram, FaTiktok, FaWhatsapp } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
+import Logo from '@/components/ui/Logo';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -25,9 +25,8 @@ const Footer = () => {
             {/* Brand */}
             <div>
               <div className="mb-2 sm:mb-3">
-                <Image
-                  src="/accezz logo c.png"
-                  alt="Accezz Logo"
+                <Logo
+                  variant="default"
                   width={120}
                   height={40}
                   className="h-8 sm:h-10 w-auto"

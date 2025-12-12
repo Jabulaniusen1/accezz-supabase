@@ -2,12 +2,12 @@
 
 import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import Image from 'next/image';
 import { CircularProgress } from '@mui/material';
 import { motion } from 'framer-motion';
 import { formatPrice } from '../../utils/formatPrice';
 import Toast from '../../components/ui/Toast';
 import { supabase } from '@/utils/supabaseClient';
+import Logo from '@/components/ui/Logo';
 
 interface Event {
   id: string;
@@ -256,9 +256,8 @@ const ValidateContent = () => {
   {/* Header Section */}
   <header className="flex justify-center items-center py-4 sm:py-6 border-b border-gray-200">
     <div className="flex items-center gap-3 sm:gap-4">
-      <Image
-        src="/accezz logo c.png"
-        alt="Accezz Logo"
+      <Logo
+        variant="default"
         width={120}
         height={40}
         className="h-8 sm:h-10 md:h-12 w-auto object-contain"

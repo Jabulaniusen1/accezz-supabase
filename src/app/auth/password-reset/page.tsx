@@ -1,11 +1,11 @@
 'use client'
 import React, { useState } from 'react';
-import Image from 'next/image';
 import 'react-toastify/dist/ReactToastify.css';
 import { useRouter } from 'next/navigation'
 import Link from 'next/link';
 import { supabase } from '@/utils/supabaseClient';
 import { toast, ToastContainer } from 'react-toastify';
+import Logo from '@/components/ui/Logo';
 
 
 function PasswordReset() {
@@ -57,9 +57,8 @@ function PasswordReset() {
         }}
       >
         <div className="text-center">
-          <Image
-            src="/accezz logo.png"
-            alt="Accezz Logo"
+          <Logo
+            variant="white"
             width={120}
             height={120}
             className="mx-auto mb-3 sm:mb-4 w-20 h-20 sm:w-[120px] sm:h-[120px]"

@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Image from 'next/image';
+import Logo from '@/components/ui/Logo';
 
 const Loader = () => {
   return (
@@ -19,9 +19,8 @@ const Loader = () => {
           className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-2xl flex flex-col items-center space-y-4"
         >
           <div className="relative w-24 h-24">
-            <Image
-              src="/accezz logo.png"
-              alt="Accezz Logo"
+            <Logo
+              variant="white"
               fill
               className="object-contain"
             />

@@ -9,11 +9,11 @@ import AdminUsers from './components/AdminUsers';
 import { FiUsers, FiCalendar, FiTrendingUp, FiLogOut, FiUser, FiX, FiMenu } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import Image from 'next/image';
 import AdminAnalytics from './components/AdminAnalytics';
 import AdminEvents from './components/AdminEvents';
 import AdminWithdrawals from './components/AdminWithdrawals';
 import { Skeleton, CardSkeleton } from '@/components/ui/Skeleton';
+import Logo from '@/components/ui/Logo';
 
 type AdminTab = 'users' | 'events' | 'analytics' | 'withdrawals';
 
@@ -119,9 +119,8 @@ const AdminDashboard = () => {
             {/* Logo */}
             <div className="px-4 pb-6">
               <Link href="/" className="flex items-center group">
-                <Image
-                  src="/accezz logo c.png"
-                  alt="Accezz Logo"
+                <Logo
+                  variant="default"
                   width={120}
                   height={120}
                   className="object-contain group-hover:scale-105 transition-transform duration-200"
@@ -233,9 +232,8 @@ const AdminDashboard = () => {
                 {isSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
               </button>
               <Link href="/" className="flex items-center">
-                <Image
-                  src="/accezz logo c.png"
-                  alt="Accezz Logo"
+                <Logo
+                  variant="default"
                   width={80}
                   height={80}
                   className="object-contain"
