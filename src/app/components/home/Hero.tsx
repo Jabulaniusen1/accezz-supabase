@@ -132,7 +132,7 @@ const Hero = () => {
                 height={130}
                 className="h-14 w-auto"
                 /> */}
-              <img src="/accezzlive cl.png" alt="Accezz Logo" width={180} height={130} />
+              <img src="/accezzlive cl.png" alt="Accezz Logo" width={140} height={90} />
             </Link>
 
             <div className="hidden md:flex items-center space-x-8">

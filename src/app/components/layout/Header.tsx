@@ -106,7 +106,7 @@ const Header = () => {
                 className="h-10 sm:h-12 lg:h-14 w-auto"
               /> */}
               {/* <Image src="/accezzlive cl.png" alt="Accezz Logo" width={180} height={130} /> */}
-              <img src="/accezzlive cl.png" alt="Accezz Logo" width={180} height={130} />
+              <img src="/accezzlive cl.png" alt="Accezz Logo" width={140} height={90} />
             </Link>
 
             {/* Desktop Navigation */}
