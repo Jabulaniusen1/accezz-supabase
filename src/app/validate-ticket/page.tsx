@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { formatPrice } from '../../utils/formatPrice';
 import Toast from '../../components/ui/Toast';
 import { supabase } from '@/utils/supabaseClient';
+import { getLogoPath } from '@/utils/logoUtils';
 
 interface Event {
   id: string;
@@ -257,7 +258,7 @@ const ValidateContent = () => {
   <header className="flex justify-center items-center py-4 sm:py-6 border-b border-gray-200">
     <div className="flex items-center gap-3 sm:gap-4">
       <Image
-        src="/accezz logo c.png"
+        src={getLogoPath()}
         alt="Accezz Logo"
         width={120}
         height={40}

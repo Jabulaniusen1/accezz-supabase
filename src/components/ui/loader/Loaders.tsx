@@ -2,6 +2,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
+import { getWhiteLogoPath } from '@/utils/logoUtils';
 
 const Loader = () => {
   return (
@@ -20,7 +21,7 @@ const Loader = () => {
         >
           <div className="relative w-24 h-24">
             <Image
-              src="/accezz logo.png"
+              src={getWhiteLogoPath()}
               alt="Accezz Logo"
               fill
               className="object-contain"

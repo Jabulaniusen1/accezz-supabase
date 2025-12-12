@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FaInstagram, FaTiktok, FaWhatsapp } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
+import { getLogoPath } from '@/utils/logoUtils';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -26,7 +27,7 @@ const Footer = () => {
             <div>
               <div className="mb-2 sm:mb-3">
                 <Image
-                  src="/accezz logo c.png"
+                  src={getLogoPath()}
                   alt="Accezz Logo"
                   width={120}
                   height={40}

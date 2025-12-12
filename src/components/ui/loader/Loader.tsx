@@ -1,6 +1,7 @@
 'use client';
 import React, { useEffect } from 'react';
 import Image from 'next/image';
+import { getLogoPath } from '@/utils/logoUtils';
 
 const Loader = () => {
   // Prevent background scroll when loader is active
@@ -24,7 +25,7 @@ const Loader = () => {
           {/* Logo Container */}
           <div className="absolute inset-0 flex items-center justify-center">
             <Image
-              src="/accezz logo c.png"
+              src={getLogoPath()}
               alt="Accezz Logo"
               width={48}
               height={48}

@@ -14,6 +14,7 @@ import AdminAnalytics from './components/AdminAnalytics';
 import AdminEvents from './components/AdminEvents';
 import AdminWithdrawals from './components/AdminWithdrawals';
 import { Skeleton, CardSkeleton } from '@/components/ui/Skeleton';
+import { getLogoPath } from '@/utils/logoUtils';
 
 type AdminTab = 'users' | 'events' | 'analytics' | 'withdrawals';
 
@@ -120,7 +121,7 @@ const AdminDashboard = () => {
             <div className="px-4 pb-6">
               <Link href="/" className="flex items-center group">
                 <Image
-                  src="/accezz logo c.png"
+                  src={getLogoPath()}
                   alt="Accezz Logo"
                   width={120}
                   height={120}
@@ -234,7 +235,7 @@ const AdminDashboard = () => {
               </button>
               <Link href="/" className="flex items-center">
                 <Image
-                  src="/accezz logo c.png"
+                  src={getLogoPath()}
                   alt="Accezz Logo"
                   width={80}
                   height={80}

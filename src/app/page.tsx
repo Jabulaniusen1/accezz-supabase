@@ -33,7 +33,7 @@ export default function Home() {
 
   return (
     <main>
-      <Suspense fallback={<div>Loading calendar...</div>}>
+      <Suspense fallback={<div></div>}>
         <EventCalendar />
       </Suspense>
       <Hero />

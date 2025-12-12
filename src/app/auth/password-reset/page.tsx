@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link';
 import { supabase } from '@/utils/supabaseClient';
 import { toast, ToastContainer } from 'react-toastify';
+import { getWhiteLogoPath } from '@/utils/logoUtils';
 
 
 function PasswordReset() {
@@ -58,7 +59,7 @@ function PasswordReset() {
       >
         <div className="text-center">
           <Image
-            src="/accezz logo.png"
+            src={getWhiteLogoPath()}
             alt="Accezz Logo"
             width={120}
             height={120}

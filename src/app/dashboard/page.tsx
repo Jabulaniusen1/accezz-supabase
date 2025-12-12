@@ -28,6 +28,7 @@ import { GiTakeMyMoney } from "react-icons/gi";
 import { BsBell, BsCalendar2Event, BsGear, BsPerson, BsTicketPerforated } from "react-icons/bs";
 import { MdOutlineLocationCity } from "react-icons/md";
 import { RiCalendarCheckLine } from "react-icons/ri";
+import { getLogoPath } from "@/utils/logoUtils";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState(0);
@@ -213,7 +214,7 @@ const Dashboard = () => {
           >
             <div className="relative">
               <Image
-                src="/accezz logo c.png"
+                src={getLogoPath()}
                 alt="Accezz Logo"
                 width={80}
                 height={80}

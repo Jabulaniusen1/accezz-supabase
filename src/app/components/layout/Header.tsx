@@ -10,6 +10,7 @@ import Loader from "@/components/ui/loader/Loader";
 import { useRouter, usePathname } from "next/navigation";
 import Toast from "@/components/ui/Toast";
 import { FaArrowRight } from "react-icons/fa";
+import { getLogoPath, getWhiteLogoPath } from "@/utils/logoUtils";
 
 const Header = () => {
 
@@ -99,7 +100,7 @@ const Header = () => {
               className="flex items-center space-x-2 group"
             >
               <Image 
-                src="/accezz logo c.png" 
+                src={getLogoPath()} 
                 alt="Accezz Logo" 
                 width={180}
                 height={130}
@@ -206,7 +207,7 @@ const Header = () => {
                 <div className="flex items-center justify-between px-6 py-5 border-b-2 border-gray-200 dark:border-gray-700 bg-gradient-to-r from-[#f54502] to-[#d63a02]">
                   <div className="flex items-center space-x-3">
                     <Image 
-                      src="/accezz logo.png" 
+                      src={getWhiteLogoPath()} 
                       alt="Accezz Logo" 
                       width={140}
                       height={100}
