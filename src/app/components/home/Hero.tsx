@@ -10,7 +10,7 @@ import Loader from '@/components/ui/loader/Loader';
 import Toast from "@/components/ui/Toast";
 import ToggleMode from '@/components/ui/mode/toggleMode';
 import { FaArrowRight } from 'react-icons/fa';
-import { getWhiteLogoPath } from '@/utils/logoUtils';
+import Logo from '@/components/ui/Logo';
 
 const Hero = () => {
   const router = useRouter();
@@ -127,9 +127,8 @@ const Hero = () => {
               href="/"
               className="flex items-center space-x-2 group"
             >
-              <Image 
-                src={getWhiteLogoPath()} 
-                alt="Accezz Logo" 
+              <Logo 
+                variant="white"
                 width={180}
                 height={130}
                 className="h-14 w-auto"
@@ -150,9 +149,7 @@ const Hero = () => {
               </div>
 
               <div className="flex items-center space-x-6">
-                <button className="text-white hover:text-white/80 transition-colors">
-                  <ToggleMode />
-                </button>
+                <ToggleMode />
                 
                 {isLoggedIn ? (
                   <>
@@ -231,9 +228,8 @@ const Hero = () => {
                     className="flex items-center space-x-3"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    <Image 
-                      src={getWhiteLogoPath()} 
-                      alt="Accezz Logo" 
+                    <Logo 
+                      variant="white"
                       width={140}
                       height={100}
                       className="h-10 w-auto"

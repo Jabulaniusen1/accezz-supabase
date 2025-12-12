@@ -1,18 +1,32 @@
 /**
- * Returns the appropriate logo path based on the current month.
- * In December, returns the Christmas logo, otherwise returns the default logo.
+ * Returns the logo path.
+ * Always returns the primary logo: /accezz c l.png
+ * @deprecated Use the Logo component instead for automatic fallback handling.
  */
 export function getLogoPath(): string {
-  const currentMonth = new Date().getMonth(); // 0-11, where 11 is December
-  return currentMonth === 11 ? '/accezz c l.png' : '/accezz logo c.png';
+  return '/accezz c l.png';
 }
 
 /**
- * Returns the appropriate logo path for white/light backgrounds.
- * In December, returns the Christmas logo, otherwise returns the default white logo.
+ * Returns the logo path for white/light backgrounds.
+ * Always returns the primary logo: /accezz c l.png
+ * @deprecated Use the Logo component instead for automatic fallback handling.
  */
 export function getWhiteLogoPath(): string {
-  const currentMonth = new Date().getMonth(); // 0-11, where 11 is December
-  return currentMonth === 11 ? '/accezz c l.png' : '/accezz logo.png';
+  return '/accezz c l.png';
+}
+
+/**
+ * Returns an array of logo paths in fallback order.
+ * Useful for implementing custom fallback logic.
+ */
+export function getLogoFallbacks(variant: 'default' | 'white' = 'default'): string[] {
+  return [
+    '/accezz c l.png',
+    '/accezz logo c.png',
+    '/accezz logo.png',
+    '/logo.png',
+    '/logoi.png',
+  ];
 }
 
