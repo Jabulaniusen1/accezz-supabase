@@ -26,7 +26,7 @@ interface LogoProps {
  * This ensures a logo always displays, even if some image files are missing.
  */
 export default function Logo({
-  variant = 'default',
+  variant: _variant = 'default',
   width = 180,
   height = 130,
   fill = false,
@@ -56,7 +56,17 @@ export default function Logo({
     // If all fallbacks fail, the Image component will handle it gracefully
   };
 
-  const imageProps: any = {
+  const imageProps: {
+    src: string;
+    alt: string;
+    className: string;
+    priority: boolean;
+    onError: () => void;
+    fill?: boolean;
+    sizes?: string;
+    width?: number;
+    height?: number;
+  } = {
     src: currentSrc,
     alt,
     className,

@@ -1,7 +1,6 @@
 'use client';
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Image from 'next/image';
 import Logo from '@/components/ui/Logo';
 
 const Loader = () => {

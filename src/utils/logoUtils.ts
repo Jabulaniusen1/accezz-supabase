@@ -20,7 +20,7 @@ export function getWhiteLogoPath(): string {
  * Returns an array of logo paths in fallback order.
  * Useful for implementing custom fallback logic.
  */
-export function getLogoFallbacks(variant: 'default' | 'white' = 'default'): string[] {
+export function getLogoFallbacks(_variant: 'default' | 'white' = 'default'): string[] {
   return [
     '/accezz c l.png',
     '/accezz logo c.png',

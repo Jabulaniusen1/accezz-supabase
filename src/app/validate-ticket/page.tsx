@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import Image from 'next/image';
 import { CircularProgress } from '@mui/material';
 import { motion } from 'framer-motion';
 import { formatPrice } from '../../utils/formatPrice';

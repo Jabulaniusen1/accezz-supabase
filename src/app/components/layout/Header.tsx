@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiMenu, FiX, FiLogOut, FiUser } from "react-icons/fi";
 import { MdSpaceDashboard } from "react-icons/md";

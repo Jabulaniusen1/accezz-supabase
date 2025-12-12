@@ -1,6 +1,5 @@
 'use client';
 import React, { useEffect } from 'react';
-import Image from 'next/image';
 import Logo from '@/components/ui/Logo';
 
 const Loader = () => {
