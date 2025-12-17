@@ -12,6 +12,7 @@ type ReceiptProps = {
   closeReceipt?: () => void;
   isModal?: boolean;
   autoDownload?: boolean;
+  ticketId?: string | null; // Allow ticketId to be passed as prop
 };
 
 interface Attendee {
@@ -47,7 +48,7 @@ interface TicketData {
   attendees: Attendee[];
 }
 
-const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: ReceiptProps) => {
+const Receipt = ({ closeReceipt, isModal = true, autoDownload = false, ticketId: ticketIdProp }: ReceiptProps) => {
   const router = useRouter();
   const [ticketData, setTicketData] = useState<TicketData | null>(null);
   const [eventData, setEventData] = useState<EventData | null>(null);
@@ -85,8 +86,9 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
   // Fetch ticket data from Supabase
   const fetchTicketData = async () => {
     try {
+      // Use ticketId from prop first, then fall back to URL
       const searchParams = new URLSearchParams(window.location.search);
-      const ticketId = searchParams.get('ticketId');
+      const ticketId = ticketIdProp || searchParams.get('ticketId');
       if (!ticketId) throw new Error('No ticket information found in URL');
 
       // Fetch ticket with order and event details
@@ -215,7 +217,7 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
   useEffect(() => {
     fetchTicketData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [ticketIdProp]); // Re-fetch if ticketId prop changes
 
   // Auto-download PDF when ticket is ready (for success page)
   useEffect(() => {

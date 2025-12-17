@@ -287,10 +287,10 @@ export async function createOrder(params: CreateOrderParams): Promise<{ orderId:
     }
     console.log('[createOrder] Event fetched successfully:', event?.id);
 
-    // Fetch ticket type
+    // Fetch ticket type to get price (availability check will be done atomically)
     const { data: ticketType, error: ticketTypeError } = await supabase
       .from('ticket_types')
-      .select('*')
+      .select('price')
       .eq('event_id', params.eventId)
       .eq('name', params.ticketTypeName)
       .single();
@@ -303,14 +303,7 @@ export async function createOrder(params: CreateOrderParams): Promise<{ orderId:
       console.error('[createOrder] Ticket type not found:', params.ticketTypeName);
       throw new Error('Ticket type not found');
     }
-    console.log('[createOrder] Ticket type found:', ticketType.name);
-
-    // Check if enough tickets are available
-    const available = ticketType.quantity - ticketType.sold;
-    if (available < params.quantity) {
-      console.error('[createOrder] Insufficient tickets:', { available, requested: params.quantity });
-      throw new Error(`Only ${available} ticket(s) available`);
-    }
+    console.log('[createOrder] Ticket type found:', params.ticketTypeName);
 
     // Calculate total amount
     const totalAmount = ticketType.price * params.quantity;
@@ -320,11 +313,16 @@ export async function createOrder(params: CreateOrderParams): Promise<{ orderId:
     const { data: { session } } = await supabase.auth.getSession();
     console.log('[createOrder] Session:', session ? 'authenticated' : 'anonymous');
 
-    // Create order
+    // Set expiry time (10 minutes from now)
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + 10);
+
+    // Create order first (without reservation - will be done atomically)
     console.log('[createOrder] Inserting order with data:', {
       event_id: params.eventId,
       buyer_email: params.email,
-      total_amount: totalAmount
+      total_amount: totalAmount,
+      expires_at: expiresAt.toISOString()
     });
     
     const { data: order, error: orderError } = await supabase
@@ -338,6 +336,7 @@ export async function createOrder(params: CreateOrderParams): Promise<{ orderId:
         currency: currency,
         total_amount: totalAmount,
         status: 'pending',
+        expires_at: expiresAt.toISOString(),
         meta: {
           ticketTypeName: params.ticketTypeName,
           quantity: params.quantity,
@@ -355,6 +354,45 @@ export async function createOrder(params: CreateOrderParams): Promise<{ orderId:
     }
 
     console.log('[createOrder] Order created successfully:', order.id);
+
+    // Atomically reserve tickets (this uses row-level locking to prevent race conditions)
+    console.log('[createOrder] Attempting atomic reservation:', {
+      eventId: params.eventId,
+      ticketTypeName: params.ticketTypeName,
+      quantity: params.quantity,
+      orderId: order.id
+    });
+
+    const { data: reservationResult, error: reservationError } = await supabase
+      .rpc('reserve_tickets_atomic', {
+        p_event_id: params.eventId,
+        p_ticket_type_name: params.ticketTypeName,
+        p_quantity: params.quantity,
+        p_order_id: order.id,
+        p_expires_at: expiresAt.toISOString()
+      });
+
+    if (reservationError) {
+      console.error('[createOrder] Reservation error:', reservationError);
+      // Clean up order if reservation fails
+      await supabase.from('orders').delete().eq('id', order.id);
+      throw new Error(`Reservation failed: ${reservationError.message}`);
+    }
+
+    const reservation = reservationResult as { success: boolean; error?: string; available?: number } | null;
+    
+    if (!reservation || !reservation.success) {
+      const errorMsg = reservation?.error || 'Reservation failed';
+      const available = reservation?.available ?? 0;
+      console.error('[createOrder] Reservation failed:', { errorMsg, available });
+      // Clean up order if reservation fails
+      await supabase.from('orders').delete().eq('id', order.id);
+      throw new Error(available > 0 
+        ? `Only ${available} ticket(s) available` 
+        : errorMsg);
+    }
+
+    console.log('[createOrder] Tickets reserved successfully:', reservation);
 
     // Trigger Inngest event to send abandoned cart email after 20 seconds
     // Only trigger for paid tickets (not free tickets)
@@ -384,29 +422,35 @@ export async function createOrder(params: CreateOrderParams): Promise<{ orderId:
           }),
         });
 
+        const responseText = await response.text();
+        let result;
+        try {
+          result = responseText ? JSON.parse(responseText) : {};
+        } catch {
+          result = { raw: responseText };
+        }
+
         if (!response.ok) {
-          const errorText = await response.text();
-          let errorData;
-          try {
-            errorData = JSON.parse(errorText);
-          } catch {
-            errorData = { raw: errorText };
-          }
-          
           console.error('[createOrder] Inngest trigger failed:', {
             status: response.status,
             statusText: response.statusText,
-            error: errorData,
+            error: result,
             url: triggerUrl,
           });
-          throw new Error(`Failed to trigger Inngest event: ${response.status} ${response.statusText}`);
+          // Don't throw - Inngest failures shouldn't block order creation
+          // The order is created successfully, Inngest is just for background jobs
+        } else if (result.skipped) {
+          // In development, Inngest events are skipped if dev server isn't running
+          console.log('[createOrder] Inngest event skipped (dev mode):', {
+            orderId: order.id,
+            message: result.message,
+          });
+        } else {
+          console.log('[createOrder] Inngest event triggered successfully:', {
+            orderId: order.id,
+            result,
+          });
         }
-
-        const result = await response.json();
-        console.log('[createOrder] Inngest event triggered successfully:', {
-          orderId: order.id,
-          result,
-        });
       } catch (inngestError) {
         // Log detailed error but don't fail order creation
         console.error('[createOrder] Error triggering Inngest event:', {
@@ -433,6 +477,29 @@ export async function createOrder(params: CreateOrderParams): Promise<{ orderId:
  */
 export async function createTicketsForOrder(orderId: string): Promise<string[]> {
   try {
+    // Idempotency check: Check if tickets already exist for this order
+    const { data: existingTickets, error: checkError } = await supabase
+      .from('tickets')
+      .select('id, ticket_code')
+      .eq('order_id', orderId)
+      .limit(1);
+
+    if (checkError) {
+      console.error('[createTicketsForOrder] Error checking existing tickets:', checkError);
+      // Continue anyway - might be a permission issue
+    }
+
+    if (existingTickets && existingTickets.length > 0) {
+      console.log(`[createTicketsForOrder] Tickets already exist for order ${orderId}, returning existing codes`);
+      // Return existing ticket codes
+      const { data: allTickets } = await supabase
+        .from('tickets')
+        .select('ticket_code')
+        .eq('order_id', orderId);
+      
+      return (allTickets || []).map(t => t.ticket_code);
+    }
+
     // Fetch order details (don't join events to avoid RLS issues)
     const { data: order, error: orderError } = await supabase
       .from('orders')
@@ -581,18 +648,9 @@ export async function createTicketsForOrder(orderId: string): Promise<string[]> 
         .catch(err => console.error('Background QR generation error:', err));
     }
 
-    // Update ticket type sold count (using the function from schema)
-    // Note: The schema has a function `issue_tickets_and_update_inventory` but it requires order to be paid
-    // We'll manually update the sold count
-    const { error: updateError } = await supabase
-      .from('ticket_types')
-      .update({ sold: ticketType.sold + quantity })
-      .eq('id', ticketType.id);
-
-    if (updateError) {
-      console.error('Error updating ticket sold count:', updateError);
-      // Don't throw - tickets are created, we can fix inventory later
-    }
+    // Note: We no longer manually update sold count here
+    // The move_reserved_to_sold RPC function handles this atomically
+    // This is called in processPaymentSuccess before createTicketsForOrder
 
     // Send ticket email (non-blocking, don't wait for it)
     sendTicketEmail({
@@ -619,10 +677,200 @@ export async function createTicketsForOrder(orderId: string): Promise<string[]> 
 }
 
 /**
- * Update order status to paid
+ * Process payment success (idempotent)
+ * This is the main function called by webhook and redirect verification
+ * It handles: marking order as paid, moving reserved to sold, creating tickets, and queuing email/QR
+ */
+export async function processPaymentSuccess(
+  orderId: string,
+  paymentReference: string,
+  paymentProvider: string = 'paystack'
+): Promise<{ success: boolean; ticketsCreated: boolean; message: string }> {
+  try {
+    console.log('[processPaymentSuccess] Processing payment success:', { orderId, paymentReference });
+
+    // Idempotency check: Check if order is already paid
+    const { data: order, error: fetchError } = await supabase
+      .from('orders')
+      .select('id, status, payment_reference')
+      .eq('id', orderId)
+      .single();
+
+    if (fetchError) {
+      console.error('[processPaymentSuccess] Error fetching order:', fetchError);
+      throw fetchError;
+    }
+
+    if (!order) {
+      throw new Error('Order not found');
+    }
+
+    // If already paid, check if tickets exist
+    if (order.status === 'paid') {
+      console.log(`[processPaymentSuccess] Order ${orderId} is already paid`);
+      
+      // Check if tickets exist
+      const { data: existingTickets } = await supabase
+        .from('tickets')
+        .select('id')
+        .eq('order_id', orderId)
+        .limit(1);
+
+      if (existingTickets && existingTickets.length > 0) {
+        console.log(`[processPaymentSuccess] Order ${orderId} already processed (tickets exist)`);
+        return { success: true, ticketsCreated: true, message: 'Order already processed' };
+      } else {
+        // Order is paid but tickets don't exist - create them
+        console.log(`[processPaymentSuccess] Order ${orderId} is paid but tickets missing, creating tickets`);
+        // Continue to ticket creation below
+      }
+    }
+
+    // Mark order as paid (idempotent)
+    await markOrderAsPaid(orderId, paymentReference, paymentProvider);
+
+    // Move reserved tickets to sold (atomic operation)
+    // Note: This may fail if reservation expired or was already moved (idempotent case)
+    console.log('[processPaymentSuccess] Moving reserved tickets to sold');
+    const { data: moveResult, error: moveError } = await supabase
+      .rpc('move_reserved_to_sold', {
+        p_order_id: orderId
+      });
+
+    // Handle move result - check if it's idempotent failure
+    let moveSucceeded = false;
+
+    if (moveError) {
+      console.warn('[processPaymentSuccess] Error moving reserved to sold:', moveError);
+      // Check if tickets already exist (idempotent case)
+      const { data: existingTickets } = await supabase
+        .from('tickets')
+        .select('id')
+        .eq('order_id', orderId)
+        .limit(1);
+      
+      if (existingTickets && existingTickets.length > 0) {
+        console.log('[processPaymentSuccess] Tickets exist despite RPC error - idempotent success');
+        return { success: true, ticketsCreated: true, message: 'Order already processed' };
+      }
+      // Continue - order is paid, proceed to create tickets
+      console.log('[processPaymentSuccess] RPC error but order is paid - proceeding to create tickets');
+    } else {
+    const moveResultData = moveResult as { success: boolean; error?: string } | null;
+      if (moveResultData && moveResultData.success) {
+        moveSucceeded = true;
+        console.log('[processPaymentSuccess] Reserved tickets moved to sold successfully');
+      } else {
+      const errorMsg = moveResultData?.error || 'Failed to move reserved tickets';
+        console.warn('[processPaymentSuccess] Move failed:', errorMsg);
+        
+        // Check if tickets already exist (idempotent case)
+        const { data: existingTickets } = await supabase
+          .from('tickets')
+          .select('id')
+          .eq('order_id', orderId)
+          .limit(1);
+        
+        if (existingTickets && existingTickets.length > 0) {
+          console.log('[processPaymentSuccess] Tickets already exist - idempotent success');
+          return { success: true, ticketsCreated: true, message: 'Order already processed' };
+        }
+        
+        // If "insufficient reserved", reservation expired/missing but order is paid - proceed
+        // The ticket creation will handle inventory checks
+        if (errorMsg.includes('Insufficient reserved')) {
+          console.log('[processPaymentSuccess] Reservation expired/missing, but order is paid - proceeding to create tickets');
+        } else {
+          // Other errors - since order is paid, proceed anyway (ticket creation will validate)
+          console.warn('[processPaymentSuccess] Move failed with:', errorMsg, '- but order is paid, proceeding');
+        }
+      }
+    }
+
+    // Create tickets (idempotent - checks if tickets already exist)
+    let ticketsCreated = false;
+    try {
+      await createTicketsForOrder(orderId);
+      ticketsCreated = true;
+      console.log('[processPaymentSuccess] Tickets created successfully');
+    } catch (ticketError) {
+      console.error('[processPaymentSuccess] Error creating tickets:', ticketError);
+      // If tickets already exist, that's okay (idempotent)
+      if (ticketError instanceof Error && ticketError.message.includes('already exist')) {
+        ticketsCreated = true;
+      } else {
+        throw ticketError;
+      }
+    }
+
+    // Queue Inngest event for email and QR generation (non-blocking)
+    try {
+      const baseUrl = typeof window !== 'undefined' 
+        ? window.location.origin 
+        : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+      
+      const triggerUrl = `${baseUrl}/api/inngest/trigger`;
+      
+      await fetch(triggerUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventName: 'payment/success',
+          data: {
+            orderId,
+            paymentReference,
+            paymentProvider,
+          },
+        }),
+      }).catch(err => {
+        console.error('[processPaymentSuccess] Failed to queue email/QR event:', err);
+        // Don't throw - tickets are created, email can be sent later
+      });
+
+      console.log('[processPaymentSuccess] Email/QR generation queued');
+    } catch (queueError) {
+      console.error('[processPaymentSuccess] Error queueing email/QR:', queueError);
+      // Don't throw - tickets are created successfully
+    }
+
+    return { 
+      success: true, 
+      ticketsCreated, 
+      message: 'Payment processed successfully' 
+    };
+  } catch (error: unknown) {
+    console.error('[processPaymentSuccess] Error processing payment:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return { 
+      success: false, 
+      ticketsCreated: false, 
+      message: `Payment processing failed: ${message}` 
+    };
+  }
+}
+
+/**
+ * Update order status to paid (idempotent)
+ * If order is already paid, returns early without error
  */
 export async function markOrderAsPaid(orderId: string, paymentReference?: string, paymentProvider: string = 'paystack'): Promise<void> {
   try {
+    // Check current status (idempotency check)
+    const { data: order, error: fetchError } = await supabase
+      .from('orders')
+      .select('status, payment_reference')
+      .eq('id', orderId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    // If already paid, return early (idempotent)
+    if (order?.status === 'paid') {
+      console.log(`[markOrderAsPaid] Order ${orderId} is already paid, skipping update`);
+      return;
+    }
+
+    // Update to paid status
     const { error } = await supabase
       .from('orders')
       .update({
@@ -631,7 +879,8 @@ export async function markOrderAsPaid(orderId: string, paymentReference?: string
         payment_provider: paymentProvider,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', orderId);
+      .eq('id', orderId)
+      .eq('status', 'pending'); // Only update if still pending (prevents race conditions)
 
     if (error) throw error;
   } catch (error: unknown) {
@@ -642,18 +891,26 @@ export async function markOrderAsPaid(orderId: string, paymentReference?: string
 
 /**
  * Create free tickets (for price = 0)
+ * Uses atomic reservation for consistency, but with immediate payment processing
+ * Note: Free tickets still reserve inventory to prevent overselling, but payment is instant
  */
 export async function createFreeTickets(params: CreateOrderParams): Promise<{ ticketId: string; orderId: string }> {
   try {
-    // Create order with paid status immediately for free tickets
+    // Create order with reservation (createOrder handles atomic reservation)
+    // For free tickets, we'll set a shorter expiry (5 minutes) since payment is instant
+    // But actually, we'll process payment immediately, so expiry doesn't matter
     const { orderId } = await createOrder(params);
 
-    // Mark as paid immediately
-    await markOrderAsPaid(orderId, `FREE-${orderId}`, 'free');
+    // For free tickets, process payment immediately (no actual payment, just mark as paid)
+    // This will move reserved -> sold and create tickets
+    const result = await processPaymentSuccess(orderId, `FREE-${orderId}`, 'free');
 
-    // Create tickets
-    await createTicketsForOrder(orderId);
-    await notifyTicketPurchase(orderId);
+    if (!result.success) {
+      throw new Error(result.message || 'Failed to process free ticket order');
+    }
+
+    // Wait a moment for tickets to be created
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     // Return the first ticket ID
     const { data: ticket, error: ticketError } = await supabase
@@ -663,7 +920,19 @@ export async function createFreeTickets(params: CreateOrderParams): Promise<{ ti
       .limit(1)
       .single();
 
-    if (ticketError) throw ticketError;
+    if (ticketError) {
+      // If ticket not found, wait a bit more and retry
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      const { data: retryTicket, error: retryError } = await supabase
+        .from('tickets')
+        .select('id')
+        .eq('order_id', orderId)
+        .limit(1)
+        .single();
+      
+      if (retryError) throw retryError;
+      return { ticketId: retryTicket.id, orderId };
+    }
 
     return { ticketId: ticket.id, orderId };
   } catch (error: unknown) {

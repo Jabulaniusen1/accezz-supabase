@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Loader from '@/components/ui/loader/Loader';
-import { CardSkeleton } from '@/components/ui/Skeleton';
+// import { CardSkeleton } from '@/components/ui/Skeleton';
 import dynamic from 'next/dynamic';
 import EventNotFound from '@/components/EventNotFound';
 import { fetchEventBySlug } from '@/utils/eventUtils';
@@ -53,7 +53,7 @@ export default function EventRouterPage() {
   if (isLoading) {
     return (
       <div className="container mx-auto p-4">
-        <CardSkeleton />
+        <Loader />
       </div>
     );
   }

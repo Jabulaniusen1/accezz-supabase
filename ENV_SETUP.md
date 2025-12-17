@@ -20,6 +20,23 @@ GMAIL_SENDER_NAME=Accezz
 
 **Note:** See the [Gmail App Password Setup](#gmail-app-password-setup) section below for instructions on generating an app password.
 
+### Inngest Variables (Required for Background Jobs)
+```env
+# For local development (optional - can leave empty)
+INNGEST_EVENT_KEY=
+
+# For production (REQUIRED)
+# Get from: https://app.inngest.com/env/[your-env]/manage/keys
+INNGEST_EVENT_KEY=your_inngest_event_key_here
+INNGEST_SIGNING_KEY=your_inngest_signing_key_here
+
+# Your app URL (used for API calls)
+NEXT_PUBLIC_BASE_URL=http://localhost:3000  # local
+# NEXT_PUBLIC_BASE_URL=https://yourdomain.com  # production
+```
+
+**Note:** See [INNGEST_SETUP.md](./INNGEST_SETUP.md) for detailed Inngest setup instructions.
+
 ## How to Get Your Supabase Service Role Key
 
 1. Go to your Supabase project dashboard: https://supabase.com/dashboard

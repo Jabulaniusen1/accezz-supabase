@@ -2,13 +2,12 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Receipt from "../components/Receipt"
+import Invoice from "../components/Invoice"
 import Loader from "@/components/ui/loader/Loader";
 import PaymentFailedModal from "@/components/PaymentFailedModal";
-import { markOrderAsPaid, createTicketsForOrder } from "@/utils/paymentUtils";
+import { processPaymentSuccess } from "@/utils/paymentUtils";
 import { supabase } from "@/utils/supabaseClient";
 import { clearTicketPurchaseState } from "@/utils/localStorage";
-import { notifyTicketPurchase } from "@/utils/notificationClient";
 import CreateAccountPrompt from "../components/CreateAccountPrompt";
 import { getSession } from "@/utils/supabaseAuth";
 
@@ -124,59 +123,111 @@ const SuccessContent = () => {
           return;
         }
 
-        // Verify via Paystack API
+        // Verify via Paystack API (fallback - webhook is primary)
         if (reference) {
-          const vRes = await fetch(`/api/paystack/verify?reference=${encodeURIComponent(reference)}`);
-          const vData = await vRes.json();
-          if (!vRes.ok || !vData?.status) {
-            throw new Error(vData?.error || 'Verification failed');
-          }
+          const resolvedOrderId = orderId || (await (async () => {
+            // Try to get orderId from verification
+            const vRes = await fetch(`/api/paystack/verify?reference=${encodeURIComponent(reference)}`);
+            const vData = await vRes.json();
+            if (!vRes.ok || !vData?.status) {
+              throw new Error(vData?.error || 'Verification failed');
+            }
 
-          if (vData.status !== 'success') {
-            setShowFailureModal(true);
-            setIsVerifying(false);
-            return;
-          }
+            if (vData.status !== 'success') {
+              setShowFailureModal(true);
+              setIsVerifying(false);
+              return null;
+            }
 
-          const resolvedOrderId = vData.orderId || orderId;
+            return vData.orderId;
+          })());
+
           if (!resolvedOrderId) {
             throw new Error('Order not found from verification');
           }
 
-          // Mark order as paid and issue tickets
-          await markOrderAsPaid(resolvedOrderId, reference, 'paystack');
-          await createTicketsForOrder(resolvedOrderId);
-          await notifyTicketPurchase(resolvedOrderId);
-
-          // Get the first ticket ID
-          const { data: tickets, error: ticketsError } = await supabase
-            .from('tickets')
-            .select('id')
-            .eq('order_id', resolvedOrderId)
-            .limit(1);
-
-          if (ticketsError || !tickets || tickets.length === 0) {
-            throw new Error('Failed to retrieve tickets');
-          }
-
-          const firstTicketId = tickets[0].id;
-          
-          // Get order details to check if user is logged in
+          // Check if order is already paid (idempotency check)
           const { data: orderData, error: orderDataError } = await supabase
             .from('orders')
-            .select('buyer_email, buyer_user_id, id')
+            .select('id, status, buyer_email, buyer_user_id')
             .eq('id', resolvedOrderId)
             .single();
+
           if (orderDataError) {
             console.error('Order fetch error:', orderDataError);
+            throw new Error('Order not found');
+          }
+
+          // If already paid, just fetch tickets (webhook already processed it)
+          if (orderData.status === 'paid') {
+            console.log('[Success] Order already paid, fetching tickets');
+            
+            // Get the first ticket ID
+            const { data: tickets, error: ticketsError } = await supabase
+              .from('tickets')
+              .select('id')
+              .eq('order_id', resolvedOrderId)
+              .limit(1);
+
+            if (ticketsError || !tickets || tickets.length === 0) {
+              // Tickets might still be generating, wait a bit and retry
+              console.log('[Success] Tickets not found yet, waiting...');
+              await new Promise(resolve => setTimeout(resolve, 2000));
+              
+              const { data: retryTickets } = await supabase
+                .from('tickets')
+                .select('id')
+                .eq('order_id', resolvedOrderId)
+                .limit(1);
+
+              if (!retryTickets || retryTickets.length === 0) {
+                throw new Error('Tickets not found. Please check your email or contact support.');
+              }
+
+              const firstTicketId = retryTickets[0].id;
+              setTicketId(firstTicketId);
+            } else {
+              const firstTicketId = tickets[0].id;
+              setTicketId(firstTicketId);
+            }
+          } else if (orderData.status === 'pending') {
+            // Order is still pending - process payment as fallback (webhook might not have fired yet)
+            console.log('[Success] Order still pending, processing payment as fallback');
+            
+            const result = await processPaymentSuccess(resolvedOrderId, reference, 'paystack');
+            
+            if (!result.success) {
+              throw new Error(result.message || 'Payment processing failed');
+            }
+
+            // Wait a moment for tickets to be created
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // Get the first ticket ID
+            const { data: tickets, error: ticketsError } = await supabase
+              .from('tickets')
+              .select('id')
+              .eq('order_id', resolvedOrderId)
+              .limit(1);
+
+            if (ticketsError || !tickets || tickets.length === 0) {
+              throw new Error('Failed to retrieve tickets');
+            }
+
+            const firstTicketId = tickets[0].id;
+            setTicketId(firstTicketId);
+          } else {
+            // Order is failed/cancelled
+            setShowFailureModal(true);
+            setIsVerifying(false);
+            return;
           }
 
           // Clear saved purchase state since payment is complete
           try { clearTicketPurchaseState(); } catch {}
           try { localStorage.removeItem('pendingPayment'); } catch {}
           
-          // Store in state immediately and update URL (non-blocking navigation)
-          setTicketId(firstTicketId);
+          // Store in state
           setOrderId(resolvedOrderId);
           
           // Check if user is logged in
@@ -191,14 +242,115 @@ const SuccessContent = () => {
           setIsVerifying(false);
           
           // Update URL for bookmarking/sharing (async, won't block render)
-          window.history.replaceState({}, '', `/success?ticketId=${firstTicketId}`);
+          const finalTicketId = ticketId || (await (async () => {
+            const { data: finalTickets } = await supabase
+              .from('tickets')
+              .select('id')
+              .eq('order_id', resolvedOrderId)
+              .limit(1);
+            return finalTickets?.[0]?.id || null;
+          })());
+          
+          if (finalTicketId) {
+            setTicketId(finalTicketId);
+            window.history.replaceState({}, '', `/success?ticketId=${finalTicketId}`);
+          }
           return;
         }
         
         throw new Error('Missing reference, ticketId, or orderId');
       } catch (error: unknown) {
         console.error('Payment verification error:', error);
-        setShowFailureModal(true);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        
+        // Before showing failure, check if payment actually succeeded by looking for tickets
+        // This handles cases where verification fails but webhook already processed payment
+        let paymentActuallySucceeded = false;
+        
+        if (reference || orderId) {
+          try {
+            // Try to get orderId from reference if we have it
+            const checkOrderId = orderId || (await (async () => {
+              if (reference) {
+                try {
+                  const vRes = await fetch(`/api/paystack/verify?reference=${encodeURIComponent(reference)}`);
+                  const vData = await vRes.json();
+                  if (vData?.orderId) {
+                    return vData.orderId;
+                  }
+                } catch {
+                  // Verification failed, but check by reference in orders table
+                  const { data: orderByRef } = await supabase
+                    .from('orders')
+                    .select('id, status')
+                    .eq('payment_reference', reference)
+                    .limit(1);
+                  
+                  if (orderByRef && orderByRef.length > 0) {
+                    return orderByRef[0].id;
+                  }
+                }
+              }
+              return null;
+            })());
+            
+            if (checkOrderId) {
+              // Check if order is paid
+              const { data: orderCheck } = await supabase
+                .from('orders')
+                .select('id, status')
+                .eq('id', checkOrderId)
+                .single();
+              
+              if (orderCheck && orderCheck.status === 'paid') {
+                // Order is paid - check for tickets
+                const { data: tickets } = await supabase
+                  .from('tickets')
+                  .select('id')
+                  .eq('order_id', checkOrderId)
+                  .limit(1);
+                
+                if (tickets && tickets.length > 0) {
+                  // Payment succeeded! Tickets exist
+                  paymentActuallySucceeded = true;
+                  setTicketId(tickets[0].id);
+                  setOrderId(checkOrderId);
+                  
+                  // Clear saved purchase state
+                  try { clearTicketPurchaseState(); } catch {}
+                  try { localStorage.removeItem('pendingPayment'); } catch {}
+                  
+                  // Check if user is logged in for account prompt
+                  const session = await getSession();
+                  if (!session && orderCheck) {
+                    const { data: orderData } = await supabase
+                      .from('orders')
+                      .select('buyer_email, buyer_user_id')
+                      .eq('id', checkOrderId)
+                      .single();
+                    
+                    if (orderData && orderData.buyer_email && !orderData.buyer_user_id) {
+                      setOrderEmail(orderData.buyer_email);
+                      setShowAccountPrompt(true);
+                    }
+                  }
+                  
+                  setIsVerifying(false);
+                  return; // Don't show failure modal
+                }
+              }
+            }
+          } catch (checkError) {
+            console.error('Error checking payment status:', checkError);
+            // Continue to show failure modal if we can't verify
+          }
+        }
+        
+        // Only show failure modal if we're CERTAIN payment failed
+        // (i.e., no tickets found and order is not paid)
+        if (!paymentActuallySucceeded) {
+          setShowFailureModal(true);
+        }
         setIsVerifying(false);
       }
     }; 
@@ -274,10 +426,10 @@ const SuccessContent = () => {
           orderId={orderId}
         />
       )}
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-8">
-        {/* Ticket Display */}
-        <div className="w-full max-w-4xl">
-          <Receipt isModal={false} autoDownload={true} />
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
+        {/* Invoice Display */}
+        <div className="w-full">
+          <Invoice ticketId={finalTicketId} orderId={orderId} />
         </div>
       </div>
     </>

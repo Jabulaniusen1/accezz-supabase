@@ -47,13 +47,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: message }, { status: 400 });
     }
 
-    if (!initJson?.data?.authorization_url) {
-      return NextResponse.json({ error: 'Missing authorization_url from Paystack' }, { status: 400 });
+    // For inline payment, we need access_code (authorization_url is for redirect)
+    if (!initJson?.data?.access_code) {
+      return NextResponse.json({ error: 'Missing access_code from Paystack' }, { status: 400 });
     }
 
     return NextResponse.json({
-      authorization_url: initJson.data.authorization_url,
-      access_code: initJson.data?.access_code,
+      access_code: initJson.data.access_code,
+      authorization_url: initJson.data.authorization_url, // Keep for fallback
       reference,
     });
   } catch (err: unknown) {

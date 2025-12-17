@@ -20,9 +20,30 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check if eventKey is configured
+    // In local development without event key, skip Inngest (log but don't fail)
+    // User should run: npx inngest-cli dev for local development
     if (!process.env.INNGEST_EVENT_KEY) {
-      console.warn('[Inngest Trigger] INNGEST_EVENT_KEY not set - events may not be sent in production');
+      if (process.env.NODE_ENV === 'production') {
+        console.warn('[Inngest Trigger] INNGEST_EVENT_KEY not set in production - events will not be sent');
+        return NextResponse.json(
+          { 
+            error: 'Inngest not configured',
+            message: 'INNGEST_EVENT_KEY is required in production'
+          },
+          { status: 500 }
+        );
+      } else {
+        // In development, log but don't fail (allows app to work without Inngest dev server)
+        console.warn('[Inngest Trigger] INNGEST_EVENT_KEY not set. For local development, start Inngest dev server: npx inngest-cli dev');
+        return NextResponse.json(
+          { 
+            message: 'Inngest event skipped (dev mode - start dev server to enable)',
+            skipped: true,
+            eventName
+          },
+          { status: 200 }
+        );
+      }
     }
 
     console.log('[Inngest Trigger] Sending event to Inngest:', { eventName, data });

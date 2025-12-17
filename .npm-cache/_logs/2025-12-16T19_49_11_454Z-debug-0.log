@@ -1,0 +1,169 @@
+0 verbose cli /usr/local/bin/node /usr/local/lib/node_modules/npm/bin/npm-cli.js
+1 info using npm@10.9.3
+2 info using node@v22.20.0
+3 silly config load:file:/usr/local/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/mac/Desktop/accezz-supabase/.npmrc
+5 silly config load:file:/Users/mac/.npmrc
+6 silly config load:file:/usr/local/etc/npmrc
+7 verbose title npm exec inngest-cli dev
+8 verbose argv "exec" "--" "inngest-cli" "dev"
+9 verbose logfile logs-max:10 dir:/Users/mac/Desktop/accezz-supabase/.npm-cache/_logs/2025-12-16T19_49_11_454Z-
+10 verbose logfile /Users/mac/Desktop/accezz-supabase/.npm-cache/_logs/2025-12-16T19_49_11_454Z-debug-0.log
+11 silly logfile start cleaning logs, removing 1 files
+12 silly logfile done cleaning log files
+13 silly packumentCache heap:4345298944 maxSize:1086324736 maxEntrySize:543162368
+14 http fetch GET 200 https://registry.npmjs.org/inngest-cli 1868ms (cache miss)
+15 silly packumentCache heap:4345298944 maxSize:1086324736 maxEntrySize:543162368
+16 silly packumentCache heap:4345298944 maxSize:1086324736 maxEntrySize:543162368
+17 silly idealTree buildDeps
+18 silly fetch manifest inngest-cli@1.15.0
+19 silly packumentCache full:https://registry.npmjs.org/inngest-cli cache-miss
+20 http fetch GET 200 https://registry.npmjs.org/inngest-cli 1345ms (cache miss)
+21 silly packumentCache full:https://registry.npmjs.org/inngest-cli set size:undefined disposed:false
+22 silly placeDep ROOT inngest-cli@1.15.0 OK for:  want: 1.15.0
+23 silly fetch manifest adm-zip@^0.5.10
+24 silly packumentCache full:https://registry.npmjs.org/adm-zip cache-miss
+25 silly fetch manifest debug@^4.3.4
+26 silly packumentCache full:https://registry.npmjs.org/debug cache-miss
+27 silly fetch manifest node-fetch@^2.6.7
+28 silly packumentCache full:https://registry.npmjs.org/node-fetch cache-miss
+29 silly fetch manifest tar@^6.2.1
+30 silly packumentCache full:https://registry.npmjs.org/tar cache-miss
+31 http fetch GET 200 https://registry.npmjs.org/adm-zip 293ms (cache miss)
+32 silly packumentCache full:https://registry.npmjs.org/adm-zip set size:undefined disposed:false
+33 http fetch GET 200 https://registry.npmjs.org/node-fetch 979ms (cache revalidated)
+34 silly packumentCache full:https://registry.npmjs.org/node-fetch set size:896010 disposed:false
+35 http fetch GET 200 https://registry.npmjs.org/tar 1507ms (cache miss)
+36 silly packumentCache full:https://registry.npmjs.org/tar set size:undefined disposed:false
+37 http fetch GET 200 https://registry.npmjs.org/debug 1513ms (cache miss)
+38 silly packumentCache full:https://registry.npmjs.org/debug set size:undefined disposed:false
+39 silly placeDep ROOT adm-zip@0.5.16 OK for: inngest-cli@1.15.0 want: ^0.5.10
+40 silly placeDep ROOT debug@4.4.3 OK for: inngest-cli@1.15.0 want: ^4.3.4
+41 silly placeDep ROOT node-fetch@2.7.0 OK for: inngest-cli@1.15.0 want: ^2.6.7
+42 silly placeDep ROOT tar@6.2.1 OK for: inngest-cli@1.15.0 want: ^6.2.1
+43 silly fetch manifest ms@^2.1.3
+44 silly packumentCache full:https://registry.npmjs.org/ms cache-miss
+45 silly fetch manifest whatwg-url@^5.0.0
+46 silly packumentCache full:https://registry.npmjs.org/whatwg-url cache-miss
+47 silly fetch manifest chownr@^2.0.0
+48 silly packumentCache full:https://registry.npmjs.org/chownr cache-miss
+49 silly fetch manifest mkdirp@^1.0.3
+50 silly packumentCache full:https://registry.npmjs.org/mkdirp cache-miss
+51 silly fetch manifest yallist@^4.0.0
+52 silly packumentCache full:https://registry.npmjs.org/yallist cache-miss
+53 silly fetch manifest minipass@^5.0.0
+54 silly packumentCache full:https://registry.npmjs.org/minipass cache-miss
+55 silly fetch manifest minizlib@^2.1.1
+56 silly packumentCache full:https://registry.npmjs.org/minizlib cache-miss
+57 http fetch GET 200 https://registry.npmjs.org/ms 291ms (cache miss)
+58 silly packumentCache full:https://registry.npmjs.org/ms set size:undefined disposed:false
+59 silly fetch manifest fs-minipass@^2.0.0
+60 silly packumentCache full:https://registry.npmjs.org/fs-minipass cache-miss
+61 http fetch GET 200 https://registry.npmjs.org/chownr 293ms (cache miss)
+62 silly packumentCache full:https://registry.npmjs.org/chownr set size:undefined disposed:false
+63 http fetch GET 200 https://registry.npmjs.org/mkdirp 485ms (cache miss)
+64 silly packumentCache full:https://registry.npmjs.org/mkdirp set size:undefined disposed:false
+65 http fetch GET 200 https://registry.npmjs.org/fs-minipass 290ms (cache miss)
+66 silly packumentCache full:https://registry.npmjs.org/fs-minipass set size:undefined disposed:false
+67 http fetch GET 200 https://registry.npmjs.org/whatwg-url 1021ms (cache revalidated)
+68 silly packumentCache full:https://registry.npmjs.org/whatwg-url set size:165406 disposed:false
+69 http fetch GET 200 https://registry.npmjs.org/yallist 1097ms (cache miss)
+70 silly packumentCache full:https://registry.npmjs.org/yallist set size:undefined disposed:false
+71 http fetch GET 200 https://registry.npmjs.org/minizlib 1992ms (cache miss)
+72 silly packumentCache full:https://registry.npmjs.org/minizlib set size:undefined disposed:false
+73 http fetch GET 200 https://registry.npmjs.org/minipass 2396ms (cache miss)
+74 silly packumentCache full:https://registry.npmjs.org/minipass set size:undefined disposed:false
+75 silly placeDep ROOT ms@2.1.3 OK for: debug@4.4.3 want: ^2.1.3
+76 silly placeDep ROOT whatwg-url@5.0.0 OK for: node-fetch@2.7.0 want: ^5.0.0
+77 silly fetch manifest tr46@~0.0.3
+78 silly packumentCache full:https://registry.npmjs.org/tr46 cache-miss
+79 silly fetch manifest webidl-conversions@^3.0.0
+80 silly packumentCache full:https://registry.npmjs.org/webidl-conversions cache-miss
+81 http fetch GET 200 https://registry.npmjs.org/webidl-conversions 266ms (cache revalidated)
+82 silly packumentCache full:https://registry.npmjs.org/webidl-conversions set size:43893 disposed:false
+83 http fetch GET 200 https://registry.npmjs.org/tr46 279ms (cache revalidated)
+84 silly packumentCache full:https://registry.npmjs.org/tr46 set size:47377 disposed:false
+85 silly placeDep ROOT chownr@2.0.0 OK for: tar@6.2.1 want: ^2.0.0
+86 silly placeDep ROOT fs-minipass@2.1.0 OK for: tar@6.2.1 want: ^2.0.0
+87 silly placeDep ROOT minipass@5.0.0 OK for: tar@6.2.1 want: ^5.0.0
+88 silly placeDep ROOT minizlib@2.1.2 OK for: tar@6.2.1 want: ^2.1.1
+89 silly placeDep ROOT mkdirp@1.0.4 OK for: tar@6.2.1 want: ^1.0.3
+90 silly placeDep ROOT yallist@4.0.0 OK for: tar@6.2.1 want: ^4.0.0
+91 silly fetch manifest minipass@^3.0.0
+92 silly packumentCache full:https://registry.npmjs.org/minipass cache-miss
+93 silly fetch manifest minipass@^3.0.0
+94 silly packumentCache full:https://registry.npmjs.org/minipass cache-miss
+95 http cache https://registry.npmjs.org/minipass 5ms (cache hit)
+96 silly packumentCache full:https://registry.npmjs.org/minipass set size:490195 disposed:false
+97 http cache https://registry.npmjs.org/minipass 9ms (cache hit)
+98 silly packumentCache full:https://registry.npmjs.org/minipass set size:490195 disposed:false
+99 silly packumentCache full:https://registry.npmjs.org/minipass dispose
+100 silly placeDep node_modules/fs-minipass minipass@3.3.6 OK for: fs-minipass@2.1.0 want: ^3.0.0
+101 silly placeDep node_modules/minizlib minipass@3.3.6 OK for: minizlib@2.1.2 want: ^3.0.0
+102 silly placeDep ROOT tr46@0.0.3 OK for: whatwg-url@5.0.0 want: ~0.0.3
+103 silly placeDep ROOT webidl-conversions@3.0.1 OK for: whatwg-url@5.0.0 want: ^3.0.0
+104 silly reify moves {}
+105 silly audit bulk request {
+105 silly audit   'inngest-cli': [ '1.15.0' ],
+105 silly audit   'adm-zip': [ '0.5.16' ],
+105 silly audit   debug: [ '4.4.3' ],
+105 silly audit   'node-fetch': [ '2.7.0' ],
+105 silly audit   tar: [ '6.2.1' ],
+105 silly audit   ms: [ '2.1.3' ],
+105 silly audit   'whatwg-url': [ '5.0.0' ],
+105 silly audit   chownr: [ '2.0.0' ],
+105 silly audit   'fs-minipass': [ '2.1.0' ],
+105 silly audit   minipass: [ '5.0.0', '3.3.6' ],
+105 silly audit   minizlib: [ '2.1.2' ],
+105 silly audit   mkdirp: [ '1.0.4' ],
+105 silly audit   yallist: [ '4.0.0' ],
+105 silly audit   tr46: [ '0.0.3' ],
+105 silly audit   'webidl-conversions': [ '3.0.1' ]
+105 silly audit }
+106 http cache webidl-conversions@https://registry.npmjs.org/webidl-conversions/-/webidl-conversions-3.0.1.tgz 0ms (cache hit)
+107 http cache yallist@https://registry.npmjs.org/yallist/-/yallist-4.0.0.tgz 0ms (cache hit)
+108 http cache tr46@https://registry.npmjs.org/tr46/-/tr46-0.0.3.tgz 0ms (cache hit)
+109 http cache mkdirp@https://registry.npmjs.org/mkdirp/-/mkdirp-1.0.4.tgz 0ms (cache hit)
+110 http cache minizlib@https://registry.npmjs.org/minizlib/-/minizlib-2.1.2.tgz 0ms (cache hit)
+111 http cache minipass@https://registry.npmjs.org/minipass/-/minipass-5.0.0.tgz 0ms (cache hit)
+112 http cache fs-minipass@https://registry.npmjs.org/fs-minipass/-/fs-minipass-2.1.0.tgz 0ms (cache hit)
+113 http cache chownr@https://registry.npmjs.org/chownr/-/chownr-2.0.0.tgz 0ms (cache hit)
+114 http cache whatwg-url@https://registry.npmjs.org/whatwg-url/-/whatwg-url-5.0.0.tgz 0ms (cache hit)
+115 http cache ms@https://registry.npmjs.org/ms/-/ms-2.1.3.tgz 0ms (cache hit)
+116 http cache tar@https://registry.npmjs.org/tar/-/tar-6.2.1.tgz 0ms (cache hit)
+117 http cache node-fetch@https://registry.npmjs.org/node-fetch/-/node-fetch-2.7.0.tgz 0ms (cache hit)
+118 http cache inngest-cli@https://registry.npmjs.org/inngest-cli/-/inngest-cli-1.15.0.tgz 0ms (cache hit)
+119 http cache minipass@https://registry.npmjs.org/minipass/-/minipass-3.3.6.tgz 0ms (cache hit)
+120 http cache adm-zip@https://registry.npmjs.org/adm-zip/-/adm-zip-0.5.16.tgz 0ms (cache hit)
+121 http cache minipass@https://registry.npmjs.org/minipass/-/minipass-3.3.6.tgz 0ms (cache hit)
+122 http cache debug@https://registry.npmjs.org/debug/-/debug-4.4.3.tgz 0ms (cache hit)
+123 silly tarball no local data for yallist@https://registry.npmjs.org/yallist/-/yallist-4.0.0.tgz. Extracting by manifest.
+124 silly tarball no local data for mkdirp@https://registry.npmjs.org/mkdirp/-/mkdirp-1.0.4.tgz. Extracting by manifest.
+125 silly tarball no local data for minizlib@https://registry.npmjs.org/minizlib/-/minizlib-2.1.2.tgz. Extracting by manifest.
+126 silly tarball no local data for minipass@https://registry.npmjs.org/minipass/-/minipass-5.0.0.tgz. Extracting by manifest.
+127 silly tarball no local data for fs-minipass@https://registry.npmjs.org/fs-minipass/-/fs-minipass-2.1.0.tgz. Extracting by manifest.
+128 silly tarball no local data for chownr@https://registry.npmjs.org/chownr/-/chownr-2.0.0.tgz. Extracting by manifest.
+129 silly tarball no local data for ms@https://registry.npmjs.org/ms/-/ms-2.1.3.tgz. Extracting by manifest.
+130 silly tarball no local data for tar@https://registry.npmjs.org/tar/-/tar-6.2.1.tgz. Extracting by manifest.
+131 silly tarball no local data for inngest-cli@https://registry.npmjs.org/inngest-cli/-/inngest-cli-1.15.0.tgz. Extracting by manifest.
+132 silly tarball no local data for minipass@https://registry.npmjs.org/minipass/-/minipass-3.3.6.tgz. Extracting by manifest.
+133 silly tarball no local data for adm-zip@https://registry.npmjs.org/adm-zip/-/adm-zip-0.5.16.tgz. Extracting by manifest.
+134 silly tarball no local data for minipass@https://registry.npmjs.org/minipass/-/minipass-3.3.6.tgz. Extracting by manifest.
+135 silly tarball no local data for debug@https://registry.npmjs.org/debug/-/debug-4.4.3.tgz. Extracting by manifest.
+136 http fetch GET 200 https://registry.npmjs.org/yallist/-/yallist-4.0.0.tgz 351ms (cache miss)
+137 http fetch GET 200 https://registry.npmjs.org/minizlib/-/minizlib-2.1.2.tgz 351ms (cache miss)
+138 http fetch GET 200 https://registry.npmjs.org/fs-minipass/-/fs-minipass-2.1.0.tgz 354ms (cache miss)
+139 http fetch GET 200 https://registry.npmjs.org/mkdirp/-/mkdirp-1.0.4.tgz 355ms (cache miss)
+140 http fetch GET 200 https://registry.npmjs.org/chownr/-/chownr-2.0.0.tgz 354ms (cache miss)
+141 http fetch GET 200 https://registry.npmjs.org/ms/-/ms-2.1.3.tgz 983ms (cache miss)
+142 http fetch GET 200 https://registry.npmjs.org/minipass/-/minipass-3.3.6.tgz 1075ms (cache miss)
+143 http fetch GET 200 https://registry.npmjs.org/inngest-cli/-/inngest-cli-1.15.0.tgz 1076ms (cache miss)
+144 http fetch POST 200 https://registry.npmjs.org/-/npm/v1/security/advisories/bulk 1139ms
+145 silly audit report {}
+146 http fetch GET 200 https://registry.npmjs.org/debug/-/debug-4.4.3.tgz 1299ms (cache miss)
+147 http fetch GET 200 https://registry.npmjs.org/adm-zip/-/adm-zip-0.5.16.tgz 1354ms (cache miss)
+148 http fetch GET 200 https://registry.npmjs.org/minipass/-/minipass-5.0.0.tgz 1669ms (cache miss)
+149 http fetch GET 200 https://registry.npmjs.org/minipass/-/minipass-3.3.6.tgz 3084ms (cache miss)
+150 http fetch GET 200 https://registry.npmjs.org/tar/-/tar-6.2.1.tgz 4308ms (cache miss)
+151 info run inngest-cli@1.15.0 postinstall node_modules/inngest-cli node postinstall.js
+152 info run inngest-cli@1.15.0 postinstall { code: 0, signal: null }

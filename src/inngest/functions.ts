@@ -200,3 +200,211 @@ export const sendAbandonedCartEmail = inngest.createFunction(
   }
 );
 
+/**
+ * Inngest function to generate QR codes and send ticket email after payment success
+ * This runs asynchronously to avoid blocking the payment webhook
+ */
+export const generateTicketEmailAndQR = inngest.createFunction(
+  {
+    id: 'generate-ticket-email-and-qr',
+    name: 'Generate Ticket Email and QR Codes',
+  },
+  { event: 'payment/success' },
+  async ({ event, step }) => {
+    const { orderId, paymentReference, paymentProvider } = event.data;
+
+    // Fetch order and tickets
+    const orderData = await step.run('fetch-order-and-tickets', async () => {
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .select('id, event_id, buyer_email, buyer_full_name, total_amount, currency, meta, status')
+        .eq('id', orderId)
+        .single();
+
+      if (orderError) {
+        console.error('[generateTicketEmailAndQR] Error fetching order:', orderError);
+        throw orderError;
+      }
+
+      if (!order) {
+        throw new Error(`Order ${orderId} not found`);
+      }
+
+      if (order.status !== 'paid') {
+        throw new Error(`Order ${orderId} is not paid (status: ${order.status})`);
+      }
+
+      const { data: tickets, error: ticketsError } = await supabase
+        .from('tickets')
+        .select('id, ticket_code, qr_code_url, attendee_name, attendee_email')
+        .eq('order_id', orderId);
+
+      if (ticketsError) {
+        console.error('[generateTicketEmailAndQR] Error fetching tickets:', ticketsError);
+        throw ticketsError;
+      }
+
+      return { order, tickets: tickets || [] };
+    });
+
+    // Generate QR codes for tickets that don't have them
+    const ticketsWithQR = await step.run('generate-qr-codes', async () => {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+      const ticketsNeedingQR = orderData.tickets.filter(t => !t.qr_code_url || t.qr_code_url === '');
+
+      if (ticketsNeedingQR.length === 0) {
+        console.log('[generateTicketEmailAndQR] All tickets already have QR codes');
+        return orderData.tickets;
+      }
+
+      // Generate QR codes via API (or directly if we have access to the function)
+      // For now, we'll call an API route that handles QR generation
+      const qrPromises = ticketsNeedingQR.map(async (ticket) => {
+        try {
+          const response = await fetch(`${baseUrl}/api/tickets/generate-qr`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              ticketId: ticket.id,
+              ticketCode: ticket.ticket_code,
+            }),
+          });
+
+          if (!response.ok) {
+            console.error(`[generateTicketEmailAndQR] Failed to generate QR for ticket ${ticket.id}`);
+            return ticket; // Return original ticket if QR generation fails
+          }
+
+          const { qrCodeUrl } = await response.json();
+          return { ...ticket, qr_code_url: qrCodeUrl };
+        } catch (error) {
+          console.error(`[generateTicketEmailAndQR] Error generating QR for ticket ${ticket.id}:`, error);
+          return ticket; // Return original ticket if QR generation fails
+        }
+      });
+
+      const updatedTickets = await Promise.all(qrPromises);
+      
+      // Merge with tickets that already have QR codes
+      const existingTickets = orderData.tickets.filter(t => t.qr_code_url && t.qr_code_url !== '');
+      return [...existingTickets, ...updatedTickets];
+    });
+
+    // Send ticket email
+    await step.run('send-ticket-email', async () => {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+      
+      // Fetch event details for email
+      const { data: event, error: eventError } = await supabase
+        .from('events')
+        .select('title, start_time, end_time, venue, location, address, city, country, is_virtual, virtual_details')
+        .eq('id', orderData.order.event_id)
+        .single();
+
+      if (eventError) {
+        console.error('[generateTicketEmailAndQR] Error fetching event:', eventError);
+        throw eventError;
+      }
+
+      const meta = (orderData.order.meta as Record<string, unknown> | null) || {};
+      const ticketTypeName = (meta.ticketTypeName as string) || 'General';
+      const ticketCodes = ticketsWithQR.map(t => t.ticket_code);
+      const primaryTicket = ticketsWithQR.find(t => t.attendee_email === orderData.order.buyer_email) || ticketsWithQR[0];
+
+      // Format event details
+      const startDate = event.start_time ? new Date(event.start_time) : null;
+      const endDate = event.end_time ? new Date(event.end_time) : null;
+
+      const eventDate = startDate
+        ? startDate.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })
+        : 'TBD';
+
+      const formatTime = (date: Date | null) =>
+        date
+          ? date.toLocaleTimeString('en-US', {
+              hour: 'numeric',
+              minute: '2-digit',
+            })
+          : null;
+
+      const startTimeFormatted = formatTime(startDate);
+      const endTimeFormatted = formatTime(endDate);
+
+      const eventTime =
+        startTimeFormatted && endTimeFormatted
+          ? `${startTimeFormatted} - ${endTimeFormatted}`
+          : startTimeFormatted || endTimeFormatted || 'TBD';
+
+      const isVirtualEvent = Boolean(event.is_virtual);
+      const virtualDetails = (event.virtual_details as Record<string, unknown> | null) || {};
+      const rawMeetingUrl = typeof virtualDetails?.meetingUrl === 'string' ? virtualDetails.meetingUrl.trim() : '';
+      const rawMeetingId = typeof virtualDetails?.meetingId === 'string' ? virtualDetails.meetingId.trim() : '';
+      const virtualPlatform = typeof virtualDetails?.platform === 'string' ? virtualDetails.platform : undefined;
+
+      let virtualAccessLink: string | undefined;
+      if (rawMeetingUrl) {
+        virtualAccessLink = rawMeetingUrl;
+      } else if (virtualPlatform === 'zoom' && rawMeetingId) {
+        virtualAccessLink = `https://zoom.us/j/${rawMeetingId}`;
+      }
+
+      const physicalVenueParts = [
+        event.venue,
+        event.location,
+        event.address,
+        event.city,
+        event.country,
+      ].filter((part) => typeof part === 'string' && part.trim().length > 0);
+
+      const venue = isVirtualEvent
+        ? 'Online Event'
+        : physicalVenueParts.join(', ') || 'TBD';
+
+      const response = await fetch(`${baseUrl}/api/emails/ticket`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: orderData.order.buyer_email,
+          fullName: orderData.order.buyer_full_name,
+          eventTitle: event.title || 'Event',
+          eventDate,
+          eventTime,
+          venue,
+          ticketType: ticketTypeName,
+          quantity: ticketCodes.length,
+          ticketCodes,
+          totalAmount: orderData.order.total_amount,
+          currency: orderData.order.currency,
+          orderId,
+          qrCodeUrl: primaryTicket?.qr_code_url,
+          ticketId: primaryTicket?.id,
+          primaryTicketCode: primaryTicket?.ticket_code || ticketCodes[0],
+          isVirtual: isVirtualEvent,
+          virtualAccessLink,
+          virtualPlatform,
+          virtualMeetingId: rawMeetingId || undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to send ticket email');
+      }
+
+      return await response.json();
+    });
+
+    return {
+      success: true,
+      orderId,
+      ticketsProcessed: ticketsWithQR.length,
+      emailSent: true,
+    };
+  }
+);
+
