@@ -9,7 +9,6 @@ import Loader from "@/components/ui/loader/Loader";
 import { useRouter, usePathname } from "next/navigation";
 import Toast from "@/components/ui/Toast";
 import { FaArrowRight } from "react-icons/fa";
-import Logo from "@/components/ui/Logo";
 // import Logo from "@/components/ui/Logo";
 // import Image from "next/image";
 
@@ -100,13 +99,7 @@ const Header = () => {
               href="/"
               className="flex items-center space-x-2 group"
             >
-              <Logo 
-                variant="default"
-                width={180}
-                height={130}
-                className="h-10 sm:h-12 lg:h-14 w-auto"
-              />
-              {/* <img src="/accezzlive cl.png" alt="Accezz Logo" width={140} height={90} /> */}
+              <img src="/accezz logo c.png" alt="Accezz Logo" width={140} height={100} />
             </Link>
 
             {/* Desktop Navigation */}
@@ -213,7 +206,7 @@ const Header = () => {
                       height={100}
                       className="h-10 w-auto"
                     /> */}
-                    <img src="/accezzlive cl.png" alt="Accezz Logo" width={140} height={100} />
+                    <img src="/accezz logo c.png" alt="Accezz Logo" width={140} height={100} />
                   </div>
                   <button
                     onClick={() => setIsMenuOpen(false)}

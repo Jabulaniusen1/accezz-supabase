@@ -9,7 +9,6 @@ import Loader from '@/components/ui/loader/Loader';
 import Toast from "@/components/ui/Toast";
 import ToggleMode from '@/components/ui/mode/toggleMode';
 import { FaArrowRight } from 'react-icons/fa';
-import Logo from '@/components/ui/Logo';
 
 const Hero = () => {
   const router = useRouter();
@@ -126,13 +125,7 @@ const Hero = () => {
               href="/"
               className="flex items-center space-x-2 group"
             >
-              <Logo 
-                variant="white"
-                width={180}
-                height={130}
-                className="h-14 w-auto"
-                />
-              {/* <img src="/accezzlive cl.png" alt="Accezz Logo" width={140} height={90} /> */}
+             <img src="/accezz logo c.png" alt="Accezz Logo" width={140} height={100} />
             </Link>
 
             <div className="hidden md:flex items-center space-x-8">
@@ -228,13 +221,7 @@ const Hero = () => {
                     className="flex items-center space-x-3"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    {/* <Logo 
-                      variant="white"
-                      width={140}
-                      height={100}
-                      className="h-10 w-auto"
-                    /> */}
-                    <img src="/accezzlive cl.png" alt="Accezz Logo" width={140} height={100} />
+                    <img src="/accezz logo c.png" alt="Accezz Logo" width={140} height={100} />
                   </Link>
                   <button
                     onClick={() => setIsMenuOpen(false)}
