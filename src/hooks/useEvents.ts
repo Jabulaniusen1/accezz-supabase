@@ -18,14 +18,14 @@ type SupabaseEventRow = {
   address?: string | null;
   city?: string | null;
   image_url?: string | null;
-  social_links?: unknown;
+  social_links?: Record<string, unknown> | null;
   user_id: string;
   created_at: string;
   updated_at: string;
   country?: string | null;
   currency?: string | null;
   is_virtual?: boolean | null;
-  virtual_details?: unknown;
+  virtual_details?: Record<string, unknown> | null;
   location_id?: string | null;
   category_id?: string | null;
   category_custom?: string | null;
@@ -122,6 +122,11 @@ const fetchEventsFromSupabase = async (): Promise<Event[]> => {
 
   if (ticketTypesError) {
     throw ticketTypesError;
+  }
+
+  // Ensure ticketTypes is defined
+  if (!ticketTypes) {
+    return [];
   }
 
   // Map events with their ticket types

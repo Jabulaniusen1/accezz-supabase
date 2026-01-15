@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiMenu, FiX, FiLogOut, FiUser } from "react-icons/fi";
 import { MdSpaceDashboard } from "react-icons/md";
@@ -10,7 +11,6 @@ import { useRouter, usePathname } from "next/navigation";
 import Toast from "@/components/ui/Toast";
 import { FaArrowRight } from "react-icons/fa";
 // import Logo from "@/components/ui/Logo";
-// import Image from "next/image";
 
 const Header = () => {
 
@@ -99,7 +99,7 @@ const Header = () => {
               href="/"
               className="flex items-center space-x-2 group"
             >
-              <img src="/accezz logo c.png" alt="Accezz Logo" width={140} height={100} />
+              <Image src="/accezz logo c.png" alt="Accezz Logo" width={140} height={100} />
             </Link>
 
             {/* Desktop Navigation */}
@@ -206,7 +206,7 @@ const Header = () => {
                       height={100}
                       className="h-10 w-auto"
                     /> */}
-                    <img src="/accezz logo c.png" alt="Accezz Logo" width={140} height={100} />
+                    <Image src="/accezz logo c.png" alt="Accezz Logo" width={140} height={100} />
                   </div>
                   <button
                     onClick={() => setIsMenuOpen(false)}

@@ -70,9 +70,9 @@ const SuccessContent = () => {
                 router.replace(`/${slug}`);
                 return;
               }
-              const eventId = order.event_id;
-              if (eventId) {
-                router.replace(`/${eventId}`);
+              // Use event_id directly instead of assigning to unused variable
+              if (order.event_id) {
+                router.replace(`/${order.event_id}`);
                 return;
               }
             }
@@ -113,7 +113,7 @@ const SuccessContent = () => {
           if (ticketData) {
             const order = (ticketData as { orders?: { buyer_email?: string | null; buyer_user_id?: string | null; order_id?: string | null } | null }).orders;
             const session = await getSession();
-            if (!session && order && order.buyer_email && !order.buyer_user_id) {
+            if (!session && order?.buyer_email && !order.buyer_user_id) {
               setOrderEmail(order.buyer_email || null);
               setOrderId(order.order_id || null);
               setShowAccountPrompt(true);
@@ -127,7 +127,7 @@ const SuccessContent = () => {
         // Verify via Paystack API
         if (reference) {
           const vRes = await fetch(`/api/paystack/verify?reference=${encodeURIComponent(reference)}`);
-          const vData = await vRes.json();
+          const vData = await vRes.json() as { status?: string; error?: string; orderId?: string };
           if (!vRes.ok || !vData?.status) {
             throw new Error(vData?.error || 'Verification failed');
           }

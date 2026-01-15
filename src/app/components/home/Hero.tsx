@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { FiMenu, FiX, FiLogOut, FiUser } from "react-icons/fi";
@@ -125,7 +126,7 @@ const Hero = () => {
               href="/"
               className="flex items-center space-x-2 group"
             >
-             <img src="/accezz logo c.png" alt="Accezz Logo" width={140} height={100} />
+             <Image src="/accezz logo c.png" alt="Accezz Logo" width={140} height={100} />
             </Link>
 
             <div className="hidden md:flex items-center space-x-8">
@@ -221,7 +222,7 @@ const Hero = () => {
                     className="flex items-center space-x-3"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    <img src="/accezz logo c.png" alt="Accezz Logo" width={140} height={100} />
+                    <Image src="/accezz logo c.png" alt="Accezz Logo" width={140} height={100} />
                   </Link>
                   <button
                     onClick={() => setIsMenuOpen(false)}

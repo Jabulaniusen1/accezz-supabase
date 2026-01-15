@@ -1,6 +1,8 @@
 import { supabase } from './supabaseClient';
 import { notifyTicketPurchase } from './notificationClient';
 
+// Removed unused import: fetchEventBySlug
+
 /**
  * Order type based on database schema
  */
@@ -170,7 +172,7 @@ async function sendTicketEmail({
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
+      const errorData = (await response.json().catch(() => ({}))) as { error?: string };
       throw new Error(errorData.error || 'Failed to send ticket email');
     }
 
@@ -193,7 +195,7 @@ interface CreateOrderParams {
   currency?: string;
 }
 
-// Internal data shapes are inferred per-query; explicit TicketCreationData not needed
+// Removed unused type: TicketCreationData - internal data shapes are inferred per-query
 
 /**
  * Generate a unique ticket code
@@ -251,6 +253,8 @@ async function generateAndStoreQRCode(ticketId: string, ticketCode: string): Pro
       // Fallback to data URL if upload fails
       return qrCodeDataUrl;
     }
+
+    // Upload successful, continue to get public URL
 
     // Get public URL
     const { data: { publicUrl } } = supabase.storage
@@ -386,9 +390,9 @@ export async function createOrder(params: CreateOrderParams): Promise<{ orderId:
 
         if (!response.ok) {
           const errorText = await response.text();
-          let errorData;
+          let errorData: { raw?: string; [key: string]: unknown };
           try {
-            errorData = JSON.parse(errorText);
+            errorData = JSON.parse(errorText) as { [key: string]: unknown };
           } catch {
             errorData = { raw: errorText };
           }
@@ -402,7 +406,7 @@ export async function createOrder(params: CreateOrderParams): Promise<{ orderId:
           throw new Error(`Failed to trigger Inngest event: ${response.status} ${response.statusText}`);
         }
 
-        const result = await response.json();
+        const result = await response.json() as { [key: string]: unknown };
         console.log('[createOrder] Inngest event triggered successfully:', {
           orderId: order.id,
           result,
