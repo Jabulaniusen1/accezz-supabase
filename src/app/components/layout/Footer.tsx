@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { FaInstagram, FaTiktok, FaWhatsapp } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
-import Logo from '@/components/ui/Logo';
+import Image from 'next/image';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -25,13 +25,12 @@ const Footer = () => {
             {/* Brand */}
             <div>
               <div className="mb-2 sm:mb-3">
-                <Logo
-                  variant="default"
-                  width={120}
-                  height={40}
-                  className="h-8 sm:h-10 w-auto"
-                  priority
-                />
+              <Link
+                href="/"
+                className="flex items-center space-x-2 group"
+              >
+                <Image src="/accezz logo c.png" alt="Accezz Logo" width={140} height={100} />
+              </Link>
               </div>
               <p className="text-gray-700 text-xs sm:text-sm leading-relaxed mb-4 sm:mb-6">
                 Accezz is an event ticketing platform for memorable experiences in Africa.
