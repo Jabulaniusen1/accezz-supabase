@@ -3,12 +3,12 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { type Event, type Ticket } from '@/types/event';
-import Loader from '../../../components/ui/loader/Loader';
 import Toast from '../../../components/ui/Toast';
 import Header from '@/app/components/layout/Header';
 import Footer from '@/app/components/layout/Footer';
 import { fetchEventBySlug } from '@/utils/eventUtils';
 import { getTicketPurchaseState } from '@/utils/localStorage';
+import { EventPageSkeleton } from './components/EventPageSkeleton';
 
 const EventHeroSection = React.lazy(() => import('./components/EventHeroSection').then(module => ({ default: module.EventHeroSection })));
 const EventTicketsSection = React.lazy(() => import('./components/TicketCard').then(module => ({ default: module.EventTicketsSection })));
@@ -23,6 +23,7 @@ type ToastType = {
 const EventDetail = () => {
   // State management
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [toast, setToast] = useState<ToastType>(null);
   const [showTicketForm, setShowTicketForm] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
@@ -79,20 +80,30 @@ const EventDetail = () => {
 
         try {
             setLoading(true);
+            // Clear any previous event data to prevent flash
+            if (isMounted) {
+                setEvent(null);
+            }
+            
             const fetchedEvent = await fetchEventBySlug(eventSlug);
             
             // ONLY UPDATE STATE IF COMPONENT IS STILL MOUNTED
             if (isMounted) {
                 if (fetchedEvent) {
                     setEvent(fetchedEvent);
+                    setError(false);
                 } else {
+                    setError(true);
+                    // Only show error after loading is complete
                     showToast({ type: 'error', message: 'Event not found.' });
                 }
             }
         } catch (err) {
             // CHECK IF COMPONENT IS STILL MOUNTED
             if (isMounted) {
+                setError(true);
                 console.error('Failed to fetch event:', err);
+                // Only show error after loading is complete
                 showToast({ type: 'error', message: 'Failed to load event details.' });
             }
         } finally {
@@ -123,7 +134,35 @@ const EventDetail = () => {
   }, [eventSlug]);
 
   if (loading) {
-    return <Loader />;
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Header />
+        <EventPageSkeleton />
+      </div>
+    );
+  }
+
+  // Only show error state if loading completed and event is still null
+  if (error && !event) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Header />
+        {toast && <Toast {...toast} onClose={() => setToast(null)} />}
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <p className="text-gray-700 dark:text-gray-300">Event not found.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show skeleton if event is not yet loaded (shouldn't happen if router works correctly)
+  if (!event) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Header />
+        <EventPageSkeleton />
+      </div>
+    );
   }
 
   return (
@@ -133,33 +172,31 @@ const EventDetail = () => {
       {toast && <Toast {...toast} onClose={() => setToast(null)} />}
 
       <div className="event-page-main">
-        {event && (
-          <React.Suspense fallback={<Loader />}>
-            {/* Breadcrumb Navigation */}
-            <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-              <div className="mx-auto lg:px-32 px-4 sm:px-6 py-4">
-                <nav className="flex items-center space-x-2 text-sm">
-                  <Link href="/" className="text-gray-500 hover:text-[#f54502] transition-colors">Home</Link>
-                  <span className="text-gray-400">/</span>
-                  <Link href="/#events" className="text-gray-500 hover:text-[#f54502] transition-colors">Events</Link>
-                  <span className="text-gray-400">/</span>
-                  <span className="text-[#f54502] font-medium truncate">{event.title}</span>
-                </nav>
-              </div>
+        <React.Suspense fallback={<EventPageSkeleton />}>
+          {/* Breadcrumb Navigation */}
+          <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <div className="mx-auto lg:px-32 px-4 sm:px-6 py-4">
+              <nav className="flex items-center space-x-2 text-sm">
+                <Link href="/" className="text-gray-500 hover:text-[#f54502] transition-colors">Home</Link>
+                <span className="text-gray-400">/</span>
+                <Link href="/#events" className="text-gray-500 hover:text-[#f54502] transition-colors">Events</Link>
+                <span className="text-gray-400">/</span>
+                <span className="text-[#f54502] font-medium truncate">{event.title}</span>
+              </nav>
             </div>
-            
-            {/* Event sections with lazy loading */}
-            <EventHeroSection event={event} scrollToTickets={scrollToTickets} />
-            
-            <div ref={ticketsSectionRef}>
-              <EventTicketsSection 
-                event={event} 
-                handleGetTicket={handleGetTicket} 
-              />
-            </div>
-            
-          </React.Suspense>
-        )}
+          </div>
+          
+          {/* Event sections with lazy loading */}
+          <EventHeroSection event={event} scrollToTickets={scrollToTickets} />
+          
+          <div ref={ticketsSectionRef}>
+            <EventTicketsSection 
+              event={event} 
+              handleGetTicket={handleGetTicket} 
+            />
+          </div>
+          
+        </React.Suspense>
 
         <React.Suspense fallback={<div>Loading related events...</div>}>
           <OtherEventsYouMayLike />
@@ -168,7 +205,7 @@ const EventDetail = () => {
 
         {/* Ticket Form Modal */}
         {showTicketForm && (
-          <React.Suspense fallback={<Loader />}>
+          <React.Suspense fallback={null}>
             <TicketTypeForm
               closeForm={closeTicketForm}
               tickets={event?.ticketType.map(ticket => ({

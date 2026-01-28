@@ -5,12 +5,12 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import Header from '@/app/components/layout/Header';
 import Footer from '@/app/components/layout/Footer';
-import Loader from '@/components/ui/loader/Loader';
 import Toast from '@/components/ui/Toast';
 import TicketTypeForm from '@/app/components/TicketTypeForm';
 import { fetchEventBySlug } from '@/utils/eventUtils';
 import { getTicketPurchaseState } from '@/utils/localStorage';
 import { type Event, type Ticket } from '@/types/event';
+import { VirtualEventPageSkeleton } from './components/VirtualEventPageSkeleton';
 
 import { EventHeroSection } from '../event/components/EventHeroSection';
 import { EventTicketsSection } from '../event/components/TicketCard';
@@ -24,6 +24,7 @@ type ToastState = { type: 'success' | 'error'; message: string } | null;
 export default function VirtualEventPage() {
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [toast, setToast] = useState<ToastState>(null);
   const [showTicketForm, setShowTicketForm] = useState(false);
 
@@ -55,16 +56,27 @@ export default function VirtualEventPage() {
 
       try {
         setLoading(true);
+        // Clear any previous event data to prevent flash
+        if (isMounted) {
+          setEvent(null);
+        }
+        
         const fetchedEvent = await fetchEventBySlug(eventSlug);
         
         if (!fetchedEvent) {
           if (isMounted) {
+            setError(true);
+            setLoading(false);
+            // Only show error after loading is complete
             showToast({ type: 'error', message: 'Event not found.' });
           }
           return;
         }
 
         if (!fetchedEvent.isVirtual) {
+          if (isMounted) {
+            setLoading(false);
+          }
           router.push(`/${eventSlug}`);
           return;
         }
@@ -75,6 +87,8 @@ export default function VirtualEventPage() {
       } catch (error) {
         console.error('Failed to load virtual event:', error);
         if (isMounted) {
+          setError(true);
+          // Only show error after loading is complete
           showToast({ type: 'error', message: 'Failed to load event details.' });
         }
       } finally {
@@ -124,15 +138,35 @@ export default function VirtualEventPage() {
   }, []);
 
   if (loading) {
-    return <Loader />;
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Header />
+        <VirtualEventPageSkeleton />
+      </div>
+    );
   }
 
+  // Only show error state if loading completed and event is still null
+  if (error && !event) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Header />
+        {toast && <Toast type={toast.type} message={toast.message} onClose={() => showToast(null)} />}
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <p className="text-gray-700 dark:text-gray-300">Event not found.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show skeleton if event is not yet loaded (shouldn't happen if router works correctly)
   if (!event) {
     return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <p className="text-gray-700 dark:text-gray-300">Event not found.</p>
-    </div>
-  );
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Header />
+        <VirtualEventPageSkeleton />
+      </div>
+    );
   }
 
   return (

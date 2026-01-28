@@ -402,7 +402,11 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
   };
 
   const handlePurchase = async () => {
+    // Set loading state immediately when button is clicked
+    setIsLoading(true);
+    
     if (!eventId || !selectedTicket) {
+      setIsLoading(false);
       setToast({ type: 'error', message: 'Missing information' });
       return;
     }
@@ -423,7 +427,6 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
     const ticketPrice = Number(selectedTicket.price.replace(/[^\d.-]/g, ''));
 
     try {
-      setIsLoading(true);
 
       // Handle free tickets
       if (ticketPrice === 0) {
@@ -449,15 +452,18 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
           if (!session) {
             setPurchaseOrderId(createdOrderId);
             setShowAccountPrompt(true);
+            setIsLoading(false);
             // Don't redirect yet - wait for user to close the prompt
             return;
           }
           
           // User is logged in, redirect to success page
+          // Keep loading state during redirect so spinner stays visible
           window.location.href = `/success?ticketId=${ticketId}`;
           return;
         } catch (error: unknown) {
           console.error('Error creating free ticket:', error);
+          setIsLoading(false);
           setToast({ type: 'error', message: (error instanceof Error ? error.message : 'Error creating free ticket') });
           return;
         }
@@ -472,6 +478,7 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
       // For now, we'll redirect to a payment page with order ID
       // In production, integrate with your payment provider here
       if (!orderId) {
+        setIsLoading(false);
         setToast({ type: 'error', message: 'Order information not found. Please try again.' });
         return;
       }
@@ -490,14 +497,15 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
       
       // TODO: Integrate payment provider (Paystack, Flutterwave, etc.)
       // Redirect to payment page with order ID and buyer email
+      // Keep loading state during redirect so spinner stays visible
       window.location.href = `/payment?orderId=${orderId}&amount=${totalPrice}&email=${encodeURIComponent(email)}`;
       
     } catch (error: unknown) {
       console.error('Error processing payment:', error);
-      setToast({ type: 'error', message: (error instanceof Error ? error.message : 'Error processing payment') });
-    } finally {
       setIsLoading(false);
+      setToast({ type: 'error', message: (error instanceof Error ? error.message : 'Error processing payment') });
     }
+    // Note: Don't reset loading in finally block if redirecting - let it stay visible during redirect
   };
 
   const handleBack = () => {

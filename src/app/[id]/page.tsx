@@ -1,20 +1,31 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
-import Loader from '@/components/ui/loader/Loader';
-import { CardSkeleton } from '@/components/ui/Skeleton';
 import dynamic from 'next/dynamic';
 import EventNotFound from '@/components/EventNotFound';
 import { fetchEventBySlug } from '@/utils/eventUtils';
+import Header from '@/app/components/layout/Header';
+import { EventPageSkeleton } from './event/components/EventPageSkeleton';
+import { VirtualEventPageSkeleton } from './virtual/components/VirtualEventPageSkeleton';
 
 // Dynamically import the event pages to reduce initial bundle size
 const VirtualEventPage = dynamic(() => import('./virtual/page'), {
-  loading: () => <Loader />,
+  loading: () => (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Header />
+      <VirtualEventPageSkeleton />
+    </div>
+  ),
   ssr: false
 });
 
 const PhysicalEventPage = dynamic(() => import('./event/page'), {
-  loading: () => <Loader />,
+  loading: () => (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Header />
+      <EventPageSkeleton />
+    </div>
+  ),
   ssr: false
 });
 
@@ -52,8 +63,9 @@ export default function EventRouterPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-4">
-        <CardSkeleton />
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Header />
+        <EventPageSkeleton />
       </div>
     );
   }
