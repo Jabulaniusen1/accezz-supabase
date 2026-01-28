@@ -1,6 +1,6 @@
-# Email Setup Guide - Google SMTP
+# Email Setup Guide - ZeptoMail SMTP
 
-This guide explains how to set up Google SMTP for sending welcome emails and ticket emails in Accezz.
+This guide explains how to set up ZeptoMail SMTP for sending welcome emails and ticket emails in Accezz.
 
 ## Overview
 
@@ -8,64 +8,74 @@ Accezz sends two types of automated emails:
 1. **Welcome Email** - Sent automatically when a user signs up successfully
 2. **Ticket Email** - Sent automatically when a ticket is purchased successfully
 
-Both emails are sent using Google SMTP (Gmail) via the nodemailer library.
+Both emails are sent using ZeptoMail SMTP via the nodemailer library.
 
 ## Prerequisites
 
-1. A Gmail account
-2. 2-Step Verification enabled on your Google Account
-3. A Gmail App Password generated
+1. A ZeptoMail account
+2. Your ZeptoMail API credentials
+3. A verified domain (accezzlive.com)
 
 ## Setup Instructions
 
-### Step 1: Enable 2-Step Verification
+### Step 1: Get Your ZeptoMail Credentials
 
-1. Go to your Google Account: https://myaccount.google.com/
-2. Navigate to **Security** → **2-Step Verification**
-3. Follow the prompts to enable 2-Step Verification
-4. This is required to generate App Passwords
+From your ZeptoMail dashboard, you should have:
+- **Username:** `emailapikey` (standard for ZeptoMail)
+- **Password:** Your ZeptoMail API password
+- **Server:** `smtp.zeptomail.com`
+- **Port:** `587` (TLS) or `465` (SSL)
+- **Domain/Sender Address:** `accezzlive.com`
 
-### Step 2: Generate Gmail App Password
-
-1. Go to **Security** → **App Passwords**
-   - Direct link: https://myaccount.google.com/apppasswords
-   - If you don't see this option, make sure 2-Step Verification is enabled
-2. Select **Mail** as the app
-3. Select **Other (Custom name)** as the device
-4. Enter "Accezz" (or any name you prefer)
-5. Click **Generate**
-6. Copy the 16-character password (format: `xxxx xxxx xxxx xxxx`)
-   - You can use it with or without spaces
-
-### Step 3: Configure Environment Variables
+### Step 2: Configure Environment Variables
 
 Add the following to your `.env` file in the project root:
 
 ```env
-# Gmail SMTP Configuration
-GMAIL_USER=your-email@gmail.com
-GMAIL_APP_PASSWORD=abcdefghijklmnop
-GMAIL_SENDER_NAME=Accezz
+# ZeptoMail SMTP Configuration
+ZEPTOMAIL_USER=emailapikey
+ZEPTOMAIL_PASSWORD=your-zeptomail-api-password
+ZEPTOMAIL_SENDER_EMAIL=noreply@accezzlive.com
+ZEPTOMAIL_SENDER_NAME=Accezz
 
 # Optional: Base URL for email links
 NEXT_PUBLIC_BASE_URL=https://your-domain.com
 ```
 
-**Example:**
+**Example with your credentials:**
 ```env
-GMAIL_USER=support@accezz.com
-GMAIL_APP_PASSWORD=abcd efgh ijkl mnop
-GMAIL_SENDER_NAME=Accezz Team
-NEXT_PUBLIC_BASE_URL=https://accezz.com
+ZEPTOMAIL_USER=emailapikey
+ZEPTOMAIL_PASSWORD=wSsVR61/qUL1Bvh8zTf8IOlrywkAAV33R0V/jFqh4iP1T/mRocduxRKbDAKgHfkeQG5sQGQSprotmUxT0zVaiIwrm1sGCCiF9mqRe1U4J3x17qnvhDzKX21ZmhqPK4sBzwlun2JpFs8h+g==
+ZEPTOMAIL_SENDER_EMAIL=noreply@accezzlive.com
+ZEPTOMAIL_SENDER_NAME=Accezz
+NEXT_PUBLIC_BASE_URL=https://accezzlive.com
 ```
 
-### Step 4: Restart Your Development Server
+**Important Notes:**
+- The username is always `emailapikey` for ZeptoMail
+- Use your full ZeptoMail API password
+- The sender email must be from your verified domain (accezzlive.com)
+- Common sender emails: `noreply@accezzlive.com`, `support@accezzlive.com`, `info@accezzlive.com`
+
+### Step 3: Restart Your Development Server
 
 After updating your `.env` file, restart your Next.js development server:
 
 ```bash
 npm run dev
 ```
+
+## ZeptoMail SMTP Settings
+
+The application uses the following ZeptoMail SMTP configuration:
+
+- **Host:** `smtp.zeptomail.com`
+- **Port:** `587` (TLS) - recommended
+- **Alternative Port:** `465` (SSL) - if port 587 is blocked
+- **Security:** TLS (STARTTLS) for port 587, SSL for port 465
+- **Authentication:** Required
+- **Username:** `emailapikey` (standard)
+- **Password:** Your ZeptoMail API password
 
 ## How It Works
 
@@ -120,37 +130,44 @@ The email functionality uses the following API routes:
 ### Emails Not Sending
 
 1. **Check Environment Variables**
-   - Verify `GMAIL_USER` and `GMAIL_APP_PASSWORD` are set correctly
-   - Make sure there are no extra spaces or quotes
+   - Verify `ZEPTOMAIL_PASSWORD` is set correctly
+   - Make sure `ZEPTOMAIL_SENDER_EMAIL` uses your verified domain
+   - Ensure there are no extra spaces or quotes
    - Restart your server after updating `.env`
 
-2. **Check Gmail App Password**
-   - Ensure you're using an App Password, not your regular Gmail password
-   - Verify 2-Step Verification is enabled
-   - Regenerate the app password if needed
+2. **Check ZeptoMail Credentials**
+   - Verify your API password is correct
+   - Ensure your domain (accezzlive.com) is verified in ZeptoMail
+   - Check that the sender email domain matches your verified domain
 
 3. **Check Server Logs**
    - Look for error messages in your console/terminal
    - Check for "Authentication failed" or "Connection timeout" errors
 
-4. **Check Gmail Limits**
-   - Free Gmail accounts: 500 emails/day limit
-   - Google Workspace accounts: 2000 emails/day limit
-   - If you hit the limit, wait 24 hours or upgrade to Google Workspace
+4. **Check ZeptoMail Limits**
+   - Review your ZeptoMail plan limits
+   - Check your sending quota in ZeptoMail dashboard
+   - Monitor your sending volume
 
 ### Common Errors
 
 **Error: "Invalid login"**
-- Solution: Verify your `GMAIL_USER` is correct and `GMAIL_APP_PASSWORD` is the correct App Password
+- Solution: Verify your `ZEPTOMAIL_PASSWORD` is correct. The username should be `emailapikey`
 
 **Error: "Connection timeout"**
-- Solution: Check your firewall/network settings. Port 587 should be open
+- Solution: Check your firewall/network settings. Port 587 should be open. Try port 465 (SSL) if 587 is blocked
 
-**Error: "Rate limit exceeded"**
-- Solution: You've hit Gmail's daily sending limit. Wait 24 hours or upgrade to Google Workspace
+**Error: "Sender address not verified"**
+- Solution: Ensure `ZEPTOMAIL_SENDER_EMAIL` uses a domain verified in your ZeptoMail account (accezzlive.com)
 
 **Error: "Authentication failed"**
-- Solution: Regenerate your App Password and update `.env`
+- Solution: 
+  - Verify your API password is correct
+  - Ensure the username is set to `emailapikey`
+  - Check that your ZeptoMail account is active
+
+**Error: "Domain not verified"**
+- Solution: Verify your domain (accezzlive.com) in ZeptoMail dashboard and configure DNS records
 
 ### Testing Email Functionality
 
@@ -185,13 +202,14 @@ The email functionality uses the following API routes:
    - Different credentials for development vs production
    - Use your hosting platform's environment variable settings for production
 
-3. **Rotate App Passwords Regularly**
-   - Generate new App Passwords periodically
-   - Revoke old ones if compromised
-
-4. **Monitor Email Sending**
+3. **Monitor Email Sending**
    - Check logs for unusual activity
    - Set up alerts for failed email sends
+   - Monitor your ZeptoMail dashboard for sending statistics
+
+4. **Rotate API Passwords Regularly**
+   - Generate new API passwords periodically
+   - Revoke old ones if compromised
 
 ## Production Deployment
 
@@ -199,7 +217,7 @@ For production, set environment variables in your hosting platform:
 
 ### Vercel
 1. Go to Project Settings → Environment Variables
-2. Add `GMAIL_USER`, `GMAIL_APP_PASSWORD`, `GMAIL_SENDER_NAME`
+2. Add `ZEPTOMAIL_USER`, `ZEPTOMAIL_PASSWORD`, `ZEPTOMAIL_SENDER_EMAIL`, `ZEPTOMAIL_SENDER_NAME`
 3. Redeploy your application
 
 ### Other Platforms
@@ -207,18 +225,35 @@ For production, set environment variables in your hosting platform:
 - Ensure they're available at runtime
 - Restart the application after setting variables
 
+## ZeptoMail Domain Setup
+
+For your domain (accezzlive.com):
+
+1. **Verify Domain in ZeptoMail:**
+   - Go to ZeptoMail dashboard
+   - Add and verify your domain (accezzlive.com)
+   - Configure DNS records (SPF, DKIM, DMARC) as required
+
+2. **Use Domain Email Addresses:**
+   - Use emails from your verified domain for `ZEPTOMAIL_SENDER_EMAIL`
+   - Examples: `noreply@accezzlive.com`, `support@accezzlive.com`, `info@accezzlive.com`
+
+3. **SPF/DKIM Records:**
+   - Ensure SPF and DKIM records are properly configured
+   - This improves email deliverability and prevents emails from going to spam
+
 ## Support
 
 If you continue to experience issues:
 
-1. Check the [Supabase SMTP Setup Guide](./supabase/SMTP_SETUP.md) for Supabase-specific email configuration
+1. Check ZeptoMail status and documentation
 2. Review server logs for detailed error messages
-3. Verify your Gmail account settings and App Password
-4. Test with a different Gmail account if needed
+3. Verify your ZeptoMail account settings
+4. Test with a different sender email address if needed
+5. Contact ZeptoMail support for account-specific issues
 
 ## Additional Resources
 
-- [Google App Passwords Documentation](https://support.google.com/accounts/answer/185833)
+- [ZeptoMail Documentation](https://www.zeptomail.com/docs/)
+- [ZeptoMail SMTP Settings](https://www.zeptomail.com/docs/smtp)
 - [Nodemailer Documentation](https://nodemailer.com/about/)
-- [Gmail SMTP Settings](https://support.google.com/mail/answer/7126229)
-

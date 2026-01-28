@@ -1,15 +1,17 @@
 import nodemailer from 'nodemailer';
 
-// Google SMTP Configuration
+// ZeptoMail SMTP Configuration
 const createTransporter = () => {
   return nodemailer.createTransport({
-    service: 'gmail',
-    host: 'smtp.gmail.com',
+    host: 'smtp.zeptomail.com',
     port: 587,
-    secure: false,
+    secure: false, // true for 465, false for other ports (587 uses TLS)
     auth: {
-      user: process.env.GMAIL_USER,
-      pass: process.env.GMAIL_APP_PASSWORD,
+      user: process.env.ZEPTOMAIL_USER || 'emailapikey',
+      pass: process.env.ZEPTOMAIL_PASSWORD,
+    },
+    tls: {
+      ciphers: 'SSLv3',
     },
   });
 };
@@ -29,18 +31,22 @@ interface SendEmailOptions {
 }
 
 /**
- * Send an email using Google SMTP
+ * Send an email using ZeptoMail SMTP
  */
 export async function sendEmail({ to, subject, html, text, attachments }: SendEmailOptions): Promise<void> {
   try {
-    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
-      throw new Error('Gmail SMTP credentials not configured. Please set GMAIL_USER and GMAIL_APP_PASSWORD environment variables.');
+    if (!process.env.ZEPTOMAIL_PASSWORD) {
+      throw new Error('ZeptoMail SMTP credentials not configured. Please set ZEPTOMAIL_PASSWORD environment variable.');
     }
 
     const transporter = createTransporter();
 
+    // Use the domain sender address from environment or default
+    const senderEmail = process.env.ZEPTOMAIL_SENDER_EMAIL || 'noreply@accezzlive.com';
+    const senderName = process.env.ZEPTOMAIL_SENDER_NAME || 'Accezz';
+
     const mailOptions = {
-      from: `"${process.env.GMAIL_SENDER_NAME || 'Accezz'}" <${process.env.GMAIL_USER}>`,
+      from: `"${senderName}" <${senderEmail}>`,
       to,
       subject,
       html,

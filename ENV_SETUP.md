@@ -11,14 +11,15 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
 ```
 
-### Gmail SMTP Variables (Required for Email Functionality)
+### ZeptoMail SMTP Variables (Required for Email Functionality)
 ```env
-GMAIL_USER=your-email@gmail.com
-GMAIL_APP_PASSWORD=your-16-character-app-password
-GMAIL_SENDER_NAME=Accezz
+ZEPTOMAIL_USER=emailapikey
+ZEPTOMAIL_PASSWORD=your-zeptomail-api-password
+ZEPTOMAIL_SENDER_EMAIL=noreply@accezzlive.com
+ZEPTOMAIL_SENDER_NAME=Accezz
 ```
 
-**Note:** See the [Gmail App Password Setup](#gmail-app-password-setup) section below for instructions on generating an app password.
+**Note:** See the [ZeptoMail Setup](#zeptomail-setup) section below for instructions on configuring ZeptoMail.
 
 ## How to Get Your Supabase Service Role Key
 
@@ -48,35 +49,51 @@ GMAIL_SENDER_NAME=Accezz
 - Keep this key secret and never commit it to version control
 - Add `.env` to your `.gitignore` if it's not already there
 
-## Gmail App Password Setup
+## ZeptoMail Setup
 
-To enable email sending (welcome emails and ticket emails), you need to configure Gmail SMTP:
+To enable email sending (welcome emails and ticket emails), you need to configure ZeptoMail SMTP:
 
-### Step 1: Enable 2-Step Verification
-1. Go to your Google Account settings: https://myaccount.google.com/
-2. Navigate to **Security** → **2-Step Verification**
-3. Enable 2-Step Verification if not already enabled
+### Step 1: Get Your ZeptoMail Credentials
 
-### Step 2: Generate App Password
-1. While in Security settings, go to **App Passwords** (you may need to search for it)
-2. Select **Mail** as the app
-3. Select **Other (Custom name)** as the device and enter "Accezz" or any name
-4. Click **Generate**
-5. Copy the 16-character password (it will look like: `abcd efgh ijkl mnop`)
-6. Use this password (with or without spaces) as `GMAIL_APP_PASSWORD` in your `.env` file
+From your ZeptoMail dashboard, you should have:
+- **Username:** `emailapikey` (standard for ZeptoMail)
+- **Password:** Your ZeptoMail API password
+- **Server:** `smtp.zeptomail.com`
+- **Port:** `587` (TLS) or `465` (SSL)
+- **Domain:** Your verified domain (e.g., `accezzlive.com`)
 
-### Step 3: Add to .env File
+### Step 2: Add to .env File
 ```env
-GMAIL_USER=your-email@gmail.com
-GMAIL_APP_PASSWORD=abcdefghijklmnop
-GMAIL_SENDER_NAME=Accezz
+ZEPTOMAIL_USER=emailapikey
+ZEPTOMAIL_PASSWORD=your-zeptomail-api-password
+ZEPTOMAIL_SENDER_EMAIL=noreply@accezzlive.com
+ZEPTOMAIL_SENDER_NAME=Accezz
+```
+
+**Example with your credentials:**
+```env
+ZEPTOMAIL_USER=emailapikey
+ZEPTOMAIL_PASSWORD=wSsVR61/qUL1Bvh8zTf8IOlrywkAAV33R0V/jFqh4iP1T/mRocduxRKbDAKgHfkeQG5sQGQSprotmUxT0zVaiIwrm1sGCCiF9mqRe1U4J3x17qnvhDzKX21ZmhqPK4sBzwlun2JpFs8h+g==
+ZEPTOMAIL_SENDER_EMAIL=noreply@accezzlive.com
+ZEPTOMAIL_SENDER_NAME=Accezz
 ```
 
 **Important Notes:**
-- Use your full Gmail address for `GMAIL_USER`
-- The app password is different from your regular Gmail password
-- Keep your app password secure and never commit it to version control
-- Gmail free accounts have a limit of 500 emails per day
+- The username is always `emailapikey` for ZeptoMail
+- Use your full ZeptoMail API password
+- The sender email must be from your verified domain (accezzlive.com)
+- Common sender emails: `noreply@accezzlive.com`, `support@accezzlive.com`, `info@accezzlive.com`
+- Keep your API password secure and never commit it to version control
+- Review your ZeptoMail plan limits and sending quotas
+
+### ZeptoMail SMTP Settings
+
+The application uses the following ZeptoMail SMTP configuration:
+- **Host:** `smtp.zeptomail.com`
+- **Port:** `587` (TLS) - recommended, or `465` (SSL) as alternative
+- **Security:** TLS (STARTTLS) for port 587, SSL for port 465
+- **Authentication:** Required
+- **Username:** `emailapikey` (standard)
 
 ## Verify Setup
 
