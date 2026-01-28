@@ -13,6 +13,8 @@ interface TicketHolderProps {
   quantity: number;
   additionalTicketHolders: Array<{ name: string; email: string; phone?: string; gender?: string }>;
   handleAdditionalTicketHolderChange: (index: number, field: string, value: string) => void;
+  useSameDetails: boolean;
+  setUseSameDetails: (value: boolean) => void;
 }
 
 // Country codes list with common African countries first, then international
@@ -69,7 +71,9 @@ const OrderInformationStep = ({
   setGender,
   quantity, 
   additionalTicketHolders, 
-  handleAdditionalTicketHolderChange 
+  handleAdditionalTicketHolderChange,
+  useSameDetails,
+  setUseSameDetails
 }: TicketHolderProps) => {
   const [emailErrors, setEmailErrors] = useState<Record<number, string>>({});
   const [primaryEmailError, setPrimaryEmailError] = useState('');
@@ -274,28 +278,62 @@ const OrderInformationStep = ({
 
       {quantity > 1 && (
         <div className="space-y-4 w-full min-w-0">
-          <div className="flex items-center gap-3">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 flex-shrink-0">
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                />
-              </svg>
-            </span>
-            <div className="min-w-0">
-              <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                Additional Guests
-              </p>
-              <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100">
-                Ticket Holders
-              </h2>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 flex-shrink-0">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
+                </svg>
+              </span>
+              <div className="min-w-0">
+                <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  Additional Guests
+                </p>
+                <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100">
+                  Ticket Holders ({quantity - 1})
+                </h2>
+              </div>
             </div>
           </div>
 
-          {Array.from({ length: quantity - 1 }, (_, index) => (
+          {/* Toggle Option */}
+          <div className="rounded-2xl border border-gray-200 bg-white/80 p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900/60">
+            <div className="flex items-center gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="ticketDetailsOption"
+                  checked={useSameDetails}
+                  onChange={() => setUseSameDetails(true)}
+                  className="w-4 h-4 text-[#f54502] focus:ring-[#f54502] focus:ring-2"
+                />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Use same details for all tickets
+                </span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="ticketDetailsOption"
+                  checked={!useSameDetails}
+                  onChange={() => setUseSameDetails(false)}
+                  className="w-4 h-4 text-[#f54502] focus:ring-[#f54502] focus:ring-2"
+                />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Enter details for each ticket
+                </span>
+              </label>
+            </div>
+          </div>
+
+          {!useSameDetails && (
+            <>
+              {Array.from({ length: quantity - 1 }, (_, index) => (
             <div
               key={index}
               className="rounded-2xl border border-gray-200 bg-white/80 p-4 shadow-sm transition hover:shadow-md dark:border-gray-700 dark:bg-gray-900/60 w-full min-w-0"
@@ -351,7 +389,9 @@ const OrderInformationStep = ({
                 </label>
               </div>
             </div>
-          ))}
+              ))}
+            </>
+          )}
         </div>
       )}
     </div>

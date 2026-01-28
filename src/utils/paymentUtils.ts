@@ -43,7 +43,162 @@ interface TicketType {
 }
 
 /**
+ * Helper function to send individual ticket emails to each attendee
+ */
+async function sendTicketEmailsToAttendees({
+  orderId,
+  order,
+  ticketType,
+  ticketCodes,
+}: {
+  orderId: string;
+  order: Order;
+  ticketType: TicketType;
+  ticketCodes: string[];
+}): Promise<void> {
+  try {
+    // Fetch all tickets for this order
+    const { data: tickets, error: ticketsError } = await supabase
+      .from('tickets')
+      .select('id, ticket_code, qr_code_url, attendee_name, attendee_email')
+      .eq('order_id', orderId)
+      .order('created_at', { ascending: true });
+
+    if (ticketsError || !tickets || tickets.length === 0) {
+      console.error('[sendTicketEmailsToAttendees] Error fetching tickets:', ticketsError);
+      return;
+    }
+
+    // Fetch event details once
+    const { data: event, error: eventError } = await supabase
+      .from('events')
+      .select('title, start_time, end_time, venue, location, address, city, country, is_virtual, virtual_details')
+      .eq('id', order.event_id)
+      .single();
+
+    if (eventError) {
+      console.error('[sendTicketEmailsToAttendees] Error fetching event:', eventError);
+      return;
+    }
+
+    const isVirtualEvent = Boolean(event.is_virtual);
+    const virtualDetails = (event.virtual_details as Record<string, unknown> | null) || null;
+    const rawMeetingUrl = typeof virtualDetails?.meetingUrl === 'string' ? virtualDetails.meetingUrl.trim() : '';
+    const rawMeetingId = typeof virtualDetails?.meetingId === 'string' ? virtualDetails.meetingId.trim() : '';
+    const virtualPlatform = typeof virtualDetails?.platform === 'string' ? virtualDetails.platform : undefined;
+
+    let virtualAccessLink: string | undefined;
+    if (rawMeetingUrl) {
+      virtualAccessLink = rawMeetingUrl;
+    } else if (virtualPlatform === 'zoom' && rawMeetingId) {
+      virtualAccessLink = `https://zoom.us/j/${rawMeetingId}`;
+    }
+
+    const formatPlatform = (value?: string) => {
+      if (!value) return 'Online Event';
+      return value
+        .split(/[-_]/g)
+        .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+        .join(' ');
+    };
+
+    const physicalVenueParts = [
+      event.venue,
+      event.location,
+      event.address,
+      event.city,
+      event.country,
+    ].filter((part) => typeof part === 'string' && part.trim().length > 0);
+
+    const eventVenue = isVirtualEvent
+      ? `${formatPlatform(virtualPlatform)} (Online)`
+      : physicalVenueParts.join(', ') || 'TBD';
+
+    // Format date and time
+    const startDate = event.start_time ? new Date(event.start_time) : null;
+    const endDate = event.end_time ? new Date(event.end_time) : null;
+
+    const eventDate = startDate
+      ? startDate.toLocaleDateString('en-US', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })
+      : 'TBD';
+
+    const formatTime = (date: Date | null) =>
+      date
+        ? date.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+          })
+        : null;
+
+    const startTimeFormatted = formatTime(startDate);
+    const endTimeFormatted = formatTime(endDate);
+
+    const eventTime =
+      startTimeFormatted && endTimeFormatted
+        ? `${startTimeFormatted} - ${endTimeFormatted}`
+        : startTimeFormatted || endTimeFormatted || 'TBD';
+
+    const baseUrl = typeof window !== 'undefined' 
+      ? window.location.origin 
+      : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+
+    // Send individual email to each ticket holder
+    const emailPromises = tickets.map(async (ticket) => {
+      try {
+        const response = await fetch(`${baseUrl}/api/emails/ticket`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: ticket.attendee_email,
+            fullName: ticket.attendee_name,
+            eventTitle: event.title || 'Event',
+            eventDate,
+            eventTime,
+            venue: eventVenue,
+            ticketType: ticketType.name,
+            quantity: 1, // Each email is for one ticket
+            ticketCodes: [ticket.ticket_code],
+            totalAmount: ticketType.price,
+            currency: order.currency,
+            orderId,
+            qrCodeUrl: ticket.qr_code_url,
+            ticketId: ticket.id,
+            primaryTicketCode: ticket.ticket_code,
+            isVirtual: isVirtualEvent,
+            virtualAccessLink,
+            virtualPlatform,
+            virtualMeetingId: rawMeetingId || undefined,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = (await response.json().catch(() => ({}))) as { error?: string };
+          throw new Error(errorData.error || 'Failed to send ticket email');
+        }
+
+        console.log(`[sendTicketEmailsToAttendees] Ticket email sent successfully to ${ticket.attendee_email}`);
+      } catch (error) {
+        console.error(`[sendTicketEmailsToAttendees] Error sending email to ${ticket.attendee_email}:`, error);
+        // Continue sending to other attendees even if one fails
+      }
+    });
+
+    await Promise.all(emailPromises);
+    console.log('[sendTicketEmailsToAttendees] All ticket emails sent');
+  } catch (error) {
+    console.error('[sendTicketEmailsToAttendees] Error:', error);
+    // Don't throw - this is a background operation
+  }
+}
+
+/**
  * Helper function to send ticket email after tickets are created
+ * @deprecated Use sendTicketEmailsToAttendees instead for individual emails
  */
 async function sendTicketEmail({
   orderId,
@@ -598,14 +753,14 @@ export async function createTicketsForOrder(orderId: string): Promise<string[]> 
       // Don't throw - tickets are created, we can fix inventory later
     }
 
-    // Send ticket email (non-blocking, don't wait for it)
-    sendTicketEmail({
+    // Send ticket emails to each attendee (non-blocking, don't wait for it)
+    sendTicketEmailsToAttendees({
       orderId,
       order,
       ticketType,
       ticketCodes,
     }).catch(err => {
-      console.error('Failed to send ticket email:', err);
+      console.error('Failed to send ticket emails:', err);
       // Don't throw - tickets are created successfully
     });
 

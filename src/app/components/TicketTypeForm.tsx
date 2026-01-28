@@ -63,6 +63,7 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
     phone?: string;
     gender?: string;
   }>>([]);
+  const [useSameDetails, setUseSameDetails] = useState(true);
 
   const [isSheetVisible, setIsSheetVisible] = useState(false);
   const [hasLoadedUserInfo, setHasLoadedUserInfo] = useState(false);
@@ -317,16 +318,43 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
         return;
       }
 
+      // Build attendees list
         const allAttendees = [
           { name: fullName, email: email, gender: gender || undefined }
         ];
 
-        if (additionalTicketHolders.length > 0) {
-          allAttendees.push(...additionalTicketHolders.map(holder => ({
+      if (quantity > 1) {
+        if (useSameDetails) {
+          // Use same details for all tickets
+          for (let i = 1; i < quantity; i++) {
+            allAttendees.push({
+              name: fullName,
+              email: email,
+              gender: gender || undefined
+            });
+          }
+        } else {
+          // Use individual details for each ticket
+          if (additionalTicketHolders.length < quantity - 1) {
+            setToast({ type: 'error', message: 'Please fill in details for all ticket holders.' });
+            return;
+          }
+          
+          // Validate all additional ticket holders have required fields
+          for (let i = 0; i < quantity - 1; i++) {
+            const holder = additionalTicketHolders[i];
+            if (!holder?.name || !holder?.email || !holder?.gender) {
+              setToast({ type: 'error', message: `Please fill in all details for ticket holder #${i + 2}.` });
+              return;
+            }
+          }
+
+          allAttendees.push(...additionalTicketHolders.slice(0, quantity - 1).map(holder => ({
             name: holder.name,
             email: holder.email,
             gender: holder.gender || undefined
           })));
+        }
         }
 
       if (!eventId || !selectedTicket) {
@@ -604,6 +632,11 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
   const handleQuantityChange = (newQuantity: number) => {
     setQuantity(newQuantity);
     
+    // Reset to "use same details" when quantity changes
+    if (newQuantity > 1) {
+      setUseSameDetails(true);
+    }
+    
     setAdditionalTicketHolders(prev => {
       if (newQuantity <= 1) return [];
       if (newQuantity - 1 > prev.length) {
@@ -779,6 +812,8 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
                          quantity={quantity}
                          additionalTicketHolders={additionalTicketHolders}
                          handleAdditionalTicketHolderChange={handleAdditionalTicketHolderChange}
+                         useSameDetails={useSameDetails}
+                         setUseSameDetails={setUseSameDetails}
                        />
                      )}
 
