@@ -49,12 +49,10 @@ async function sendTicketEmailsToAttendees({
   orderId,
   order,
   ticketType,
-  ticketCodes,
 }: {
   orderId: string;
   order: Order;
   ticketType: TicketType;
-  ticketCodes: string[];
 }): Promise<void> {
   try {
     // Fetch all tickets for this order
@@ -196,147 +194,6 @@ async function sendTicketEmailsToAttendees({
   }
 }
 
-/**
- * Helper function to send ticket email after tickets are created
- * @deprecated Use sendTicketEmailsToAttendees instead for individual emails
- */
-async function sendTicketEmail({
-  orderId,
-  order,
-  ticketType,
-  ticketCodes,
-}: {
-  orderId: string;
-  order: Order;
-  ticketType: TicketType;
-  ticketCodes: string[];
-}): Promise<void> {
-  try {
-    // Fetch event details
-    const { data: event, error: eventError } = await supabase
-      .from('events')
-      .select('title, start_time, end_time, venue, location, address, city, country, is_virtual, virtual_details')
-      .eq('id', order.event_id)
-      .single();
-
-    if (eventError) {
-      console.error('[sendTicketEmail] Error fetching event:', eventError);
-      return;
-    }
-
-    const isVirtualEvent = Boolean(event.is_virtual);
-    const virtualDetails = (event.virtual_details as Record<string, unknown> | null) || null;
-    const rawMeetingUrl = typeof virtualDetails?.meetingUrl === 'string' ? virtualDetails.meetingUrl.trim() : '';
-    const rawMeetingId = typeof virtualDetails?.meetingId === 'string' ? virtualDetails.meetingId.trim() : '';
-    const virtualPlatform = typeof virtualDetails?.platform === 'string' ? virtualDetails.platform : undefined;
-
-    let virtualAccessLink: string | undefined;
-    if (rawMeetingUrl) {
-      virtualAccessLink = rawMeetingUrl;
-    } else if (virtualPlatform === 'zoom' && rawMeetingId) {
-      virtualAccessLink = `https://zoom.us/j/${rawMeetingId}`;
-    }
-
-    const formatPlatform = (value?: string) => {
-      if (!value) return 'Online Event';
-      return value
-        .split(/[-_]/g)
-        .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
-        .join(' ');
-    };
-
-    const physicalVenueParts = [
-      event.venue,
-      event.location,
-      event.address,
-      event.city,
-      event.country,
-    ].filter((part) => typeof part === 'string' && part.trim().length > 0);
-
-    const eventVenue = isVirtualEvent
-      ? `${formatPlatform(virtualPlatform)} (Online)`
-      : physicalVenueParts.join(', ') || 'TBD';
-
-    // Fetch primary ticket to get QR code URL and ticket ID
-    const { data: primaryTicket } = await supabase
-      .from('tickets')
-      .select('qr_code_url, id, ticket_code')
-      .eq('order_id', orderId)
-      .eq('attendee_email', order.buyer_email)
-      .limit(1)
-      .single();
-
-    // Format date and time
-    const startDate = event.start_time ? new Date(event.start_time) : null;
-    const endDate = event.end_time ? new Date(event.end_time) : null;
-
-    const eventDate = startDate
-      ? startDate.toLocaleDateString('en-US', {
-          weekday: 'long',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        })
-      : 'TBD';
-
-    const formatTime = (date: Date | null) =>
-      date
-        ? date.toLocaleTimeString('en-US', {
-            hour: 'numeric',
-            minute: '2-digit',
-          })
-        : null;
-
-    const startTimeFormatted = formatTime(startDate);
-    const endTimeFormatted = formatTime(endDate);
-
-    const eventTime =
-      startTimeFormatted && endTimeFormatted
-        ? `${startTimeFormatted} - ${endTimeFormatted}`
-        : startTimeFormatted || endTimeFormatted || 'TBD';
-
-    // Send email via API route
-    const baseUrl = typeof window !== 'undefined' 
-      ? window.location.origin 
-      : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    
-    const response = await fetch(`${baseUrl}/api/emails/ticket`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: order.buyer_email,
-        fullName: order.buyer_full_name,
-        eventTitle: event.title || 'Event',
-        eventDate,
-        eventTime,
-        venue: eventVenue,
-        ticketType: ticketType.name,
-        quantity: ticketCodes.length,
-        ticketCodes,
-        totalAmount: order.total_amount,
-        currency: order.currency,
-        orderId,
-        qrCodeUrl: primaryTicket?.qr_code_url,
-        ticketId: primaryTicket?.id,
-        primaryTicketCode: primaryTicket?.ticket_code || ticketCodes[0],
-        isVirtual: isVirtualEvent,
-        virtualAccessLink,
-        virtualPlatform,
-        virtualMeetingId: rawMeetingId || undefined,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({}))) as { error?: string };
-      throw new Error(errorData.error || 'Failed to send ticket email');
-    }
-
-    console.log('[sendTicketEmail] Ticket email sent successfully');
-  } catch (error) {
-    console.error('[sendTicketEmail] Error:', error);
-    // Don't throw - this is a background operation
-  }
-}
 
 interface CreateOrderParams {
   eventId: string;
@@ -758,7 +615,6 @@ export async function createTicketsForOrder(orderId: string): Promise<string[]> 
       orderId,
       order,
       ticketType,
-      ticketCodes,
     }).catch(err => {
       console.error('Failed to send ticket emails:', err);
       // Don't throw - tickets are created successfully
