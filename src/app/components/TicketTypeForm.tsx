@@ -459,7 +459,7 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
       // Handle free tickets
       if (ticketPrice === 0) {
         try {
-          const { ticketId, orderId: createdOrderId } = await createFreeTickets({
+          const { orderId: createdOrderId } = await createFreeTickets({
             eventId: eventId,
             ticketTypeName: selectedTicket.name,
             quantity: quantity,
@@ -665,7 +665,6 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
 
   const handleAccountPromptClose = () => {
     setShowAccountPrompt(false);
-    // After closing the prompt, get the ticketId from the order and redirect
     if (purchaseOrderId) {
       supabase
         .from('tickets')
@@ -677,7 +676,6 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
           if (!error && ticket) {
             window.location.href = `/success?ticketId=${ticket.id}`;
           } else {
-            // Fallback: redirect to success page without ticketId
             window.location.href = '/success';
           }
         });

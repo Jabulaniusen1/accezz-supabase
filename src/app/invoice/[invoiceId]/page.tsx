@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { supabase } from '@/utils/supabaseClient';
 import Loader from '@/components/ui/loader/Loader';
-import { CheckCircle2, Download, Calendar, MapPin, User, Mail, Phone, Ticket, QrCode } from 'lucide-react';
+import { CheckCircle2, Download, Calendar, MapPin, User, Mail, Phone, Ticket } from 'lucide-react';
 import jsPDF from 'jspdf';
 
 interface Order {
