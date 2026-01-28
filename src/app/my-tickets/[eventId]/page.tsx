@@ -187,8 +187,8 @@ export default function EventTicketsPage() {
     }
   }, [eventId]);
 
-  const handleViewTicket = (ticketId: string) => {
-    router.push(`/success?ticketId=${ticketId}`);
+  const handleViewTicket = (orderId: string) => {
+    router.push(`/invoice/${orderId}`);
   };
 
   const handleViewEvent = (eventSlug: string | null) => {
@@ -382,7 +382,7 @@ export default function EventTicketsPage() {
                   {/* Actions */}
                   <div className="flex flex-col gap-2">
                     <button
-                      onClick={() => handleViewTicket(ticket.id)}
+                      onClick={() => handleViewTicket(ticket.orders.id)}
                       className="px-4 py-2 bg-[#f54502] text-white rounded-[5px] hover:bg-[#d63a02] transition-colors flex items-center gap-2 justify-center"
                     >
                       <BsQrCode className="w-4 h-4" />
