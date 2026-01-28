@@ -532,7 +532,7 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
           email: email,
           amount: Math.round(totalPrice * 100), // Convert to kobo
           currency: 'NGN',
-          ref: data.reference,
+          ref: data.reference || `ORD-${orderId}-${Date.now()}`,
           callback: (response: { reference: string; status: string }) => {
             // Payment successful, verify and redirect to invoice
             // Note: callback must be synchronous, so we handle async operations inside
@@ -683,13 +683,29 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
           </svg>
         </button>
 
-        <div className="flex-1 overflow-y-auto pt-12 pb-6 px-4 sm:px-6">
+        <div className="flex-1 overflow-y-auto pt-12 pb-6 px-4 sm:px-6 relative">
           {isPurchased ? (
             <div className="h-full">
               <Receipt closeReceipt={closeReceipt} />
             </div>
           ) : (
             <div className="flex h-full flex-col space-y-6">
+              {/* Loading Overlay - Shows when creating order */}
+              {isLoading && activeStep === 1 && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-t-3xl">
+                  <div className="flex flex-col items-center space-y-4">
+                    <div className="relative">
+                      <div className="w-16 h-16 border-4 border-[#f54502]/20 rounded-full animate-spin"></div>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-8 h-8 bg-[#f54502] rounded-full"></div>
+                      </div>
+                    </div>
+                    <p className="text-gray-700 dark:text-gray-300 font-medium">Processing...</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Please wait</p>
+                  </div>
+                </div>
+              )}
+              
               <h2 className="text-xl sm:text-2xl font-semibold text-center text-gray-900 dark:text-white">
                 Purchase Ticket
               </h2>

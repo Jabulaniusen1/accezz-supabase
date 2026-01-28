@@ -325,6 +325,16 @@ const InvoiceContent = () => {
       doc.text(`Total: ${formatCurrency(order.total_amount, order.currency)}`, margin, yPos);
       yPos += 5;
       doc.text(`Status: ${order.status.toUpperCase()}`, margin, yPos);
+      yPos += 10;
+
+      // Powered by Accezz
+      doc.setFontSize(8);
+      doc.setTextColor(128, 128, 128);
+      doc.text('Powered by', pageWidth / 2, yPos, { align: 'center' });
+      yPos += 4;
+      doc.setFontSize(9);
+      doc.setTextColor(245, 69, 2);
+      doc.text('Accezz', pageWidth / 2, yPos, { align: 'center' });
 
       doc.save(`invoice-${order.id.substring(0, 8)}.pdf`);
     } catch (error) {
@@ -573,6 +583,13 @@ const InvoiceContent = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Powered by Accezz */}
+        <div className="text-center mt-6 mb-4">
+          <p className="text-sm text-gray-500">
+            Powered by <span className="font-semibold text-[#f54502]">Accezz</span>
+          </p>
         </div>
       </div>
     </div>
