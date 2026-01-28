@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FaEye, FaEyeSlash, FaEnvelope, FaLock, FaRedo, FaArrowLeft } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaEnvelope, FaLock, FaArrowLeft } from 'react-icons/fa';
 import Loader from '../../../components/ui/loader/Loader';
 import Toast from '../../../components/ui/Toast';
 import Link from 'next/link';
@@ -30,21 +30,15 @@ function LoginContent() {
     type: 'success',
     message: '',
   });
-  const [resendLoading, setResendLoading] = useState(false);
-  const [showVerificationNotice, setShowVerificationNotice] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Check for verification param and pre-fill email
+  // Check for email param and pre-fill email
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const emailParam = searchParams.get('email');
       if (emailParam) {
         setFormData(prev => ({ ...prev, email: emailParam }));
-      }
-      
-      if (searchParams.get('verify') === 'true') {
-        setShowVerificationNotice(true);
       }
     }
   }, [searchParams]);
@@ -109,34 +103,13 @@ function LoginContent() {
       router.push(redirectUrl);
     } catch (error: unknown) {
       const err = error as { status?: number; code?: string; message?: string };
-      const code = err?.status || err?.code;
-      if (code === 'email_not_confirmed' || code === '400') {
-        setShowVerificationNotice(true);
-        showToastMessage('error', 'Please verify your email first');
-      } else {
-        const message = err?.message || 'Login failed. Please try again.';
-        showToastMessage('error', message);
-      }
+      const message = err?.message || 'Login failed. Please try again.';
+      showToastMessage('error', message);
     } finally {
       setLoading(false);
     }
   };
 
-  const resendVerification = async () => {
-    if (!formData.email) {
-      showToastMessage('warning', 'Please enter your email first');
-      return;
-    }
-
-    setResendLoading(true);
-    try {
-      // Supabase automatically sends verification on sign up; for resend, prompt user to re-signup flow or use Admin
-      showToastMessage('info', 'If you signed up, check your inbox for the verification email.');
-      setShowVerificationNotice(false);
-    } finally {
-      setResendLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 relative overflow-hidden">
@@ -189,22 +162,6 @@ function LoginContent() {
           {/* Form Card */}
           <div className="bg-white/80 backdrop-blur-xl rounded-[5px] sm:rounded-xl shadow-2xl border border-white/20 p-4 sm:p-8 animate-fadeIn">
             <div className="space-y-4 sm:space-y-6">
-
-              {/* VERIFICATION NOTICE */}
-              {showVerificationNotice && (
-                <div className="p-3 sm:p-4 bg-gradient-to-r from-[#f54502]/10 to-[#f54502]/5 border border-[#f54502]/20 rounded-[5px] text-[#f54502] text-xs sm:text-sm">
-                  <p className="font-medium">Please verify your email to continue.</p>
-                  <button 
-                    onClick={resendVerification}
-                    disabled={resendLoading}
-                    className="mt-2 flex items-center text-xs sm:text-sm text-[#f54502] hover:underline font-medium"
-                  >
-                    {resendLoading ? 'Sending...' : 'Resend verification email'}
-                    {resendLoading && <FaRedo className="ml-2 animate-spin" />}
-                  </button>
-                </div>
-              )}
-
               <form onSubmit={handleLogin} className="space-y-4 sm:space-y-6">
                 {/* Email Field */}
                 <div className="space-y-1 sm:space-y-2">

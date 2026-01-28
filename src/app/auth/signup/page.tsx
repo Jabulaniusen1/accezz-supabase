@@ -15,6 +15,7 @@ import {
 import Loader from "../../../components/ui/loader/Loader";
 import Toast from "../../../components/ui/Toast";
 import { signUpWithEmail } from "@/utils/supabaseAuth";
+import { supabase } from "@/utils/supabaseClient";
 import { useCountryCityOptions } from "@/hooks/useCountryCityOptions";
 import SearchableSelect from "../../components/SearchableSelect";
 import Link from "next/link";
@@ -137,7 +138,7 @@ function SignupContent() {
         return;
       }
 
-      await signUpWithEmail({ 
+      const signupData = await signUpWithEmail({ 
         email, 
         password, 
         fullName: `${firstName} ${lastName}`, 
@@ -146,11 +147,43 @@ function SignupContent() {
         country: selectedCountry,
         city: selectedCity
       });
-      localStorage.setItem("userEmail", email);
       
-      // Store orderId in localStorage to link after email verification and login
+      // Get session immediately after signup (when email confirmation is disabled)
+      const session = signupData.session;
+      if (session) {
+        // Store user data in localStorage for legacy compatibility
+        localStorage.setItem('token', session.access_token);
+        localStorage.setItem('userEmail', session.user.email || email);
+        localStorage.setItem('user', JSON.stringify({
+          email: session.user.email,
+          fullName: `${firstName} ${lastName}`,
+          id: session.user.id,
+        }));
+      } else {
+        // Fallback: store email if session not immediately available
+        localStorage.setItem("userEmail", email);
+      }
+      
+      // Link order if orderId is present
       const orderId = searchParams.get('orderId');
-      if (orderId) {
+      if (orderId && session?.user?.id) {
+        try {
+          const { error } = await supabase
+            .from('orders')
+            .update({ buyer_user_id: session.user.id })
+            .eq('id', orderId)
+            .is('buyer_user_id', null);
+          if (error) {
+            console.error('Error linking order:', error);
+            // Store in localStorage as fallback
+            localStorage.setItem('pendingOrderLink', orderId);
+          }
+        } catch (linkError) {
+          console.error('Error linking order:', linkError);
+          // Store in localStorage as fallback
+          localStorage.setItem('pendingOrderLink', orderId);
+        }
+      } else if (orderId) {
         localStorage.setItem('pendingOrderLink', orderId);
       }
       
@@ -169,12 +202,12 @@ function SignupContent() {
         // Don't block signup if email fails
       }
       
-      toast("success", "Signup successful! Please check your email for verification.");
+      toast("success", "Account created successfully! Redirecting to dashboard...");
       
-      // Redirect to dashboard or specified redirect URL
+      // Redirect directly to dashboard or specified redirect URL
       const redirectUrl = searchParams.get('redirect') || '/dashboard';
       setTimeout(() => {
-        router.push(`/auth/login?verify=true${orderId ? `&orderId=${orderId}` : ''}${redirectUrl !== '/dashboard' ? `&redirect=${encodeURIComponent(redirectUrl)}` : ''}`);
+        router.push(redirectUrl);
       }, 1200);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Signup failed. Please try again.";
