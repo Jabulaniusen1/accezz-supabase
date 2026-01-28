@@ -457,9 +457,9 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
             return;
           }
           
-          // User is logged in, redirect to success page
+          // User is logged in, redirect to invoice page
           // Keep loading state during redirect so spinner stays visible
-          window.location.href = `/success?ticketId=${ticketId}`;
+          window.location.href = `/invoice/${createdOrderId}`;
           return;
         } catch (error: unknown) {
           console.error('Error creating free ticket:', error);
@@ -469,36 +469,113 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
         }
       }
 
-      // For paid tickets, we need to handle payment
-      // Since we removed REST API, payment provider integration should be handled via:
-      // 1. Supabase Edge Functions
-      // 2. A separate payment service
-      // 3. Client-side payment SDK (e.g., Paystack Inline)
-      
-      // For now, we'll redirect to a payment page with order ID
-      // In production, integrate with your payment provider here
+      // For paid tickets, use Paystack popup
       if (!orderId) {
         setIsLoading(false);
         setToast({ type: 'error', message: 'Order information not found. Please try again.' });
         return;
       }
       
-      // Try to get from localStorage if available (non-critical)
+      // Initialize Paystack payment popup
       try {
-        const storedPayment = localStorage.getItem('pendingPayment');
-        if (storedPayment) {
-          // localStorage available, can use it
-        }
-      } catch {
-        // localStorage not available, continue with orderId from state
-      }
+        const res = await fetch('/api/paystack/initialize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            orderId, 
+            amount: totalPrice, 
+            email, 
+            currency: 'NGN',
+            callbackUrl: `${window.location.origin}/success?orderId=${orderId}`
+          })
+        });
 
-      // const paymentInfo = JSON.parse(storedPayment);
-      
-      // TODO: Integrate payment provider (Paystack, Flutterwave, etc.)
-      // Redirect to payment page with order ID and buyer email
-      // Keep loading state during redirect so spinner stays visible
-      window.location.href = `/payment?orderId=${orderId}&amount=${totalPrice}&email=${encodeURIComponent(email)}`;
+        const data = await res.json() as { authorization_url?: string; access_code?: string; reference?: string; error?: string };
+        
+        if (!res.ok || !data?.authorization_url) {
+          throw new Error(data?.error || 'Failed to initialize payment');
+        }
+
+        // Load Paystack inline JS SDK dynamically
+        const loadPaystackScript = (): Promise<void> => {
+          return new Promise((resolve, reject) => {
+            // Check if script already loaded
+            if (window.PaystackPop) {
+              resolve();
+              return;
+            }
+
+            const script = document.createElement('script');
+            script.src = 'https://js.paystack.co/v1/inline.js';
+            script.async = true;
+            script.onload = () => resolve();
+            script.onerror = () => reject(new Error('Failed to load Paystack script'));
+            document.head.appendChild(script);
+          });
+        };
+
+        await loadPaystackScript();
+
+        // Get public key from environment
+        const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
+        if (!publicKey) {
+          throw new Error('Paystack public key not configured');
+        }
+
+        if (!window.PaystackPop) {
+          throw new Error('Paystack SDK not loaded');
+        }
+
+        // Initialize Paystack popup
+        const handler = window.PaystackPop.setup({
+          key: publicKey,
+          email: email,
+          amount: Math.round(totalPrice * 100), // Convert to kobo
+          currency: 'NGN',
+          ref: data.reference,
+          callback: (response: { reference: string; status: string }) => {
+            // Payment successful, verify and redirect to invoice
+            // Note: callback must be synchronous, so we handle async operations inside
+            (async () => {
+              try {
+                const verifyRes = await fetch(`/api/paystack/verify?reference=${encodeURIComponent(response.reference)}`);
+                const verifyData = await verifyRes.json() as { status?: string; orderId?: string; error?: string };
+                
+                if (verifyRes.ok && verifyData.status === 'success' && verifyData.orderId) {
+                  // Mark order as paid and create tickets
+                  const { markOrderAsPaid, createTicketsForOrder } = await import('@/utils/paymentUtils');
+                  await markOrderAsPaid(verifyData.orderId, response.reference, 'paystack');
+                  await createTicketsForOrder(verifyData.orderId);
+                  
+                  // Clear purchase state
+                  clearTicketPurchaseState();
+                  try { localStorage.removeItem('pendingPayment'); } catch {}
+                  
+                  // Redirect to invoice page
+                  window.location.href = `/invoice/${verifyData.orderId}`;
+                } else {
+                  throw new Error(verifyData.error || 'Payment verification failed');
+                }
+              } catch (error) {
+                console.error('Payment verification error:', error);
+                setIsLoading(false);
+                setToast({ type: 'error', message: 'Payment verification failed. Please contact support.' });
+              }
+            })();
+          },
+          onClose: () => {
+            // User closed the popup
+            setIsLoading(false);
+            setToast({ type: 'error', message: 'Payment cancelled' });
+          }
+        });
+
+        handler.openIframe();
+      } catch (error: unknown) {
+        console.error('Error initializing payment:', error);
+        setIsLoading(false);
+        setToast({ type: 'error', message: (error instanceof Error ? error.message : 'Failed to initialize payment') });
+      }
       
     } catch (error: unknown) {
       console.error('Error processing payment:', error);

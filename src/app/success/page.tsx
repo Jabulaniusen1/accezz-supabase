@@ -2,7 +2,6 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Receipt from "../components/Receipt"
 import Loader from "@/components/ui/loader/Loader";
 import PaymentFailedModal from "@/components/PaymentFailedModal";
 import { markOrderAsPaid, createTicketsForOrder } from "@/utils/paymentUtils";
@@ -16,7 +15,6 @@ const SuccessContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isVerifying, setIsVerifying] = useState(true);
-  const [ticketId, setTicketId] = useState<string | null>(null);
   const [showFailureModal, setShowFailureModal] = useState(false);
   const [eventSlug, setEventSlug] = useState<string | null>(null);
   const [showAccountPrompt, setShowAccountPrompt] = useState(false);
@@ -98,31 +96,29 @@ const SuccessContent = () => {
       }
     
       try {
-        // If ticketId exists in URL, ticket is already created (free ticket or reload)
-        if (urlTicketId) {
-          setTicketId(urlTicketId);
+      // If ticketId exists in URL, redirect to invoice (for backward compatibility)
+      if (urlTicketId) {
+        // Get order from ticket
+        const { data: ticketData } = await supabase
+          .from('tickets')
+          .select('order_id, orders!inner(buyer_email, buyer_user_id)')
+          .eq('id', urlTicketId)
+          .single();
+        
+        if (ticketData) {
+          const order = (ticketData as { orders?: { buyer_email?: string | null; buyer_user_id?: string | null; order_id?: string | null } | null }).orders;
+          const orderIdFromTicket = order?.order_id || null;
           
-          // Check if we should show account prompt for reloaded page
-          // Get order from ticket to check if user is logged in
-          const { data: ticketData } = await supabase
-            .from('tickets')
-            .select('order_id, orders!inner(buyer_email, buyer_user_id)')
-            .eq('id', urlTicketId)
-            .single();
-          
-          if (ticketData) {
-            const order = (ticketData as { orders?: { buyer_email?: string | null; buyer_user_id?: string | null; order_id?: string | null } | null }).orders;
-            const session = await getSession();
-            if (!session && order?.buyer_email && !order.buyer_user_id) {
-              setOrderEmail(order.buyer_email || null);
-              setOrderId(order.order_id || null);
-              setShowAccountPrompt(true);
-            }
+          if (orderIdFromTicket) {
+            // Redirect to invoice page
+            router.replace(`/invoice/${orderIdFromTicket}`);
+            return;
           }
-          
-          setIsVerifying(false);
-          return;
         }
+        
+        setIsVerifying(false);
+        return;
+      }
 
         // Verify via Paystack API
         if (reference) {
@@ -147,19 +143,6 @@ const SuccessContent = () => {
           await markOrderAsPaid(resolvedOrderId, reference, 'paystack');
           await createTicketsForOrder(resolvedOrderId);
           await notifyTicketPurchase(resolvedOrderId);
-
-          // Get the first ticket ID
-          const { data: tickets, error: ticketsError } = await supabase
-            .from('tickets')
-            .select('id')
-            .eq('order_id', resolvedOrderId)
-            .limit(1);
-
-          if (ticketsError || !tickets || tickets.length === 0) {
-            throw new Error('Failed to retrieve tickets');
-          }
-
-          const firstTicketId = tickets[0].id;
           
           // Get order details to check if user is logged in
           const { data: orderData, error: orderDataError } = await supabase
@@ -175,8 +158,6 @@ const SuccessContent = () => {
           try { clearTicketPurchaseState(); } catch {}
           try { localStorage.removeItem('pendingPayment'); } catch {}
           
-          // Store in state immediately and update URL (non-blocking navigation)
-          setTicketId(firstTicketId);
           setOrderId(resolvedOrderId);
           
           // Check if user is logged in
@@ -186,12 +167,14 @@ const SuccessContent = () => {
             // User is not logged in, show account creation prompt
             setOrderEmail(orderData.buyer_email);
             setShowAccountPrompt(true);
+            setIsVerifying(false);
+            return;
           }
           
           setIsVerifying(false);
           
-          // Update URL for bookmarking/sharing (async, won't block render)
-          window.history.replaceState({}, '', `/success?ticketId=${firstTicketId}`);
+          // Redirect to invoice page
+          router.replace(`/invoice/${resolvedOrderId}`);
           return;
         }
         
@@ -206,35 +189,12 @@ const SuccessContent = () => {
     verifyPayment();
   }, [searchParams, router]);
 
-  // Sync ticketId from URL if we don't have it in state (e.g., on reload)
-  useEffect(() => {
-    const urlTicketId = searchParams.get('ticketId');
-    if (urlTicketId && !ticketId && !isVerifying) {
-      setTicketId(urlTicketId);
-    }
-  }, [searchParams, ticketId, isVerifying]);
-
   if (isVerifying) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#f54502] mx-auto"></div>
-          <p className="mt-4 text-gray-600">Verifying your ticket...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // If we have ticketId in state or URL, show receipt immediately (don't wait for URL update)
-  const urlTicketId = searchParams.get('ticketId');
-  const finalTicketId = ticketId || urlTicketId;
-  
-  if (!finalTicketId) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#f54502] mx-auto"></div>
-          <p className="mt-4 text-gray-600">Finalizing your receipt...</p>
+          <p className="mt-4 text-gray-600">Verifying your payment...</p>
         </div>
       </div>
     );
@@ -269,15 +229,21 @@ const SuccessContent = () => {
       {showAccountPrompt && orderEmail && orderId && (
         <CreateAccountPrompt
           isOpen={showAccountPrompt}
-          onClose={() => setShowAccountPrompt(false)}
+          onClose={() => {
+            setShowAccountPrompt(false);
+            // Redirect to invoice after closing prompt
+            if (orderId) {
+              router.replace(`/invoice/${orderId}`);
+            }
+          }}
           buyerEmail={orderEmail}
           orderId={orderId}
         />
       )}
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-8">
-        {/* Ticket Display */}
-        <div className="w-full max-w-4xl">
-          <Receipt isModal={false} autoDownload={true} />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#f54502] mx-auto"></div>
+          <p className="mt-4 text-gray-600">Redirecting to invoice...</p>
         </div>
       </div>
     </>

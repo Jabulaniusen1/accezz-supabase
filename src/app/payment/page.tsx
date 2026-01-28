@@ -85,12 +85,18 @@ function PaymentContent() {
         const res = await fetch('/api/paystack/initialize', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orderId, amount: Number(amount), email, currency: 'NGN' })
+          body: JSON.stringify({ 
+            orderId, 
+            amount: Number(amount), 
+            email, 
+            currency: 'NGN',
+            callbackUrl: `${window.location.origin}/success?orderId=${orderId}`
+          })
         });
 
         const raw = await res.text();
-        let data: { authorization_url?: string; error?: string } | null = null;
-        try { data = raw ? (JSON.parse(raw) as { authorization_url?: string; error?: string }) : null; } catch { data = null; }
+        let data: { authorization_url?: string; access_code?: string; reference?: string; error?: string } | null = null;
+        try { data = raw ? (JSON.parse(raw) as { authorization_url?: string; access_code?: string; reference?: string; error?: string }) : null; } catch { data = null; }
 
         if (!res.ok) {
           const msg = data?.error || raw || 'Failed to start payment';
@@ -99,11 +105,70 @@ function PaymentContent() {
         if (!data?.authorization_url) {
           throw new Error('Invalid response from payment initializer');
         }
-        
-        // Set a flag to indicate we're redirecting to Paystack
-        sessionStorage.setItem('paystack_redirected', 'true');
-        
-        window.location.href = data.authorization_url;
+
+        // Load Paystack inline JS SDK dynamically
+        const loadPaystackScript = (): Promise<void> => {
+          return new Promise((resolve, reject) => {
+            if (window.PaystackPop) {
+              resolve();
+              return;
+            }
+            const script = document.createElement('script');
+            script.src = 'https://js.paystack.co/v1/inline.js';
+            script.async = true;
+            script.onload = () => resolve();
+            script.onerror = () => reject(new Error('Failed to load Paystack script'));
+            document.head.appendChild(script);
+          });
+        };
+
+        await loadPaystackScript();
+
+        const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
+        if (!publicKey) {
+          throw new Error('Paystack public key not configured');
+        }
+
+        if (!window.PaystackPop) {
+          throw new Error('Paystack SDK not loaded');
+        }
+
+        // Initialize Paystack popup
+        const handler = window.PaystackPop.setup({
+          key: publicKey,
+          email: email,
+          amount: Math.round(Number(amount) * 100),
+          currency: 'NGN',
+          ref: data.reference || `ORD-${orderId}-${Date.now()}`,
+          callback: (response: { reference: string; status: string }) => {
+            // Note: callback must be synchronous, so we handle async operations inside
+            (async () => {
+              try {
+                const verifyRes = await fetch(`/api/paystack/verify?reference=${encodeURIComponent(response.reference)}`);
+                const verifyData = await verifyRes.json() as { status?: string; orderId?: string; error?: string };
+                
+                if (verifyRes.ok && verifyData.status === 'success' && verifyData.orderId) {
+                  const { markOrderAsPaid, createTicketsForOrder } = await import('@/utils/paymentUtils');
+                  await markOrderAsPaid(verifyData.orderId, response.reference, 'paystack');
+                  await createTicketsForOrder(verifyData.orderId);
+                  
+                  // Redirect to invoice page
+                  router.replace(`/invoice/${verifyData.orderId}`);
+                } else {
+                  throw new Error(verifyData.error || 'Payment verification failed');
+                }
+              } catch (error) {
+                console.error('Payment verification error:', error);
+                setError('Payment verification failed. Please contact support.');
+              }
+            })();
+          },
+          onClose: () => {
+            setError('Payment cancelled');
+          }
+        });
+
+        handler.openIframe();
       } catch (e: unknown) {
         const message = e instanceof Error ? e.message : 'Failed to start payment';
         setError(message);
@@ -147,4 +212,5 @@ export default function PaymentPage() {
     </Suspense>
   );
 }
+
 
