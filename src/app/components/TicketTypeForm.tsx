@@ -703,11 +703,11 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
             isSheetVisible ? 'translate-y-0' : 'translate-y-full'
           }`}
         >
-        <div className="absolute top-3 left-1/2 h-1.5 w-12 -translate-x-1/2 rounded-full bg-gray-300 dark:bg-gray-600" />
+        <div className="absolute top-3 left-1/2 h-1.5 w-12 -translate-x-1/2 rounded-full bg-gray-300 dark:bg-gray-600 z-10" />
         <button
           onClick={handleCloseForm}
           aria-label="Close ticket purchase"
-          className="absolute top-4 right-4 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+          className="absolute top-4 right-4 z-[60] text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -723,8 +723,8 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
             <div className="flex h-full flex-col space-y-6">
               {/* Loading Overlay - Shows when creating order */}
               {isLoading && activeStep === 1 && (
-                <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-t-3xl">
-                  <div className="flex flex-col items-center space-y-4">
+                <div className="absolute inset-0 z-[55] flex items-center justify-center bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-t-3xl pointer-events-none">
+                  <div className="flex flex-col items-center space-y-4 pointer-events-auto">
                     <div className="relative">
                       <div className="w-16 h-16 border-4 border-[#f54502]/20 rounded-full animate-spin"></div>
                       <div className="absolute inset-0 flex items-center justify-center">
