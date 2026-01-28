@@ -4,6 +4,7 @@ import { type Event } from '@/types/event';
 import { FaTicketAlt, FaLock } from 'react-icons/fa';
 import { Button } from '@mui/material';
 import { formatPrice } from '@/utils/formatPrice';
+import { isEventPast } from '@/utils/eventUtils';
 
 interface VirtualEventTicketsProps {
   event: Event;
@@ -23,6 +24,8 @@ export default function VirtualEventTickets({
   setSelectedTicket,
   setShowWhatsAppModal
 }: VirtualEventTicketsProps) {
+  const eventIsPast = isEventPast(event);
+  
   const handleGetTicket = (ticket: {
     name: string;
     price: string;
@@ -155,23 +158,27 @@ export default function VirtualEventTickets({
                       handleGetTicket(ticket);
                       setToast(null);
                     }}
-                    disabled={soldOut}
+                    disabled={soldOut || eventIsPast}
                     sx={{
                       py: 1.7,
                       borderRadius: '1.5rem',
                       fontWeight: 700,
                       fontSize: '1.1rem',
                       letterSpacing: '0.03em',
-                      background: 'linear-gradient(90deg, #2563eb 0%,rgb(58, 237, 204) 100%)',
+                      background: eventIsPast 
+                        ? '#9CA3AF'
+                        : 'linear-gradient(90deg, #2563eb 0%,rgb(58, 237, 204) 100%)',
                       boxShadow: '0 4px 16px 0 rgba(124,58,237,0.10)',
                       color: '#fff',
                       mt: 3,
                       textTransform: 'uppercase',
                       ':hover': {
-                        background: 'linear-gradient(90deg, #7c3aed 0%,rgb(37, 235, 222) 100%)',
+                        background: eventIsPast 
+                          ? '#9CA3AF'
+                          : 'linear-gradient(90deg, #7c3aed 0%,rgb(37, 235, 222) 100%)',
                         color: '#fff',
-                        boxShadow: '0 8px 24px 0 rgba(37,99,235,0.18)',
-                        transform: 'translateY(-2px) scale(1.03)'
+                        boxShadow: eventIsPast ? 'none' : '0 8px 24px 0 rgba(37,99,235,0.18)',
+                        transform: eventIsPast ? 'none' : 'translateY(-2px) scale(1.03)'
                       },
                       ':disabled': {
                         background: '#9CA3AF',
@@ -181,7 +188,7 @@ export default function VirtualEventTickets({
                       transition: 'all 0.3s cubic-bezier(.4,2,.3,1)'
                     }}
                   >
-                    {soldOut ? 'SOLD OUT' : 'GET PASS'}
+                    {eventIsPast ? 'EVENT ENDED' : soldOut ? 'SOLD OUT' : 'GET PASS'}
                   </Button>
                 </div>
               </motion.div>

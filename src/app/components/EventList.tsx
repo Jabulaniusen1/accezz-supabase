@@ -201,7 +201,14 @@ const EventList: React.FC = () => {
 
   const deleteEvent = useCallback(async (eventID: string) => {
     try {
-      const { error } = await supabase.from('events').delete().eq('id', eventID);
+      const { data: sessionData } = await supabase.auth.getSession();
+      const deletedByUserId = sessionData.session?.user?.id || null;
+      
+      // Use soft delete function to move event to deleted_events table
+      const { error } = await supabase.rpc('soft_delete_event', {
+        event_id: eventID,
+        deleted_by_user_id: deletedByUserId
+      });
       if (error) throw error;
       return true;
     } catch (error) {

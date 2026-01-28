@@ -4,6 +4,7 @@ import { CheckCircleIcon, TicketIcon } from 'lucide-react';
 import { formatPrice } from '@/utils/formatPrice';
 import { type Event } from '@/types/event';
 import { type Ticket } from '@/types/event';
+import { isEventPast } from '@/utils/eventUtils';
 
 interface EventTicketsSectionProps {
     event: Event;
@@ -12,6 +13,8 @@ interface EventTicketsSectionProps {
 
 export const EventTicketsSection = forwardRef<HTMLDivElement, EventTicketsSectionProps>(
     ({ event, handleGetTicket }, ref) => {
+      const eventIsPast = isEventPast(event);
+      
       return (
         <div 
           ref={ref} 
@@ -96,20 +99,26 @@ export const EventTicketsSection = forwardRef<HTMLDivElement, EventTicketsSectio
                                     )}
 
                                     {/* Purchase Button */}
-                                    <button
-                                        disabled={parseInt(ticket.quantity) === 0}
-                                        style={{ borderRadius: '5px' }}
-                                        onClick={() => handleGetTicket(ticket)}
-                                        className={`
-                                            px-6 py-2 text-sm font-medium rounded-lg transition-all duration-200
-                                            ${parseInt(ticket.quantity) === 0 
-                                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                                                : 'bg-[#f54502] text-white hover:bg-[#f54502]/90 hover:shadow-md'
-                                            }
-                                        `}
-                                    >
-                                        {parseInt(ticket.quantity) === 0 ? 'Sold Out' : 'Select'}
-                                    </button>
+                                    {eventIsPast ? (
+                                        <span className="px-6 py-2 text-sm font-medium rounded-lg bg-gray-300 text-gray-500 cursor-not-allowed inline-block">
+                                            Event Ended
+                                        </span>
+                                    ) : (
+                                        <button
+                                            disabled={parseInt(ticket.quantity) === 0}
+                                            style={{ borderRadius: '5px' }}
+                                            onClick={() => handleGetTicket(ticket)}
+                                            className={`
+                                                px-6 py-2 text-sm font-medium rounded-lg transition-all duration-200
+                                                ${parseInt(ticket.quantity) === 0 
+                                                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                                                    : 'bg-[#f54502] text-white hover:bg-[#f54502]/90 hover:shadow-md'
+                                                }
+                                            `}
+                                        >
+                                            {parseInt(ticket.quantity) === 0 ? 'Sold Out' : 'Select'}
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>

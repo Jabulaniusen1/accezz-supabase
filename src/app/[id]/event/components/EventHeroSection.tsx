@@ -5,6 +5,7 @@ import { Facebook, Instagram } from '@mui/icons-material';
 import XIcon from '@mui/icons-material/X';
 import { formatEventTime, formatEventDate } from '@/utils/formatDateTime';
 import { ClockIcon, MapPinIcon, CalendarIcon } from 'lucide-react';
+import { isEventPast } from '@/utils/eventUtils';
 
 interface EventHeroSectionProps {
   event: Event;
@@ -19,6 +20,7 @@ export const EventHeroSection = ({
   showMap = true,
   virtualPlatformLabel,
 }: EventHeroSectionProps) => {
+  const eventIsPast = isEventPast(event);
   const locationVisibility = event.locationVisibility ?? 'public';
   const isUndisclosed = locationVisibility === 'undisclosed';
   const isSecret = locationVisibility === 'secret';
@@ -58,13 +60,15 @@ export const EventHeroSection = ({
             </div>
             
             {/* CTA Button - Hidden on mobile, shown on desktop */}
-            <button
-              className="hidden lg:block w-full px-8 py-4 bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 text-white text-lg font-semibold rounded-xl transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
-              style={{ borderRadius: '5px' }}
-              onClick={scrollToTickets}
-            >
-              Get Your Ticket Now
-            </button>
+            {!eventIsPast && (
+              <button
+                className="hidden lg:block w-full px-8 py-4 bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 text-white text-lg font-semibold rounded-xl transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
+                style={{ borderRadius: '5px' }}
+                onClick={scrollToTickets}
+              >
+                Get Your Ticket Now
+              </button>
+            )}
           </div>
 
           {/* Content Section - Right Side - Scrollable */}
@@ -202,15 +206,17 @@ export const EventHeroSection = ({
       </div>
       
       {/* Mobile Sticky Button */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 p-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg">
-        <button
-          className="w-full px-6 py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 text-white text-base font-semibold rounded-lg transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
-          style={{ borderRadius: '5px' }}
-          onClick={scrollToTickets}
-        >
-          Get Your Ticket Now
-        </button>
-      </div>
+      {!eventIsPast && (
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 p-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg">
+          <button
+            className="w-full px-6 py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 text-white text-base font-semibold rounded-lg transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
+            style={{ borderRadius: '5px' }}
+            onClick={scrollToTickets}
+          >
+            Get Your Ticket Now
+          </button>
+        </div>
+      )}
     </div>
   );
 };

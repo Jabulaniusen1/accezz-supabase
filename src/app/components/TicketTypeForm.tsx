@@ -4,12 +4,13 @@ import TicketSelectionStep from './TicketFormSec/TicketSelectionStep';
 import OrderInformationStep from './TicketFormSec/OrderInformationStep';
 import PaymentStep from './TicketFormSec/PaymentStep';
 import CreateAccountPrompt from './CreateAccountPrompt';
-import { fetchEventBySlug } from '@/utils/eventUtils';
+import { fetchEventBySlug, isEventPast } from '@/utils/eventUtils';
 import { createOrder, createFreeTickets } from '@/utils/paymentUtils';
 import { saveTicketPurchaseState, getTicketPurchaseState, clearTicketPurchaseState } from '@/utils/localStorage';
 import { supabase } from '@/utils/supabaseClient';
 import { getSession } from '@/utils/supabaseAuth';
 import { useTicketPurchase } from '@/contexts/TicketPurchaseContext';
+import { Event } from '@/types/event';
 
 type TicketOption = {
   id: string;
@@ -30,7 +31,7 @@ type TicketTypeFormProps = {
   initialTicket?: TicketOption;
 };
 
-interface Event { id: string; slug: string; }
+interface EventBasic { id: string; slug: string; }
 
 const parsePriceValue = (value: string | number | null | undefined): number => {
   if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
@@ -51,7 +52,8 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [gender, setGender] = useState('');
-  const [events, setEvent] = useState<Event | null>(null);
+  const [events, setEvent] = useState<EventBasic | null>(null);
+  const [fullEvent, setFullEvent] = useState<Event | null>(null);
   const [isPurchased, setIsPurchased] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
@@ -88,6 +90,15 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
         if (fetchedEvent) {
           console.log('Event fetched successfully:', fetchedEvent.id);
           setEvent({ id: fetchedEvent.id || '', slug: fetchedEvent.slug || '' });
+          setFullEvent(fetchedEvent);
+          
+          // Check if event is past
+          if (isEventPast(fetchedEvent)) {
+            setToast({ type: 'error', message: 'This event has already ended. Tickets are no longer available.' });
+            setTimeout(() => {
+              closeForm();
+            }, 2000);
+          }
         } else {
           console.error('No event found for slug:', eventSlug);
           setToast({ type: 'error', message: 'Event not found' });
@@ -436,6 +447,13 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
     if (!eventId || !selectedTicket) {
       setIsLoading(false);
       setToast({ type: 'error', message: 'Missing information' });
+      return;
+    }
+    
+    // Prevent purchase for past events
+    if (fullEvent && isEventPast(fullEvent)) {
+      setIsLoading(false);
+      setToast({ type: 'error', message: 'This event has already ended. Tickets are no longer available.' });
       return;
     }
 

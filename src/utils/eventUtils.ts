@@ -2,6 +2,39 @@ import { supabase } from './supabaseClient';
 import { Event } from '@/types/event';
 
 /**
+ * Checks if an event is past (has finished)
+ * An event is considered past if:
+ * - end_time has passed (if it exists), OR
+ * - start_time has passed (if no end_time)
+ * @param event - The event to check
+ * @returns true if the event is past, false otherwise
+ */
+export function isEventPast(event: Event): boolean {
+  const now = new Date();
+  
+  // If end_time exists, check if it has passed
+  if (event.endTime) {
+    const endTime = new Date(event.endTime);
+    return endTime < now;
+  }
+  
+  // If no end_time, check if start_time has passed
+  if (event.startTime) {
+    const startTime = new Date(event.startTime);
+    return startTime < now;
+  }
+  
+  // Fallback to date if startTime is not available
+  if (event.date) {
+    const eventDate = new Date(event.date);
+    return eventDate < now;
+  }
+  
+  // If no time information, consider it not past
+  return false;
+}
+
+/**
  * Fetches an event by slug from Supabase along with ticket types and gallery images
  * @param slug - The event slug
  * @returns Event object or null if not found

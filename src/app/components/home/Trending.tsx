@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import { useTrendingEvents } from '@/hooks/useEvents';
 import { CardSkeleton } from '@/components/ui/Skeleton';
 import { TrendingEvent } from '@/types/event';
+import { isEventPast } from '@/utils/eventUtils';
 
 const Trending = () => {
   const { data: trendingEvents, isLoading } = useTrendingEvents();
@@ -184,25 +185,32 @@ const Trending = () => {
                       </div>
 
                       {/* Action button */}
-                      <button 
-                        onClick={() => event.slug && getTicket(event.slug)}
-                        disabled={navigating}
-                        className="w-full mt-4 px-4 py-2.5 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white font-medium rounded-lg 
-                                  hover:from-[#f54502]/90 hover:to-[#d63a02]/90 transition-all duration-300 shadow-md hover:shadow-lg
-                                  flex items-center justify-center gap-2 disabled:opacity-50"
-                      >
-                        {navigating ? (
-                          <>
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                            <span>Securing...</span>
-                          </>
-                        ) : (
-                          <>
-                            <span>Get Tickets</span>
-                            <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
-                          </>
-                        )}
-                      </button>
+                      {!isEventPast(event) ? (
+                        <button 
+                          onClick={() => event.slug && getTicket(event.slug)}
+                          disabled={navigating}
+                          className="w-full mt-4 px-4 py-2.5 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white font-medium rounded-lg 
+                                    hover:from-[#f54502]/90 hover:to-[#d63a02]/90 transition-all duration-300 shadow-md hover:shadow-lg
+                                    flex items-center justify-center gap-2 disabled:opacity-50"
+                        >
+                          {navigating ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                              <span>Securing...</span>
+                            </>
+                          ) : (
+                            <>
+                              <span>Get Tickets</span>
+                              <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+                            </>
+                          )}
+                        </button>
+                      ) : (
+                        <div className="w-full mt-4 px-4 py-2.5 bg-gray-300 text-gray-500 font-medium rounded-lg 
+                                      flex items-center justify-center gap-2 cursor-not-allowed">
+                          <span>Event Ended</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </motion.div>

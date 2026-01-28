@@ -153,10 +153,14 @@ const AdminEvents = () => {
     if (!eventToDelete) return;
 
     try {
-      const { error } = await supabase
-        .from('events')
-        .delete()
-        .eq('id', eventToDelete);
+      const { data: sessionData } = await supabase.auth.getSession();
+      const deletedByUserId = sessionData.session?.user?.id || null;
+      
+      // Use soft delete function to move event to deleted_events table
+      const { error } = await supabase.rpc('soft_delete_event', {
+        event_id: eventToDelete,
+        deleted_by_user_id: deletedByUserId
+      });
 
       if (error) throw error;
 

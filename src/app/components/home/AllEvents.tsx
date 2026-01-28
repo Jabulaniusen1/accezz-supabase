@@ -10,7 +10,8 @@ import type { Event as AppEvent, Ticket as AppTicket } from '@/types/event';
 import Link from 'next/link';
 
 const AllEvents = () => {
-  const { data: events, isLoading } = useAllEvents();
+  const [showPastEvents, setShowPastEvents] = useState(false);
+  const { data: events, isLoading } = useAllEvents(showPastEvents);
   const [filters, setFilters] = useState({
     location: '',
     minPrice: '',
@@ -303,6 +304,19 @@ const AllEvents = () => {
           
           {/* Filter buttons */}
           <div className="flex flex-wrap gap-3">
+            <button 
+              onClick={() => setShowPastEvents(!showPastEvents)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors border-2 ${
+                showPastEvents
+                  ? 'bg-[#f54502] text-white border-[#f54502]' 
+                  : 'bg-white text-black border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+              }`}
+              style={{
+                borderRadius: '10px'
+              }}
+            >
+              {showPastEvents ? 'Hide Past Events' : 'Show Past Events'}
+            </button>
             <button 
               onClick={openLocationModal}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors border-2 ${

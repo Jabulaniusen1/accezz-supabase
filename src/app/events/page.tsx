@@ -55,7 +55,8 @@ const FALLBACK_CATEGORIES: CategoryRecord[] = [
 const PAGE_SIZE = 8;
 
 const EventsExplorerPage = () => {
-  const { data: events = [], isLoading } = useAllEvents();
+  const [showPastEvents, setShowPastEvents] = useState(false);
+  const { data: events = [], isLoading } = useAllEvents(showPastEvents);
   const [categories, setCategories] = useState<CategoryRecord[]>([{ id: "all", name: "All Events", slug: "all" }]);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -305,11 +306,23 @@ const EventsExplorerPage = () => {
           <section className="mt-14">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h3 className="text-xl font-semibold text-gray-900 sm:text-2xl">Upcoming events</h3>
+                <h3 className="text-xl font-semibold text-gray-900 sm:text-2xl">
+                  {showPastEvents ? "All events" : "Upcoming events"}
+                </h3>
                 <p className="text-sm text-gray-500 sm:text-base">
                   {isLoading ? "Loading events..." : `${totalMatches} event${totalMatches === 1 ? "" : "s"} found`}
                 </p>
               </div>
+              <button
+                onClick={() => setShowPastEvents(!showPastEvents)}
+                className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
+                  showPastEvents
+                    ? "border-[#f54502] bg-[#fff0e7] text-[#f54502]"
+                    : "border-gray-200 text-gray-600 hover:border-[#f54502] hover:text-[#f54502]"
+                }`}
+              >
+                {showPastEvents ? "Hide Past Events" : "Show Past Events"}
+              </button>
             </div>
 
             {isLoading ? (

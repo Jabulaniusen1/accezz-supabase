@@ -97,7 +97,7 @@ const mapSupabaseEventToEvent = (supabaseEvent: SupabaseEventRow, ticketTypes: T
 };
 
 // Fetch all published/public events with their ticket types
-const fetchEventsFromSupabase = async (): Promise<Event[]> => {
+const fetchEventsFromSupabase = async (includePastEvents: boolean = false): Promise<Event[]> => {
   const { data: events, error: eventsError } = await supabase
     .from('events')
     .select('*, category:event_categories(name, slug)')
@@ -129,8 +129,22 @@ const fetchEventsFromSupabase = async (): Promise<Event[]> => {
     return [];
   }
 
+  // Filter out past events if not including them
+  // An event is considered past if end_time has passed, or if no end_time, if start_time has passed
+  const now = new Date();
+  let filteredEvents = events;
+  
+  if (!includePastEvents) {
+    filteredEvents = events.filter((event) => {
+      const endTime = event.end_time ? new Date(event.end_time) : null;
+      const startTime = new Date(event.start_time);
+      // Event is future if end_time is in future, or if no end_time, start_time is in future
+      return endTime ? endTime >= now : startTime >= now;
+    });
+  }
+
   // Map events with their ticket types
-  return events.map((event) => {
+  return filteredEvents.map((event) => {
     const eventTicketTypes = (ticketTypes || []).filter((tt) => tt.event_id === event.id) as TicketTypeRow[];
     return mapSupabaseEventToEvent(event as unknown as SupabaseEventRow, eventTicketTypes);
   });
@@ -140,7 +154,7 @@ export const useTrendingEvents = () => {
   return useQuery({
     queryKey: ['trendingEvents'],
     queryFn: async () => {
-      const events = await fetchEventsFromSupabase();
+      const events = await fetchEventsFromSupabase(false);
       return events.slice(0, 6) as TrendingEvent[];
     },
     staleTime: 5 * 60 * 1000,
@@ -151,18 +165,18 @@ export const useLatestEvents = () => {
   return useQuery({
     queryKey: ['latestEvents'],
     queryFn: async () => {
-      const events = await fetchEventsFromSupabase();
+      const events = await fetchEventsFromSupabase(false);
       return events.slice(0, 3) as Event[];
     },
     staleTime: 5 * 60 * 1000,
   });
 };
 
-export const useAllEvents = () => {
+export const useAllEvents = (includePastEvents: boolean = false) => {
   return useQuery<Event[]>({
-    queryKey: ['allEvents'],
+    queryKey: ['allEvents', includePastEvents],
     queryFn: async () => {
-      return await fetchEventsFromSupabase();
+      return await fetchEventsFromSupabase(includePastEvents);
     },
     staleTime: 5 * 60 * 1000,
   });
