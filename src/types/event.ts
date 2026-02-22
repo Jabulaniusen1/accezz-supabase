@@ -69,9 +69,9 @@ export interface Event {
 }
 
 export interface ToastProps {
-  type: 'error' | 'success' | 'info';
+  type: 'error' | 'success' | 'info' | 'warning';
   message: string;
-  onClose: () => void;
+  onClose?: () => void;
 }
 
 export type TrendingEvent = Event;

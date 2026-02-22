@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
 import { supabase } from '@/utils/supabaseClient';
 import { Location, LocationImage } from '@/types/location';
+import { optimizeImage } from '@/utils/imageOptimization';
 import SearchableSelect from '@/components/ui/SearchableSelect';
 
 interface ManageLocationFormProps {
@@ -678,10 +679,30 @@ export const ManageLocationForm: React.FC<ManageLocationFormProps> = ({ isOpen, 
   }, [totalImagesCount]);
 
   const uploadImageFile = useCallback(async (locationId: string, ownerId: string, file: File, position: number) => {
-    const extension = file.name.split('.').pop() || 'jpg';
+    // Optimize image before upload
+    let optimizedFile = file;
+    try {
+      console.log(`[Location Image Optimization] Original file: ${(file.size / 1024 / 1024).toFixed(2)}MB (${file.size} bytes)`);
+      
+      const optimizedResult = await optimizeImage(file, {
+        maxWidth: 1920,
+        maxHeight: 1080,
+        quality: 0.85,
+        maxSizeMB: 3,
+        outputFormat: 'webp'
+      });
+      optimizedFile = optimizedResult.file;
+      
+      console.log(`[Location Image Optimization] Optimized file: ${(optimizedFile.size / 1024 / 1024).toFixed(2)}MB (${optimizedFile.size} bytes)`);
+      console.log(`[Location Image Optimization] Size reduction: ${Math.round((file.size - optimizedFile.size) / file.size * 100)}%`);
+    } catch (error) {
+      console.error(`[Location Image Optimization] Failed for ${(file.size / 1024 / 1024).toFixed(2)}MB file:`, error);
+    }
+
+    const extension = optimizedFile.name.split('.').pop() || 'webp';
     const filePath = `locations/${ownerId}/${locationId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${extension}`;
 
-    const { error: uploadError } = await supabase.storage.from('locations-images').upload(filePath, file, { upsert: true });
+    const { error: uploadError } = await supabase.storage.from('locations-images').upload(filePath, optimizedFile, { upsert: true });
     if (uploadError) throw uploadError;
 
     const { data: publicUrlData } = supabase.storage.from('locations-images').getPublicUrl(filePath);

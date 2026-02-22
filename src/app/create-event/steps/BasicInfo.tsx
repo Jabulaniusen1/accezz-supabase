@@ -14,6 +14,7 @@ import { BsMicrosoftTeams } from 'react-icons/bs';
 import SearchableSelect from '@/components/ui/SearchableSelect';
 import { supabase } from '@/utils/supabaseClient';
 import { useCountryCityOptions } from '@/hooks/useCountryCityOptions';
+import { optimizeImage, validateImageFile, formatFileSize } from '@/utils/imageOptimization';
 
 type EventCategory = {
   id: string;
@@ -114,6 +115,12 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isOptimizing, setIsOptimizing] = useState(false);
+  const [optimizationInfo, setOptimizationInfo] = useState<{
+    originalSize: number;
+    optimizedSize: number;
+    compressionRatio: number;
+  } | null>(null);
   const googleApiKeyRef = useRef<string | undefined>(
     process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY ??
     process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ??
@@ -414,33 +421,82 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
     [platformLocations, selectedPlatformLocation]
   );
 
-  const handleImageChange = (file: File) => {
-    // Validate file type
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if (!validTypes.includes(file.type)) {
+  const handleImageChange = async (file: File) => {
+    // Validate file first
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
       setToast({
         type: 'error',
-        message: 'Invalid image format. Please upload JPG, PNG, or WEBP files only.',
+        message: validation.error || 'Invalid file',
         onClose: () => setToast(null)
       });
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
-  
-    if (imagePreview) {
-      URL.revokeObjectURL(imagePreview);
-    }
 
-    const previewUrl = URL.createObjectURL(file);
-    setImagePreview(previewUrl);
-    updateFormData({ image: file });
+    // Start optimization
+    setIsOptimizing(true);
+    setOptimizationInfo(null);
+    
+    try {
+      // Log original file size
+      console.log(`[Image Optimization] Original file: ${formatFileSize(file.size)} (${file.size} bytes)`);
+      
+      // Optimize the image
+      const optimizedResult = await optimizeImage(file, {
+        maxWidth: 1920,
+        maxHeight: 1080,
+        quality: 0.85,
+        maxSizeMB: 3,
+        outputFormat: 'webp'
+      });
+
+      // Log optimized file size
+      console.log(`[Image Optimization] Optimized file: ${formatFileSize(optimizedResult.optimizedSize)} (${optimizedResult.optimizedSize} bytes)`);
+      console.log(`[Image Optimization] Size reduction: ${Math.round(optimizedResult.compressionRatio * 100)}% (${formatFileSize(file.size - optimizedResult.optimizedSize)} saved)`);
+
+      // Clean up old preview
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+
+      // Create new preview
+      const previewUrl = URL.createObjectURL(optimizedResult.file);
+      setImagePreview(previewUrl);
+      updateFormData({ image: optimizedResult.file });
+      
+      // Store optimization info
+      setOptimizationInfo({
+        originalSize: optimizedResult.originalSize,
+        optimizedSize: optimizedResult.optimizedSize,
+        compressionRatio: optimizedResult.compressionRatio
+      });
+
+      // Optimization successful - no user notification needed
+
+    } catch (error) {
+      console.error(`[Image Optimization] Failed for ${formatFileSize(file.size)} file:`, error);
+      
+      // Fall back to original file if optimization fails
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+      updateFormData({ image: file });
+      
+      // Optimization failed - use original image silently
+    } finally {
+      setIsOptimizing(false);
+    }
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     const file = e.dataTransfer.files[0];
-    if (file) handleImageChange(file);
+    if (file) await handleImageChange(file);
   };
 
   const validateForm = () => {
@@ -936,58 +992,59 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
             ref={fileInputRef}
             className="hidden"
             accept="image/jpeg,image/jpg,image/png,image/webp"
-            onChange={(e) => {
+            onChange={async (e) => {
               const file = e.target.files?.[0];
               if (file) {
-                // Validate image type
-                const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-                if (!validTypes.includes(file.type)) {
-                  setToast({
-                    type: 'error',
-                    message: 'Invalid image format. Please upload JPG, PNG, or WEBP files only.',
-                    onClose: () => setToast(null)
-                  });
-                  if (fileInputRef.current) fileInputRef.current.value = '';
-                  return;
-                }
-                handleImageChange(file);
+                await handleImageChange(file);
               }
             }}
           />
 
           {imagePreview ? (
-            <div className="relative h-40 sm:h-48 w-full rounded-[5px] overflow-hidden bg-gray-100 dark:bg-gray-800">
-              <Image
-                src={imagePreview}
-                alt="Event preview"
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
-                onError={() => {
-                  setToast({
-                    type: 'error',
-                    message: 'Failed to load image. Please upload a valid image file.',
-                    onClose: () => setToast(null)
-                  });
-                  if (imagePreview) URL.revokeObjectURL(imagePreview);
-                  setImagePreview(null);
-                  updateFormData({ image: null });
-                  if (fileInputRef.current) fileInputRef.current.value = '';
-                }}
-              />
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (imagePreview) URL.revokeObjectURL(imagePreview);
-                  setImagePreview(null);
-                  updateFormData({ image: null });
-                  if (fileInputRef.current) fileInputRef.current.value = '';
-                }}
-                className="absolute top-2 right-2 p-1.5 sm:p-2 bg-[#f54502] text-white rounded-[5px] hover:bg-[#d63a02] transition-colors duration-200"
-              >
-                <FaTrash size={12} />
-              </button>
-            </div>
+            <>
+              <div className="relative h-40 sm:h-48 w-full rounded-[5px] overflow-hidden bg-gray-100 dark:bg-gray-800">
+                <Image
+                  src={imagePreview}
+                  alt="Event preview"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  onError={() => {
+                    setToast({
+                      type: 'error',
+                      message: 'Failed to load image. Please upload a valid image file.',
+                      onClose: () => setToast(null)
+                    });
+                    if (imagePreview) URL.revokeObjectURL(imagePreview);
+                    setImagePreview(null);
+                    updateFormData({ image: null });
+                    if (fileInputRef.current) fileInputRef.current.value = '';
+                  }}
+                />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (imagePreview) URL.revokeObjectURL(imagePreview);
+                    setImagePreview(null);
+                    updateFormData({ image: null });
+                    setOptimizationInfo(null);
+                    if (fileInputRef.current) fileInputRef.current.value = '';
+                  }}
+                  className="absolute top-2 right-2 p-1.5 sm:p-2 bg-[#f54502] text-white rounded-[5px] hover:bg-[#d63a02] transition-colors duration-200"
+                >
+                  <FaTrash size={12} />
+                </button>
+                {isOptimizing && (
+                  <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <div className="text-white text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div>
+                      <p className="text-sm">Processing...</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+                          </>
           ) : (
             <div className="flex flex-col items-center justify-center space-y-2 sm:space-y-3 py-4 sm:py-6">
               <FaCloudUploadAlt className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
@@ -996,7 +1053,7 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                   Click to upload or drag and drop
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  JPG, PNG, or WEBP
+                  JPG, PNG, or WEBP (max 10MB)
                 </p>
               </div>
             </div>
