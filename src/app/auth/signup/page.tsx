@@ -15,7 +15,6 @@ import {
 import Loader from "../../../components/ui/loader/Loader";
 import Toast from "../../../components/ui/Toast";
 import { signUpWithEmail } from "@/utils/supabaseAuth";
-import { supabase } from "@/utils/supabaseClient";
 import { useCountryCityOptions } from "@/hooks/useCountryCityOptions";
 import SearchableSelect from "../../components/SearchableSelect";
 import Link from "next/link";
