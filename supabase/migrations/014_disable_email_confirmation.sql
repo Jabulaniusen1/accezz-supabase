@@ -1,27 +1,31 @@
--- Migration: Disable Email Confirmation
--- This migration documents the requirement to disable email confirmation in Supabase
--- Email confirmation must be disabled via the Supabase Dashboard (not via SQL)
+-- Migration: Email Confirmation Enabled
+-- This migration documents that email confirmation is ENABLED in Supabase
+-- Email confirmation must be enabled via the Supabase Dashboard (not via SQL)
 
--- IMPORTANT: Email confirmation is disabled via Supabase Dashboard:
+-- IMPORTANT: Email confirmation MUST be enabled via Supabase Dashboard:
 -- 1. Go to your Supabase project dashboard
 -- 2. Navigate to Authentication > Settings > Auth Providers
--- 3. Under "Email Auth", disable "Enable email confirmations"
+-- 3. Under "Email Auth", ENABLE "Enable email confirmations"
 -- 4. Save the changes
 
--- When email confirmation is disabled:
--- - Users can sign up and immediately access their account
--- - The session is returned immediately after signup
--- - Users are redirected directly to the dashboard after account creation
--- - No email verification step is required
+-- When email confirmation is enabled:
+-- - Users must verify their email before they can sign in
+-- - A verification email is sent automatically after signup
+-- - Users are redirected to login page with verification notice after signup
+-- - Login will check for email verification and show appropriate errors
 
--- Note: This setting cannot be changed via SQL migrations as it's a Supabase
--- platform-level configuration. It must be changed in the dashboard.
+-- Email Configuration:
+-- - SMTP must be properly configured in Supabase Dashboard
+-- - Go to Project Settings > Auth > SMTP Settings
+-- - Configure your SMTP provider (e.g., ZeptoMail, SendGrid, etc.)
+-- - Ensure sender email is from a verified domain
 
--- The application code has been updated to:
--- 1. Handle sessions immediately after signup (signup/page.tsx)
--- 2. Redirect users directly to dashboard instead of login page
--- 3. Remove email verification checks from login flow (login/page.tsx)
--- 4. Update emailRedirectTo to point to dashboard (supabaseAuth.ts)
+-- The application code:
+-- 1. Redirects users to login page after signup with verification notice (signup/page.tsx)
+-- 2. Checks for email verification in login flow (login/page.tsx)
+-- 3. Shows verification notice and resend option when needed
+-- 4. Updates emailRedirectTo to point to login page (supabaseAuth.ts)
+-- 5. Sends welcome email after signup (non-blocking)
 
--- No SQL changes are needed for this migration, but the dashboard setting must be updated.
+-- No SQL changes are needed for this migration, but the dashboard settings must be configured.
 

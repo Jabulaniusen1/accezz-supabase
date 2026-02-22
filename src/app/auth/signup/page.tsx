@@ -138,7 +138,7 @@ function SignupContent() {
         return;
       }
 
-      const signupData = await signUpWithEmail({ 
+      await signUpWithEmail({ 
         email, 
         password, 
         fullName: `${firstName} ${lastName}`, 
@@ -147,43 +147,11 @@ function SignupContent() {
         country: selectedCountry,
         city: selectedCity
       });
+      localStorage.setItem("userEmail", email);
       
-      // Get session immediately after signup (when email confirmation is disabled)
-      const session = signupData.session;
-      if (session) {
-        // Store user data in localStorage for legacy compatibility
-        localStorage.setItem('token', session.access_token);
-        localStorage.setItem('userEmail', session.user.email || email);
-        localStorage.setItem('user', JSON.stringify({
-          email: session.user.email,
-          fullName: `${firstName} ${lastName}`,
-          id: session.user.id,
-        }));
-      } else {
-        // Fallback: store email if session not immediately available
-        localStorage.setItem("userEmail", email);
-      }
-      
-      // Link order if orderId is present
+      // Store orderId in localStorage to link after email verification and login
       const orderId = searchParams.get('orderId');
-      if (orderId && session?.user?.id) {
-        try {
-          const { error } = await supabase
-            .from('orders')
-            .update({ buyer_user_id: session.user.id })
-            .eq('id', orderId)
-            .is('buyer_user_id', null);
-          if (error) {
-            console.error('Error linking order:', error);
-            // Store in localStorage as fallback
-            localStorage.setItem('pendingOrderLink', orderId);
-          }
-        } catch (linkError) {
-          console.error('Error linking order:', linkError);
-          // Store in localStorage as fallback
-          localStorage.setItem('pendingOrderLink', orderId);
-        }
-      } else if (orderId) {
+      if (orderId) {
         localStorage.setItem('pendingOrderLink', orderId);
       }
       
@@ -202,12 +170,12 @@ function SignupContent() {
         // Don't block signup if email fails
       }
       
-      toast("success", "Account created successfully! Redirecting to dashboard...");
+      toast("success", "Signup successful! Please check your email for verification.");
       
-      // Redirect directly to dashboard or specified redirect URL
+      // Redirect to login page with verification notice
       const redirectUrl = searchParams.get('redirect') || '/dashboard';
       setTimeout(() => {
-        router.push(redirectUrl);
+        router.push(`/auth/login?verify=true&email=${encodeURIComponent(email)}${orderId ? `&orderId=${orderId}` : ''}${redirectUrl !== '/dashboard' ? `&redirect=${encodeURIComponent(redirectUrl)}` : ''}`);
       }, 1200);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Signup failed. Please try again.";

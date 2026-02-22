@@ -19,7 +19,7 @@ export async function signUpWithEmail(params: { email: string; password: string;
         country,
         city,
       },
-      emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/dashboard` : undefined,
+      emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/login?verify=true` : undefined,
     },
   });
   if (error) throw error;

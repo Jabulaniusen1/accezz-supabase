@@ -1,19 +1,38 @@
 import nodemailer from 'nodemailer';
 
-// ZeptoMail SMTP Configuration
+// Smart transporter: uses ZeptoMail if configured, falls back to Gmail
 const createTransporter = () => {
-  return nodemailer.createTransport({
-    host: 'smtp.zeptomail.com',
-    port: 587,
-    secure: false, // true for 465, false for other ports (587 uses TLS)
-    auth: {
-      user: process.env.ZEPTOMAIL_USER || 'emailapikey',
-      pass: process.env.ZEPTOMAIL_PASSWORD,
-    },
-    tls: {
-      ciphers: 'SSLv3',
-    },
-  });
+  if (process.env.ZEPTOMAIL_PASSWORD) {
+    console.log('[email] Using ZeptoMail SMTP provider');
+    return nodemailer.createTransport({
+      host: 'smtp.zeptomail.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.ZEPTOMAIL_USER || 'emailapikey',
+        pass: process.env.ZEPTOMAIL_PASSWORD,
+      },
+      tls: {
+        ciphers: 'SSLv3',
+      },
+    });
+  }
+
+  if (process.env.GMAIL_APP_PASSWORD && process.env.GMAIL_USER) {
+    console.log('[email] Using Gmail SMTP provider');
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD,
+      },
+    });
+  }
+
+  console.error('[email] No email provider configured');
+  throw new Error(
+    'No email provider configured. Set ZEPTOMAIL_PASSWORD or GMAIL_APP_PASSWORD + GMAIL_USER environment variables.'
+  );
 };
 
 interface Attachment {
@@ -31,18 +50,15 @@ interface SendEmailOptions {
 }
 
 /**
- * Send an email using ZeptoMail SMTP
+ * Send an email using the configured SMTP provider (ZeptoMail or Gmail)
  */
 export async function sendEmail({ to, subject, html, text, attachments }: SendEmailOptions): Promise<void> {
   try {
-    if (!process.env.ZEPTOMAIL_PASSWORD) {
-      throw new Error('ZeptoMail SMTP credentials not configured. Please set ZEPTOMAIL_PASSWORD environment variable.');
-    }
-
     const transporter = createTransporter();
 
-    // Use the domain sender address from environment or default
-    const senderEmail = process.env.ZEPTOMAIL_SENDER_EMAIL || 'noreply@accezzlive.com';
+    // Derive sender based on active provider
+    const senderEmail = process.env.ZEPTOMAIL_SENDER_EMAIL
+      || (process.env.GMAIL_USER ? process.env.GMAIL_USER : 'noreply@accezzlive.com');
     const senderName = process.env.ZEPTOMAIL_SENDER_NAME || 'Accezz';
 
     const mailOptions = {
@@ -693,9 +709,11 @@ export function generateTicketEmailHTML(data: {
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         .qr-code-container img {
-          max-width: 220px;
+          width: 220px;
+          height: 220px;
           display: block;
           border-radius: 8px;
+          object-fit: contain;
         }
         .important-info {
           background: linear-gradient(135deg, #fef5e7 0%, #fdebd0 100%);
@@ -795,6 +813,10 @@ export function generateTicketEmailHTML(data: {
           }
           .event-card, .qr-section, .important-info {
             padding: 20px;
+          }
+          .qr-code-container img {
+            width: 180px;
+            height: 180px;
           }
           .ticket-code {
             font-size: 18px;
@@ -1145,6 +1167,109 @@ export function generateAbandonedCartEmailHTML(data: {
             The Accezz Team
           </p>
         </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+/**
+ * Generate event reminder email HTML
+ */
+export function generateEventReminderEmailHTML(data: {
+  fullName: string;
+  eventTitle: string;
+  eventDate: string;
+  eventTime: string;
+  venue: string;
+  ticketCode: string;
+  isVirtual?: boolean;
+  virtualAccessLink?: string;
+  virtualPlatform?: string;
+  hoursUntilEvent: number;
+}): string {
+  const firstName = data.fullName?.split(' ')[0] || 'there';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://accezzlive.com';
+  const timeLabel = data.hoursUntilEvent <= 2
+    ? `in ${data.hoursUntilEvent} hour${data.hoursUntilEvent === 1 ? '' : 's'}`
+    : data.hoursUntilEvent <= 24
+    ? 'tomorrow'
+    : 'soon';
+
+  const isVirtualEvent = Boolean(data.isVirtual);
+  const accessSection = isVirtualEvent && data.virtualAccessLink
+    ? `<div style="margin: 22px 0; padding: 18px 20px; border-radius: 14px; background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(15,118,110,0.08)); border: 1px solid rgba(59,130,246,0.15);">
+        <p style="margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.14em; color: #0f766e; font-weight: 600;">Virtual Access Link</p>
+        <a href="${data.virtualAccessLink}" style="font-size: 15px; color: #2563eb; word-break: break-all;">${data.virtualAccessLink}</a>
+      </div>`
+    : '';
+
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Event Reminder – ${data.eventTitle}</title>
+    </head>
+    <body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f1f5f9;">
+      <div style="padding: 32px 16px;">
+        <table role="presentation" cellspacing="0" cellpadding="0" style="max-width:580px;margin:0 auto;background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 20px 40px rgba(15,23,42,0.12);">
+          <tr>
+            <td style="padding:38px 32px 28px;text-align:center;background:linear-gradient(135deg,#f97316 0%,#ef4444 100%);color:#ffffff;">
+              <div style="font-size:44px;margin-bottom:14px;">⏰</div>
+              <h1 style="margin:0;font-size:26px;font-weight:700;letter-spacing:0.02em;">Your Event is ${timeLabel}!</h1>
+              <p style="margin:10px 0 0;font-size:15px;opacity:0.9;">${data.eventTitle}</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:30px 32px 10px;">
+              <p style="margin:0 0 18px;font-size:16px;color:#111827;font-weight:600;">Hey ${firstName}!</p>
+              <p style="margin:0 0 20px;font-size:15px;color:#374151;line-height:1.6;">
+                Just a friendly reminder — <strong>${data.eventTitle}</strong> is happening ${timeLabel}. Get ready for an amazing experience!
+              </p>
+              <div style="margin:22px 0;padding:20px;border-radius:14px;background:#f8fafc;border:1px solid #e2e8f0;">
+                <table role="presentation" cellspacing="0" cellpadding="0" style="width:100%;">
+                  <tr>
+                    <td style="padding:6px 0;">
+                      <span style="font-size:13px;color:#6b7280;text-transform:uppercase;letter-spacing:0.1em;">Date</span><br>
+                      <span style="font-size:15px;color:#111827;font-weight:600;">${data.eventDate}</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:6px 0;">
+                      <span style="font-size:13px;color:#6b7280;text-transform:uppercase;letter-spacing:0.1em;">Time</span><br>
+                      <span style="font-size:15px;color:#111827;font-weight:600;">${data.eventTime}</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:6px 0;">
+                      <span style="font-size:13px;color:#6b7280;text-transform:uppercase;letter-spacing:0.1em;">${isVirtualEvent ? 'Platform' : 'Venue'}</span><br>
+                      <span style="font-size:15px;color:#111827;font-weight:600;">${data.venue}</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:6px 0;">
+                      <span style="font-size:13px;color:#6b7280;text-transform:uppercase;letter-spacing:0.1em;">Ticket Code</span><br>
+                      <span style="font-size:15px;color:#f97316;font-weight:700;letter-spacing:0.12em;">${data.ticketCode}</span>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+              ${accessSection}
+              <div style="text-align:center;margin:28px 0 10px;">
+                <a href="${baseUrl}/dashboard" style="display:inline-block;padding:14px 28px;border-radius:9999px;background:linear-gradient(135deg,#f97316,#ef4444);color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;box-shadow:0 12px 22px rgba(249,115,22,0.28);">
+                  View My Tickets
+                </a>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:18px 32px 28px;text-align:center;background:#f8fafc;color:#94a3b8;font-size:12px;">
+              © ${new Date().getFullYear()} Accezz. All rights reserved. · <a href="mailto:support@accezzlive.com" style="color:#94a3b8;">support@accezzlive.com</a>
+            </td>
+          </tr>
+        </table>
       </div>
     </body>
     </html>

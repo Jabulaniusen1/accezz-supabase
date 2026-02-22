@@ -141,13 +141,13 @@ async function sendTicketEmailsToAttendees({
         ? `${startTimeFormatted} - ${endTimeFormatted}`
         : startTimeFormatted || endTimeFormatted || 'TBD';
 
-    const baseUrl = typeof window !== 'undefined' 
-      ? window.location.origin 
-      : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    console.log('[sendTicketEmailsToAttendees] Using baseUrl:', baseUrl);
 
     // Send individual email to each ticket holder
     const emailPromises = tickets.map(async (ticket) => {
       try {
+        console.log('[sendTicketEmailsToAttendees] Sending ticket email to:', ticket.attendee_email);
         const response = await fetch(`${baseUrl}/api/emails/ticket`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -175,13 +175,22 @@ async function sendTicketEmailsToAttendees({
         });
 
         if (!response.ok) {
-          const errorData = (await response.json().catch(() => ({}))) as { error?: string };
-          throw new Error(errorData.error || 'Failed to send ticket email');
+          const errorText = await response.text().catch(() => 'Unknown error');
+          console.error(`[sendTicketEmailsToAttendees] API response error (${response.status}):`, errorText);
+          const errorData = (await response.json().catch(() => ({ error: errorText }))) as { error?: string };
+          throw new Error(errorData.error || `Failed to send ticket email: ${response.status}`);
         }
 
-        console.log(`[sendTicketEmailsToAttendees] Ticket email sent successfully to ${ticket.attendee_email}`);
+        const responseData = await response.json().catch(() => ({}));
+        console.log(`[sendTicketEmailsToAttendees] Ticket email sent successfully to ${ticket.attendee_email}`, responseData);
       } catch (error) {
         console.error(`[sendTicketEmailsToAttendees] Error sending email to ${ticket.attendee_email}:`, error);
+        console.error(`[sendTicketEmailsToAttendees] Error details:`, {
+          message: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined,
+          baseUrl,
+          attendeeEmail: ticket.attendee_email,
+        });
         // Continue sending to other attendees even if one fails
       }
     });

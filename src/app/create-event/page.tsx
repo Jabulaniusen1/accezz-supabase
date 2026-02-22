@@ -64,7 +64,7 @@ const combineDateAndTime = (date: string, time: string): string => {
 };
 
 const STEPS = [
-  { number: 1, title: 'Basic Information' },
+  { number: 1, title: 'Basic Info' },
   { number: 2, title: 'Ticket Setup' },
   { number: 3, title: 'Ticket Details' },
   { number: 4, title: 'Final Details' }

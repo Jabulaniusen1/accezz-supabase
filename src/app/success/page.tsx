@@ -143,6 +143,14 @@ const SuccessContent = () => {
           await markOrderAsPaid(resolvedOrderId, reference, 'paystack');
           await createTicketsForOrder(resolvedOrderId);
           await notifyTicketPurchase(resolvedOrderId);
+
+          // Trigger event reminder scheduling
+          fetch('/api/inngest/trigger', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ eventName: 'order/paid', data: { orderId: resolvedOrderId } }),
+          }).catch(() => {});
+
           
           // Get order details to check if user is logged in
           const { data: orderData, error: orderDataError } = await supabase

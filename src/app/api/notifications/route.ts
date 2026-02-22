@@ -821,6 +821,59 @@ async function handleWithdrawalRequest(context: HandlerContext, payload: Withdra
     return NextResponse.json({ error: 'Failed to create notification' }, { status: 500 });
   }
 
+  // Send confirmation email to the user
+  const contact = await getUserContact(withdrawal.user_id);
+  if (contact.email) {
+    const greeting = contact.fullName ? `Hi ${contact.fullName.split(' ')[0]},` : 'Hi there,';
+    const html = `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; padding: 32px 16px;">
+        <table role="presentation" cellspacing="0" cellpadding="0" style="max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 18px; overflow: hidden; box-shadow: 0 18px 34px rgba(15,23,42,0.12); border: 1px solid rgba(15,23,42,0.06);">
+          <tr>
+            <td style="padding: 36px 32px 28px; text-align: center; background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #f97316 100%); color: #f8fafc;">
+              <div style="font-size: 36px; margin-bottom: 14px;">📤</div>
+              <h1 style="margin: 0; font-size: 24px; font-weight: 700;">Withdrawal Request Received</h1>
+              <p style="margin: 10px 0 0; font-size: 14px; opacity: 0.8;">We're processing your request.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 30px 32px;">
+              <p style="margin: 0 0 16px; font-size: 16px; color: #111827; font-weight: 600;">${greeting}</p>
+              <p style="margin: 0 0 20px; font-size: 15px; color: #374151; line-height: 1.6;">
+                We've received your withdrawal request for <strong>${formattedAmount}</strong>. Our team will review and process it shortly.
+              </p>
+              <div style="border-radius: 14px; border: 1px solid rgba(249,115,22,0.2); background: linear-gradient(135deg, rgba(249,115,22,0.08), rgba(14,165,233,0.06)); padding: 20px; text-align: center;">
+                <p style="margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.16em; color: #f97316; font-weight: 600;">Amount Requested</p>
+                <p style="margin: 8px 0 0; font-size: 28px; font-weight: 700; color: #0f172a;">${formattedAmount}</p>
+              </div>
+              <div style="margin: 22px 0;">
+                <p style="margin: 0 0 8px; font-size: 14px; color: #6b7280;">What to expect:</p>
+                <ul style="margin: 0; padding-left: 20px; color: #4b5563; font-size: 14px; line-height: 1.7;">
+                  <li>Your request is under review by our team.</li>
+                  <li>You'll receive a confirmation email once it's approved.</li>
+                  <li>Transfers typically arrive within 1–5 business days after approval.</li>
+                </ul>
+              </div>
+              <div style="text-align: center; margin-top: 26px;">
+                <a href="${process.env.NEXT_PUBLIC_BASE_URL || ''}/dashboard" style="display: inline-block; padding: 14px 26px; border-radius: 9999px; background: linear-gradient(135deg, #f97316, #ef4444); color: #ffffff; text-decoration: none; font-weight: 600; font-size: 14px; box-shadow: 0 12px 22px rgba(249,115,22,0.22);">View Dashboard</a>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 18px 32px 28px; text-align: center; background: #f8fafc; color: #94a3b8; font-size: 12px;">
+              Need help? Reply to this email or reach us via support.
+            </td>
+          </tr>
+        </table>
+      </div>
+    `;
+    await safeSendEmail(
+      contact.email,
+      'Withdrawal Request Received',
+      html,
+      `${greeting} We received your withdrawal request for ${formattedAmount}. We'll notify you once it's approved.`
+    );
+  }
+
   return NextResponse.json({ success: true });
 }
 

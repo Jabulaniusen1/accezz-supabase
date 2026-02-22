@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { supabase } from '@/utils/supabaseClient';
 import Loader from '@/components/ui/loader/Loader';
-import { CheckCircle2, Download, Calendar, MapPin, User, Mail, Phone, Ticket } from 'lucide-react';
+import { CheckCircle2, Download, Calendar, MapPin, Ticket } from 'lucide-react';
 import jsPDF from 'jspdf';
 
 interface Order {
@@ -371,14 +371,14 @@ const InvoiceContent = () => {
   const eventTime = startTime && endTime ? `${startTime} - ${endTime}` : startTime || endTime || 'TBD';
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-gray-50 py-6 px-4 sm:py-8 sm:px-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
           <div className="flex justify-between items-start mb-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Invoice</h1>
-              <p className="text-gray-600">Invoice #{order.id.substring(0, 8)}</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Invoice</h1>
+              <p className="text-sm sm:text-base text-gray-600">Invoice #{order.id.substring(0, 8)}</p>
             </div>
             <div className="text-right">
               {order.status === 'paid' && (
@@ -397,24 +397,18 @@ const InvoiceContent = () => {
             </div>
           </div>
           <div className="border-t pt-4">
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="text-sm">
               <div>
                 <p className="text-gray-500">Date</p>
                 <p className="font-medium">{formatDate(order.created_at)}</p>
               </div>
-              {order.payment_reference && (
-                <div>
-                  <p className="text-gray-500">Payment Reference</p>
-                  <p className="font-medium">{order.payment_reference}</p>
-                </div>
-              )}
             </div>
           </div>
         </div>
 
         {/* Event Details */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Event Details</h2>
+        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">Event Details</h2>
           {event.image_url && (
             <div className="mb-4 rounded-lg overflow-hidden">
               <Image
@@ -426,15 +420,15 @@ const InvoiceContent = () => {
               />
             </div>
           )}
-          <h3 className="text-2xl font-bold text-gray-900 mb-4">{event.title}</h3>
+          <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">{event.title}</h3>
           <div className="space-y-3">
             {event.start_time && (
               <div className="flex items-start gap-3">
                 <Calendar className="w-5 h-5 text-gray-400 mt-0.5" />
                 <div>
-                  <p className="text-gray-500 text-sm">Date & Time</p>
-                  <p className="font-medium">{formatDate(event.start_time)}</p>
-                  <p className="text-gray-600">{eventTime}</p>
+                  <p className="text-gray-500 text-xs sm:text-sm">Date & Time</p>
+                  <p className="font-medium text-sm sm:text-base">{formatDate(event.start_time)}</p>
+                  <p className="text-gray-600 text-sm sm:text-base">{eventTime}</p>
                 </div>
               </div>
             )}
@@ -442,8 +436,8 @@ const InvoiceContent = () => {
               <div className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
                 <div>
-                  <p className="text-gray-500 text-sm">Venue</p>
-                  <p className="font-medium">
+                  <p className="text-gray-500 text-xs sm:text-sm">Venue</p>
+                  <p className="font-medium text-sm sm:text-base">
                     {[event.venue, event.address, event.city, event.country]
                       .filter(Boolean)
                       .join(', ')}
@@ -464,7 +458,7 @@ const InvoiceContent = () => {
         </div>
 
         {/* Customer Details */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        {/* <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <h2 className="text-xl font-bold text-gray-900 mb-4">Customer Details</h2>
           <div className="space-y-3">
             {order.buyer_full_name && (
@@ -493,13 +487,13 @@ const InvoiceContent = () => {
               </div>
             )}
           </div>
-        </div>
+        </div> */}
 
         {/* Tickets */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">Tickets</h2>
-            <span className="text-gray-600">{tickets.length} ticket{tickets.length !== 1 ? 's' : ''}</span>
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900">Tickets</h2>
+            <span className="text-sm sm:text-base text-gray-600">{tickets.length} ticket{tickets.length !== 1 ? 's' : ''}</span>
           </div>
           {tickets.length === 0 && order.status === 'paid' ? (
             <div className="text-center py-8">
@@ -511,18 +505,18 @@ const InvoiceContent = () => {
               <p className="text-gray-500">No tickets found for this order</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {tickets.map((ticket, index) => (
-              <div key={ticket.id} className="border rounded-lg p-4">
+              <div key={ticket.id} className="border rounded-lg p-3 sm:p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <Ticket className="w-5 h-5 text-[#f54502]" />
-                      <h3 className="font-semibold text-gray-900">
+                      <Ticket className="w-4 h-4 sm:w-5 sm:h-5 text-[#f54502]" />
+                      <h3 className="font-semibold text-sm sm:text-base text-gray-900">
                         Ticket {index + 1} - {order.meta?.ticketTypeName || 'General Admission'}
                       </h3>
                     </div>
-                    <div className="space-y-2 text-sm">
+                    <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm">
                       <div>
                         <span className="text-gray-500">Attendee: </span>
                         <span className="font-medium">{ticket.attendee_name || 'N/A'}</span>
@@ -530,7 +524,7 @@ const InvoiceContent = () => {
                       {ticket.attendee_email && (
                         <div>
                           <span className="text-gray-500">Email: </span>
-                          <span className="font-medium">{ticket.attendee_email}</span>
+                          <span className="font-medium truncate max-w-[200px] inline-block align-bottom" title={ticket.attendee_email}>{ticket.attendee_email}</span>
                         </div>
                       )}
                       <div>
@@ -543,20 +537,20 @@ const InvoiceContent = () => {
                       </div>
                     </div>
                   </div>
-                  {qrCodes[ticket.id] && (
-                    <div className="ml-4">
-                      <div className="bg-white p-2 rounded border">
-                        <Image
-                          src={qrCodes[ticket.id]}
-                          alt={`QR Code for ${ticket.ticket_code}`}
-                          width={100}
-                          height={100}
-                          className="w-24 h-24"
-                        />
+                    {qrCodes[ticket.id] && (
+                      <div className="ml-2 sm:ml-4">
+                        <div className="bg-white p-2 rounded border">
+                          <Image
+                            src={qrCodes[ticket.id]}
+                            alt={`QR Code for ${ticket.ticket_code}`}
+                            width={80}
+                            height={80}
+                            className="w-16 h-16 sm:w-20 sm:h-20"
+                          />
+                        </div>
+                        <p className="text-xs text-gray-500 text-center mt-1">QR Code</p>
                       </div>
-                      <p className="text-xs text-gray-500 text-center mt-1">QR Code</p>
-                    </div>
-                  )}
+                    )}
                 </div>
               </div>
               ))}
@@ -565,8 +559,8 @@ const InvoiceContent = () => {
         </div>
 
         {/* Summary */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Summary</h2>
+        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">Summary</h2>
           <div className="space-y-2">
             <div className="flex justify-between text-gray-600">
               <span>Subtotal</span>

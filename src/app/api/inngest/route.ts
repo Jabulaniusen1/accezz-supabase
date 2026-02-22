@@ -1,6 +1,6 @@
 import { serve } from 'inngest/next';
 import { inngest } from '@/utils/inngest';
-import { sendAbandonedCartEmail } from '@/inngest/functions';
+import { sendAbandonedCartEmail, sendEventReminderEmails } from '@/inngest/functions';
 
 // This endpoint serves two purposes:
 // 1. GET: Inngest Cloud syncs functions from here (discovers available functions)
@@ -14,6 +14,7 @@ const handler = serve({
   client: inngest,
   functions: [
     sendAbandonedCartEmail,
+    sendEventReminderEmails,
   ],
   signingKey: process.env.INNGEST_SIGNING_KEY,
 });

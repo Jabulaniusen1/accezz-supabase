@@ -50,7 +50,10 @@ async function ensureQRCodeUrl(ticketCode: string, ticketId?: string): Promise<s
 
 export async function POST(req: NextRequest) {
   try {
+    console.log('[ticket-email] API called');
     const body = await req.json();
+    console.log('[ticket-email] Request body:', { ...body, qrCodeUrl: body.qrCodeUrl ? 'present' : 'missing' });
+    
     const {
       email,
       fullName,
@@ -143,6 +146,14 @@ export async function POST(req: NextRequest) {
       // Continue without PDF attachment if generation fails
     }
 
+    console.log('[ticket-email] About to send email to:', email);
+    console.log('[ticket-email] Email config check:', {
+      hasZeptoMailPassword: !!process.env.ZEPTOMAIL_PASSWORD,
+      hasGmailPassword: !!process.env.GMAIL_APP_PASSWORD,
+      hasGmailUser: !!process.env.GMAIL_USER,
+      baseUrl: process.env.NEXT_PUBLIC_BASE_URL,
+    });
+
     await sendEmail({
       to: email,
       subject: `Your Tickets for ${eventTitle}`,
@@ -150,6 +161,7 @@ export async function POST(req: NextRequest) {
       attachments: pdfAttachment ? [pdfAttachment] : undefined,
     });
 
+    console.log('[ticket-email] Email sent successfully to:', email);
     return NextResponse.json(
       { message: 'Ticket email sent successfully' },
       { status: 200 }
