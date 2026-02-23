@@ -54,7 +54,7 @@ export async function optimizeImage(
   });
 
   // Calculate new dimensions
-  let { width, height } = calculateDimensions(
+  const { width, height } = calculateDimensions(
     img.width,
     img.height,
     maxWidth,

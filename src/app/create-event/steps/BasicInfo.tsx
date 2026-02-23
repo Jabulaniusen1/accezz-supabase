@@ -116,11 +116,6 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState(false);
-  const [optimizationInfo, setOptimizationInfo] = useState<{
-    originalSize: number;
-    optimizedSize: number;
-    compressionRatio: number;
-  } | null>(null);
   const googleApiKeyRef = useRef<string | undefined>(
     process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY ??
     process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ??
@@ -436,7 +431,6 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
 
     // Start optimization
     setIsOptimizing(true);
-    setOptimizationInfo(null);
     
     try {
       // Log original file size
@@ -464,13 +458,6 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
       const previewUrl = URL.createObjectURL(optimizedResult.file);
       setImagePreview(previewUrl);
       updateFormData({ image: optimizedResult.file });
-      
-      // Store optimization info
-      setOptimizationInfo({
-        originalSize: optimizedResult.originalSize,
-        optimizedSize: optimizedResult.optimizedSize,
-        compressionRatio: optimizedResult.compressionRatio
-      });
 
       // Optimization successful - no user notification needed
 
@@ -1027,7 +1014,6 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                     if (imagePreview) URL.revokeObjectURL(imagePreview);
                     setImagePreview(null);
                     updateFormData({ image: null });
-                    setOptimizationInfo(null);
                     if (fileInputRef.current) fileInputRef.current.value = '';
                   }}
                   className="absolute top-2 right-2 p-1.5 sm:p-2 bg-[#f54502] text-white rounded-[5px] hover:bg-[#d63a02] transition-colors duration-200"
