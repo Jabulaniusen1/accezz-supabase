@@ -12,11 +12,10 @@ import { FaArrowRight } from 'react-icons/fa';
 
 const Hero = () => {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(false); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [toast, setToast] = useState<{
     type: "success" | "error";
     message: string;
