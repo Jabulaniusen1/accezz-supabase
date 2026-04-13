@@ -37,13 +37,13 @@ const nextConfig: NextConfig = {
   webpack: (config: unknown, { isServer }: { isServer: boolean }) => {
     const cfg = config as { resolve?: { fallback?: Record<string, unknown> } };
     if (!isServer) {
-      config.resolve = config.resolve || {};
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
+      cfg.resolve = cfg.resolve || {};
+      cfg.resolve.fallback = {
+        ...cfg.resolve.fallback,
         fs: false,
       };
     }
-    return config;
+    return cfg;
   },
 
   // i18n is a Pages Router feature — do NOT use it in App Router.
