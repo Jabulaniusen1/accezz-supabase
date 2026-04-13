@@ -1,7 +1,6 @@
 'use client';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios';
 
 // Set NEXT_PUBLIC_CHATBOT_API_URL in your .env.local to point to the chatbot backend
 const API_URL = process.env.NEXT_PUBLIC_CHATBOT_API_URL || '';
@@ -52,12 +51,11 @@ const ChatBot = () => {
         
         try {
             setIsLoading(true);
-            const response = await axios.get(`${API_URL}/chatbot/chats?email=${email}`, {
-                signal
-            });
-            
+            const response = await fetch(`${API_URL}/chatbot/chats?email=${email}`, { signal });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
             if (!signal?.aborted) {
-                const chats = response.data;
+                const chats = await response.json();
                 const chatMessages = chats.flatMap((chat: { message: string; response: string }) => [
                     { type: 'user' as const, content: chat.message },
                     { type: 'bot' as const, content: chat.response },
@@ -65,7 +63,7 @@ const ChatBot = () => {
                 setMessages(chatMessages);
             }
         } catch (error) {
-            if (!axios.isCancel(error)) {
+            if ((error as Error)?.name !== 'AbortError') {
                 console.error('Error fetching chat history:', error);
             }
         } finally {
@@ -97,14 +95,15 @@ const ChatBot = () => {
         setIsLoading(true);
 
         try {
-            const response = await axios.post(`${API_URL}/chatbot/query`, {
-                message: inputMessage,
-                email: email || 'guest@example.com',
+            const response = await fetch(`${API_URL}/chatbot/query`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: inputMessage, email: email || 'guest@example.com' }),
             });
-
-            setMessages(prev => [...prev, { type: 'bot', content: response.data.response }]);
+            const data = await response.json();
+            setMessages(prev => [...prev, { type: 'bot', content: data.response }]);
         } catch (error) {
-            if (!axios.isCancel(error)) {
+            if ((error as Error)?.name !== 'AbortError') {
                 console.error('Error sending message:', error);
                 setMessages(prev => [...prev, { 
                     type: 'bot', 
@@ -137,10 +136,14 @@ const ChatBot = () => {
                     const formData = new FormData();
                     formData.append('audio', audioBlob);
 
-                    const response = await axios.post(`${API_URL}/chatbot/voice`, formData);
-                    setInputMessage(response.data.text);
+                    const response = await fetch(`${API_URL}/chatbot/voice`, {
+                        method: 'POST',
+                        body: formData,
+                    });
+                    const data = await response.json();
+                    setInputMessage(data.text);
                 } catch (error) {
-                    if (!axios.isCancel(error)) {
+                    if ((error as Error)?.name !== 'AbortError') {
                         console.error('Error processing voice:', error);
                     }
                 }
