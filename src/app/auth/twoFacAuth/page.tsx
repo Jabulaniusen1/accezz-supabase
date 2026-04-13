@@ -14,7 +14,7 @@ const TwoFacAuth = () => {
 
   const router = useRouter();
 
-  const logSecurityEvent = async (_event: string) => {
+  const logSecurityEvent = async (_event: string) => { // eslint-disable-line @typescript-eslint/no-unused-vars
     // Simulate API call
     // await fetch('/api/log-security-event', {
     //   method: 'POST',
