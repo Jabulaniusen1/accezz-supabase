@@ -4,7 +4,7 @@ import React, { useEffect, useState, Suspense } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { supabase } from '@/utils/supabaseClient';
-import Loader from '@/components/ui/loader/Loader';
+import { PageSkeleton } from '@/components/ui/Skeleton';
 import { CheckCircle2, Download, Calendar, MapPin, Ticket } from 'lucide-react';
 import jsPDF from 'jspdf';
 
@@ -112,10 +112,14 @@ const InvoiceContent = () => {
         const ticketsList = ticketsData as Ticket[] || [];
         setTickets(ticketsList);
 
-        // If order is paid but no tickets yet, they might still be processing
-        if (orderWithEvents.status === 'paid' && ticketsList.length === 0) {
-          // Wait a bit and retry once
-          setTimeout(async () => {
+        // If no tickets yet (order paid or still processing), poll until they appear
+        if (ticketsList.length === 0 && (orderWithEvents.status === 'paid' || orderWithEvents.status === 'pending')) {
+          let attempts = 0;
+          const maxAttempts = 10;
+          const poll = async () => {
+            if (attempts >= maxAttempts) return;
+            attempts++;
+            await new Promise(r => setTimeout(r, 2000));
             const { data: retryTickets } = await supabase
               .from('tickets')
               .select('*')
@@ -123,8 +127,11 @@ const InvoiceContent = () => {
               .order('created_at', { ascending: true });
             if (retryTickets && retryTickets.length > 0) {
               setTickets(retryTickets as Ticket[]);
+            } else {
+              poll();
             }
-          }, 2000);
+          };
+          poll();
         }
 
         // Generate QR codes for tickets that don't have them
@@ -342,13 +349,7 @@ const InvoiceContent = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loader />
-      </div>
-    );
-  }
+  if (loading) return <PageSkeleton />;
 
   if (error || !order || !event) {
     return (
@@ -495,7 +496,7 @@ const InvoiceContent = () => {
             <h2 className="text-lg sm:text-xl font-bold text-gray-900">Tickets</h2>
             <span className="text-sm sm:text-base text-gray-600">{tickets.length} ticket{tickets.length !== 1 ? 's' : ''}</span>
           </div>
-          {tickets.length === 0 && order.status === 'paid' ? (
+          {tickets.length === 0 && (order.status === 'paid' || order.status === 'pending') ? (
             <div className="text-center py-8">
               <p className="text-gray-500 mb-2">Tickets are being generated...</p>
               <p className="text-sm text-gray-400">Please refresh the page in a moment</p>
@@ -592,11 +593,7 @@ const InvoiceContent = () => {
 
 const InvoicePage = () => {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loader />
-      </div>
-    }>
+    <Suspense fallback={<PageSkeleton />}>
       <InvoiceContent />
     </Suspense>
   );

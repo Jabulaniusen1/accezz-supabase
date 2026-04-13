@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
-import Receipt from './Receipt';
 import TicketSelectionStep from './TicketFormSec/TicketSelectionStep';
 import OrderInformationStep from './TicketFormSec/OrderInformationStep';
 import PaymentStep from './TicketFormSec/PaymentStep';
@@ -11,6 +10,7 @@ import { supabase } from '@/utils/supabaseClient';
 import { getSession } from '@/utils/supabaseAuth';
 import { useTicketPurchase } from '@/contexts/TicketPurchaseContext';
 import { Event } from '@/types/event';
+import { FaCheckCircle, FaTimes, FaArrowLeft } from 'react-icons/fa';
 
 type TicketOption = {
   id: string;
@@ -18,8 +18,7 @@ type TicketOption = {
   price: string;
   quantity: string;
   sold: string;
-  details?: string; // Made optional
-  attendees?: { name: string; email: string }[];
+  details?: string;
 };
 
 type TicketTypeFormProps = {
@@ -43,248 +42,168 @@ const parsePriceValue = (value: string | number | null | undefined): number => {
   return 0;
 };
 
-const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true, initialTicket }: TicketTypeFormProps) => {
+const STEPS = ['Select Ticket', 'Your Details', 'Payment'];
+
+const TicketTypeForm = ({
+  closeForm,
+  tickets,
+  eventSlug,
+  setToast,
+  isOpen = true,
+  initialTicket,
+}: TicketTypeFormProps) => {
   const { setIsPurchasing } = useTicketPurchase();
+
+  // — Step state —
   const [activeStep, setActiveStep] = useState(0);
+
+  // — Ticket selection —
   const [selectedTicket, setSelectedTicket] = useState<TicketOption | null>(initialTicket ?? null);
   const [quantity, setQuantity] = useState(1);
+
+  // — Attendee details —
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [gender, setGender] = useState('');
+  const [additionalTicketHolders, setAdditionalTicketHolders] = useState<
+    Array<{ name: string; email: string; phone?: string; gender?: string }>
+  >([]);
+  const [useSameDetails, setUseSameDetails] = useState(true);
+
+  // — Async / UI —
   const [events, setEvent] = useState<EventBasic | null>(null);
   const [fullEvent, setFullEvent] = useState<Event | null>(null);
-  const [isPurchased, setIsPurchased] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [showAccountPrompt, setShowAccountPrompt] = useState(false);
   const [purchaseOrderId, setPurchaseOrderId] = useState<string | null>(null);
-  const [additionalTicketHolders, setAdditionalTicketHolders] = useState<Array<{
-    name: string;
-    email: string;
-    phone?: string;
-    gender?: string;
-  }>>([]);
-  const [useSameDetails, setUseSameDetails] = useState(true);
-
-  const [isSheetVisible, setIsSheetVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   const [hasLoadedUserInfo, setHasLoadedUserInfo] = useState(false);
   const fieldsRef = useRef({ fullName, email, phoneNumber });
 
   const eventId = events?.id;
 
-  const totalPrice = useMemo(() => {
-    return parsePriceValue(selectedTicket?.price) * quantity;
-  }, [selectedTicket, quantity]);
+  const totalPrice = useMemo(
+    () => parsePriceValue(selectedTicket?.price) * quantity,
+    [selectedTicket, quantity],
+  );
 
+  // Animate-in on mount
+  useEffect(() => { setIsVisible(true); }, []);
+
+  // Fetch event
   useEffect(() => {
+    if (!eventSlug || typeof eventSlug !== 'string') return;
     const fetchEvent = async () => {
-      if (!eventSlug || typeof eventSlug !== 'string') {
-        console.error('Invalid eventSlug:', eventSlug);
-        return;
-      }
-
       try {
-        console.log('Fetching event for slug:', eventSlug);
         const fetchedEvent = await fetchEventBySlug(eventSlug);
         if (fetchedEvent) {
-          console.log('Event fetched successfully:', fetchedEvent.id);
           setEvent({ id: fetchedEvent.id || '', slug: fetchedEvent.slug || '' });
           setFullEvent(fetchedEvent);
-          
-          // Check if event is past
           if (isEventPast(fetchedEvent)) {
-            setToast({ type: 'error', message: 'This event has already ended. Tickets are no longer available.' });
-            setTimeout(() => {
-              closeForm();
-            }, 2000);
+            setToast({ type: 'error', message: 'This event has already ended.' });
+            setTimeout(closeForm, 2000);
           }
         } else {
-          console.error('No event found for slug:', eventSlug);
           setToast({ type: 'error', message: 'Event not found' });
         }
-      } catch (err) {
-        console.error('Failed to fetch event:', err);
+      } catch {
         setToast({ type: 'error', message: 'Failed to load event details' });
-      } 
+      }
     };
-
     fetchEvent();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventSlug]);
 
-  useEffect(() => {
-    setIsSheetVisible(true);
-  }, []);
-
-  // Restore saved state on mount
+  // Restore saved state
   useEffect(() => {
     try {
-      const savedState = getTicketPurchaseState();
-      if (savedState && savedState.eventSlug === eventSlug && savedState.showTicketForm) {
-        if (savedState.activeStep !== undefined) setActiveStep(savedState.activeStep);
-        if (savedState.selectedTicket) setSelectedTicket(savedState.selectedTicket);
-        if (savedState.quantity !== undefined) setQuantity(savedState.quantity);
-          if (savedState.fullName) setFullName(savedState.fullName);
-          if (savedState.email) setEmail(savedState.email);
-          if (savedState.phoneNumber) setPhoneNumber(savedState.phoneNumber);
-          if (savedState.gender) setGender(savedState.gender);
-          if (savedState.orderId) setOrderId(savedState.orderId);
-          if (savedState.additionalTicketHolders) setAdditionalTicketHolders(savedState.additionalTicketHolders);
+      const saved = getTicketPurchaseState();
+      if (saved?.eventSlug === eventSlug && saved.showTicketForm) {
+        if (saved.activeStep !== undefined) setActiveStep(saved.activeStep);
+        if (saved.selectedTicket)          setSelectedTicket(saved.selectedTicket);
+        if (saved.quantity !== undefined)  setQuantity(saved.quantity);
+        if (saved.fullName)    setFullName(saved.fullName);
+        if (saved.email)       setEmail(saved.email);
+        if (saved.phoneNumber) setPhoneNumber(saved.phoneNumber);
+        if (saved.gender)      setGender(saved.gender);
+        if (saved.orderId)     setOrderId(saved.orderId);
+        if (saved.additionalTicketHolders) setAdditionalTicketHolders(saved.additionalTicketHolders);
       }
-    } catch (error) {
-      console.error('Error restoring ticket purchase state:', error);
+    } catch {
+      // ignore
     }
   }, [eventSlug]);
 
-  // Update ref whenever fields change
-  useEffect(() => {
-    fieldsRef.current = { fullName, email, phoneNumber };
-  }, [fullName, email, phoneNumber]);
+  // Keep ref in sync
+  useEffect(() => { fieldsRef.current = { fullName, email, phoneNumber }; }, [fullName, email, phoneNumber]);
 
-  // Helper function to pre-fill user information
+  // Pre-fill from Supabase profile
   const preFillUserInfo = async () => {
-    if (hasLoadedUserInfo) {
-      return;
-    }
-
+    if (hasLoadedUserInfo) return;
     try {
-      // Check if there's saved state with actual user input - if so, don't pre-fill
-      const savedState = getTicketPurchaseState();
-      const hasSavedUserInput = savedState && 
-                                savedState.eventSlug === eventSlug && 
-                                savedState.showTicketForm &&
-                                savedState.fullName?.trim() && 
-                                savedState.email?.trim() && 
-                                savedState.phoneNumber?.trim();
-      
-      if (hasSavedUserInput) {
-        // Saved state has user input, don't pre-fill
-        console.log('Skipping pre-fill: saved state has user input', savedState);
-        setHasLoadedUserInfo(true);
-        return;
-      }
+      const saved = getTicketPurchaseState();
+      const hasSaved = saved?.eventSlug === eventSlug &&
+        saved.showTicketForm &&
+        saved.fullName?.trim() &&
+        saved.email?.trim() &&
+        saved.phoneNumber?.trim();
+      if (hasSaved) { setHasLoadedUserInfo(true); return; }
 
       const session = await getSession();
-      if (!session) {
-        console.log('Skipping pre-fill: no session');
-        setHasLoadedUserInfo(true);
-        return;
-      }
+      if (!session) { setHasLoadedUserInfo(true); return; }
 
-      // Check current field values using ref to get latest values
-      const currentFullName = fieldsRef.current.fullName.trim();
-      const currentEmail = fieldsRef.current.email.trim();
-      const currentPhone = fieldsRef.current.phoneNumber.trim();
+      const { fullName: fn, email: em, phoneNumber: ph } = fieldsRef.current;
+      if (fn || em || ph) { setHasLoadedUserInfo(true); return; }
 
-      if (currentFullName || currentEmail || currentPhone) {
-        // Fields already have values, don't pre-fill
-        console.log('Skipping pre-fill: fields already have values', { currentFullName, currentEmail, currentPhone });
-        setHasLoadedUserInfo(true);
-        return;
-      }
-
-      console.log('Pre-filling user info from database...');
-      
-      // Get user profile
-      const { data: profile, error: profileError } = await supabase
+      const { data: profile } = await supabase
         .from('profiles')
         .select('full_name, phone')
         .eq('user_id', session.user.id)
         .single();
 
-      if (profileError) {
-        console.error('Error fetching profile:', profileError);
-      }
-
-      // Pre-fill from profile or user metadata
-      const userFullName = profile?.full_name || 
-                          session.user.user_metadata?.full_name || 
-                          session.user.user_metadata?.fullName || 
-                          '';
+      const userName  = profile?.full_name || session.user.user_metadata?.full_name || '';
       const userEmail = session.user.email || '';
-      const userPhone = profile?.phone || 
-                       session.user.user_metadata?.phone || 
-                       '';
+      const userPhone = profile?.phone || session.user.user_metadata?.phone || '';
 
-      console.log('User info to pre-fill:', { userFullName, userEmail, userPhone });
-
-      // Pre-fill the fields
-      if (userFullName && !currentFullName) {
-        setFullName(userFullName);
-        console.log('Pre-filled full name:', userFullName);
-      }
-      if (userEmail && !currentEmail) {
-        setEmail(userEmail);
-        console.log('Pre-filled email:', userEmail);
-      }
-      if (userPhone && !currentPhone) {
-        setPhoneNumber(userPhone);
-        console.log('Pre-filled phone:', userPhone);
-      }
-      
+      if (userName  && !fieldsRef.current.fullName)    setFullName(userName);
+      if (userEmail && !fieldsRef.current.email)        setEmail(userEmail);
+      if (userPhone && !fieldsRef.current.phoneNumber)  setPhoneNumber(userPhone);
       setHasLoadedUserInfo(true);
-    } catch (error) {
-      console.error('Error loading user info:', error);
+    } catch {
       setHasLoadedUserInfo(true);
-      // Silently fail - user can still fill manually
     }
   };
 
-  // Update ticket purchase context when form opens/closes
+  // Context sync
   useEffect(() => {
     setIsPurchasing(isOpen);
-    
-    // Cleanup: reset when component unmounts
-    return () => {
-      setIsPurchasing(false);
-    };
+    return () => { setIsPurchasing(false); };
   }, [isOpen, setIsPurchasing]);
 
-  // Pre-fill user information when form opens
+  // Pre-fill on open and when reaching step 1
   useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    // Wait a bit to ensure saved state restoration happens first
-    const timer = setTimeout(() => {
-      preFillUserInfo();
-    }, 300);
-
-    return () => clearTimeout(timer);
+    if (!isOpen) return;
+    const t = setTimeout(preFillUserInfo, 300);
+    return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, eventSlug]);
 
-  // Pre-fill user information when user reaches step 1 (order information step)
   useEffect(() => {
-    if (!isOpen || activeStep !== 1 || hasLoadedUserInfo) {
-      return;
-    }
-
-    // Small delay to ensure form is rendered
-    const timer = setTimeout(() => {
-      preFillUserInfo();
-    }, 100);
-
-    return () => clearTimeout(timer);
+    if (!isOpen || activeStep !== 1 || hasLoadedUserInfo) return;
+    const t = setTimeout(preFillUserInfo, 100);
+    return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeStep, isOpen]);
 
-  // Reset hasLoadedUserInfo when form closes
-  useEffect(() => {
-    if (!isOpen) {
-      setHasLoadedUserInfo(false);
-    }
-  }, [isOpen]);
+  useEffect(() => { if (!isOpen) setHasLoadedUserInfo(false); }, [isOpen]);
 
+  // Sync initialTicket prop
   useEffect(() => {
     if (!initialTicket) return;
-
     setSelectedTicket(prev => {
-      if (prev && prev.name === initialTicket.name && prev.price === initialTicket.price) {
-        return prev;
-      }
+      if (prev?.name === initialTicket.name && prev?.price === initialTicket.price) return prev;
       return { ...initialTicket };
     });
     setActiveStep(0);
@@ -292,7 +211,7 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
     setAdditionalTicketHolders([]);
   }, [initialTicket]);
 
-  // Save state whenever it changes (only when modal is open)
+  // Persist state
   useEffect(() => {
     if (!isOpen) return;
     try {
@@ -310,71 +229,84 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
         orderId: orderId || undefined,
         additionalTicketHolders: additionalTicketHolders.length > 0 ? additionalTicketHolders : undefined,
       });
-    } catch (error) {
-      console.error('Error saving ticket purchase state:', error);
+    } catch {
+      // ignore
     }
   }, [activeStep, selectedTicket, quantity, fullName, email, phoneNumber, gender, totalPrice, orderId, additionalTicketHolders, eventSlug, isOpen]);
+
+  // ── Handlers ────────────────────────────────────────────────
+
+  const handleTicketSelection = (ticket: TicketOption) => {
+    setSelectedTicket({ ...ticket });
+    setQuantity(1);
+  };
+
+  const handleQuantityChange = (newQty: number) => {
+    setQuantity(newQty);
+    if (newQty > 1) setUseSameDetails(true);
+    setAdditionalTicketHolders(prev => {
+      if (newQty <= 1) return [];
+      if (newQty - 1 > prev.length)
+        return [...prev, ...Array(newQty - 1 - prev.length).fill({ name: '', email: '', phone: '', gender: '' })];
+      return prev.slice(0, newQty - 1);
+    });
+  };
+
+  const handleAdditionalTicketHolderChange = (index: number, field: string, value: string) => {
+    setAdditionalTicketHolders(prev => {
+      const updated = [...prev];
+      if (!updated[index]) updated[index] = { name: '', email: '' };
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  };
 
   const handleNext = async () => {
     if (activeStep === 0) {
       if (!selectedTicket) {
-        setToast({ type: 'error', message: 'Please select a ticket' });
+        setToast({ type: 'error', message: 'Please select a ticket to continue.' });
         return;
       }
       setActiveStep(1);
+      return;
+    }
 
-    } else if (activeStep === 1) {
+    if (activeStep === 1) {
       if (!fullName || !phoneNumber || !email || !gender) {
-        setToast({ type: 'error', message: 'All fields are required.' });
+        setToast({ type: 'error', message: 'Please fill in all required fields.' });
         return;
       }
 
-      // Build attendees list
-        const allAttendees = [
-          { name: fullName, email: email, gender: gender || undefined }
-        ];
+      const allAttendees = [{ name: fullName, email, gender: gender || undefined }];
 
       if (quantity > 1) {
         if (useSameDetails) {
-          // Use same details for all tickets
-          for (let i = 1; i < quantity; i++) {
-            allAttendees.push({
-              name: fullName,
-              email: email,
-              gender: gender || undefined
-            });
-          }
+          for (let i = 1; i < quantity; i++) allAttendees.push({ name: fullName, email, gender: gender || undefined });
         } else {
-          // Use individual details for each ticket
           if (additionalTicketHolders.length < quantity - 1) {
             setToast({ type: 'error', message: 'Please fill in details for all ticket holders.' });
             return;
           }
-          
-          // Validate all additional ticket holders have required fields
           for (let i = 0; i < quantity - 1; i++) {
-            const holder = additionalTicketHolders[i];
-            if (!holder?.name || !holder?.email || !holder?.gender) {
-              setToast({ type: 'error', message: `Please fill in all details for ticket holder #${i + 2}.` });
+            const h = additionalTicketHolders[i];
+            if (!h?.name || !h?.email || !h?.gender) {
+              setToast({ type: 'error', message: `Please complete details for Ticket Holder #${i + 2}.` });
               return;
             }
           }
-
-          allAttendees.push(...additionalTicketHolders.slice(0, quantity - 1).map(holder => ({
-            name: holder.name,
-            email: holder.email,
-            gender: holder.gender || undefined
+          allAttendees.push(...additionalTicketHolders.slice(0, quantity - 1).map(h => ({
+            name: h.name, email: h.email, gender: h.gender || undefined,
           })));
         }
-        }
+      }
 
       if (!eventId || !selectedTicket) {
-        setToast({ type: 'error', message: 'Missing event or ticket information' });
+        setToast({ type: 'error', message: 'Missing event or ticket information.' });
         return;
       }
 
-      // Handle free tickets
-      if (Number(selectedTicket.price.replace(/[^\d.-]/g, '')) === 0) {
+      // Free tickets skip order creation
+      if (parsePriceValue(selectedTicket.price) === 0) {
         setActiveStep(2);
         return;
       }
@@ -382,58 +314,29 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
       // Create order for paid tickets
       try {
         setIsLoading(true);
-        console.log('Creating order with params:', {
+        const { orderId: createdOrderId } = await createOrder({
           eventId,
           ticketTypeName: selectedTicket.name,
           quantity: allAttendees.length,
           email,
           phone: phoneNumber,
-          fullName
-        });
-        
-        const { orderId: createdOrderId } = await createOrder({
-          eventId: eventId,
-          ticketTypeName: selectedTicket.name,
-          quantity: allAttendees.length,
-          email: email,
-          phone: phoneNumber,
-          fullName: fullName,
-          gender: gender,
+          fullName,
+          gender,
           attendees: allAttendees.length > 1 ? allAttendees.slice(1) : null,
           currency: 'NGN',
         });
 
-        console.log('Order created successfully:', createdOrderId);
         setOrderId(createdOrderId);
-        
-        // Store order info for payment processing
+
         try {
           localStorage.setItem('pendingPayment', JSON.stringify({
-            orderId: createdOrderId,
-            eventId: eventId,
-            eventSlug: eventSlug,  // Store event slug for proper redirect on cancel
-            email,
-            amount: totalPrice,
-            currency: 'NGN'
+            orderId: createdOrderId, eventId, eventSlug, email, amount: totalPrice, currency: 'NGN',
           }));
-        } catch (storageError) {
-          console.warn('Could not save to localStorage:', storageError);
-          // Non-critical - we have orderId in state
-        }
+        } catch { /* non-critical */ }
 
-        setToast({
-          type: 'success',
-          message: 'Order created. Proceed to payment.'
-        });
         setActiveStep(2);
       } catch (error: unknown) {
-        console.error('Error creating order:', error);
-        const errorMessage = (error as Error).message || 'Unknown error occurred';
-        console.error('Full error details:', JSON.stringify(error, null, 2));
-        setToast({
-          type: 'error',
-          message: errorMessage
-        });
+        setToast({ type: 'error', message: (error as Error).message || 'Could not create order.' });
       } finally {
         setIsLoading(false);
       }
@@ -441,242 +344,115 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
   };
 
   const handlePurchase = async () => {
-    // Set loading state immediately when button is clicked
     setIsLoading(true);
-    
+
     if (!eventId || !selectedTicket) {
       setIsLoading(false);
-      setToast({ type: 'error', message: 'Missing information' });
+      setToast({ type: 'error', message: 'Missing information.' });
       return;
     }
-    
-    // Prevent purchase for past events
+
     if (fullEvent && isEventPast(fullEvent)) {
       setIsLoading(false);
-      setToast({ type: 'error', message: 'This event has already ended. Tickets are no longer available.' });
+      setToast({ type: 'error', message: 'This event has already ended.' });
       return;
     }
 
-    const allAttendees = [
-      { name: fullName, email: email, gender: gender || undefined }
-    ];
-
-    if (additionalTicketHolders.length > 0) {
-      allAttendees.push(...additionalTicketHolders.map(holder => ({
-        name: holder.name,
-        email: holder.email,
-        gender: holder.gender || undefined
-      })));
-    }
-
+    const allAttendees = [{ name: fullName, email, gender: gender || undefined }];
+    if (additionalTicketHolders.length > 0)
+      allAttendees.push(...additionalTicketHolders.map(h => ({ name: h.name, email: h.email, gender: h.gender || undefined })));
     const attendees = allAttendees.length > 1 ? allAttendees.slice(1) : null;
-    const ticketPrice = Number(selectedTicket.price.replace(/[^\d.-]/g, ''));
+    const ticketPrice = parsePriceValue(selectedTicket.price);
 
     try {
-
-      // Handle free tickets
+      // ── Free tickets ──
       if (ticketPrice === 0) {
         try {
           const { orderId: createdOrderId } = await createFreeTickets({
-            eventId: eventId,
-            ticketTypeName: selectedTicket.name,
-            quantity: quantity,
-            email: email,
-            phone: phoneNumber,
-            fullName: fullName,
-            gender: gender,
-            attendees: attendees,
-            currency: 'NGN',
+            eventId, ticketTypeName: selectedTicket.name, quantity, email,
+            phone: phoneNumber, fullName, gender, attendees, currency: 'NGN',
           });
-
           clearTicketPurchaseState();
-          
-          // Check if user is logged in
           const session = await getSession();
-          
-          // If user is not logged in, show account creation prompt
           if (!session) {
             setPurchaseOrderId(createdOrderId);
             setShowAccountPrompt(true);
             setIsLoading(false);
-            // Don't redirect yet - wait for user to close the prompt
             return;
           }
-          
-          // User is logged in, redirect to invoice page
-          // Keep loading state during redirect so spinner stays visible
           window.location.href = `/invoice/${createdOrderId}`;
           return;
         } catch (error: unknown) {
-          console.error('Error creating free ticket:', error);
           setIsLoading(false);
           setToast({ type: 'error', message: (error instanceof Error ? error.message : 'Error creating free ticket') });
           return;
         }
       }
 
-      // For paid tickets, use Paystack popup
+      // ── Paid tickets via Paystack ──
       if (!orderId) {
         setIsLoading(false);
-        setToast({ type: 'error', message: 'Order information not found. Please try again.' });
+        setToast({ type: 'error', message: 'Order not found. Please go back and try again.' });
         return;
       }
-      
-      // Initialize Paystack payment popup
-      try {
-        const res = await fetch('/api/paystack/initialize', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            orderId, 
-            amount: totalPrice, 
-            email, 
-            currency: 'NGN',
-            callbackUrl: `${window.location.origin}/success?orderId=${orderId}`
-          })
-        });
 
-        const data = await res.json() as { authorization_url?: string; access_code?: string; reference?: string; error?: string };
-        
-        if (!res.ok || !data?.authorization_url) {
-          throw new Error(data?.error || 'Failed to initialize payment');
-        }
+      const res = await fetch('/api/paystack/initialize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId, amount: totalPrice, email, currency: 'NGN',
+          callbackUrl: `${window.location.origin}/success?orderId=${orderId}`,
+        }),
+      });
 
-        // Load Paystack inline JS SDK dynamically
-        const loadPaystackScript = (): Promise<void> => {
-          return new Promise((resolve, reject) => {
-            // Check if script already loaded
-            if (window.PaystackPop) {
-              resolve();
-              return;
-            }
+      const data = await res.json() as { authorization_url?: string; access_code?: string; reference?: string; error?: string };
+      if (!res.ok || !data?.authorization_url) throw new Error(data?.error || 'Failed to initialize payment');
 
-            const script = document.createElement('script');
-            script.src = 'https://js.paystack.co/v1/inline.js';
-            script.async = true;
-            script.onload = () => resolve();
-            script.onerror = () => reject(new Error('Failed to load Paystack script'));
-            document.head.appendChild(script);
-          });
-        };
+      // Load Paystack script
+      await new Promise<void>((resolve, reject) => {
+        if (window.PaystackPop) { resolve(); return; }
+        const script = document.createElement('script');
+        script.src = 'https://js.paystack.co/v1/inline.js';
+        script.async = true;
+        script.onload  = () => resolve();
+        script.onerror = () => reject(new Error('Failed to load Paystack'));
+        document.head.appendChild(script);
+      });
 
-        await loadPaystackScript();
+      const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
+      if (!publicKey || !window.PaystackPop) throw new Error('Paystack not configured');
 
-        // Get public key from environment
-        const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
-        if (!publicKey) {
-          throw new Error('Paystack public key not configured');
-        }
+      const handler = window.PaystackPop.setup({
+        key: publicKey,
+        email,
+        amount: Math.round(totalPrice * 100),
+        currency: 'NGN',
+        ref: data.reference || `ORD-${orderId}-${Date.now()}`,
+        callback: (response: { reference: string }) => {
+          // The Paystack webhook is the single source of truth.
+          // It receives charge.success, marks the order paid, creates tickets,
+          // sends confirmation emails, and triggers Inngest reminders.
+          // The client only needs to hand the reference to the success page.
+          clearTicketPurchaseState();
+          try { localStorage.removeItem('pendingPayment'); } catch { /* ignore */ }
+          window.location.href = `/success?orderId=${orderId}&reference=${encodeURIComponent(response.reference)}`;
+        },
+        onClose: () => {
+          setIsLoading(false);
+          setToast({ type: 'error', message: 'Payment cancelled.' });
+        },
+      });
 
-        if (!window.PaystackPop) {
-          throw new Error('Paystack SDK not loaded');
-        }
-
-        // Initialize Paystack popup
-        const handler = window.PaystackPop.setup({
-          key: publicKey,
-          email: email,
-          amount: Math.round(totalPrice * 100), // Convert to kobo
-          currency: 'NGN',
-          ref: data.reference || `ORD-${orderId}-${Date.now()}`,
-          callback: (response: { reference: string; status: string }) => {
-            // Payment successful, verify and redirect to invoice
-            // Note: callback must be synchronous, so we handle async operations inside
-            (async () => {
-              try {
-                const verifyRes = await fetch(`/api/paystack/verify?reference=${encodeURIComponent(response.reference)}`);
-                const verifyData = await verifyRes.json() as { status?: string; orderId?: string; error?: string };
-                
-                if (verifyRes.ok && verifyData.status === 'success' && verifyData.orderId) {
-                  // Mark order as paid and create tickets
-                  const { markOrderAsPaid, createTicketsForOrder } = await import('@/utils/paymentUtils');
-                  await markOrderAsPaid(verifyData.orderId, response.reference, 'paystack');
-                  await createTicketsForOrder(verifyData.orderId);
-                  
-                  // Clear purchase state
-                  clearTicketPurchaseState();
-                  try { localStorage.removeItem('pendingPayment'); } catch {}
-                  
-                  // Redirect to invoice page
-                  window.location.href = `/invoice/${verifyData.orderId}`;
-                } else {
-                  throw new Error(verifyData.error || 'Payment verification failed');
-                }
-              } catch (error) {
-                console.error('Payment verification error:', error);
-                setIsLoading(false);
-                setToast({ type: 'error', message: 'Payment verification failed. Please contact support.' });
-              }
-            })();
-          },
-          onClose: () => {
-            // User closed the popup
-            setIsLoading(false);
-            setToast({ type: 'error', message: 'Payment cancelled' });
-          }
-        });
-
-        handler.openIframe();
-      } catch (error: unknown) {
-        console.error('Error initializing payment:', error);
-        setIsLoading(false);
-        setToast({ type: 'error', message: (error instanceof Error ? error.message : 'Failed to initialize payment') });
-      }
-      
+      handler.openIframe();
     } catch (error: unknown) {
-      console.error('Error processing payment:', error);
       setIsLoading(false);
       setToast({ type: 'error', message: (error instanceof Error ? error.message : 'Error processing payment') });
     }
-    // Note: Don't reset loading in finally block if redirecting - let it stay visible during redirect
   };
 
-  const handleBack = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep - 1);
-  };
+  const handleBack = () => setActiveStep(s => s - 1);
 
-  const handleTicketSelection = (ticket: typeof tickets[0]) => {
-    setSelectedTicket({
-      id: ticket.id,
-      name: ticket.name,
-      price: ticket.price,
-      quantity: ticket.quantity,
-      sold: ticket.sold,
-      details: ticket.details || ''
-    });
-    setQuantity(1);
-  }; 
-
-  const handleQuantityChange = (newQuantity: number) => {
-    setQuantity(newQuantity);
-    
-    // Reset to "use same details" when quantity changes
-    if (newQuantity > 1) {
-      setUseSameDetails(true);
-    }
-    
-    setAdditionalTicketHolders(prev => {
-      if (newQuantity <= 1) return [];
-      if (newQuantity - 1 > prev.length) {
-        return [...prev, ...Array(newQuantity - 1 - prev.length).fill({ name: '', email: '', phone: '', gender: '' })];
-      }
-      return prev.slice(0, newQuantity - 1);
-    });
-  };
-
-  const handleAdditionalTicketHolderChange = (index: number, field: string, value: string) => {
-    setAdditionalTicketHolders(prev => {
-      const updated = [...prev];
-      if (!updated[index]) {
-        updated[index] = { name: '', email: '', };
-      }
-      updated[index] = { ...updated[index], [field]: value };
-      return updated;
-    });
-  };
-
-  const closeReceipt = () => {
-    setIsPurchased(false);
+  const handleClose = () => {
     clearTicketPurchaseState();
     closeForm();
   };
@@ -691,19 +467,20 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
         .limit(1)
         .single()
         .then(({ data: ticket, error }) => {
-          if (!error && ticket) {
-            window.location.href = `/success?ticketId=${ticket.id}`;
-          } else {
-            window.location.href = '/success';
-          }
+          window.location.href = !error && ticket
+            ? `/success?ticketId=${ticket.id}`
+            : '/success';
         });
     }
   };
 
-  const handleCloseForm = () => {
-    clearTicketPurchaseState();
-    closeForm();
-  };
+  const nextLabel = activeStep === 0
+    ? 'Continue'
+    : isLoading
+      ? 'Creating order…'
+      : 'Review & Pay';
+
+  // ── Render ───────────────────────────────────────────────────
 
   return (
     <>
@@ -715,175 +492,174 @@ const TicketTypeForm = ({ closeForm, tickets, eventSlug, setToast, isOpen = true
           orderId={purchaseOrderId}
         />
       )}
-      <div className="fixed inset-0 z-50 flex flex-col justify-end bg-gray-900/80 backdrop-blur-sm transition-colors duration-300 dark:text-white">
+
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4"
+        onClick={e => { if (e.target === e.currentTarget) handleClose(); }}
+      >
+        {/* Modal */}
         <div
-          className={`relative w-full max-w-3xl mx-auto h-[85vh] max-h-[90vh] sm:h-[70vh] bg-white dark:bg-gray-900 rounded-t-3xl shadow-2xl transform transition-transform duration-300 ease-out flex flex-col ${
-            isSheetVisible ? 'translate-y-0' : 'translate-y-full'
-          }`}
+          className={`
+            relative w-full sm:max-w-lg
+            bg-white dark:bg-gray-900
+            rounded-t-3xl sm:rounded-2xl
+            shadow-2xl
+            flex flex-col
+            max-h-[92vh] sm:max-h-[88vh]
+            transform transition-transform duration-300 ease-out
+            ${isVisible ? 'translate-y-0' : 'translate-y-full sm:translate-y-0 sm:opacity-0'}
+          `}
         >
-        <div className="absolute top-3 left-1/2 h-1.5 w-12 -translate-x-1/2 rounded-full bg-gray-300 dark:bg-gray-600 z-10" />
-        <button
-          onClick={handleCloseForm}
-          aria-label="Close ticket purchase"
-          className="absolute top-4 right-4 z-[60] text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+          {/* Drag handle — mobile only */}
+          <div className="sm:hidden flex justify-center pt-3 pb-1 flex-shrink-0">
+            <div className="w-10 h-1 rounded-full bg-gray-300 dark:bg-gray-600" />
+          </div>
 
-        <div className="flex-1 overflow-y-auto pt-12 pb-6 px-4 sm:px-6 relative">
-          {isPurchased ? (
-            <div className="h-full">
-              <Receipt closeReceipt={closeReceipt} />
+          {/* ── Header ── */}
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
+            <div>
+              <h2 className="text-base font-bold text-gray-900 dark:text-white">Purchase Ticket</h2>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                Step {activeStep + 1} of {STEPS.length} — {STEPS[activeStep]}
+              </p>
             </div>
-          ) : (
-            <div className="flex h-full flex-col space-y-6">
-              {/* Loading Overlay - Shows when creating order */}
-              {isLoading && activeStep === 1 && (
-                <div className="absolute inset-0 z-[55] flex items-center justify-center bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-t-3xl pointer-events-none">
-                  <div className="flex flex-col items-center space-y-4 pointer-events-auto">
-                    <div className="relative">
-                      <div className="w-16 h-16 border-4 border-[#f54502]/20 rounded-full animate-spin"></div>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-8 h-8 bg-[#f54502] rounded-full"></div>
-                      </div>
+            <button
+              onClick={handleClose}
+              aria-label="Close"
+              className="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              <FaTimes className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* ── Step indicator ── */}
+          <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
+            <div className="flex items-center">
+              {STEPS.map((step, i) => (
+                <React.Fragment key={i}>
+                  {/* Circle */}
+                  <div className="flex flex-col items-center gap-1">
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300
+                        ${i < activeStep
+                          ? 'bg-[#f54502] text-white'
+                          : i === activeStep
+                            ? 'bg-[#f54502] text-white ring-4 ring-[#f54502]/20'
+                            : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
+                        }
+                      `}
+                    >
+                      {i < activeStep
+                        ? <FaCheckCircle className="w-4 h-4" />
+                        : <span className="text-xs font-bold">{i + 1}</span>
+                      }
                     </div>
-                    <p className="text-gray-700 dark:text-gray-300 font-medium">Processing...</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Please wait</p>
+                    <span
+                      className={`text-[10px] font-medium leading-none
+                        ${i <= activeStep ? 'text-[#f54502]' : 'text-gray-400 dark:text-gray-500'}
+                      `}
+                    >
+                      {step}
+                    </span>
                   </div>
-                </div>
-              )}
-              
-              <h2 className="text-xl sm:text-2xl font-semibold text-center text-gray-900 dark:text-white">
-                Purchase Ticket
-              </h2>
 
-              {/* Custom Stepper */}
-              {/* <div className="flex justify-center">
-                <div className="flex items-center space-x-4 justify-between">
-                  {steps.map((step, index) => (
-                    <div key={step} className="flex items-center gap-1">
-                      <div
-                        className={`flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 text-sm ${
-                          index <= activeStep
-                            ? 'bg-[#f54502] border-[#f54502] text-white'
-                            : 'border-gray-300 text-gray-500'
-                        }`}
-                      >
-                        {index < activeStep ? (
-                          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path
-                              fillRule="evenodd"
-                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        ) : (
-                          <span className="text-xs sm:text-sm font-medium">{index + 1}</span>
-                        )}
-                      </div>
-                      <span
-                        className={`lg:ml-2 text-xs sm:text-sm font-medium ${
-                          index <= activeStep ? 'text-[#f54502]' : 'text-gray-500'
-                        }`}
-                      >
-                        {step}
-                      </span>
-                      {index < steps.length - 1 && (
-                        <div
-                          className={`hidden sm:block w-12 h-0.5 mx-2 ${
-                            index < activeStep ? 'bg-blue-600' : 'bg-gray-300'
-                          }`}
-                        />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div> */}
-
-              <form onSubmit={(e) => e.preventDefault()} className="flex flex-1 flex-col space-y-6">
-                <div className="flex-1 space-y-6 pr-1">
-                  {activeStep === 0 && (
-                    <TicketSelectionStep
-                      tickets={tickets}
-                      selectedTicket={selectedTicket}
-                      handleTicketSelection={handleTicketSelection}
-                      quantity={quantity}
-                      handleQuantityChange={handleQuantityChange}
-                      totalPrice={totalPrice}
+                  {/* Connector */}
+                  {i < STEPS.length - 1 && (
+                    <div
+                      className={`flex-1 h-0.5 mx-2 mb-4 rounded-full transition-all duration-300
+                        ${i < activeStep ? 'bg-[#f54502]' : 'bg-gray-200 dark:bg-gray-700'}
+                      `}
                     />
                   )}
-
-                     {activeStep === 1 && (
-                       <OrderInformationStep
-                         fullName={fullName}
-                         setFullName={setFullName}
-                         email={email}
-                         setEmail={setEmail}
-                         phoneNumber={phoneNumber}
-                         setPhoneNumber={setPhoneNumber}
-                         gender={gender}
-                         setGender={setGender}
-                         quantity={quantity}
-                         additionalTicketHolders={additionalTicketHolders}
-                         handleAdditionalTicketHolderChange={handleAdditionalTicketHolderChange}
-                         useSameDetails={useSameDetails}
-                         setUseSameDetails={setUseSameDetails}
-                       />
-                     )}
-
-                  {activeStep === 2 && (
-                    <PaymentStep
-                      selectedTicket={selectedTicket}
-                      quantity={quantity}
-                      totalPrice={totalPrice}
-                      handlePurchase={handlePurchase}
-                      isLoading={isLoading}
-                    />
-                  )}
-                </div>
-
-                <div className="sticky bottom-0 bg-white/50 backdrop-blur-md flex justify-between p-3 rounded-full border-gray-200 dark:border-gray-700">
-                  <button
-                    type="button"
-                    onClick={handleBack}
-                    disabled={activeStep === 0}
-                    className={`px-6 py-2 rounded-full hover:scale-[1.02] hover:shadow-xl transition-colors ${
-                      activeStep === 0
-                        ? 'border border-gray-300 text-gray-400 cursor-not-allowed'
-                        : ' bg-[#f54502]/20 text-[#f54502] hover:bg-[#f54502]/10 dark:hover:bg-[#f54502]/20'
-                    }`}
-                  >
-                    Back
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleNext}
-                    disabled={activeStep === 2 || isLoading}
-                    className={`px-6 py-2 rounded-full hover:scale-[1.02] hover:shadow-xl transition-colors flex items-center justify-center gap-2 ${
-                      activeStep === 2 || isLoading
-                        ? 'hidden cursor-not-allowed'
-                        : 'bg-[#f54502] text-white hover:bg-[#f54502]/90'
-                    }`}
-                  >
-                    {isLoading ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                        <span>Processing...</span>
-                      </>
-                    ) : activeStep === 2 ? (
-                      ' '
-                    ) : (
-                      'Next'
-                    )}
-                  </button>
-                </div>
-              </form>
+                </React.Fragment>
+              ))}
             </div>
-          )}
+          </div>
+
+          {/* ── Scrollable content ── */}
+          <div className="flex-1 overflow-y-auto px-5 py-5 min-h-0">
+            {activeStep === 0 && (
+              <TicketSelectionStep
+                tickets={tickets}
+                selectedTicket={selectedTicket}
+                handleTicketSelection={handleTicketSelection}
+                quantity={quantity}
+                handleQuantityChange={handleQuantityChange}
+                totalPrice={totalPrice}
+              />
+            )}
+
+            {activeStep === 1 && (
+              <OrderInformationStep
+                fullName={fullName}
+                setFullName={setFullName}
+                email={email}
+                setEmail={setEmail}
+                phoneNumber={phoneNumber}
+                setPhoneNumber={setPhoneNumber}
+                gender={gender}
+                setGender={setGender}
+                quantity={quantity}
+                additionalTicketHolders={additionalTicketHolders}
+                handleAdditionalTicketHolderChange={handleAdditionalTicketHolderChange}
+                useSameDetails={useSameDetails}
+                setUseSameDetails={setUseSameDetails}
+              />
+            )}
+
+            {activeStep === 2 && (
+              <PaymentStep
+                selectedTicket={selectedTicket}
+                quantity={quantity}
+                totalPrice={totalPrice}
+                handlePurchase={handlePurchase}
+                isLoading={isLoading}
+              />
+            )}
+          </div>
+
+          {/* ── Footer navigation ── */}
+          <div className="flex-shrink-0 border-t border-gray-100 dark:border-gray-800 px-5 py-4 flex gap-3">
+            {activeStep > 0 && (
+              <button
+                type="button"
+                onClick={handleBack}
+                disabled={isLoading}
+                className="flex items-center gap-2 px-5 py-3 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <FaArrowLeft className="w-3 h-3" />
+                Back
+              </button>
+            )}
+
+            {activeStep < 2 && (
+              <button
+                type="button"
+                onClick={handleNext}
+                disabled={isLoading || (activeStep === 0 && !selectedTicket)}
+                className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold text-white transition-all duration-200
+                  bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#d63a02] hover:to-[#b52e00]
+                  shadow-md shadow-[#f54502]/20 hover:shadow-[#f54502]/30
+                  disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none
+                  ${activeStep > 0 ? 'flex-1' : 'w-full'}
+                `}
+              >
+                {isLoading ? (
+                  <>
+                    <svg className="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    <span>Creating order…</span>
+                  </>
+                ) : (
+                  nextLabel
+                )}
+              </button>
+            )}
+          </div>
         </div>
-      </div>
       </div>
     </>
   );

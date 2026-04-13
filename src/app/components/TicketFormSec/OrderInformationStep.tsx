@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-// Removed searchable select for country code per requirement
 
 interface TicketHolderProps {
   fullName: string;
@@ -17,381 +16,280 @@ interface TicketHolderProps {
   setUseSameDetails: (value: boolean) => void;
 }
 
-// Country codes list with common African countries first, then international
 const countryCodes = [
-  { value: '+234', label: '🇳🇬 +234 ' },
-  { value: '+233', label: '🇬🇭 +233 ' },
-  { value: '+27', label: '🇿🇦 +27 ' },
-  { value: '+254', label: '🇰🇪 +254 ' },
-  { value: '+255', label: '🇹🇿 +255 ' },
-  { value: '+256', label: '🇺🇬 +256 ' },
-  { value: '+260', label: '🇿🇲 +260 ' },
-  { value: '+250', label: '🇷🇼 +250 ' },
-  { value: '+221', label: '🇸🇳 +221 ' },
-  { value: '+237', label: '🇨🇲 +237 ' },
-  { value: '+225', label: '🇨🇮 +225 ' },
-  { value: '+251', label: '🇪🇹 +251 ' },
-  { value: '+20', label: '🇪🇬 +20 ' },
-  { value: '+212', label: '🇲🇦 +212 ' },
-  { value: '+213', label: '🇩🇿 +213 ' },
-  { value: '+216', label: '🇹🇳 +216 ' },
-  { value: '+244', label: '🇦🇴 +244 ' },
-  { value: '+258', label: '🇲🇿 +258 ' },
-  { value: '+267', label: '🇧🇼 +267 ' },
-  { value: '+263', label: '🇿🇼 +263 ' },
-  { value: '+44', label: '🇬🇧 +44 ' },
-  { value: '+1', label: '🇺🇸 +1 ' },
-  { value: '+33', label: '🇫🇷 +33 ' },
-  { value: '+49', label: '🇩🇪 +49 ' },
-  { value: '+39', label: '🇮🇹 +39 ' },
-  { value: '+34', label: '🇪🇸 +34 ' },
-  { value: '+31', label: '🇳🇱 +31 ' },
-  { value: '+32', label: '🇧🇪 +32 ' },
-  { value: '+41', label: '🇨🇭 +41 ' },
-  { value: '+971', label: '🇦🇪 +971 ' },
-  { value: '+966', label: '🇸🇦 +966 ' },
-  { value: '+91', label: '🇮🇳 +91 ' },
-  { value: '+86', label: '🇨🇳 +86 ' },
-  { value: '+81', label: '🇯🇵 +81 ' },
-  { value: '+82', label: '🇰🇷 +82 ' },
-  { value: '+61', label: '🇦🇺 +61 ' },
-  { value: '+64', label: '🇳🇿 +64 ' },
-  { value: '+55', label: '🇧🇷 +55 ' },
-  { value: '+52', label: '🇲🇽 +52 ' },
+  { value: '+234', label: '🇳🇬 +234' },
+  { value: '+233', label: '🇬🇭 +233' },
+  { value: '+27',  label: '🇿🇦 +27'  },
+  { value: '+254', label: '🇰🇪 +254' },
+  { value: '+255', label: '🇹🇿 +255' },
+  { value: '+256', label: '🇺🇬 +256' },
+  { value: '+260', label: '🇿🇲 +260' },
+  { value: '+250', label: '🇷🇼 +250' },
+  { value: '+221', label: '🇸🇳 +221' },
+  { value: '+237', label: '🇨🇲 +237' },
+  { value: '+225', label: '🇨🇮 +225' },
+  { value: '+251', label: '🇪🇹 +251' },
+  { value: '+20',  label: '🇪🇬 +20'  },
+  { value: '+212', label: '🇲🇦 +212' },
+  { value: '+44',  label: '🇬🇧 +44'  },
+  { value: '+1',   label: '🇺🇸 +1'   },
+  { value: '+33',  label: '🇫🇷 +33'  },
+  { value: '+49',  label: '🇩🇪 +49'  },
+  { value: '+971', label: '🇦🇪 +971' },
+  { value: '+91',  label: '🇮🇳 +91'  },
+  { value: '+61',  label: '🇦🇺 +61'  },
+  { value: '+55',  label: '🇧🇷 +55'  },
 ];
 
-const OrderInformationStep = ({ 
-  fullName, 
-  setFullName, 
-  email, 
-  setEmail, 
-  phoneNumber, 
+const validateEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+
+const inputCls =
+  'w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition focus:border-[#f54502] focus:ring-2 focus:ring-[#f54502]/20 placeholder-gray-400 dark:placeholder-gray-500';
+
+const labelCls = 'block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1';
+
+const OrderInformationStep = ({
+  fullName,
+  setFullName,
+  email,
+  setEmail,
+  phoneNumber,
   setPhoneNumber,
   gender,
   setGender,
-  quantity, 
-  additionalTicketHolders, 
+  quantity,
+  additionalTicketHolders,
   handleAdditionalTicketHolderChange,
   useSameDetails,
-  setUseSameDetails
+  setUseSameDetails,
 }: TicketHolderProps) => {
-  const [emailErrors, setEmailErrors] = useState<Record<number, string>>({});
   const [primaryEmailError, setPrimaryEmailError] = useState('');
-  const [countryCode, setCountryCode] = useState('+234'); // Default to Nigeria
-  const [localPhoneNumber, setLocalPhoneNumber] = useState('');
+  const [additionalEmailErrors, setAdditionalEmailErrors] = useState<Record<number, string>>({});
+  const [countryCode, setCountryCode] = useState('+234');
+  const [localPhone, setLocalPhone] = useState('');
   const isInternalChange = useRef(false);
 
-  // Extract country code and local number from phoneNumber when component mounts or phoneNumber changes externally
+  // Sync phoneNumber → split into code + local
   useEffect(() => {
-    if (isInternalChange.current) {
-      isInternalChange.current = false;
-      return;
-    }
-
-    if (phoneNumber) {
-      // Check if phoneNumber already starts with a country code
-      const matchedCode = countryCodes.find(code => 
-        phoneNumber.startsWith(code.value)
-      );
-      
-      if (matchedCode) {
-        const localNum = phoneNumber.replace(matchedCode.value, '').trim();
-        setCountryCode(matchedCode.value);
-        setLocalPhoneNumber(localNum);
-      } else if (phoneNumber.startsWith('+')) {
-        // Has a country code but not in our list, extract it
-        const match = phoneNumber.match(/^(\+\d{1,4})\s*(.*)$/);
-        if (match) {
-          setCountryCode(match[1]);
-          setLocalPhoneNumber(match[2].trim());
-        } else {
-          // Just set as local number if it doesn't match pattern
-          setLocalPhoneNumber(phoneNumber);
-        }
-      } else {
-        // No country code, assume it's just the local number
-        setLocalPhoneNumber(phoneNumber);
-      }
+    if (isInternalChange.current) { isInternalChange.current = false; return; }
+    if (!phoneNumber) { setCountryCode('+234'); setLocalPhone(''); return; }
+    const matched = countryCodes.find(c => phoneNumber.startsWith(c.value));
+    if (matched) {
+      setCountryCode(matched.value);
+      setLocalPhone(phoneNumber.slice(matched.value.length).trim());
     } else {
-      // Reset to default if phoneNumber is empty
-      setCountryCode('+234');
-      setLocalPhoneNumber('');
+      setLocalPhone(phoneNumber);
     }
   }, [phoneNumber]);
 
-  // Update phoneNumber when country code or local number changes
+  // Sync code + local → phoneNumber
   useEffect(() => {
-    // Only update if there's a local phone number, or if we're changing the country code
-    if (localPhoneNumber.trim()) {
-      const fullPhone = `${countryCode} ${localPhoneNumber.trim()}`.trim();
-      if (fullPhone !== phoneNumber) {
-        isInternalChange.current = true;
-        setPhoneNumber(fullPhone);
-      }
-    } else if (phoneNumber && !localPhoneNumber.trim()) {
-      // If phoneNumber exists but localPhoneNumber is empty, clear it
-      const currentCode = countryCodes.find(code => phoneNumber.startsWith(code.value));
-      if (!currentCode || currentCode.value !== countryCode) {
-        // Country code changed but no local number, clear phoneNumber
-        isInternalChange.current = true;
-        setPhoneNumber('');
-      }
+    if (!localPhone.trim()) {
+      if (phoneNumber) { isInternalChange.current = true; setPhoneNumber(''); }
+      return;
     }
-  }, [countryCode, localPhoneNumber, phoneNumber, setPhoneNumber]);
-
-  const validateEmail = (email: string): boolean => {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
-  };
-
-  const handlePrimaryEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setEmail(value);
-    
-    if (value && !validateEmail(value)) {
-      setPrimaryEmailError('Please enter a valid email address');
-    } else {
-      setPrimaryEmailError('');
-    }
-  };
-
-  const handleAdditionalEmailChange = (index: number, value: string) => {
-    handleAdditionalTicketHolderChange(index, 'email', value);
-    
-    if (value && !validateEmail(value)) {
-      setEmailErrors(prev => ({ ...prev, [index]: 'Please enter a valid email address' }));
-    } else {
-      setEmailErrors(prev => ({ ...prev, [index]: '' }));
-    }
-  };
+    const full = `${countryCode} ${localPhone.trim()}`;
+    if (full !== phoneNumber) { isInternalChange.current = true; setPhoneNumber(full); }
+  }, [countryCode, localPhone, phoneNumber, setPhoneNumber]);
 
   return (
-    <div className="space-y-6 w-full min-w-0">
-      <div className="rounded-2xl border border-gray-200 bg-white/95 p-5 shadow-sm dark:border-gray-700 dark:bg-gray-900/70 w-full min-w-0">
-        <div className="mb-4 flex items-center gap-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f54502]/15 text-[#f54502] dark:bg-[#f54502]/20 flex-shrink-0">
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M16 7a4 4 0 11-8 0 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-              />
-            </svg>
-          </span>
-          <div className="min-w-0">
-            <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
-              Primary Details
-            </p>
-            <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100">
-              Ticket Purchaser
-            </h2>
-          </div>
+    <div className="space-y-5">
+      {/* Primary attendee card */}
+      <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden">
+        <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700">
+          <p className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+            Your Details
+          </p>
         </div>
 
-        <div className="grid gap-4 w-full min-w-0">
-          <label className="grid gap-2 w-full min-w-0">
-            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-              Full Name
-            </span>
+        <div className="p-4 space-y-4">
+          {/* Full Name */}
+          <div>
+            <label className={labelCls}>Full Name <span className="text-red-500">*</span></label>
             <input
               type="text"
               value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
-              placeholder="Enter full name"
-              className="w-full min-w-0 rounded-[5px] border border-gray-300 bg-white px-4 py-2.5 text-gray-900 outline-none transition focus:border-[#f54502] focus:ring-2 focus:ring-[#f54502]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              onChange={e => setFullName(e.target.value)}
+              placeholder="e.g. Ada Johnson"
+              className={inputCls}
+              autoComplete="name"
             />
-          </label>
+          </div>
 
-          <label className="grid gap-2 w-full min-w-0">
-            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-              Email Address
-            </span>
+          {/* Email */}
+          <div>
+            <label className={labelCls}>Email Address <span className="text-red-500">*</span></label>
             <input
               type="email"
               value={email}
-              onChange={handlePrimaryEmailChange}
-              required
-              placeholder="name@example.com"
-              className={`w-full min-w-0 rounded-[5px] border bg-white px-4 py-2.5 text-gray-900 outline-none transition focus:border-[#f54502] focus:ring-2 focus:ring-[#f54502]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white ${
-                primaryEmailError ? 'border-red-500 focus:ring-red-100 dark:border-red-500' : 'border-gray-300'
-              }`}
+              onChange={e => {
+                setEmail(e.target.value);
+                setPrimaryEmailError(e.target.value && !validateEmail(e.target.value) ? 'Enter a valid email' : '');
+              }}
+              placeholder="you@example.com"
+              className={`${inputCls} ${primaryEmailError ? 'border-red-500 focus:ring-red-200' : ''}`}
+              autoComplete="email"
             />
             {primaryEmailError && (
-              <p className="text-sm text-red-600 dark:text-red-400">{primaryEmailError}</p>
+              <p className="mt-1 text-xs text-red-500">{primaryEmailError}</p>
             )}
-          </label>
+            <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+              Your ticket confirmation will be sent here.
+            </p>
+          </div>
 
-          <label className="grid gap-2 w-full min-w-0">
-            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-              Phone Number
-            </span>
-            <div className="flex gap-2 w-full min-w-0">
-              <div className="w-24 sm:w-28 flex-shrink-0 min-w-0">
-                <select
-                  value={countryCode}
-                  onChange={(e) => setCountryCode(e.target.value)}
-                  className="w-full h-[42px] rounded-[5px] border border-gray-300 bg-white px-2 text-sm text-gray-900 outline-none transition focus:border-[#f54502] focus:ring-2 focus:ring-[#f54502]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-                >
-                  {countryCodes.map((code) => (
-                    <option key={code.value} value={code.value}>
-                      {code.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          {/* Phone */}
+          <div>
+            <label className={labelCls}>Phone Number <span className="text-red-500">*</span></label>
+            <div className="flex gap-2">
+              <select
+                value={countryCode}
+                onChange={e => setCountryCode(e.target.value)}
+                className="w-28 flex-shrink-0 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-2 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:border-[#f54502] focus:ring-2 focus:ring-[#f54502]/20"
+              >
+                {countryCodes.map(c => (
+                  <option key={c.value} value={c.value}>{c.label}</option>
+                ))}
+              </select>
               <input
                 type="tel"
-                value={localPhoneNumber}
-                onChange={(e) => {
-                  // Allow only digits, spaces, and hyphens
-                  const value = e.target.value.replace(/[^\d\s-]/g, '');
-                  setLocalPhoneNumber(value);
-                }}
-                required
-                placeholder="000 0000 000"
-                className="flex-1 min-w-0 rounded-[5px] border border-gray-300 bg-white px-4 py-2.5 text-gray-900 outline-none transition focus:border-[#f54502] focus:ring-2 focus:ring-[#f54502]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                value={localPhone}
+                onChange={e => setLocalPhone(e.target.value.replace(/[^\d\s-]/g, ''))}
+                placeholder="080 0000 0000"
+                className={`${inputCls} flex-1`}
+                autoComplete="tel"
               />
             </div>
-          </label>
+          </div>
 
-          <label className="grid gap-2 w-full min-w-0">
-            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-              Gender
-            </span>
+          {/* Gender */}
+          <div>
+            <label className={labelCls}>Gender <span className="text-red-500">*</span></label>
             <select
               value={gender}
-              onChange={(e) => setGender(e.target.value)}
-              required
-              className="w-full min-w-0 rounded-[5px] border border-gray-300 bg-white px-4 py-2.5 text-gray-900 outline-none transition focus:border-[#f54502] focus:ring-2 focus:ring-[#f54502]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              onChange={e => setGender(e.target.value)}
+              className={inputCls}
             >
-              <option value="">Select Gender</option>
+              <option value="">Select gender</option>
               <option value="male">Male</option>
               <option value="female">Female</option>
               <option value="other">Other</option>
               <option value="prefer-not-to-say">Prefer not to say</option>
             </select>
-          </label>
+          </div>
         </div>
       </div>
 
+      {/* Additional ticket holders */}
       {quantity > 1 && (
-        <div className="space-y-4 w-full min-w-0">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 flex-shrink-0">
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                  />
-                </svg>
-              </span>
-              <div className="min-w-0">
-                <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                  Additional Guests
-                </p>
-                <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100">
-                  Ticket Holders ({quantity - 1})
-                </h2>
+        <div className="space-y-3">
+          <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden">
+            <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <p className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                Additional Tickets ({quantity - 1})
+              </p>
+            </div>
+
+            {/* Toggle */}
+            <div className="p-4">
+              <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden text-sm font-medium">
+                <button
+                  type="button"
+                  onClick={() => setUseSameDetails(true)}
+                  className={`flex-1 py-2.5 px-3 transition-colors text-center
+                    ${useSameDetails
+                      ? 'bg-[#f54502] text-white'
+                      : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }`}
+                >
+                  Use my details
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUseSameDetails(false)}
+                  className={`flex-1 py-2.5 px-3 transition-colors text-center border-l border-gray-200 dark:border-gray-700
+                    ${!useSameDetails
+                      ? 'bg-[#f54502] text-white'
+                      : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }`}
+                >
+                  Individual details
+                </button>
               </div>
+
+              {useSameDetails ? (
+                <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+                  Your details above will be used for all {quantity} tickets.
+                </p>
+              ) : (
+                <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+                  Fill in separate details for each ticket holder below.
+                </p>
+              )}
             </div>
           </div>
 
-          {/* Toggle Option */}
-          <div className="rounded-2xl border border-gray-200 bg-white/80 p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900/60">
-            <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="ticketDetailsOption"
-                  checked={useSameDetails}
-                  onChange={() => setUseSameDetails(true)}
-                  className="w-4 h-4 text-[#f54502] focus:ring-[#f54502] focus:ring-2"
-                />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Use same details for all tickets
-                </span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="ticketDetailsOption"
-                  checked={!useSameDetails}
-                  onChange={() => setUseSameDetails(false)}
-                  className="w-4 h-4 text-[#f54502] focus:ring-[#f54502] focus:ring-2"
-                />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Enter details for each ticket
-                </span>
-              </label>
-            </div>
-          </div>
-
-          {!useSameDetails && (
-            <>
-              {Array.from({ length: quantity - 1 }, (_, index) => (
+          {/* Individual forms */}
+          {!useSameDetails && Array.from({ length: quantity - 1 }, (_, i) => (
             <div
-              key={index}
-              className="rounded-2xl border border-gray-200 bg-white/80 p-4 shadow-sm transition hover:shadow-md dark:border-gray-700 dark:bg-gray-900/60 w-full min-w-0"
+              key={i}
+              className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden"
             >
-              <h3 className="mb-4 text-sm font-semibold text-gray-600 dark:text-gray-300">
-                Ticket Holder #{index + 2}
-              </h3>
+              <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700">
+                <p className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                  Ticket Holder #{i + 2}
+                </p>
+              </div>
 
-              <div className="grid gap-4 w-full min-w-0">
-                <label className="grid gap-2 w-full min-w-0">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Full Name</span>
+              <div className="p-4 space-y-4">
+                <div>
+                  <label className={labelCls}>Full Name <span className="text-red-500">*</span></label>
                   <input
                     type="text"
-                    placeholder="Enter full name"
-                    value={additionalTicketHolders[index]?.name || ''}
-                    onChange={(e) =>
-                      handleAdditionalTicketHolderChange(index, 'name', e.target.value)
-                    }
-                    className="w-full min-w-0 rounded-[5px] border border-gray-300 bg-white px-4 py-2.5 text-gray-900 outline-none transition focus:border-[#f54502] focus:ring-2 focus:ring-[#f54502]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                    placeholder="e.g. John Doe"
+                    value={additionalTicketHolders[i]?.name || ''}
+                    onChange={e => handleAdditionalTicketHolderChange(i, 'name', e.target.value)}
+                    className={inputCls}
                   />
-                </label>
+                </div>
 
-                <label className="grid gap-2 w-full min-w-0">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Email Address</span>
+                <div>
+                  <label className={labelCls}>Email Address <span className="text-red-500">*</span></label>
                   <input
                     type="email"
-                    placeholder="name@example.com"
-                    value={additionalTicketHolders[index]?.email || ''}
-                    onChange={(e) => handleAdditionalEmailChange(index, e.target.value)}
-                    className={`w-full min-w-0 rounded-[5px] border bg-white px-4 py-2.5 text-gray-900 outline-none transition focus:border-[#f54502] focus:ring-2 focus:ring-[#f54502]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white ${
-                      emailErrors[index] ? 'border-red-500 focus:ring-red-100 dark:border-red-500' : 'border-gray-300'
-                    }`}
+                    placeholder="holder@example.com"
+                    value={additionalTicketHolders[i]?.email || ''}
+                    onChange={e => {
+                      handleAdditionalTicketHolderChange(i, 'email', e.target.value);
+                      setAdditionalEmailErrors(prev => ({
+                        ...prev,
+                        [i]: e.target.value && !validateEmail(e.target.value) ? 'Enter a valid email' : '',
+                      }));
+                    }}
+                    className={`${inputCls} ${additionalEmailErrors[i] ? 'border-red-500 focus:ring-red-200' : ''}`}
                   />
-                  {emailErrors[index] && (
-                    <p className="text-sm text-red-600 dark:text-red-400">{emailErrors[index]}</p>
+                  {additionalEmailErrors[i] && (
+                    <p className="mt-1 text-xs text-red-500">{additionalEmailErrors[i]}</p>
                   )}
-                </label>
+                </div>
 
-                <label className="grid gap-2 w-full min-w-0">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Gender</span>
+                <div>
+                  <label className={labelCls}>Gender <span className="text-red-500">*</span></label>
                   <select
-                    value={additionalTicketHolders[index]?.gender || ''}
-                    onChange={(e) => handleAdditionalTicketHolderChange(index, 'gender', e.target.value)}
-                    required
-                    className="w-full min-w-0 rounded-[5px] border border-gray-300 bg-white px-4 py-2.5 text-gray-900 outline-none transition focus:border-[#f54502] focus:ring-2 focus:ring-[#f54502]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                    value={additionalTicketHolders[i]?.gender || ''}
+                    onChange={e => handleAdditionalTicketHolderChange(i, 'gender', e.target.value)}
+                    className={inputCls}
                   >
-                    <option value="">Select Gender</option>
+                    <option value="">Select gender</option>
                     <option value="male">Male</option>
                     <option value="female">Female</option>
                     <option value="other">Other</option>
                     <option value="prefer-not-to-say">Prefer not to say</option>
                   </select>
-                </label>
+                </div>
               </div>
             </div>
-              ))}
-            </>
-          )}
+          ))}
         </div>
       )}
     </div>

@@ -289,12 +289,12 @@ const ValidateContent = () => {
       >
         {isScanned === true ? (
           <>
-            <span className="text-lg sm:text-xl">✓</span>
+            <span aria-hidden="true" className="text-lg sm:text-xl">✓</span>
             <span>Validated</span>
           </>
         ) : (
           <>
-            <span className="text-lg sm:text-xl">⏳</span>
+            <span aria-hidden="true" className="text-lg sm:text-xl">⏳</span>
             <span>Pending Validation</span>
           </>
         )}
@@ -303,8 +303,10 @@ const ValidateContent = () => {
 
     {event && (
       <div
+        role="img"
+        aria-label={`Banner image for ${event.title}`}
         className="relative w-full max-w-6xl h-48 sm:h-64 md:h-80 bg-cover bg-center rounded-xl overflow-hidden shadow-lg border-2 border-gray-200"
-        style={{ backgroundImage: `url(${event.image})` }}
+        style={{ backgroundImage: `url(${encodeURI(event.image)})` }}
       >
         <div className="absolute inset-0 bg-gradient-to-br from-black/60 to-black/40 flex flex-col justify-center items-center text-center p-4 sm:p-6">
           <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-white leading-tight">{event.title}</h1>

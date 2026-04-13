@@ -29,6 +29,7 @@ const TicketSetup = memo(function TicketSetup({
       ticketType: [
         ...formData.ticketType,
         {
+          id: '',
           name: '',
           price: '',
           quantity: '',

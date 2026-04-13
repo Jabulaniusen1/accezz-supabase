@@ -6,7 +6,6 @@ import { useState, useEffect } from 'react';
 import { FiMenu, FiX, FiLogOut, FiUser } from "react-icons/fi";
 import { MdSpaceDashboard } from "react-icons/md";
 import { motion, AnimatePresence } from "framer-motion";
-import Loader from '@/components/ui/loader/Loader';
 import Toast from "@/components/ui/Toast";
 import ToggleMode from '@/components/ui/mode/toggleMode';
 import { FaArrowRight } from 'react-icons/fa';
@@ -101,8 +100,6 @@ const Hero = () => {
 
   return (
     <section className="relative min-h-[80vh] md:min-h-screen bg-gray-900 overflow-hidden ">
-      {isLoading && <Loader />}
-      {loading && <Loader />}
       {toast && (
         <Toast
           type={toast.type}

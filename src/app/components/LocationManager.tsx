@@ -8,7 +8,7 @@ import { MapPin, Trash2 } from 'lucide-react';
 import { useDeleteLocation, useMyLocations } from '@/hooks/useLocations';
 import ManageLocationForm from './locations/ManageLocationForm';
 import { Location } from '@/types/location';
-import Loader from '@/components/ui/loader/Loader';
+import { CardSkeleton } from '@/components/ui/Skeleton';
 import Toast from '@/components/ui/Toast';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import { getLogoPath } from '@/utils/logoUtils';
@@ -91,8 +91,8 @@ export const LocationManager: React.FC = () => {
       </div>
 
       {(isLoading || isFetching) && (
-        <div className="flex justify-center py-12">
-          <Loader />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 py-4">
+          {[...Array(3)].map((_, i) => <CardSkeleton key={i} />)}
         </div>
       )}
 

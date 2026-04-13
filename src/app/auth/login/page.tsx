@@ -2,7 +2,6 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaEye, FaEyeSlash, FaEnvelope, FaLock, FaRedo, FaArrowLeft } from 'react-icons/fa';
-import Loader from '../../../components/ui/loader/Loader';
 import Toast from '../../../components/ui/Toast';
 import Link from 'next/link';
 import { signInWithEmail, getSession } from '@/utils/supabaseAuth';
@@ -170,8 +169,6 @@ function LoginContent() {
           <span className="text-xs sm:text-sm font-medium">Back to Home</span>
         </button>
 
-        {/* Loading and Toast */}
-        {loading && <Loader />}
         {showToast && (
           <Toast
             type={toastProps.type}
@@ -306,7 +303,7 @@ function LoginContent() {
 
 export default function Login() {
   return (
-    <Suspense fallback={<div><Loader/></div>}>
+    <Suspense fallback={null}>
       <LoginContent />
     </Suspense>
   );

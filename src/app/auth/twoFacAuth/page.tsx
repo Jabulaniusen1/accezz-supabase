@@ -15,7 +15,6 @@ const TwoFacAuth = () => {
   const router = useRouter();
 
   const logSecurityEvent = async (event: string) => {
-    console.log(`Security Event Logged: ${event}`);
     // Simulate API call
     // await fetch('/api/log-security-event', {
     //   method: 'POST',

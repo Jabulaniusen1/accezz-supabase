@@ -2,12 +2,9 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Loader from "@/components/ui/loader/Loader";
 import PaymentFailedModal from "@/components/PaymentFailedModal";
-import { markOrderAsPaid, createTicketsForOrder } from "@/utils/paymentUtils";
 import { supabase } from "@/utils/supabaseClient";
 import { clearTicketPurchaseState } from "@/utils/localStorage";
-import { notifyTicketPurchase } from "@/utils/notificationClient";
 import CreateAccountPrompt from "../components/CreateAccountPrompt";
 import { getSession } from "@/utils/supabaseAuth";
 
@@ -33,19 +30,20 @@ const SuccessContent = () => {
       try {
         const raw = localStorage.getItem('pendingPayment');
         if (raw) {
-          const p = JSON.parse(raw);
+          const p = JSON.parse(raw) as { eventSlug?: string };
           if (p.eventSlug) {
-            setEventSlug(p.eventSlug); // For modal usage
-            storedEventSlug = p.eventSlug; // For immediate use
+            setEventSlug(p.eventSlug);
+            storedEventSlug = p.eventSlug;
           }
         }
-      } catch {}
+      } catch (e) {
+        console.error('Failed to read pendingPayment from localStorage:', e instanceof Error ? e.message : e);
+      }
     
       // Handle explicit failure cases
       if (status === 'cancelled') {
-        // Clear localStorage
-        try { localStorage.removeItem('pendingPayment'); } catch {}
-        try { clearTicketPurchaseState(); } catch {}
+        try { localStorage.removeItem('pendingPayment'); } catch { /* ignore */ }
+        try { clearTicketPurchaseState(); } catch { /* ignore */ }
         
         // Use stored event slug to redirect
         if (storedEventSlug) {
@@ -74,16 +72,18 @@ const SuccessContent = () => {
                 return;
               }
             }
-          } catch {}
+          } catch (e) {
+            console.error('Failed to fetch order for redirect:', e instanceof Error ? e.message : e);
+          }
         }
-        
+
         // Fallback: go back to previous page
         router.back();
         return;
       }
       if (status === 'failed') {
-        try { localStorage.removeItem('pendingPayment'); } catch {}
-        try { clearTicketPurchaseState(); } catch {}
+        try { localStorage.removeItem('pendingPayment'); } catch { /* ignore */ }
+        try { clearTicketPurchaseState(); } catch { /* ignore */ }
         setShowFailureModal(true);
         setIsVerifying(false);
         return;
@@ -139,32 +139,30 @@ const SuccessContent = () => {
             throw new Error('Order not found from verification');
           }
 
-          // Mark order as paid and issue tickets
-          await markOrderAsPaid(resolvedOrderId, reference, 'paystack');
-          await createTicketsForOrder(resolvedOrderId);
-          await notifyTicketPurchase(resolvedOrderId);
-
-          // Trigger event reminder scheduling
-          fetch('/api/inngest/trigger', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ eventName: 'order/paid', data: { orderId: resolvedOrderId } }),
-          }).catch(() => {});
-
-          
-          // Get order details to check if user is logged in
-          const { data: orderData, error: orderDataError } = await supabase
-            .from('orders')
-            .select('buyer_email, buyer_user_id, id')
-            .eq('id', resolvedOrderId)
-            .single();
-          if (orderDataError) {
-            console.error('Order fetch error:', orderDataError);
+          // Ticket creation, emails, and reminders are all handled by the Paystack webhook.
+          // Poll briefly (up to ~8 s) so the invoice page sees the paid order.
+          let orderData: { buyer_email: string | null; buyer_user_id: string | null; id: string; status: string } | null = null;
+          for (let attempt = 0; attempt < 8; attempt++) {
+            const { data } = await supabase
+              .from('orders')
+              .select('buyer_email, buyer_user_id, id, status')
+              .eq('id', resolvedOrderId)
+              .single();
+            if (data?.status === 'paid') { orderData = data; break; }
+            await new Promise(r => setTimeout(r, 1000));
+          }
+          // Fall back: read whatever is there even if webhook hasn't fired yet
+          if (!orderData) {
+            const { data } = await supabase
+              .from('orders')
+              .select('buyer_email, buyer_user_id, id, status')
+              .eq('id', resolvedOrderId)
+              .single();
+            orderData = data;
           }
 
-          // Clear saved purchase state since payment is complete
-          try { clearTicketPurchaseState(); } catch {}
-          try { localStorage.removeItem('pendingPayment'); } catch {}
+          try { clearTicketPurchaseState(); } catch { /* ignore */ }
+          try { localStorage.removeItem('pendingPayment'); } catch { /* ignore */ }
           
           setOrderId(resolvedOrderId);
           
@@ -260,7 +258,7 @@ const SuccessContent = () => {
 
 const SuccessPage = () => {
   return (
-    <Suspense fallback={<div><Loader/></div>}>
+    <Suspense fallback={null}>
       <SuccessContent />
     </Suspense>
   );

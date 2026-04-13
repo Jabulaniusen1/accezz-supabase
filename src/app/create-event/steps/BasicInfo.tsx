@@ -434,7 +434,6 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
     
     try {
       // Log original file size
-      console.log(`[Image Optimization] Original file: ${formatFileSize(file.size)} (${file.size} bytes)`);
       
       // Optimize the image
       const optimizedResult = await optimizeImage(file, {
@@ -446,8 +445,6 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
       });
 
       // Log optimized file size
-      console.log(`[Image Optimization] Optimized file: ${formatFileSize(optimizedResult.optimizedSize)} (${optimizedResult.optimizedSize} bytes)`);
-      console.log(`[Image Optimization] Size reduction: ${Math.round(optimizedResult.compressionRatio * 100)}% (${formatFileSize(file.size - optimizedResult.optimizedSize)} saved)`);
 
       // Clean up old preview
       if (imagePreview) {

@@ -99,7 +99,10 @@ export async function POST(request: NextRequest) {
     const names: [string, string][] = [];
 
     try {
-      const { data: authUsers, error: usersError } = await supabaseAdmin.auth.admin.listUsers();
+      const { data: authUsers, error: usersError } = await supabaseAdmin.auth.admin.listUsers({
+        page: 1,
+        perPage: 1000,
+      });
 
       if (usersError) {
         console.error('Error fetching users from auth:', usersError);

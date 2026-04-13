@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { BsTicketPerforated } from "react-icons/bs";
 import { ChevronRightIcon } from "lucide-react";
-import Loader from "@/components/ui/loader/Loader";
+import { PageSkeleton } from "@/components/ui/Skeleton";
 import Toast from "@/components/ui/Toast";
 
 interface Ticket {
@@ -222,13 +222,7 @@ export default function CustomerTickets() {
     router.push(`/my-tickets/${eventId}`);
   };
 
-  if (loading) {
-    return (
-      <div className="flex h-full min-h-[60vh] items-center justify-center">
-        <Loader />
-      </div>
-    );
-  }
+  if (loading) return <PageSkeleton />;
 
   if (error && tickets.length === 0) {
     return (

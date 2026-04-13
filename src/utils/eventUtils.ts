@@ -107,6 +107,7 @@ export async function fetchEventBySlug(slug: string): Promise<Event | null> {
       image: event.image_url || null,
       gallery: (galleryImages || []).map(img => img.image_url),
       ticketType: (ticketTypes || []).map(ticket => ({
+        id: ticket.id,
         name: ticket.name,
         price: ticket.price.toString(),
         quantity: ticket.quantity.toString(),

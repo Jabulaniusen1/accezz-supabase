@@ -46,10 +46,7 @@ const nextConfig: NextConfig = {
     return config;
   },
 
-  i18n: {
-    locales: ['en'],
-    defaultLocale: 'en',
-  },
+  // i18n is a Pages Router feature — do NOT use it in App Router.
 };
 
 export default withPWA({

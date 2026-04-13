@@ -5,7 +5,7 @@ import { FaCalendar, FaMapMarkerAlt, FaUser, FaArrowRight, FaChevronLeft, FaChev
 import { useLatestEvents } from '@/hooks/useEvents';
 import { formatEventDate } from '@/utils/formatDateTime';
 import Toast from '@/components/ui/Toast';
-import Loader from '@/components/ui/loader/Loader';
+import { CarouselSkeleton } from '@/components/ui/Skeleton';
 
 const LatestEvent = () => {
   const { data: events, isLoading } = useLatestEvents();
@@ -50,7 +50,7 @@ const LatestEvent = () => {
     window.open(link, '_blank', 'noopener,noreferrer');
   };
 
-  if (isLoading) return <Loader />;
+  if (isLoading) return <CarouselSkeleton />;
   if (!events || events.length === 0) return null;
 
   const currentEvent = events[currentIndex];

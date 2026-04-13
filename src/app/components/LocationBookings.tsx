@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useLocationBookings, useUpdateLocationBookingStatus } from '@/hooks/useLocations';
-import Loader from '@/components/ui/loader/Loader';
+import { CardSkeleton } from '@/components/ui/Skeleton';
 import { LocationBookingStatus } from '@/types/location';
 import { format } from 'date-fns';
 
@@ -84,8 +84,8 @@ export const LocationBookings: React.FC = () => {
       )}
 
       {isLoading && (
-        <div className="flex justify-center py-12">
-          <Loader />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 py-4">
+          {[...Array(4)].map((_, i) => <CardSkeleton key={i} />)}
         </div>
       )}
 

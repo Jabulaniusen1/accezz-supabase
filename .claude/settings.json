@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /Users/mac/Desktop/accezz-supabase log --oneline -5)",
+      "Bash(git -C /Users/mac/Desktop/accezz-supabase diff --name-only HEAD)",
+      "Bash(git -C /Users/mac/Desktop/accezz-supabase log --all --oneline -- '.env' '.env.local' '.env.example')",
+      "Bash(git -C /Users/mac/Desktop/accezz-supabase ls-files -- '.env' '.env.local' '.env.example')",
+      "Bash(node --input-type=module)",
+      "Bash(npx tsc:*)",
+      "Read(//Users/mac/Desktop/accezz-supabase/**)",
+      "Bash(echo \"Exit: $?\")",
+      "Bash(grep -n \"Loader\\\\|<Loader\\\\|loading\" /Users/mac/Desktop/accezz-supabase/src/app/invoice/[invoiceId]/page.tsx)",
+      "Bash(grep -n \"Loader\\\\|<Loader\\\\|loading\" /Users/mac/Desktop/accezz-supabase/src/app/my-tickets/[eventId]/page.tsx)",
+      "Bash(grep -n \"CREATE TABLE.*orders\\\\|CREATE TABLE.*profiles\" /Users/mac/Desktop/accezz-supabase/supabase/migrations/*.sql)",
+      "Bash(xargs ls:*)",
+      "Bash(python3 -c \"import secrets; print\\(secrets.token_hex\\(32\\)\\)\")"
+    ]
+  }
+}

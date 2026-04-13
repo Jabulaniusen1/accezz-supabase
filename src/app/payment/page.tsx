@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Loader from '@/components/ui/loader/Loader';
+import { PageSkeleton } from '@/components/ui/Skeleton';
 
 function PaymentContent() {
   const searchParams = useSearchParams();
@@ -188,26 +188,12 @@ function PaymentContent() {
     );
   }
 
-  return (
-    <div className="min-h-[60vh] flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <Loader />
-        <p className="text-gray-600 dark:text-gray-300">Redirecting to Paystack...</p>
-      </div>
-    </div>
-  );
+  return <PageSkeleton />;
 }
 
 export default function PaymentPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Loader />
-          <p className="text-gray-600 dark:text-gray-300">Loading payment...</p>
-        </div>
-      </div>
-    }>
+    <Suspense fallback={<PageSkeleton />}>
       <PaymentContent />
     </Suspense>
   );

@@ -7,19 +7,7 @@
 6 silly config load:file:/Users/mac/Library/Application Support/Herd/config/nvm/versions/node/v24.13.0/etc/npmrc
 7 verbose title npm run dev
 8 verbose argv "run" "dev"
-9 verbose logfile logs-max:10 dir:/Users/mac/Desktop/accezz-supabase/.npm-cache/_logs/2026-01-27T23_42_33_299Z-
-10 verbose logfile /Users/mac/Desktop/accezz-supabase/.npm-cache/_logs/2026-01-27T23_42_33_299Z-debug-0.log
+9 verbose logfile logs-max:10 dir:/Users/mac/Desktop/accezz-supabase/.npm-cache/_logs/2026-02-26T22_22_48_244Z-
+10 verbose logfile /Users/mac/Desktop/accezz-supabase/.npm-cache/_logs/2026-02-26T22_22_48_244Z-debug-0.log
 11 silly logfile start cleaning logs, removing 1 files
 12 silly logfile done cleaning log files
-13 http fetch GET 200 https://registry.npmjs.org/npm 702ms
-14 verbose cwd /Users/mac/Desktop/accezz-supabase
-15 verbose os Darwin 24.6.0
-16 verbose node v24.13.0
-17 verbose npm  v11.6.2
-18 notice
-18 notice New [33mminor[39m version of npm available! [33m11.6.2[39m -> [34m11.8.0[39m
-18 notice Changelog: [34mhttps://github.com/npm/cli/releases/tag/v11.8.0[39m
-18 notice To update run: [4mnpm install -g npm@11.8.0[24m
-18 notice  { force: true, Symbol(proc-log.meta): true }
-19 verbose exit 0
-20 info ok

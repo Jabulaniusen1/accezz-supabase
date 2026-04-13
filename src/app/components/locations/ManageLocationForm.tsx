@@ -682,7 +682,6 @@ export const ManageLocationForm: React.FC<ManageLocationFormProps> = ({ isOpen, 
     // Optimize image before upload
     let optimizedFile = file;
     try {
-      console.log(`[Location Image Optimization] Original file: ${(file.size / 1024 / 1024).toFixed(2)}MB (${file.size} bytes)`);
       
       const optimizedResult = await optimizeImage(file, {
         maxWidth: 1920,
@@ -693,14 +692,13 @@ export const ManageLocationForm: React.FC<ManageLocationFormProps> = ({ isOpen, 
       });
       optimizedFile = optimizedResult.file;
       
-      console.log(`[Location Image Optimization] Optimized file: ${(optimizedFile.size / 1024 / 1024).toFixed(2)}MB (${optimizedFile.size} bytes)`);
-      console.log(`[Location Image Optimization] Size reduction: ${Math.round((file.size - optimizedFile.size) / file.size * 100)}%`);
     } catch (error) {
       console.error(`[Location Image Optimization] Failed for ${(file.size / 1024 / 1024).toFixed(2)}MB file:`, error);
     }
 
     const extension = optimizedFile.name.split('.').pop() || 'webp';
-    const filePath = `locations/${ownerId}/${locationId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${extension}`;
+    const randomPart = crypto.randomUUID().replace(/-/g, '').slice(0, 8);
+    const filePath = `locations/${ownerId}/${locationId}/${Date.now()}-${randomPart}.${extension}`;
 
     const { error: uploadError } = await supabase.storage.from('locations-images').upload(filePath, optimizedFile, { upsert: true });
     if (uploadError) throw uploadError;

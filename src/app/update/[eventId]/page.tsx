@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { supabase } from "@/utils/supabaseClient";
 import { Event } from "../../../types/event";
 import Toast from "../../../components/ui/Toast";
-import Loader from "@/components/ui/loader/Loader";
+import { PageSkeleton } from "@/components/ui/Skeleton";
 import EventHeader from "./components/EventHeader";
 import EventImageUpload from "./components/EventImageUpload";
 import EventBasicDetails from "./components/EventBasicDetails";
@@ -104,6 +104,7 @@ function Update() {
             } : undefined),
             socialMediaLinks: ev.social_links || {},
             ticketType: (types || []).map(t => ({
+              id: t.id,
               name: t.name,
               price: String(t.price || '0'),
               quantity: String(t.quantity || '0'),
@@ -448,9 +449,7 @@ function Update() {
               />
             </form>
           ) : (
-            <div className="flex justify-center items-center h-64">
-              <Loader />
-            </div>
+            <PageSkeleton />
           )}
         </motion.div>
       </motion.div>

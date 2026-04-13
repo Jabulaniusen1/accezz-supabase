@@ -1,5 +1,4 @@
 import { inngest } from '@/utils/inngest';
-import { supabase } from '@/utils/supabaseClient';
 import { createClient } from '@supabase/supabase-js';
 import { sendEmail, generateEventReminderEmailHTML } from '@/utils/emailUtils';
 
@@ -26,7 +25,7 @@ export const sendAbandonedCartEmail = inngest.createFunction(
 
     // Check if order is still pending (not paid)
     const orderStatus = await step.run('check-order-status', async () => {
-      const { data: order, error } = await supabase
+      const { data: order, error } = await supabaseAdmin
         .from('orders')
         .select('id, status, buyer_email, buyer_full_name, total_amount, currency, meta, event_id, events(id, title, slug, start_time, end_time, venue, location, address, city, country, is_virtual, virtual_details)')
         .eq('id', orderId)
@@ -42,14 +41,12 @@ export const sendAbandonedCartEmail = inngest.createFunction(
 
     // If order is already paid, cancelled, or failed, don't send email
     if (!orderStatus || orderStatus.status !== 'pending') {
-      console.log(`Order ${orderId} is no longer pending (status: ${orderStatus?.status}), skipping abandoned cart email`);
       return { skipped: true, reason: 'order_not_pending' };
     }
 
     // Check if email was already sent
     const meta = (orderStatus.meta as Record<string, unknown> | null) || {};
     if (meta.abandonedCartEmailSent === true) {
-      console.log(`Abandoned cart email already sent for order ${orderId}`);
       return { skipped: true, reason: 'email_already_sent' };
     }
 
@@ -98,7 +95,6 @@ export const sendAbandonedCartEmail = inngest.createFunction(
     const eventDateTime = eventEndTime || eventStartTime;
     
     if (eventDateTime && eventDateTime < new Date()) {
-      console.log(`Event ${eventData.title || eventData.slug} has already passed, skipping abandoned cart email for order ${orderId}`);
       return { skipped: true, reason: 'event_passed' };
     }
 
@@ -154,7 +150,10 @@ export const sendAbandonedCartEmail = inngest.createFunction(
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
       const response = await fetch(`${baseUrl}/api/emails/abandoned-cart`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-internal-secret': process.env.INTERNAL_API_SECRET || '',
+        },
         body: JSON.stringify({
           email: orderStatus.buyer_email,
           fullName: orderStatus.buyer_full_name || 'Valued Customer',
@@ -187,7 +186,7 @@ export const sendAbandonedCartEmail = inngest.createFunction(
         abandonedCartEmailSentAt: new Date().toISOString(),
       };
 
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from('orders')
         .update({ meta: updatedMeta })
         .eq('id', orderId);
@@ -354,7 +353,6 @@ async function sendRemindersForOrder(
         html,
       });
 
-      console.log(`[reminder] Sent ${hoursUntilEvent}h reminder to ${ticket.attendee_email} for event ${eventId}`);
     } catch (err) {
       console.error(`[reminder] Failed to send reminder to ${ticket.attendee_email}:`, err);
     }

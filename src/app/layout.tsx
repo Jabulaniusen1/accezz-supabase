@@ -77,11 +77,10 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  verification: {
-    google: 'your-google-verification-code',
-    yandex: 'your-yandex-verification-code',
-    yahoo: 'your-yahoo-verification-code',
-  },
+  // verification codes — add real values from Search Console when ready
+  // verification: {
+  //   google: 'your-google-verification-code',
+  // },
   manifest: '/manifest.json',
   icons: [
     { rel: 'apple-touch-icon', url: '/icons/icon-192x192.png' },

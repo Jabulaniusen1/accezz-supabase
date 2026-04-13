@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/utils/supabaseClient';
+import { requireInternalSecret } from '@/utils/apiAuth';
 
 /**
  * API route to check for incomplete orders and send abandoned cart emails
@@ -10,6 +11,9 @@ import { supabase } from '@/utils/supabaseClient';
  * - limit: Maximum number of emails to send in one run (default: 50)
  */
 export async function POST(req: NextRequest) {
+  const authError = requireInternalSecret(req);
+  if (authError) return authError;
+
   try {
     const body = await req.json().catch(() => ({}));
     const minutes = body.minutes || 5;
@@ -172,11 +176,14 @@ export async function POST(req: NextRequest) {
         const ticketTypeName = (meta.ticketTypeName as string) || 'General';
         const quantity = (meta.quantity as number) || 1;
 
-        // Send email via API route
+        // Send email via API route (internal call — include secret header)
         const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
         const response = await fetch(`${baseUrl}/api/emails/abandoned-cart`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'x-internal-secret': process.env.INTERNAL_API_SECRET || '',
+          },
           body: JSON.stringify({
             email: order.buyer_email,
             fullName: order.buyer_full_name || 'Valued Customer',
@@ -238,16 +245,21 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// Also support GET for easy cron job calls
+// GET is intentionally kept for cron job callers but still requires the internal secret.
 export async function GET(req: NextRequest) {
+  const authError = requireInternalSecret(req);
+  if (authError) return authError;
+
   const searchParams = req.nextUrl.searchParams;
   const minutes = parseInt(searchParams.get('minutes') || '5', 10);
   const limit = parseInt(searchParams.get('limit') || '50', 10);
 
-  // Create a POST request body and call the POST handler logic
   const request = new NextRequest(req.url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'x-internal-secret': process.env.INTERNAL_API_SECRET || '',
+    },
     body: JSON.stringify({ minutes, limit }),
   });
 

@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendEmail, generateWelcomeEmailHTML } from '@/utils/emailUtils';
+import { requireInternalSecret } from '@/utils/apiAuth';
 
 export async function POST(req: NextRequest) {
+  const authError = requireInternalSecret(req);
+  if (authError) return authError;
+
   try {
     const body = await req.json();
     const { email, fullName } = body;

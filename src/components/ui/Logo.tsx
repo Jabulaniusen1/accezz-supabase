@@ -35,13 +35,12 @@ export default function Logo({
   priority = false,
   sizes,
 }: LogoProps) {
-  const [currentSrc, setCurrentSrc] = useState<string>('/accezzlive cl.png');
+  const [currentSrc, setCurrentSrc] = useState<string>('/accezz logo c.png');
   const [errorCount, setErrorCount] = useState(0);
 
   // Fallback order: Primary logo -> Alternative logos
   const fallbacks = [
-    '/accezzlive cl.png',
-    // '/accezz logo c.png',
+    '/accezz logo c.png',
     // '/accezz logo.png',
     // '/logo.png',
     // '/logoi.png',

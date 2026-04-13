@@ -11,23 +11,45 @@ interface ChatMessagesProps {
     isLoading: boolean;
 }
 
-// Helper function to render links and newlines
+// Escape HTML special characters to prevent XSS
+const escapeHtml = (text: string): string => {
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+};
+
+// Helper function to render links and newlines safely
 const renderMessageContent = (content: string) => {
-    // Replace URLs with clickable links
     const urlRegex = /(https?:\/\/[^\s]+)/g;
-    const contentWithLinks = content.replace(urlRegex, (url) => {
-        return `<a href="${url}" rel="noopener noreferrer" class="text-blue-500 underline">${url}</a>`;
+
+    // Replace newlines with <br> tags, rendering each line
+    return content.split('\n').map((line, index) => {
+        // Split line on URLs and interleave plain text with anchor elements
+        const parts = line.split(urlRegex);
+        return (
+            <span key={index}>
+                {index > 0 && <br />}
+                {parts.map((part, i) =>
+                    urlRegex.test(part) ? (
+                        <a
+                            key={i}
+                            href={part}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-500 underline"
+                        >
+                            {part}
+                        </a>
+                    ) : (
+                        <span key={i}>{escapeHtml(part)}</span>
+                    )
+                )}
+            </span>
+        );
     });
-
-    // Replace newlines with <br> tags
-    const contentWithBreaks = contentWithLinks.split('\n').map((line, index) => (
-        <span key={index}>
-            {index > 0 && <br />}
-            <span dangerouslySetInnerHTML={{ __html: line }} />
-        </span>
-    ));
-
-    return contentWithBreaks;
 };
 
 const ChatMessages = ({ messages, isLoading }: ChatMessagesProps) => {

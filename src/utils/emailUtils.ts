@@ -3,7 +3,6 @@ import nodemailer from 'nodemailer';
 // Smart transporter: uses ZeptoMail if configured, falls back to Gmail
 const createTransporter = () => {
   if (process.env.ZEPTOMAIL_PASSWORD) {
-    console.log('[email] Using ZeptoMail SMTP provider');
     return nodemailer.createTransport({
       host: 'smtp.zeptomail.com',
       port: 587,
@@ -13,13 +12,12 @@ const createTransporter = () => {
         pass: process.env.ZEPTOMAIL_PASSWORD,
       },
       tls: {
-        ciphers: 'SSLv3',
+        minVersion: 'TLSv1.2',
       },
     });
   }
 
   if (process.env.GMAIL_APP_PASSWORD && process.env.GMAIL_USER) {
-    console.log('[email] Using Gmail SMTP provider');
     return nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -53,8 +51,15 @@ interface SendEmailOptions {
  * Send an email using the configured SMTP provider (ZeptoMail or Gmail)
  */
 export async function sendEmail({ to, subject, html, text, attachments }: SendEmailOptions): Promise<void> {
+  const provider = process.env.ZEPTOMAIL_PASSWORD ? 'ZeptoMail' : 'Gmail';
+  console.log(`[email] Using provider: ${provider}, sending to: ${to}, subject: "${subject}"`);
+
   try {
     const transporter = createTransporter();
+
+    // Verify SMTP connection before sending
+    await transporter.verify();
+    console.log('[email] SMTP connection verified');
 
     // Derive sender based on active provider
     const senderEmail = process.env.ZEPTOMAIL_SENDER_EMAIL
@@ -71,9 +76,9 @@ export async function sendEmail({ to, subject, html, text, attachments }: SendEm
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log('Email sent successfully:', info.messageId);
+    console.log(`[email] Sent successfully. MessageId: ${info.messageId}`);
   } catch (error) {
-    console.error('Error sending email:', error);
+    console.error(`[email] Failed (provider: ${provider}, to: ${to}):`, error);
     throw error;
   }
 }

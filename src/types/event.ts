@@ -1,6 +1,6 @@
 // types/event.ts
 export interface Ticket {
-  // id: string;
+  id: string;
   name: string;
   price: string;
   quantity: string;
@@ -58,7 +58,8 @@ export interface Event {
   locationVisibility?: 'public' | 'undisclosed' | 'secret';
   hostName?: string;
   image: File | string | null;
-  gallery: File[];
+  /** URLs when fetched from DB; File objects only during upload */
+  gallery: string[];
   ticketType: Ticket[];
   socialMediaLinks?: SocialMediaLinks;
   userId?: string;

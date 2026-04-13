@@ -39,6 +39,7 @@ type SupabaseEventRow = {
 };
 
 type TicketTypeRow = {
+  id: string;
   name: string;
   price: number | string;
   quantity: number | string;
@@ -81,6 +82,7 @@ const mapSupabaseEventToEvent = (supabaseEvent: SupabaseEventRow, ticketTypes: T
     image: supabaseEvent.image_url || null,
     gallery: [], // We'll fetch gallery separately if needed
     ticketType: ticketTypes.map(ticket => ({
+      id: ticket.id,
       name: ticket.name,
       price: String(ticket.price),
       quantity: String(ticket.quantity),
@@ -96,14 +98,19 @@ const mapSupabaseEventToEvent = (supabaseEvent: SupabaseEventRow, ticketTypes: T
   };
 };
 
-// Fetch all published/public events with their ticket types
+const PAGE_SIZE = 100;
+
+// Fetch published/public events with their ticket types
 const fetchEventsFromSupabase = async (includePastEvents: boolean = false): Promise<Event[]> => {
+  // Fetch all published events — past/future filtering is done in-memory below
+  // because a server-side `gte('end_time', now)` would exclude events with NULL end_time
   const { data: events, error: eventsError } = await supabase
     .from('events')
     .select('*, category:event_categories(name, slug)')
     .eq('status', 'published')
     .eq('visibility', 'public')
-    .order('created_at', { ascending: false });
+    .order('start_time', { ascending: true })
+    .limit(PAGE_SIZE);
 
   if (eventsError) {
     throw eventsError;
@@ -124,24 +131,19 @@ const fetchEventsFromSupabase = async (includePastEvents: boolean = false): Prom
     throw ticketTypesError;
   }
 
-  // Ensure ticketTypes is defined
   if (!ticketTypes) {
     return [];
   }
 
-  // Filter out past events if not including them
-  // An event is considered past if end_time has passed, or if no end_time, if start_time has passed
+  // Filter out past events in-memory (handles NULL end_time correctly)
   const now = new Date();
-  let filteredEvents = events;
-  
-  if (!includePastEvents) {
-    filteredEvents = events.filter((event) => {
-      const endTime = event.end_time ? new Date(event.end_time) : null;
-      const startTime = new Date(event.start_time);
-      // Event is future if end_time is in future, or if no end_time, start_time is in future
-      return endTime ? endTime >= now : startTime >= now;
-    });
-  }
+  const filteredEvents = includePastEvents
+    ? events
+    : events.filter((event) => {
+        // If end_time is set, use it; otherwise fall back to start_time
+        const cutoff = event.end_time ? new Date(event.end_time) : new Date(event.start_time);
+        return cutoff >= now;
+      });
 
   // Map events with their ticket types
   return filteredEvents.map((event) => {
@@ -187,31 +189,19 @@ export const useServerStatus = () => {
 
   useEffect(() => {
     let isMounted = true;
-    
-    const checkServerStatus = async () => {
+
+    // Single check on mount — no polling.
+    const run = async () => {
       try {
-        await supabase
-          .from('events')
-          .select('id')
-          .limit(1);
-        
-        if (isMounted) {
-          setIsServerDown(false);
-        }
+        await supabase.from('events').select('id').limit(1);
+        if (isMounted) setIsServerDown(false);
       } catch {
-        if (isMounted) {
-          setIsServerDown(true);
-        }
+        if (isMounted) setIsServerDown(true);
       }
     };
+    run();
 
-    checkServerStatus();
-    const intervalId = setInterval(checkServerStatus, 30000);
-
-    return () => {
-      isMounted = false;
-      clearInterval(intervalId);
-    };
+    return () => { isMounted = false; };
   }, []);
 
   return isServerDown;

@@ -7,7 +7,7 @@ import Image from "next/image";
 import { BsTicketPerforated, BsQrCode, BsArrowLeft } from "react-icons/bs";
 import { formatDateTime } from "@/utils/formatDateTime";
 import { formatPrice } from "@/utils/formatPrice";
-import Loader from "@/components/ui/loader/Loader";
+import { PageSkeleton } from "@/components/ui/Skeleton";
 import Toast from "@/components/ui/Toast";
 
 interface Ticket {
@@ -197,13 +197,7 @@ export default function EventTicketsPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex h-full min-h-[60vh] items-center justify-center">
-        <Loader />
-      </div>
-    );
-  }
+  if (loading) return <PageSkeleton />;
 
   if (error && tickets.length === 0) {
     return (

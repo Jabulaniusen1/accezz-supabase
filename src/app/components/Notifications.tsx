@@ -105,7 +105,6 @@ const Notifications = () => {
       toast("success", "Notification marked as read");
     } catch (error: unknown) {
       // Revert on error
-      console.log(error);
       setNotifications(prev =>
         prev.map(notification =>
           notification.id === id ? { ...notification, isRead: false } : notification
@@ -130,7 +129,6 @@ const Notifications = () => {
 
       toast("success", "Notification deleted successfully");
     } catch (error: unknown) {
-      console.log(error);
       // Revert on error
       setNotifications(prevNotifs);
       const message = error instanceof Error ? error.message : "Failed to delete notification";

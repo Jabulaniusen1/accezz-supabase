@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import jsPDF from 'jspdf';
-import TicketLoader from '@/components/ui/loader/ticketLoader';
+import { PageSkeleton } from '@/components/ui/Skeleton';
 import ErrorHandler from '@/components/ErrorHandler';
 import { supabase } from '@/utils/supabaseClient';
 
@@ -237,14 +237,7 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
     fetchTicketData();
   };
 
-  // SHOW LOADER WHILE FETCHING DATA
-  if (loading) {
-    return (
-      <div className={isModal ? "fixed inset-0 flex items-center justify-center bg-black/60 z-50" : "flex items-center justify-center py-20"}>
-        <TicketLoader />
-      </div>
-    );
-  }
+  if (loading) return <PageSkeleton />;
   
   // SHOW ERROR HANDLER IF ERROR OCCURS
   if (error) {

@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchLocations } from '@/hooks/useLocations';
 import { LocationFilters } from './components/LocationFilters';
 import LocationCard from './components/LocationCard';
-import Loader from '@/components/ui/loader/Loader';
+import { CardSkeleton } from '@/components/ui/Skeleton';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 
@@ -124,8 +124,8 @@ export default function LocationsPage() {
 
         <div className="mt-10 sm:mt-12">
           {isLoading && (
-            <div className="flex justify-center py-16">
-              <Loader />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 py-4">
+              {[...Array(6)].map((_, i) => <CardSkeleton key={i} />)}
             </div>
           )}
 

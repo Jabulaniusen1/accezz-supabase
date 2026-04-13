@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 const NotFound: React.FC = () => {
     return (
@@ -18,8 +18,8 @@ const NotFound: React.FC = () => {
                     </span>
                 </div>
                 <Link
-                    to="/"
-                    className="px-6 py-3 bg-[#f54502] hover:bg-[#f54502]/90 text-white 
+                    href="/"
+                    className="px-6 py-3 bg-[#f54502] hover:bg-[#f54502]/90 text-white
                                          font-semibold rounded-lg transition-colors duration-300"
                 >
                     Go back home

@@ -3,7 +3,7 @@ import React from 'react';
 import Image from 'next/image';
 import { FaCalendarAlt, FaMapMarkerAlt } from 'react-icons/fa';
 import { useLatestEvents } from '@/hooks/useEvents';
-import Loader from '@/components/ui/loader/Loader';
+import { CardSkeleton } from '@/components/ui/Skeleton';
 import { formatPrice } from '@/utils/formatPrice';
 import { formatEventDate } from '@/utils/formatDateTime';
 import { type Event } from '@/types/event';
@@ -23,7 +23,13 @@ const OtherEventsYouMayLike = () => {
     window.open(link, '_blank', 'noopener,noreferrer');
   };
 
-  if (isLoading) return <Loader />;
+  if (isLoading) return (
+    <div className="py-16 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[...Array(6)].map((_, i) => <CardSkeleton key={i} />)}
+      </div>
+    </div>
+  );
   if (!events || events.length === 0) return null;
 
   // Take first 6 events for the grid layout

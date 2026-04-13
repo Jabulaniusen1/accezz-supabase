@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FiMenu, FiX, FiLogOut, FiUser } from "react-icons/fi";
 import { MdSpaceDashboard } from "react-icons/md";
 // import ToggleMode from "../../../components/ui/mode/toggleMode";
-import Loader from "@/components/ui/loader/Loader";
 import { useRouter, usePathname } from "next/navigation";
 import Toast from "@/components/ui/Toast";
 import { FaArrowRight } from "react-icons/fa";
@@ -83,7 +82,6 @@ const Header = () => {
 
   return (
     <>
-      {loading && <Loader />}
       {toast && (
         <Toast
           type={toast.type}

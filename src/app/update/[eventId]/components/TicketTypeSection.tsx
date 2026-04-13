@@ -18,13 +18,14 @@ export default function TicketTypesSection({
 
   const handleAddTicketType = () => {
     if (!formData) return;
-    const newTicket = { 
-      name: "", 
-      sold: "0", 
-      price: "", 
+    const newTicket = {
+      id: "",
+      name: "",
+      sold: "0",
+      price: "",
       quantity: "",
       details: "",
-      attendees: [] 
+      attendees: []
     };
     setFormData({
       ...formData,

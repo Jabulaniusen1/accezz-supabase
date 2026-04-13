@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { processSuccessfulPayment } from '@/utils/processOrder';
 
 export async function GET(req: NextRequest) {
   try {
-    const secretKey = process.env.PAYSTACK_SECRET_KEY || process.env.NEXT_PUBLIC_PAYSTACK_SECRET_KEY;
+    // Only use server-side key — NEVER fall back to a NEXT_PUBLIC_ variable
+    const secretKey = process.env.PAYSTACK_SECRET_KEY;
     if (!secretKey) {
       return NextResponse.json({ error: 'PAYSTACK_SECRET_KEY not configured' }, { status: 500 });
     }
@@ -24,6 +26,14 @@ export async function GET(req: NextRequest) {
     const orderId: string | undefined = data.data?.metadata?.orderId;
     const amount: number | undefined = typeof data.data.amount === 'number' ? data.data.amount / 100 : undefined;
 
+    // When Paystack confirms success, process the order here as a fallback in case
+    // the webhook fires late or isn't yet configured (e.g. test mode without a tunnel).
+    if (status === 'success' && orderId) {
+      processSuccessfulPayment(orderId, reference).catch((err) => {
+        console.error('[verify] processSuccessfulPayment error:', err);
+      });
+    }
+
     return NextResponse.json({
       status,
       reference,
@@ -36,5 +46,3 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-
-

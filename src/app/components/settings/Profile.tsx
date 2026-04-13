@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import SuccessModal from './modal/successModal';
 import Toast from '../../../components/ui/Toast';
-import Loader from '../../../components/ui/loader/Loaders';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/utils/supabaseClient';
 import { FiUser, FiMail, FiPhone, FiMapPin, FiGlobe, FiSave } from 'react-icons/fi';
@@ -155,7 +154,6 @@ const Profile = () => {
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
-      {loading && <Loader />}
       {showToast && (
         <Toast
           type={toastProps.type}

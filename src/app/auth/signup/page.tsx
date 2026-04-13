@@ -12,7 +12,6 @@ import {
   FaGlobe,
   FaMapMarkerAlt,
 } from "react-icons/fa";
-import Loader from "../../../components/ui/loader/Loader";
 import Toast from "../../../components/ui/Toast";
 import { signUpWithEmail } from "@/utils/supabaseAuth";
 import { useCountryCityOptions } from "@/hooks/useCountryCityOptions";
@@ -230,8 +229,6 @@ function SignupContent() {
           <span className="text-xs sm:text-sm font-medium">Back to Home</span>
         </button>
 
-        {/* Loading and Toast */}
-        {loading && <Loader />}
         {showToast && (
           <Toast
             type={toastProps.type}
@@ -491,7 +488,7 @@ function SignupContent() {
 
 export default function Signup() {
   return (
-    <Suspense fallback={<div><Loader/></div>}>
+    <Suspense fallback={null}>
       <SignupContent />
     </Suspense>
   );

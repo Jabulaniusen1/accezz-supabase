@@ -6,8 +6,8 @@ import { supabase } from '@/utils/supabaseClient';
 import { useRouter } from 'next/navigation';
 import { Toast } from './Toast';
 import { motion, AnimatePresence } from 'framer-motion';
-// import Loader from '@/components/ui/loader/Loader';
 import { formatPrice } from '@/utils/formatPrice';
+import { TableSkeleton } from '@/components/ui/Skeleton';
 import { ChartAreaIcon, PencilIcon, Share2, TrashIcon, MoreVertical } from 'lucide-react';
 import { FaCalendarAlt } from 'react-icons/fa';
 // Removed REST API usage; using Supabase instead
@@ -254,22 +254,7 @@ const EventList: React.FC = () => {
     totalTickets: event.ticketType?.reduce((acc, ticket) => acc + parseInt(ticket.quantity || '0'), 0) || 0,
   })), [events]);
 
-  if (loading || isNavigating) {
-    return (
-      <div className="flex justify-center items-center min-h-[50vh]">
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center mb-4">
-            <svg className="animate-spin h-8 w-8 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-          </div>
-          <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">Loading Your Events</h2>
-          <p className="text-gray-500 dark:text-gray-400">We&apos;re preparing your event dashboard...</p>
-        </div>
-      </div>
-    );
-  }
+  if (loading || isNavigating) return <TableSkeleton />;
 
   if (events.length === 0) {
     return (

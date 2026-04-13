@@ -33,12 +33,8 @@ export default function Home() {
 
   return (
     <main>
-      <Suspense fallback={<div></div>}>
-        <EventCalendar />
-      </Suspense>
       <Hero />
-      
-      {/* Separate Suspense boundaries for better component loading */}
+
       <Suspense fallback={<CardSkeleton />}>
         <EventCalendar />
       </Suspense>
@@ -55,7 +51,7 @@ export default function Home() {
         <Trending />
       </Suspense> */}
       
-      <Suspense fallback={<div>Loading tutorial...</div>}>
+      <Suspense fallback={null}>
         <Tutorial />
       </Suspense>
       

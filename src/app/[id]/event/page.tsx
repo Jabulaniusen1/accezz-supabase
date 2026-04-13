@@ -33,14 +33,14 @@ const EventDetail = () => {
     if (!selectedTicket) return undefined;
 
     return {
-      id: event?.id || '',
+      id: selectedTicket.id,
       name: selectedTicket.name,
       price: selectedTicket.price,
       quantity: selectedTicket.quantity,
       sold: selectedTicket.sold,
       details: selectedTicket.details || ''
     };
-  }, [selectedTicket, event?.id]);
+  }, [selectedTicket]);
   
   // Refs and routing
   const ticketsSectionRef = useRef<HTMLDivElement>(null);
@@ -209,7 +209,7 @@ const EventDetail = () => {
             <TicketTypeForm
               closeForm={closeTicketForm}
               tickets={event?.ticketType.map(ticket => ({
-                id: event.id || '',
+                id: ticket.id,
                 name: ticket.name,
                 price: ticket.price,
                 quantity: ticket.quantity,

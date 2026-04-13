@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
   try {
-    const secretKey = process.env.PAYSTACK_SECRET_KEY || process.env.NEXT_PUBLIC_PAYSTACK_SECRET_KEY;
+    // Only use server-side key — NEVER fall back to a NEXT_PUBLIC_ variable
+    const secretKey = process.env.PAYSTACK_SECRET_KEY;
     if (!secretKey) {
       return NextResponse.json({ error: 'PAYSTACK_SECRET_KEY not configured' }, { status: 500 });
     }

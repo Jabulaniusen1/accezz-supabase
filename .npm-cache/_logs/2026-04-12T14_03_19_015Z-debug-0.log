@@ -7,7 +7,13 @@
 6 silly config load:file:/Users/mac/Library/Application Support/Herd/config/nvm/versions/node/v24.13.0/etc/npmrc
 7 verbose title npm run dev
 8 verbose argv "run" "dev"
-9 verbose logfile logs-max:10 dir:/Users/mac/Desktop/accezz-supabase/.npm-cache/_logs/2026-01-16T00_13_34_782Z-
-10 verbose logfile /Users/mac/Desktop/accezz-supabase/.npm-cache/_logs/2026-01-16T00_13_34_782Z-debug-0.log
+9 verbose logfile logs-max:10 dir:/Users/mac/Desktop/accezz-supabase/.npm-cache/_logs/2026-04-12T14_03_19_015Z-
+10 verbose logfile /Users/mac/Desktop/accezz-supabase/.npm-cache/_logs/2026-04-12T14_03_19_015Z-debug-0.log
 11 silly logfile start cleaning logs, removing 1 files
 12 silly logfile done cleaning log files
+13 verbose cwd /Users/mac/Desktop/accezz-supabase
+14 verbose os Darwin 24.6.0
+15 verbose node v24.13.0
+16 verbose npm  v11.6.2
+17 verbose exit 0
+18 info ok

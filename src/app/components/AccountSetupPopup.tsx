@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/utils/supabaseClient';
-import Loader from '../../components/ui/loader/Loader';
 import Toast from '../../components/ui/Toast';
 import SearchableSelect from '@/components/ui/SearchableSelect';
 import { FaSpinner, FaCheck, FaTimes } from 'react-icons/fa';
@@ -514,9 +513,6 @@ const AccountSetupPopup = ({ onClose }: { onClose: () => void }) => {
             </button>
           </div>
         </form>
-
-        {/* Loading indicator */}
-        {loading && <Loader />}
 
         {/* Toast notifications */}
         {showToast && (

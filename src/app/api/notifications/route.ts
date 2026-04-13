@@ -143,92 +143,20 @@ async function sendTicketPurchaseEmails(params: {
   eventTitle: string | null;
   totalAmount: number;
   currency: string | null;
+  ticketTypeName?: string | null;
+  quantity?: number;
 }) {
-  const subjectForBuyer = 'Your ticket purchase is confirmed';
   const formattedAmount = formatCurrency(params.totalAmount, params.currency || 'NGN');
   const eventTitle = params.eventTitle || 'your event';
-  const buyerGreeting = params.buyerName ? `Hi ${params.buyerName.split(' ')[0]},` : 'Hi there,';
-  const buyerHtml = `
-    <div style="
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f9fafb;
-      padding: 32px 16px;
-    ">
-      <table role="presentation" cellspacing="0" cellpadding="0" style="
-        max-width: 560px;
-        margin: 0 auto;
-        background: #ffffff;
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
-      ">
-        <tr>
-          <td style="padding: 40px 32px 24px; text-align: center; background: linear-gradient(135deg, #f97316, #ef4444); color: #ffffff;">
-            <div style="font-size: 40px; margin-bottom: 12px;">🎉</div>
-            <h1 style="margin: 0; font-size: 24px; font-weight: 700;">Ticket Confirmed!</h1>
-            <p style="margin: 12px 0 0; font-size: 16px; opacity: 0.9;">You're all set for ${eventTitle}</p>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding: 28px 32px 12px;">
-            <p style="margin: 0 0 16px; font-size: 16px; color: #111827; font-weight: 600;">
-              ${buyerGreeting}
-            </p>
-            <p style="margin: 0 0 12px; font-size: 15px; color: #374151;">
-              You're in! Your purchase for <strong>${eventTitle}</strong> has been confirmed.
-            </p>
-            <div style="
-              margin: 24px 0;
-              padding: 20px;
-              border-radius: 12px;
-              background: linear-gradient(135deg, rgba(249, 115, 22, 0.08), rgba(239, 68, 68, 0.08));
-              border: 1px solid rgba(249, 115, 22, 0.15);
-            ">
-              <p style="margin: 0; font-size: 14px; color: #f97316; text-transform: uppercase; letter-spacing: 0.08em;">
-                Total Paid
-              </p>
-              <p style="margin: 6px 0 0; font-size: 24px; font-weight: 700; color: #111827;">
-                ${formattedAmount}
-              </p>
-            </div>
-            <p style="margin: 0 0 16px; font-size: 15px; color: #374151;">
-              Your tickets are ready in your dashboard. Head over anytime to see all the details.
-            </p>
-            <div style="text-align: center; margin: 32px 0;">
-              <a href="${process.env.NEXT_PUBLIC_BASE_URL || ''}/dashboard" style="
-                display: inline-block;
-                padding: 14px 28px;
-                border-radius: 9999px;
-                background: linear-gradient(135deg, #f97316, #ef4444);
-                color: #ffffff;
-                text-decoration: none;
-                font-weight: 600;
-                font-size: 15px;
-                box-shadow: 0 10px 20px rgba(249, 115, 22, 0.25);
-              ">
-                View Dashboard
-              </a>
-            </div>
-            <p style="margin: 0; font-size: 14px; color: #6b7280;">
-              Need help? Reply to this email or reach out via support. We're here for you!
-            </p>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding: 20px 32px 32px; text-align: center; background: #f9fafb; color: #6b7280; font-size: 12px;">
-            © ${new Date().getFullYear()} Accezz. All rights reserved.
-          </td>
-        </tr>
-      </table>
-    </div>
-  `;
-
-  await safeSendEmail(params.buyerEmail, subjectForBuyer, buyerHtml, `${buyerGreeting} Your ticket purchase for ${eventTitle} is confirmed.`);
+  const qty = params.quantity ?? 1;
+  const ticketLabel = params.ticketTypeName ? params.ticketTypeName : 'General';
+  const buyerDisplayName = params.buyerName || 'A guest';
 
   const host = await getUserContact(params.hostUserId);
   if (host.email) {
-    const hostSubject = 'A ticket has been purchased';
+    const hostSubject = `New ticket sale — ${eventTitle}`;
     const hostGreeting = host.fullName ? `Hi ${host.fullName.split(' ')[0]},` : 'Hello,';
+    const ticketDetails = `${qty} × ${ticketLabel}`;
     const hostHtml = `
       <div style="
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -246,24 +174,38 @@ async function sendTicketPurchaseEmails(params: {
           <tr>
             <td style="padding: 36px 28px; text-align: center; background: #111827; color: #f8fafc;">
               <p style="margin: 0; font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; color: #9ca3af;">
-                Great Job
+                New Sale
               </p>
               <h2 style="margin: 12px 0 8px; font-size: 22px; font-weight: 700;">
-                A ticket has been purchased for ${eventTitle}
+                ${eventTitle}
               </h2>
-              <p style="margin: 0; font-size: 24px; font-weight: 600; color: #f97316;">
+              <p style="margin: 0; font-size: 28px; font-weight: 700; color: #f97316;">
                 ${formattedAmount}
               </p>
             </td>
           </tr>
           <tr>
             <td style="padding: 28px 32px 12px;">
-              <p style="margin: 0 0 14px; font-size: 15px; color: #1f2937; font-weight: 600;">
+              <p style="margin: 0 0 20px; font-size: 15px; color: #1f2937; font-weight: 600;">
                 ${hostGreeting}
               </p>
-              <p style="margin: 0 0 12px; font-size: 14px; color: #4b5563;">
-                You're doing well. Keep the momentum going!
+              <p style="margin: 0 0 20px; font-size: 14px; color: #4b5563;">
+                You just made a sale! Here are the details:
               </p>
+              <table role="presentation" cellspacing="0" cellpadding="0" style="width: 100%; border-radius: 10px; overflow: hidden; border: 1px solid #e5e7eb;">
+                <tr style="background: #f9fafb;">
+                  <td style="padding: 10px 16px; font-size: 13px; color: #6b7280; width: 40%;">Buyer</td>
+                  <td style="padding: 10px 16px; font-size: 14px; color: #111827; font-weight: 600;">${buyerDisplayName}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 16px; font-size: 13px; color: #6b7280; border-top: 1px solid #e5e7eb;">Tickets</td>
+                  <td style="padding: 10px 16px; font-size: 14px; color: #111827; font-weight: 600; border-top: 1px solid #e5e7eb;">${ticketDetails}</td>
+                </tr>
+                <tr style="background: #f9fafb;">
+                  <td style="padding: 10px 16px; font-size: 13px; color: #6b7280; border-top: 1px solid #e5e7eb;">Amount</td>
+                  <td style="padding: 10px 16px; font-size: 14px; color: #f97316; font-weight: 700; border-top: 1px solid #e5e7eb;">${formattedAmount}</td>
+                </tr>
+              </table>
               <div style="margin: 24px 0; text-align: center;">
                 <a href="${process.env.NEXT_PUBLIC_BASE_URL || ''}/dashboard" style="
                   display: inline-block;
@@ -276,11 +218,11 @@ async function sendTicketPurchaseEmails(params: {
                   font-size: 14px;
                   box-shadow: 0 8px 18px rgba(249, 115, 22, 0.18);
                 ">
-                  Go to Dashboard
+                  View Dashboard
                 </a>
               </div>
               <p style="margin: 0; font-size: 13px; color: #6b7280; text-align: center;">
-                Stay on top of your sales and keep delighting your attendees.
+                Keep the momentum going — your attendees are counting on you!
               </p>
             </td>
           </tr>
@@ -292,7 +234,7 @@ async function sendTicketPurchaseEmails(params: {
         </table>
       </div>
     `;
-    await safeSendEmail(host.email, hostSubject, hostHtml, `${hostGreeting} A ticket was purchased for ${eventTitle}.`);
+    await safeSendEmail(host.email, hostSubject, hostHtml, `${hostGreeting} ${buyerDisplayName} purchased ${ticketDetails} for ${eventTitle} — ${formattedAmount}.`);
   }
 }
 
@@ -600,7 +542,7 @@ async function handleTicketPurchase(context: HandlerContext, payload: TicketPurc
 
   const { data: order, error: orderError } = await supabaseAdmin
     .from('orders')
-    .select('id, status, event_id, buyer_user_id, buyer_full_name, buyer_email, total_amount, currency')
+    .select('id, status, event_id, buyer_user_id, buyer_full_name, buyer_email, total_amount, currency, meta')
     .eq('id', payload.orderId)
     .single();
 
@@ -671,6 +613,10 @@ async function handleTicketPurchase(context: HandlerContext, payload: TicketPurc
     return NextResponse.json({ error: 'Failed to create notification' }, { status: 500 });
   }
 
+  const orderMeta = (order.meta as Record<string, unknown> | null) || {};
+  const ticketTypeName = (orderMeta.ticketTypeName as string) || null;
+  const quantity = typeof orderMeta.quantity === 'number' ? orderMeta.quantity : 1;
+
   await sendTicketPurchaseEmails({
     buyerEmail: order.buyer_email,
     buyerName: order.buyer_full_name,
@@ -678,6 +624,8 @@ async function handleTicketPurchase(context: HandlerContext, payload: TicketPurc
     eventTitle: event.title,
     totalAmount: Number(order.total_amount || 0),
     currency: order.currency,
+    ticketTypeName,
+    quantity,
   });
 
   return NextResponse.json({ success: true });

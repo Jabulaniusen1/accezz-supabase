@@ -142,15 +142,16 @@ async function sendTicketEmailsToAttendees({
         : startTimeFormatted || endTimeFormatted || 'TBD';
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    console.log('[sendTicketEmailsToAttendees] Using baseUrl:', baseUrl);
 
     // Send individual email to each ticket holder
     const emailPromises = tickets.map(async (ticket) => {
       try {
-        console.log('[sendTicketEmailsToAttendees] Sending ticket email to:', ticket.attendee_email);
         const response = await fetch(`${baseUrl}/api/emails/ticket`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'x-internal-secret': process.env.INTERNAL_API_SECRET || '',
+          },
           body: JSON.stringify({
             email: ticket.attendee_email,
             fullName: ticket.attendee_name,
@@ -175,28 +176,24 @@ async function sendTicketEmailsToAttendees({
         });
 
         if (!response.ok) {
-          const errorText = await response.text().catch(() => 'Unknown error');
-          console.error(`[sendTicketEmailsToAttendees] API response error (${response.status}):`, errorText);
-          const errorData = (await response.json().catch(() => ({ error: errorText }))) as { error?: string };
-          throw new Error(errorData.error || `Failed to send ticket email: ${response.status}`);
+          // Read the body once — either as JSON or plain text
+          const raw = await response.text().catch(() => '');
+          let errorMessage = `Failed to send ticket email: ${response.status}`;
+          try {
+            const parsed = JSON.parse(raw) as { error?: string };
+            if (parsed.error) errorMessage = parsed.error;
+          } catch {
+            if (raw) errorMessage = raw;
+          }
+          throw new Error(errorMessage);
         }
-
-        const responseData = await response.json().catch(() => ({}));
-        console.log(`[sendTicketEmailsToAttendees] Ticket email sent successfully to ${ticket.attendee_email}`, responseData);
       } catch (error) {
-        console.error(`[sendTicketEmailsToAttendees] Error sending email to ${ticket.attendee_email}:`, error);
-        console.error(`[sendTicketEmailsToAttendees] Error details:`, {
-          message: error instanceof Error ? error.message : 'Unknown error',
-          stack: error instanceof Error ? error.stack : undefined,
-          baseUrl,
-          attendeeEmail: ticket.attendee_email,
-        });
+        console.error('[sendTicketEmailsToAttendees] Failed to send email:', error instanceof Error ? error.message : error);
         // Continue sending to other attendees even if one fails
       }
     });
 
     await Promise.all(emailPromises);
-    console.log('[sendTicketEmailsToAttendees] All ticket emails sent');
   } catch (error) {
     console.error('[sendTicketEmailsToAttendees] Error:', error);
     // Don't throw - this is a background operation
@@ -219,13 +216,14 @@ interface CreateOrderParams {
 // Removed unused type: TicketCreationData - internal data shapes are inferred per-query
 
 /**
- * Generate a unique ticket code
+ * Generate a cryptographically secure unique ticket code
  */
 function generateTicketCode(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const bytes = crypto.getRandomValues(new Uint8Array(8));
   let code = '';
   for (let i = 0; i < 8; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
+    code += chars[bytes[i] % chars.length];
   }
   return code;
 }
@@ -297,7 +295,6 @@ async function generateAndStoreQRCode(ticketId: string, ticketCode: string): Pro
  */
 export async function createOrder(params: CreateOrderParams): Promise<{ orderId: string; totalAmount: number }> {
   try {
-    console.log('[createOrder] Starting order creation for eventId:', params.eventId);
     
     // Fetch event to get ticket type details
     const { data: event, error: eventError } = await supabase
@@ -307,10 +304,9 @@ export async function createOrder(params: CreateOrderParams): Promise<{ orderId:
       .single();
 
     if (eventError) {
-      console.error('[createOrder] Error fetching event:', eventError);
+      console.error('[createOrder] Error fetching event:', eventError?.message);
       throw eventError;
     }
-    console.log('[createOrder] Event fetched successfully:', event?.id);
 
     // Fetch ticket type
     const { data: ticketType, error: ticketTypeError } = await supabase
@@ -328,7 +324,6 @@ export async function createOrder(params: CreateOrderParams): Promise<{ orderId:
       console.error('[createOrder] Ticket type not found:', params.ticketTypeName);
       throw new Error('Ticket type not found');
     }
-    console.log('[createOrder] Ticket type found:', ticketType.name);
 
     // Check if enough tickets are available
     const available = ticketType.quantity - ticketType.sold;
@@ -343,15 +338,8 @@ export async function createOrder(params: CreateOrderParams): Promise<{ orderId:
 
     // Get current session (optional - for logged-in users)
     const { data: { session } } = await supabase.auth.getSession();
-    console.log('[createOrder] Session:', session ? 'authenticated' : 'anonymous');
 
     // Create order
-    console.log('[createOrder] Inserting order with data:', {
-      event_id: params.eventId,
-      buyer_email: params.email,
-      total_amount: totalAmount
-    });
-    
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .insert({
@@ -374,12 +362,9 @@ export async function createOrder(params: CreateOrderParams): Promise<{ orderId:
       .single();
 
     if (orderError) {
-      console.error('[createOrder] Error creating order:', orderError);
-      console.error('[createOrder] Full error details:', JSON.stringify(orderError, null, 2));
       throw orderError;
     }
 
-    console.log('[createOrder] Order created successfully:', order.id);
 
     // Trigger Inngest event to send abandoned cart email after 20 seconds
     // Only trigger for paid tickets (not free tickets)
@@ -391,16 +376,12 @@ export async function createOrder(params: CreateOrderParams): Promise<{ orderId:
           : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
         
         const triggerUrl = `${baseUrl}/api/inngest/trigger`;
-        console.log('[createOrder] Attempting to trigger Inngest event:', {
-          url: triggerUrl,
-          orderId: order.id,
-          baseUrl,
-          isClient: typeof window !== 'undefined',
-        });
-        
         const response = await fetch(triggerUrl, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'x-internal-secret': process.env.INTERNAL_API_SECRET || '',
+          },
           body: JSON.stringify({
             eventName: 'order/created',
             data: {
@@ -410,36 +391,11 @@ export async function createOrder(params: CreateOrderParams): Promise<{ orderId:
         });
 
         if (!response.ok) {
-          const errorText = await response.text();
-          let errorData: { raw?: string; [key: string]: unknown };
-          try {
-            errorData = JSON.parse(errorText) as { [key: string]: unknown };
-          } catch {
-            errorData = { raw: errorText };
-          }
-          
-          console.error('[createOrder] Inngest trigger failed:', {
-            status: response.status,
-            statusText: response.statusText,
-            error: errorData,
-            url: triggerUrl,
-          });
-          throw new Error(`Failed to trigger Inngest event: ${response.status} ${response.statusText}`);
+          throw new Error(`Inngest trigger failed: ${response.status}`);
         }
-
-        const result = await response.json() as { [key: string]: unknown };
-        console.log('[createOrder] Inngest event triggered successfully:', {
-          orderId: order.id,
-          result,
-        });
       } catch (inngestError) {
-        // Log detailed error but don't fail order creation
-        console.error('[createOrder] Error triggering Inngest event:', {
-          error: inngestError,
-          orderId: order.id,
-          errorMessage: inngestError instanceof Error ? inngestError.message : String(inngestError),
-          errorStack: inngestError instanceof Error ? inngestError.stack : undefined,
-        });
+        // Non-fatal — order is created; abandoned cart email will not be scheduled
+        console.error('[createOrder] Inngest trigger error:', inngestError instanceof Error ? inngestError.message : inngestError);
       }
     }
 
@@ -448,7 +404,6 @@ export async function createOrder(params: CreateOrderParams): Promise<{ orderId:
       totalAmount: totalAmount,
     };
   } catch (error: unknown) {
-    console.error('[createOrder] Error creating order:', error);
     throw error;
   }
 }
@@ -483,7 +438,6 @@ export async function createTicketsForOrder(orderId: string): Promise<string[]> 
     const attendees = meta?.attendees || [];
     const primaryBuyerGender = meta?.primaryBuyerGender || null;
 
-    console.log('[createTicketsForOrder] Fetching ticket type:', { ticketTypeName, eventId: order.event_id });
 
     // Fetch ticket type
     const { data: ticketType, error: ticketTypeError } = await supabase
@@ -494,13 +448,10 @@ export async function createTicketsForOrder(orderId: string): Promise<string[]> 
       .single();
 
     if (ticketTypeError || !ticketType) {
-      console.error('[createTicketsForOrder] Ticket type lookup error:', ticketTypeError);
-      console.error('[createTicketsForOrder] Meta data:', meta);
-      console.error('[createTicketsForOrder] Looking for:', ticketTypeName);
+      console.error('[createTicketsForOrder] Ticket type lookup error:', ticketTypeError?.message);
       throw new Error(`Ticket type not found: ${ticketTypeName}`);
     }
     
-    console.log('[createTicketsForOrder] Ticket type found:', ticketType.name);
 
     // Create tickets and generate QR codes
     const ticketCodes: string[] = [];
@@ -606,17 +557,14 @@ export async function createTicketsForOrder(orderId: string): Promise<string[]> 
         .catch(err => console.error('Background QR generation error:', err));
     }
 
-    // Update ticket type sold count (using the function from schema)
-    // Note: The schema has a function `issue_tickets_and_update_inventory` but it requires order to be paid
-    // We'll manually update the sold count
-    const { error: updateError } = await supabase
-      .from('ticket_types')
-      .update({ sold: ticketType.sold + quantity })
-      .eq('id', ticketType.id);
+    // Atomically increment sold count — prevents overselling race conditions
+    const { error: updateError } = await supabase.rpc('increment_ticket_sold', {
+      ticket_type_id: ticketType.id,
+      amount: quantity,
+    });
 
     if (updateError) {
-      console.error('Error updating ticket sold count:', updateError);
-      // Don't throw - tickets are created, we can fix inventory later
+      // Don't throw — tickets are already created, inventory can be corrected
     }
 
     // Send ticket emails to each attendee (non-blocking, don't wait for it)

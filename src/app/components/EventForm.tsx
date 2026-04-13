@@ -35,7 +35,7 @@ export default function EventForm({ eventId, onClose, onSuccess }: EventFormProp
     date: '',
     location: '',
     locationVisibility: 'public',
-    ticketType: [{ name: '', price: '', quantity: '', sold: '0' }],
+    ticketType: [{ id: '', name: '', price: '', quantity: '', sold: '0' }],
     isVirtual: false
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -179,7 +179,7 @@ export default function EventForm({ eventId, onClose, onSuccess }: EventFormProp
   const addTicketType = useCallback(() => {
     setFormData(prev => ({
       ...prev,
-      ticketType: [...(prev.ticketType || []), { name: '', price: '', quantity: '', sold: '0' }]
+      ticketType: [...(prev.ticketType || []), { id: '', name: '', price: '', quantity: '', sold: '0' }]
     }));
   }, []);
 
