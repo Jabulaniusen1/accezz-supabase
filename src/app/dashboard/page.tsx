@@ -17,7 +17,6 @@ import { FiLogOut } from "react-icons/fi";
 import { Notyf } from "notyf";
 import "notyf/notyf.min.css";
 import { useRouter, usePathname } from "next/navigation";
-import axios, { AxiosError } from "axios";
 import { getSession, signOut } from "@/utils/supabaseAuth";
 import { supabase } from "@/utils/supabaseClient";
 import ConfirmationModal from "@/components/ConfirmationModal";
@@ -115,24 +114,6 @@ const Dashboard = () => {
     };
   }, [router]);
 
-  // Set up axios response interceptor
-  useEffect(() => {
-    const interceptor = axios.interceptors.response.use(
-      (response) => response,
-      (error: AxiosError) => {
-        if (error.response?.status === 401) {
-          localStorage.removeItem('token'); 
-          localStorage.removeItem('user'); 
-          router.push('/auth/login');
-        }
-        return Promise.reject(error);
-      }
-    );
-
-    return () => {
-      axios.interceptors.response.eject(interceptor);
-    };
-  }, [router]);
 
   // (removed unused window width tracking)
 
