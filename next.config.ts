@@ -1,5 +1,4 @@
 import withPWA from '@ducanh2912/next-pwa';
-import { Configuration } from 'webpack';
 import type { NextConfig } from 'next';
 
 const remoteImageHosts: { protocol: 'http' | 'https'; hostname: string }[] = [
@@ -35,7 +34,8 @@ const nextConfig: NextConfig = {
     remotePatterns,
   },
 
-  webpack: (config: Configuration, { isServer }) => {
+  webpack: (config: unknown, { isServer }: { isServer: boolean }) => {
+    const cfg = config as { resolve?: { fallback?: Record<string, unknown> } };
     if (!isServer) {
       config.resolve = config.resolve || {};
       config.resolve.fallback = {
