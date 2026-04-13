@@ -33,10 +33,14 @@ export async function POST(req: NextRequest) {
       const orderId = event.data.metadata?.orderId || '';
 
       if (orderId) {
-        // Process asynchronously so we can return 200 immediately
-        processSuccessfulPayment(orderId, reference).catch((err) => {
+        // Await before returning — fire-and-forget is killed by Vercel on response.
+        // Paystack allows up to 30 s for a webhook response, which is enough.
+        try {
+          await processSuccessfulPayment(orderId, reference);
+        } catch (err) {
           console.error('[webhook] processSuccessfulPayment error:', err);
-        });
+          // Still return 200 so Paystack doesn't retry — idempotency guards prevent double-processing
+        }
       }
     }
 

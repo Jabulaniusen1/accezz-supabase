@@ -26,12 +26,16 @@ export async function GET(req: NextRequest) {
     const orderId: string | undefined = data.data?.metadata?.orderId;
     const amount: number | undefined = typeof data.data.amount === 'number' ? data.data.amount / 100 : undefined;
 
-    // When Paystack confirms success, process the order here as a fallback in case
-    // the webhook fires late or isn't yet configured (e.g. test mode without a tunnel).
+    // When Paystack confirms success, process the order synchronously before returning.
+    // Fire-and-forget does NOT work on Vercel — the serverless function is frozen
+    // the moment a response is sent, killing any background async work.
     if (status === 'success' && orderId) {
-      processSuccessfulPayment(orderId, reference).catch((err) => {
+      try {
+        await processSuccessfulPayment(orderId, reference);
+      } catch (err) {
         console.error('[verify] processSuccessfulPayment error:', err);
-      });
+        // Don't block the response — tickets may already exist (idempotent)
+      }
     }
 
     return NextResponse.json({
