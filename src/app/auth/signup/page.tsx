@@ -1,66 +1,46 @@
-"use client";
-import React, { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import {
-  FaUser,
-  FaEnvelope,
-  FaLock,
-  FaEye,
-  FaEyeSlash,
-  FaPhone,
-  FaArrowLeft,
-  FaGlobe,
-  FaMapMarkerAlt,
-} from "react-icons/fa";
-import Toast from "../../../components/ui/Toast";
-import { signUpWithEmail } from "@/utils/supabaseAuth";
-import { useCountryCityOptions } from "@/hooks/useCountryCityOptions";
-import SearchableSelect from "../../components/SearchableSelect";
-import Link from "next/link";
+'use client';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { User, Mail, Lock, Eye, EyeOff, Phone, ArrowLeft, Globe, MapPin } from 'lucide-react';
+import Toast from '../../../components/ui/Toast';
+import { signUpWithEmail } from '@/utils/supabaseAuth';
+import { useCountryCityOptions } from '@/hooks/useCountryCityOptions';
+import SearchableSelect from '../../components/SearchableSelect';
+import Link from 'next/link';
+import Image from 'next/image';
 
-const AgreeTerms = React.lazy(() => import("../../components/home/agreeTerms"));
+const AgreeTerms = React.lazy(() => import('../../components/home/agreeTerms'));
+
+type ToastType = 'success' | 'error' | 'warning' | 'info';
 
 function SignupContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [showTermsPopup, setShowTermsPopup] = useState(false);
-  const [accountType, setAccountType] = useState<"creator" | "customer">("customer");
-  const [selectedCountry, setSelectedCountry] = useState<string>("Nigeria");
-  const [selectedCity, setSelectedCity] = useState<string>("Uyo, Akwa Ibom state");
+  const [accountType, setAccountType] = useState<'creator' | 'customer'>('customer');
+  const [selectedCountry, setSelectedCountry] = useState<string>('Nigeria');
+  const [selectedCity, setSelectedCity] = useState<string>('Uyo, Akwa Ibom state');
   const router = useRouter();
   const searchParams = useSearchParams();
   const { countries, getCitiesForCountry, isLoading: isLoadingLocations } = useCountryCityOptions();
   const [showToast, setShowToast] = useState(false);
-  const [toastProps, setToastProps] = useState<{
-    type: "success" | "error" | "warning" | "info";
-    message: string;
-  }>({
-    type: "success",
-    message: "",
-  });
+  const [toastProps, setToastProps] = useState<{ type: ToastType; message: string }>({ type: 'success', message: '' });
 
-  const toast = (
-    type: "success" | "error" | "warning" | "info",
-    message: string
-  ) => {
+  const toast = (type: ToastType, message: string) => {
     setToastProps({ type, message });
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3000);
   };
 
-  // Pre-fill email from URL params if available
   useEffect(() => {
     const emailParam = searchParams.get('email');
     if (emailParam && typeof window !== 'undefined') {
       const emailInput = document.getElementById('email') as HTMLInputElement;
-      if (emailInput) {
-        emailInput.value = emailParam;
-      }
+      if (emailInput) emailInput.value = emailParam;
     }
   }, [searchParams]);
 
-  // Auto-detect user's country on mount
   useEffect(() => {
     const detectCountry = async () => {
       try {
@@ -69,416 +49,350 @@ function SignupContent() {
         if (data.country_name && countries.some(c => c.label === data.country_name)) {
           setSelectedCountry(data.country_name);
         }
-      } catch (error) {
-        console.error('Error detecting country:', error);
-        // Default to Nigeria if detection fails
-        setSelectedCountry("Nigeria");
+      } catch {
+        setSelectedCountry('Nigeria');
       }
     };
-    
-    if (countries.length > 0) {
-      detectCountry();
-    }
+    if (countries.length > 0) detectCountry();
   }, [countries]);
 
-  // Update city when country changes
   useEffect(() => {
     const cities = getCitiesForCountry(selectedCountry);
-    if (selectedCountry === "Nigeria") {
-      // Default to "Uyo, Akwa Ibom state" for Nigeria
-      setSelectedCity("Uyo, Akwa Ibom state");
+    if (selectedCountry === 'Nigeria') {
+      setSelectedCity('Uyo, Akwa Ibom state');
     } else if (cities.length > 0) {
       setSelectedCity(cities[0]);
     } else {
-      setSelectedCity("");
+      setSelectedCity('');
     }
   }, [selectedCountry, getCitiesForCountry]);
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
-  // const linkOrderToUser = async (userId: string, orderId: string) => {
-  //   try {
-  //     const { error } = await supabase
-  //       .from('orders')
-  //       .update({ buyer_user_id: userId })
-  //       .eq('id', orderId)
-  //       .is('buyer_user_id', null);
-      
-  //     if (error) {
-  //       console.error('Error linking order:', error);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error linking order:', error);
-  //   }
-  // };
 
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       const formData = new FormData(e.currentTarget);
-      const firstName = formData.get("firstName")?.toString().trim() || "";
-      const lastName = formData.get("lastName")?.toString().trim() || "";
-      const email = formData.get("email")?.toString().trim() || "";
-      const phone = formData.get("phone")?.toString().trim() || "";
-      const password = formData.get("password")?.toString().trim() || "";
+      const firstName = formData.get('firstName')?.toString().trim() || '';
+      const lastName = formData.get('lastName')?.toString().trim() || '';
+      const email = formData.get('email')?.toString().trim() || '';
+      const phone = formData.get('phone')?.toString().trim() || '';
+      const password = formData.get('password')?.toString().trim() || '';
 
       if (!firstName || !lastName || !email || !phone || !password || !selectedCountry || !selectedCity) {
-        toast("warning", "All fields are required.");
+        toast('warning', 'All fields are required.');
         return;
       }
-
       if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
-        toast("warning", "Invalid email address.");
+        toast('warning', 'Invalid email address.');
         return;
       }
 
-      await signUpWithEmail({ 
-        email, 
-        password, 
-        fullName: `${firstName} ${lastName}`, 
-        phone,
-        userType: accountType,
-        country: selectedCountry,
-        city: selectedCity
+      await signUpWithEmail({
+        email, password,
+        fullName: `${firstName} ${lastName}`,
+        phone, userType: accountType,
+        country: selectedCountry, city: selectedCity,
       });
-      localStorage.setItem("userEmail", email);
-      
-      // Store orderId in localStorage to link after email verification and login
+
       const orderId = searchParams.get('orderId');
-      if (orderId) {
-        localStorage.setItem('pendingOrderLink', orderId);
-      }
-      
-      // Send welcome email (non-blocking)
+      if (orderId) localStorage.setItem('pendingOrderLink', orderId);
+
       try {
         await fetch('/api/emails/welcome', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email,
-            fullName: `${firstName} ${lastName}`,
-          }),
+          body: JSON.stringify({ email, fullName: `${firstName} ${lastName}` }),
         });
-      } catch (emailError) {
-        console.error('Failed to send welcome email:', emailError);
-        // Don't block signup if email fails
-      }
-      
-      toast("success", "Signup successful! Please check your email for verification.");
-      
-      // Redirect to login page with verification notice
+      } catch {}
+
+      toast('success', 'Account created! Please check your email to verify.');
       const redirectUrl = searchParams.get('redirect') || '/dashboard';
       setTimeout(() => {
         router.push(`/auth/login?verify=true&email=${encodeURIComponent(email)}${orderId ? `&orderId=${orderId}` : ''}${redirectUrl !== '/dashboard' ? `&redirect=${encodeURIComponent(redirectUrl)}` : ''}`);
       }, 1200);
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Signup failed. Please try again.";
-      toast("error", errorMessage);
+      toast('error', error instanceof Error ? error.message : 'Signup failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   const cities = getCitiesForCountry(selectedCountry);
-  
-  // Prepare options for searchable selects
-  const countryOptions = countries.map((c) => ({
-    value: c.label,
-    label: c.label,
-  }));
-
-  const cityOptions = selectedCountry === "Nigeria"
+  const countryOptions = countries.map(c => ({ value: c.label, label: c.label }));
+  const cityOptions = selectedCountry === 'Nigeria'
     ? [
-        { value: "Uyo, Akwa Ibom state", label: "Uyo, Akwa Ibom state" },
-        ...cities
-          .filter((city) => {
-            // Filter out "Uyo" if it exists in the API response since we have "Uyo, Akwa Ibom state"
-            const cityLower = city.toLowerCase().trim();
-            return cityLower !== "uyo";
-          })
-          .map((city) => ({ value: city, label: city })),
+        { value: 'Uyo, Akwa Ibom state', label: 'Uyo, Akwa Ibom state' },
+        ...cities.filter(city => city.toLowerCase().trim() !== 'uyo').map(city => ({ value: city, label: city })),
       ]
-    : cities.map((city) => ({ value: city, label: city }));
+    : cities.map(city => ({ value: city, label: city }));
 
   return (
-    <div className="h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 relative overflow-hidden flex flex-col">
-      {/* Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        {/* Animated Background Shapes */}
-        <div className="absolute top-20 left-10 w-32 h-32 bg-[#f54502]/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-40 right-20 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute bottom-20 left-1/4 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute bottom-40 right-10 w-28 h-28 bg-orange-500/10 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '3s' }}></div>
-        
-        {/* Grid Pattern */}
-        <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
+      {showToast && <Toast type={toastProps.type} message={toastProps.message} onClose={() => setShowToast(false)} />}
+      {showTermsPopup && (
+        <React.Suspense fallback={<div className="text-black">Loading terms...</div>}>
+          <AgreeTerms onClose={() => setShowTermsPopup(false)} />
+        </React.Suspense>
+      )}
+
+      {/* ── Left brand panel (md+) ── */}
+      <div className="hidden md:flex md:w-[45%] lg:w-[40%] bg-[#f54502] flex-col justify-between p-10 sticky top-0 h-screen">
+        <div>
+          <div className="w-28 h-12 relative">
+            <Image src="/accezz logo c.png" alt="Accezz" fill className="object-contain object-left brightness-0 invert" />
+          </div>
+        </div>
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-3xl font-bold text-white leading-tight">
+              Start your journey<br />with Accezz
+            </h2>
+            <p className="text-white/70 mt-3 text-sm leading-relaxed">
+              Create events, sell tickets, and connect with audiences — all in one place.
+            </p>
+          </div>
+          <div className="space-y-3">
+            {[
+              'Create and manage events effortlessly',
+              'Earn commissions through affiliate links',
+              'Instant payouts to your wallet',
+            ].map(item => (
+              <div key={item} className="flex items-center gap-3">
+                <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <span className="text-white/80 text-sm">{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <p className="text-white/40 text-xs">© {new Date().getFullYear()} Accezz. All rights reserved.</p>
       </div>
 
-      {/* Main Content - Scrollable container */}
-      <div className="relative z-10 flex items-center justify-center flex-1 overflow-y-auto p-4 sm:p-8">
-        {/* Back Button */}
-        <button
-          onClick={() => router.push('/')}
-          className="fixed top-4 left-4 sm:top-6 sm:left-6 z-20 flex items-center gap-1 sm:gap-2 text-gray-600 hover:text-[#f54502] transition-colors group bg-white/80 backdrop-blur-sm px-3 py-2 rounded-lg"
-        >
-          <FaArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 group-hover:-translate-x-1 transition-transform" />
-          <span className="text-xs sm:text-sm font-medium">Back to Home</span>
-        </button>
+      {/* ── Right form panel ── */}
+      <div className="flex-1 flex flex-col overflow-y-auto">
+        {/* Back link */}
+        <div className="px-6 py-5 flex items-center flex-shrink-0">
+          <Link href="/" className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition">
+            <ArrowLeft className="w-4 h-4" />
+            Back to home
+          </Link>
+        </div>
 
-        {showToast && (
-          <Toast
-            type={toastProps.type}
-            message={toastProps.message}
-            onClose={() => setShowToast(false)}
-          />
-        )}
-
-        {showTermsPopup && (
-          <React.Suspense fallback={<div className="text-black">Loading terms...</div>}>
-            <AgreeTerms onClose={() => setShowTermsPopup(false)} />
-          </React.Suspense>
-        )}
-
-        {/* Form Container */}
-        <div className="w-full max-w-md my-auto py-4">
-          {/* Header Section */}
-          <div className="text-center mb-4 sm:mb-6">
-            <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-[#f54502] rounded-[5px] mb-3 sm:mb-4 shadow-lg">
-              <svg className="w-5 h-5 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-              </svg>
-            </div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">Join Accezz</h1>
-            <p className="text-gray-600 text-xs sm:text-sm">Create your account and start your journey</p>
-          </div>
-
-          {/* Form Card */}
-          <div className="bg-white/80 backdrop-blur-xl rounded-[5px] rounded-xl shadow-2xl border border-white/20 p-4 sm:p-6 animate-fadeIn">
-            <div className="space-y-3 sm:space-y-4">
-
-              <form onSubmit={handleSignup} className="space-y-2.5 sm:space-y-3">
-                {/* Name Fields */}
-                <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                  <div className="space-y-1 sm:space-y-2">
-                    <label htmlFor="firstName" className="text-xs sm:text-sm font-medium text-gray-700">
-                      First Name
-                    </label>
-                    <div className="relative group">
-                      <FaUser className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f54502] transition-colors w-3 h-3 sm:w-4 sm:h-4" />
-                      <input
-                        type="text"
-                        id="firstName"
-                        name="firstName"
-                        placeholder="Nkechi"
-                        className="w-full pl-9 sm:pl-12 pr-2 sm:pr-4 py-2 sm:py-3 border border-gray-200 rounded-[5px] focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-transparent text-sm sm:text-base text-gray-900 placeholder-gray-400 transition-all duration-200 bg-white/50 "
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-1 sm:space-y-2">
-                    <label htmlFor="lastName" className="text-xs sm:text-sm font-medium text-gray-700">
-                      Last Name
-                    </label>
-                    <div className="relative group">
-                      <FaUser className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f54502] transition-colors w-3 h-3 sm:w-4 sm:h-4" />
-                      <input
-                        type="text"
-                        id="lastName"
-                        name="lastName"
-                        placeholder="Adesina"
-                        className="w-full pl-9 sm:pl-12 pr-2 sm:pr-4 py-2 sm:py-3 border border-gray-200 rounded-[5px] focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-transparent text-sm sm:text-base text-gray-900 placeholder-gray-400 transition-all duration-200 bg-white/50 "
-                        required
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Email Field */}
-                <div className="space-y-1 sm:space-y-2">
-                  <label htmlFor="email" className="text-xs sm:text-sm font-medium text-gray-700">
-                    Email Address
-                  </label>
-                  <div className="relative group">
-                    <FaEnvelope className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f54502] transition-colors w-3 h-3 sm:w-4 sm:h-4" />
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      placeholder="you@accezzlive.com"
-                      className="w-full pl-9 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 border border-gray-200 rounded-[5px] focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-transparent text-sm sm:text-base text-gray-900 placeholder-gray-400 transition-all duration-200 bg-white/50 "
-                      required
-                    />
-                  </div>
-                </div>
-
-                {/* Phone Field */}
-                <div className="space-y-1 sm:space-y-2">
-                  <label htmlFor="phone" className="text-xs sm:text-sm font-medium text-gray-700">
-                    Phone Number
-                  </label>
-                  <div className="relative group">
-                    <FaPhone className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f54502] transition-colors w-3 h-3 sm:w-4 sm:h-4" />
-                    <input
-                      type="tel"
-                      id="phone"
-                      name="phone"
-                      placeholder="+234 701 000 000"
-                      className="w-full pl-9 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 border border-gray-200 rounded-[5px] focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-transparent text-sm sm:text-base text-gray-900 placeholder-gray-400 transition-all duration-200 bg-white/50 "
-                      required
-                    />
-                  </div>
-                </div>
-
-                {/* Password Field */}
-                <div className="space-y-1 sm:space-y-2">
-                  <label htmlFor="password" className="text-xs sm:text-sm font-medium text-gray-700">
-                    Password
-                  </label>
-                  <div className="relative group">
-                    <FaLock className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f54502] transition-colors w-3 h-3 sm:w-4 sm:h-4" />
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      id="password"
-                      name="password"
-                      placeholder="••••••••"
-                      className="w-full pl-9 sm:pl-12 pr-9 sm:pr-12 py-2 sm:py-3 border border-gray-200 rounded-[5px] focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-transparent text-sm sm:text-base text-gray-900 placeholder-gray-400 transition-all duration-200 bg-white/50 "
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={togglePasswordVisibility}
-                      className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#f54502] transition-colors"
-                    >
-                      {showPassword ? <FaEyeSlash className="w-3 h-3 sm:w-4 sm:h-4" /> : <FaEye className="w-3 h-3 sm:w-4 sm:h-4" />}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Country Field */}
-                <div className="space-y-1 sm:space-y-2">
-                  <label htmlFor="country" className="text-xs sm:text-sm font-medium text-gray-700">
-                    Country
-                  </label>
-                  <SearchableSelect
-                    options={countryOptions}
-                    value={selectedCountry}
-                    onChange={(value) => setSelectedCountry(value)}
-                    placeholder="Select country..."
-                    disabled={isLoadingLocations}
-                    icon={<FaGlobe className="w-3 h-3 sm:w-4 sm:h-4" />}
-                  />
-                </div>
-
-                {/* City Field */}
-                <div className="space-y-1 sm:space-y-2">
-                  <label htmlFor="city" className="text-xs sm:text-sm font-medium text-gray-700">
-                    City
-                  </label>
-                  <SearchableSelect
-                    options={cityOptions}
-                    value={selectedCity}
-                    onChange={(value) => setSelectedCity(value)}
-                    placeholder="Select city..."
-                    disabled={isLoadingLocations || cityOptions.length === 0}
-                    icon={<FaMapMarkerAlt className="w-3 h-3 sm:w-4 sm:h-4" />}
-                  />
-                </div>
-
-                {/* Account Type Selection */}
-                <div className="space-y-1 sm:space-y-2">
-                  <label className="text-xs sm:text-sm font-medium text-gray-700">
-                    Account Type
-                  </label>
-                  <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setAccountType("customer")}
-                      className={`px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border-2 transition-all duration-200 ${
-                        accountType === "customer"
-                          ? "border-[#f54502] bg-[#f54502]/10 text-[#f54502] font-semibold"
-                          : "border-gray-200 bg-white/50 text-gray-600 hover:border-gray-300"
-                      }`}
-                    >
-                      <div className="text-xs sm:text-sm font-medium">Customer</div>
-                      <div className="text-xs text-gray-500 mt-0.5">Buy tickets</div>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setAccountType("creator")}
-                      className={`px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border-2 transition-all duration-200 ${
-                        accountType === "creator"
-                          ? "border-[#f54502] bg-[#f54502]/10 text-[#f54502] font-semibold"
-                          : "border-gray-200 bg-white/50 text-gray-600 hover:border-gray-300"
-                      }`}
-                    >
-                      <div className="text-xs sm:text-sm font-medium">Creator</div>
-                      <div className="text-xs text-gray-500 mt-0.5">Create events</div>
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-2 sm:space-x-3">
-                  <input
-                    type="checkbox"
-                    id="agreeTerms"
-                    checked={agreeTerms}
-                    onChange={(e) => setAgreeTerms(e.target.checked)}
-                    className="w-4 h-4 sm:w-5 sm:h-5 mt-0.5 text-[#f54502] bg-white border-gray-300 rounded-[5px] focus:ring-[#f54502] focus:ring-2"
-                  />
-                  <label htmlFor="agreeTerms" className="text-xs sm:text-sm text-gray-600">
-                    I agree to the{" "}
-                    <button
-                      type="button"
-                      onClick={() => setShowTermsPopup(true)}
-                      className="text-[#f54502] underline hover:text-[#f54502]/80 font-medium"
-                    >
-                      Terms and Conditions
-                    </button>
-                  </label>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={!agreeTerms || loading || isLoadingLocations}
-                  className={`w-full px-4 sm:px-6 py-2.5 sm:py-3 flex items-center justify-center rounded-[5px] font-semibold text-sm sm:text-base transition-all duration-300 transform
-                  ${
-                    !agreeTerms || loading || isLoadingLocations
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 text-white shadow-lg hover:shadow-xl hover:scale-105"
-                  }`}
-                >
-                  {loading ? (
-                    <div className="flex items-center">
-                      <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
-                      Creating Account...
-                    </div>
-                  ) : isLoadingLocations ? (
-                    <div className="flex items-center">
-                      <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
-                      Loading locations...
-                    </div>
-                  ) : (
-                    "Create Account"
-                  )}
-                </button>
-              </form>
-
-              <div className="text-center">
-                <p className="text-gray-600 text-xs sm:text-sm">
-                  Already have an account?{" "}
-                  <Link
-                    href="/auth/login"
-                    className="text-[#f54502] hover:underline font-semibold transition-colors"
-                  >
-                    Sign in
-                  </Link>
-                </p>
+        {/* Form */}
+        <div className="flex-1 flex items-start justify-center px-6 py-6">
+          <div className="w-full max-w-sm">
+            {/* Mobile logo */}
+            <div className="md:hidden mb-8 flex justify-center">
+              <div className="w-24 h-10 relative">
+                <Image src="/accezz logo c.png" alt="Accezz" fill className="object-contain" />
               </div>
             </div>
+
+            <div className="mb-7">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Create an account</h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Join thousands of event-goers and creators</p>
+            </div>
+
+            <form onSubmit={handleSignup} className="space-y-4">
+              {/* Name row */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                    First name
+                  </label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                    <input
+                      type="text"
+                      id="firstName"
+                      name="firstName"
+                      placeholder="Nkechi"
+                      required
+                      className="w-full h-10 pl-9 pr-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#f54502]/40 focus:border-[#f54502] transition"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                    Last name
+                  </label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                    <input
+                      type="text"
+                      id="lastName"
+                      name="lastName"
+                      placeholder="Adesina"
+                      required
+                      className="w-full h-10 pl-9 pr-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#f54502]/40 focus:border-[#f54502] transition"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Email */}
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                  Email address
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="you@example.com"
+                    required
+                    className="w-full h-10 pl-9 pr-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#f54502]/40 focus:border-[#f54502] transition"
+                  />
+                </div>
+              </div>
+
+              {/* Phone */}
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                  Phone number
+                </label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    placeholder="+234 701 000 000"
+                    required
+                    className="w-full h-10 pl-9 pr-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#f54502]/40 focus:border-[#f54502] transition"
+                  />
+                </div>
+              </div>
+
+              {/* Password */}
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    id="password"
+                    name="password"
+                    placeholder="••••••••"
+                    required
+                    className="w-full h-10 pl-9 pr-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#f54502]/40 focus:border-[#f54502] transition"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(v => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Country */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                  Country
+                </label>
+                <SearchableSelect
+                  options={countryOptions}
+                  value={selectedCountry}
+                  onChange={value => setSelectedCountry(value)}
+                  placeholder="Select country..."
+                  disabled={isLoadingLocations}
+                  icon={<Globe className="w-4 h-4" />}
+                />
+              </div>
+
+              {/* City */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                  City
+                </label>
+                <SearchableSelect
+                  options={cityOptions}
+                  value={selectedCity}
+                  onChange={value => setSelectedCity(value)}
+                  placeholder="Select city..."
+                  disabled={isLoadingLocations || cityOptions.length === 0}
+                  icon={<MapPin className="w-4 h-4" />}
+                />
+              </div>
+
+              {/* Account type */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                  Account type
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {(['customer', 'creator'] as const).map(type => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => setAccountType(type)}
+                      className={`py-2.5 rounded-lg border-2 text-left px-3 transition ${
+                        accountType === type
+                          ? 'border-[#f54502] bg-[#f54502]/5 dark:bg-[#f54502]/10'
+                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                      }`}
+                    >
+                      <div className={`text-sm font-medium ${accountType === type ? 'text-[#f54502]' : 'text-gray-700 dark:text-gray-300'}`}>
+                        {type === 'customer' ? 'Customer' : 'Creator'}
+                      </div>
+                      <div className="text-xs text-gray-400 mt-0.5">
+                        {type === 'customer' ? 'Buy tickets' : 'Create events'}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Terms */}
+              <div className="flex items-start gap-2.5">
+                <input
+                  type="checkbox"
+                  id="agreeTerms"
+                  checked={agreeTerms}
+                  onChange={e => setAgreeTerms(e.target.checked)}
+                  className="w-4 h-4 mt-0.5 text-[#f54502] border-gray-300 rounded focus:ring-[#f54502] focus:ring-2 flex-shrink-0"
+                />
+                <label htmlFor="agreeTerms" className="text-sm text-gray-600 dark:text-gray-400">
+                  I agree to the{' '}
+                  <button
+                    type="button"
+                    onClick={() => setShowTermsPopup(true)}
+                    className="text-[#f54502] hover:underline font-medium"
+                  >
+                    Terms and Conditions
+                  </button>
+                </label>
+              </div>
+
+              <button
+                type="submit"
+                disabled={!agreeTerms || loading || isLoadingLocations}
+                className="w-full h-10 bg-[#f54502] hover:bg-[#d63a02] text-white text-sm font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {loading || isLoadingLocations ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    {loading ? 'Creating account…' : 'Loading locations…'}
+                  </>
+                ) : 'Create account'}
+              </button>
+            </form>
+
+            <p className="mt-5 text-center text-sm text-gray-500 dark:text-gray-400 pb-6">
+              Already have an account?{' '}
+              <Link href="/auth/login" className="text-[#f54502] font-medium hover:underline">
+                Sign in
+              </Link>
+            </p>
           </div>
         </div>
       </div>

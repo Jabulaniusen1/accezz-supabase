@@ -1,17 +1,24 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
-import { FaMapMarkerAlt, FaCalendarAlt, FaTimes } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaCalendarAlt, FaTimes, FaBookmark, FaRegBookmark } from 'react-icons/fa';
 import Image from 'next/image';
 import { useAllEvents } from '@/hooks/useEvents';
+import { useSavedEvents } from '@/hooks/useSavedEvents';
 import { formatPrice } from '@/utils/formatPrice';
 import { formatEventDate } from '@/utils/formatDateTime';
 import Toast from '@/components/ui/Toast';
 import type { Event as AppEvent, Ticket as AppTicket } from '@/types/event';
 import Link from 'next/link';
 
+const isEventEnded = (event: AppEvent): boolean => {
+  const cutoff = event.endTime || event.startTime || event.date;
+  if (!cutoff) return false;
+  return new Date(cutoff) < new Date();
+};
+
 const AllEvents = () => {
-  const [showPastEvents, setShowPastEvents] = useState(false);
-  const { data: events, isLoading } = useAllEvents(showPastEvents);
+  const { data: events, isLoading } = useAllEvents(true);
+  const { savedIds, toggle: toggleSaved } = useSavedEvents();
   const [filters, setFilters] = useState({
     location: '',
     minPrice: '',
@@ -67,7 +74,17 @@ const AllEvents = () => {
     );
   });
 
-  const currentEvents = filteredEvents.slice(0, eventsPerPage);
+  // Upcoming events first (nearest first), ended events at the tail (most recent past first)
+  const sortedEvents = [...filteredEvents].sort((a, b) => {
+    const aEnded = isEventEnded(a);
+    const bEnded = isEventEnded(b);
+    if (aEnded !== bEnded) return aEnded ? 1 : -1;
+    const aMs = new Date(a.startTime || a.date || 0).getTime();
+    const bMs = new Date(b.startTime || b.date || 0).getTime();
+    return aEnded ? bMs - aMs : aMs - bMs;
+  });
+
+  const currentEvents = sortedEvents.slice(0, eventsPerPage);
 
   const openLocationModal = () => {
     setTempFilters({ ...filters });
@@ -253,10 +270,16 @@ const AllEvents = () => {
             className="flex gap-3 sm:gap-6 min-w-max" 
             id="scroll-content"
           >
-            {currentEvents.slice(0, 5).map((event: AppEvent, index: number) => (
-              <div 
+            {currentEvents.slice(0, 5).map((event: AppEvent, index: number) => {
+              const ended = isEventEnded(event);
+              return (
+              <div
                 key={event.id || index}
-                className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer hover:border-[#f54502]/50 min-w-[220px] max-w-[220px] sm:min-w-[300px] sm:max-w-[300px]"
+                className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer min-w-[220px] max-w-[220px] sm:min-w-[300px] sm:max-w-[300px] ${
+                  ended
+                    ? 'border-gray-200 dark:border-gray-700 opacity-75'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-[#f54502]/50'
+                }`}
                 onClick={() => event.slug && handleViewDetails(event.slug)}
               >
                 {/* Event Image with Overlay */}
@@ -265,16 +288,31 @@ const AllEvents = () => {
                     src={typeof event.image === 'string' ? event.image : '/placeholder.jpg'}
                     alt={event.title}
                     fill
-                    className="object-cover"
+                    className={`object-cover${ended ? ' grayscale-[30%]' : ''}`}
                   />
-                  
+
                   {/* Darkened overlay with event details */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/100 via-black/60 to-transparent">
                     <div className="absolute top-2 left-2 sm:top-4 sm:left-4">
-                      <span className="bg-[#f54502] text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 rounded-full">
-                        FEATURED EVENT
-                      </span>
+                      {ended ? (
+                        <span className="bg-gray-500/80 text-white/90 text-[10px] sm:text-xs font-medium px-2 py-1 sm:px-3 rounded-full">
+                          Event has ended
+                        </span>
+                      ) : (
+                        <span className="bg-[#f54502] text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 rounded-full">
+                          FEATURED EVENT
+                        </span>
+                      )}
                     </div>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); if (event.id) toggleSaved(event.id); }}
+                      className="absolute top-2 right-2 sm:top-4 sm:right-4 p-1.5 rounded-full bg-black/40 hover:bg-black/60 transition-colors"
+                      title={event.id && savedIds.has(event.id) ? 'Remove bookmark' : 'Save event'}
+                    >
+                      {event.id && savedIds.has(event.id)
+                        ? <FaBookmark className="text-[#f54502]" size={14} />
+                        : <FaRegBookmark className="text-white" size={14} />}
+                    </button>
                     
                     {/* Event details at bottom */}
                     <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-6">
@@ -290,11 +328,12 @@ const AllEvents = () => {
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
-      
+
       {/* Header section */}
       <div className="max-w-7xl mx-auto mb-8">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
@@ -304,20 +343,7 @@ const AllEvents = () => {
           
           {/* Filter buttons */}
           <div className="flex flex-wrap gap-3">
-            <button 
-              onClick={() => setShowPastEvents(!showPastEvents)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors border-2 ${
-                showPastEvents
-                  ? 'bg-[#f54502] text-white border-[#f54502]' 
-                  : 'bg-white text-black border-gray-300 hover:bg-gray-50 hover:border-gray-400'
-              }`}
-              style={{
-                borderRadius: '10px'
-              }}
-            >
-              {showPastEvents ? 'Hide Past Events' : 'Show Past Events'}
-            </button>
-            <button 
+            <button
               onClick={openLocationModal}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors border-2 ${
                 filters.location 
@@ -416,20 +442,31 @@ const AllEvents = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {currentEvents.map((event: AppEvent) => (
-              <div 
-                key={event.id} 
-                className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 p-5 hover:shadow-md transition-all duration-200 cursor-pointer hover:border-[#f54502]/50 overflow-hidden"
+            {currentEvents.map((event: AppEvent) => {
+              const ended = isEventEnded(event);
+              return (
+              <div
+                key={event.id}
+                className={`bg-white dark:bg-gray-800 border-2 p-5 transition-all duration-200 cursor-pointer overflow-hidden ${
+                  ended
+                    ? 'border-gray-200 dark:border-gray-700 opacity-80'
+                    : 'border-gray-200 dark:border-gray-700 hover:shadow-md hover:border-[#f54502]/50'
+                }`}
                 onClick={() => event.slug && handleViewDetails(event.slug)}
-                style={{
-                  borderRadius: '10px'
-                }}
+                style={{ borderRadius: '10px' }}
               >
                 <div className="flex gap-4 h-full min-w-0">
                   <div className="flex-1 flex flex-col justify-between min-w-0">
                     <div>
-                      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3 hover:text-[#f54502] transition-colors line-clamp-2 min-w-0">{event.title}</h3>
-                      
+                      <div className="flex items-start gap-2 mb-3">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white hover:text-[#f54502] transition-colors line-clamp-2 min-w-0 flex-1">{event.title}</h3>
+                        {ended && (
+                          <span className="flex-shrink-0 text-[10px] font-medium text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-600 px-2 py-0.5 rounded-full whitespace-nowrap mt-1">
+                            Event has ended
+                          </span>
+                        )}
+                      </div>
+
                       <div className="space-y-2 mb-4">
                         <div className="flex items-center text-gray-600 dark:text-gray-400">
                           <FaCalendarAlt className="mr-2 flex-shrink-0" />
@@ -449,16 +486,27 @@ const AllEvents = () => {
                       </div>
                     </div>
                     
-                    <div className="text-[#f54502] font-semibold text-lg">
-                      {(() => {
-                        const prices = (event.ticketType || [])
-                          .map(ticket => parseFloat(ticket.price ?? '0'))
-                          .filter(price => !Number.isNaN(price));
-                        if (!prices.length || Math.min(...prices) === 0) {
-                          return 'Free';
-                        }
-                        return formatPrice(Math.min(...prices), '₦');
-                      })()}
+                    <div className="flex items-center justify-between">
+                      <div className="text-[#f54502] font-semibold text-lg">
+                        {(() => {
+                          const prices = (event.ticketType || [])
+                            .map(ticket => parseFloat(ticket.price ?? '0'))
+                            .filter(price => !Number.isNaN(price));
+                          if (!prices.length || Math.min(...prices) === 0) {
+                            return 'Free';
+                          }
+                          return formatPrice(Math.min(...prices), '₦');
+                        })()}
+                      </div>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); if (event.id) toggleSaved(event.id); }}
+                        className="p-2 rounded-full hover:bg-[#f54502]/10 transition-colors"
+                        title={event.id && savedIds.has(event.id) ? 'Remove bookmark' : 'Save event'}
+                      >
+                        {event.id && savedIds.has(event.id)
+                          ? <FaBookmark className="text-[#f54502]" size={15} />
+                          : <FaRegBookmark className="text-gray-400 hover:text-[#f54502]" size={15} />}
+                      </button>
                     </div>
                   </div>
                   
@@ -468,15 +516,14 @@ const AllEvents = () => {
                       alt={event.title}
                       width={96}
                       height={96}
-                      className="w-full h-full object-cover"
-                      style={{
-                        borderRadius: '5px'
-                      }}
+                      className={`w-full h-full object-cover${ended ? ' grayscale-[20%]' : ''}`}
+                      style={{ borderRadius: '5px' }}
                     />
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
 

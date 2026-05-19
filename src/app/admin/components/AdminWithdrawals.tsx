@@ -23,7 +23,6 @@ const AdminWithdrawals: React.FC = () => {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      // Fetch all withdrawals and join profile info
       const { data: withdrawals, error } = await supabase
         .from('withdrawal_requests')
         .select('*')
@@ -46,8 +45,29 @@ const AdminWithdrawals: React.FC = () => {
       const profileMap = new Map<string, ProfileData>();
       (profiles || []).forEach(p => profileMap.set(p.user_id, p));
 
+      // Fetch emails via admin API
+      const userIds = Array.from(new Set((withdrawals || []).map(w => w.user_id)));
+      let emailMap = new Map<string, string>();
+      if (userIds.length > 0) {
+        const { data: session } = await supabase.auth.getSession();
+        const token = session?.session?.access_token;
+        const emailResponse = await fetch('/api/admin/users-emails', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token && { 'Authorization': `Bearer ${token}` }),
+          },
+          body: JSON.stringify({ user_ids: userIds }),
+        });
+        if (emailResponse.ok) {
+          const emailData = await emailResponse.json();
+          emailMap = new Map(emailData.emails || []);
+        }
+      }
+
       const withProfile: Row[] = (withdrawals || []).map(w => ({
         ...w,
+        user_email: emailMap.get(w.user_id) ?? null,
         full_name: profileMap.get(w.user_id)?.full_name ?? null,
         account_name: profileMap.get(w.user_id)?.account_name ?? null,
         account_number: profileMap.get(w.user_id)?.account_number ?? null,
@@ -123,7 +143,10 @@ const AdminWithdrawals: React.FC = () => {
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">User</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Source</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Amount</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Fee</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Net Payout</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Currency</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Bank</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Account</th>
@@ -133,16 +156,24 @@ const AdminWithdrawals: React.FC = () => {
           </thead>
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {loading && (
-              <tr><td colSpan={8} className="px-6 py-6 text-center text-gray-500 dark:text-gray-400">Loading...</td></tr>
+              <tr><td colSpan={11} className="px-6 py-6 text-center text-gray-500 dark:text-gray-400">Loading...</td></tr>
             )}
             {!loading && visible.length === 0 && (
-              <tr><td colSpan={8} className="px-6 py-6 text-center text-gray-500 dark:text-gray-400">No requests</td></tr>
+              <tr><td colSpan={11} className="px-6 py-6 text-center text-gray-500 dark:text-gray-400">No requests</td></tr>
             )}
             {visible.map(r => (
               <tr key={r.id}>
                 <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{new Date(r.created_at).toLocaleString()}</td>
-                <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{r.full_name || r.user_id.slice(0,8)}</td>
+                <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                  <div className="font-medium">{r.full_name || 'No name'}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">{r.user_email || r.user_id.slice(0, 8)}</div>
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300 capitalize">{r.source || 'combined'}</td>
                 <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{Number(r.amount).toLocaleString()}</td>
+                <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{Number(r.fee_amount || 0).toLocaleString()}</td>
+                <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                  {Number(r.net_amount ?? (Number(r.amount || 0) - Number(r.fee_amount || 0))).toLocaleString()}
+                </td>
                 <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{r.currency}</td>
                 <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{r.bank_name || '-'}</td>
                 <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{r.account_name ? `${r.account_name} • ${r.account_number}` : '-'}</td>
@@ -173,5 +204,4 @@ const AdminWithdrawals: React.FC = () => {
 };
 
 export default AdminWithdrawals;
-
 

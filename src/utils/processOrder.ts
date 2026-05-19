@@ -64,31 +64,32 @@ export async function processSuccessfulPayment(orderId: string, reference: strin
     return;
   }
 
-  // Fetch event details
-  const { data: event } = await supabaseAdmin
-    .from('events')
-    .select('id, user_id, title, start_time, end_time, venue, location, address, city, country, is_virtual, virtual_details')
-    .eq('id', order.event_id)
-    .single();
-
-  if (!event) {
-    console.error('[processOrder] Event not found for order:', orderId);
-    return;
-  }
-
   const meta = (order.meta as Record<string, unknown> | null) || {};
   const ticketTypeName = (meta.ticketTypeName as string) || 'General';
   const quantity = (meta.quantity as number) || 1;
   const attendees = (meta.attendees as Array<{ name: string; email: string; gender?: string }>) || [];
   const primaryBuyerGender = (meta.primaryBuyerGender as string) || null;
+  const affiliateCode = (meta.affiliateCode as string) || null;
 
-  // Fetch ticket type
-  const { data: ticketType } = await supabaseAdmin
-    .from('ticket_types')
-    .select('*')
-    .eq('event_id', order.event_id)
-    .eq('name', ticketTypeName)
-    .single();
+  // Fetch event and ticket type in parallel — they're independent of each other
+  const [{ data: event }, { data: ticketType }] = await Promise.all([
+    supabaseAdmin
+      .from('events')
+      .select('id, user_id, title, start_time, end_time, venue, location, address, city, country, is_virtual, virtual_details')
+      .eq('id', order.event_id)
+      .single(),
+    supabaseAdmin
+      .from('ticket_types')
+      .select('*')
+      .eq('event_id', order.event_id)
+      .eq('name', ticketTypeName)
+      .single(),
+  ]);
+
+  if (!event) {
+    console.error('[processOrder] Event not found for order:', orderId);
+    return;
+  }
 
   if (!ticketType) {
     console.error('[processOrder] Ticket type not found:', ticketTypeName);
@@ -156,6 +157,58 @@ export async function processSuccessfulPayment(orderId: string, reference: strin
     amount: quantity,
   });
 
+  // ── Affiliate commission ─────────────────────────────────────────────────
+  if (affiliateCode) {
+    try {
+      // Prevent self-referral
+      const { data: affiliate } = await supabaseAdmin
+        .from('affiliates')
+        .select('id, user_id')
+        .eq('affiliate_code', affiliateCode)
+        .eq('event_id', order.event_id)
+        .single();
+
+      if (affiliate && affiliate.user_id !== order.buyer_user_id) {
+        const { data: affSettings } = await supabaseAdmin
+          .from('affiliate_settings')
+          .select('enabled, commission_type, commission_value')
+          .eq('event_id', order.event_id)
+          .single();
+
+        if (affSettings?.enabled) {
+          const orderAmount = Number(order.total_amount) || ticketType.price * quantity;
+          const commission =
+            affSettings.commission_type === 'percentage'
+              ? (orderAmount * Number(affSettings.commission_value)) / 100
+              : Number(affSettings.commission_value);
+
+          // Idempotent insert — unique constraint on order_id
+          await supabaseAdmin.from('affiliate_commissions').upsert(
+            {
+              affiliate_id: affiliate.id,
+              user_id: affiliate.user_id,
+              order_id: orderId,
+              event_id: order.event_id,
+              amount: commission,
+              currency: order.currency || 'NGN',
+              status: 'pending',
+            },
+            { onConflict: 'order_id' }
+          );
+
+          // Atomically update affiliate stats via RPC
+          await supabaseAdmin.rpc('increment_affiliate_stats', {
+            p_affiliate_id: affiliate.id,
+            p_commission: commission,
+          });
+        }
+      }
+    } catch (affErr) {
+      // Non-critical — log but never fail the payment
+      console.error('[processOrder] Affiliate commission error:', affErr);
+    }
+  }
+
   // ── Build email content ──────────────────────────────────────────────────
   const isVirtualEvent = Boolean(event.is_virtual);
   const virtualDetails = (event.virtual_details as Record<string, unknown> | null) || null;
@@ -203,43 +256,47 @@ export async function processSuccessfulPayment(orderId: string, reference: strin
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://accezzlive.com';
 
-  for (const ticket of allTickets) {
-    try {
-      const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(
-        `${baseUrl}/validate-ticket?ticketId=${ticket.id}&signature=${ticket.ticket_code}`
-      )}`;
+  // Process all tickets in parallel — QR persistence + email are independent per ticket
+  await Promise.all(
+    allTickets.map(async (ticket) => {
+      try {
+        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(
+          `${baseUrl}/validate-ticket?ticketId=${ticket.id}&signature=${ticket.ticket_code}`
+        )}`;
 
-      // Persist QR code URL
-      await supabaseAdmin.from('tickets').update({ qr_code_url: qrCodeUrl }).eq('id', ticket.id);
+        // Persist QR code URL and send email concurrently — they don't depend on each other
+        const [, html] = await Promise.all([
+          supabaseAdmin.from('tickets').update({ qr_code_url: qrCodeUrl }).eq('id', ticket.id),
+          Promise.resolve(generateTicketEmailHTML({
+            fullName: ticket.attendee_name || order.buyer_full_name || 'Attendee',
+            eventTitle: event.title || 'Event',
+            eventDate,
+            eventTime,
+            venue: eventVenue,
+            ticketType: ticketType.name,
+            quantity: 1,
+            ticketCodes: [ticket.ticket_code],
+            totalAmount: ticketType.price,
+            currency: order.currency || 'NGN',
+            orderId,
+            qrCodeUrl: isVirtualEvent ? undefined : qrCodeUrl,
+            isVirtual: isVirtualEvent,
+            virtualAccessLink,
+            virtualPlatform,
+            virtualMeetingId: rawMeetingId || undefined,
+          })),
+        ]);
 
-      const html = generateTicketEmailHTML({
-        fullName: ticket.attendee_name || order.buyer_full_name || 'Attendee',
-        eventTitle: event.title || 'Event',
-        eventDate,
-        eventTime,
-        venue: eventVenue,
-        ticketType: ticketType.name,
-        quantity: 1,
-        ticketCodes: [ticket.ticket_code],
-        totalAmount: ticketType.price,
-        currency: order.currency || 'NGN',
-        orderId,
-        qrCodeUrl: isVirtualEvent ? undefined : qrCodeUrl,
-        isVirtual: isVirtualEvent,
-        virtualAccessLink,
-        virtualPlatform,
-        virtualMeetingId: rawMeetingId || undefined,
-      });
-
-      await sendEmail({
-        to: ticket.attendee_email || order.buyer_email,
-        subject: `Your Tickets for ${event.title || 'the event'}`,
-        html,
-      });
-    } catch (emailErr) {
-      console.error(`[processOrder] Failed to send ticket email to ${ticket.attendee_email}:`, emailErr);
-    }
-  }
+        await sendEmail({
+          to: ticket.attendee_email || order.buyer_email,
+          subject: `Your Tickets for ${event.title || 'the event'}`,
+          html,
+        });
+      } catch (emailErr) {
+        console.error(`[processOrder] Failed to send ticket email to ${ticket.attendee_email}:`, emailErr);
+      }
+    })
+  );
 
   // ── Notify event host (in-app + email) ───────────────────────────────────
   try {

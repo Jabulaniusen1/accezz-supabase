@@ -2,32 +2,36 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
 import { supabase } from "@/utils/supabaseClient";
 import { Event } from "../../../types/event";
 import Toast from "../../../components/ui/Toast";
 import { PageSkeleton } from "@/components/ui/Skeleton";
-import EventHeader from "./components/EventHeader";
 import EventImageUpload from "./components/EventImageUpload";
 import EventBasicDetails from "./components/EventBasicDetails";
 import VirtualEventSettings from "./components/VirtualEventSettings";
 import PhysicalEventDetails from "./components/PhysicalEventDetails";
 import SocialMediaLinks from "./components/SocialMediaLinks";
 import TicketTypesSection from "./components/TicketTypeSection";
-import FormActions from "./components/FormActions";
+import { BsArrowLeft } from "react-icons/bs";
+import { AnimatePresence, motion } from "framer-motion";
+
+function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+      <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800">
+        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">{title}</h2>
+      </div>
+      <div className="p-5">{children}</div>
+    </div>
+  );
+}
 
 function Update() {
   const [event, setEvent] = useState<Event | null>(null);
   const [formData, setFormData] = useState<Event | null>(null);
   const { eventId } = useParams<{ eventId: string }>();
   const [showToast, setShowToast] = useState(false);
-  const [toastProps, setToastProps] = useState<{
-    type: "success" | "error";
-    message: string;
-  }>({
-    type: "success",
-    message: "",
-  });
+  const [toastProps, setToastProps] = useState<{ type: "success" | "error"; message: string }>({ type: "success", message: "" });
   const router = useRouter();
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -65,28 +69,18 @@ function Update() {
           const startTimeIso: string | null = ev.start_time;
           const startDateObj = startTimeIso ? new Date(startTimeIso) : null;
           const formattedDate = startDateObj && !Number.isNaN(startDateObj.getTime())
-            ? startDateObj.toISOString().split('T')[0]
-            : '';
+            ? startDateObj.toISOString().split('T')[0] : '';
           const formattedTime = startDateObj && !Number.isNaN(startDateObj.getTime())
-            ? startDateObj.toISOString().slice(11, 16)
-            : '';
+            ? startDateObj.toISOString().slice(11, 16) : '';
           const endTimeIso: string | null = ev.end_time;
 
           const eventData: Event = {
-            id: ev.id,
-            slug: ev.slug || ev.id,
-            title: ev.title,
-            description: ev.description,
-            image: ev.image_url,
-            startTime: startTimeIso || '',
-            endTime: endTimeIso || null,
-            date: formattedDate,
-            time: formattedTime,
-            venue: ev.venue || '',
-            location: ev.location || '',
-            address: ev.address || '',
-            city: ev.city || '',
-            country: ev.country || '',
+            id: ev.id, slug: ev.slug || ev.id, title: ev.title,
+            description: ev.description, image: ev.image_url,
+            startTime: startTimeIso || '', endTime: endTimeIso || null,
+            date: formattedDate, time: formattedTime,
+            venue: ev.venue || '', location: ev.location || '',
+            address: ev.address || '', city: ev.city || '', country: ev.country || '',
             latitude: typeof ev.latitude === 'number' ? ev.latitude : null,
             longitude: typeof ev.longitude === 'number' ? ev.longitude : null,
             categoryId: ev.category_id ?? undefined,
@@ -95,26 +89,16 @@ function Update() {
             locationId: ev.location_id ?? undefined,
             locationVisibility: ev.location_visibility ?? 'public',
             hostName: hostProfile?.full_name || '',
-            gallery: [],
-            isVirtual: !!ev.is_virtual,
-            virtualEventDetails: ev.virtual_details || (ev.is_virtual ? {
-                platform: undefined,
-                meetingUrl: '',
-                meetingId: ''
-            } : undefined),
+            gallery: [], isVirtual: !!ev.is_virtual,
+            virtualEventDetails: ev.virtual_details || (ev.is_virtual ? { platform: undefined, meetingUrl: '', meetingId: '' } : undefined),
             socialMediaLinks: ev.social_links || {},
             ticketType: (types || []).map(t => ({
-              id: t.id,
-              name: t.name,
-              price: String(t.price || '0'),
-              quantity: String(t.quantity || '0'),
-              sold: String(t.sold || '0'),
+              id: t.id, name: t.name, price: String(t.price || '0'),
+              quantity: String(t.quantity || '0'), sold: String(t.sold || '0'),
               details: t.details || undefined,
             })),
-            currency: ev.currency || undefined,
-            userId: ev.user_id,
-            createdAt: ev.created_at,
-            updatedAt: ev.updated_at,
+            currency: ev.currency || undefined, userId: ev.user_id,
+            createdAt: ev.created_at, updatedAt: ev.updated_at,
           };
 
           setEvent(eventData);
@@ -125,7 +109,6 @@ function Update() {
           toast("error", "Failed to load event data");
         }
       };
-
       fetchEvent();
     }
   }, [eventId, toast]);
@@ -133,59 +116,35 @@ function Update() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
-    if (!formData) {
-      toast("error", "No event data to update.");
-      return;
-    }
+    if (!formData) { toast("error", "No event data to update."); return; }
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast("error", "Please login to update event.");
-        router.push('/auth/login');
-        return;
-      }
+      if (!session) { toast("error", "Please login to update event."); router.push('/auth/login'); return; }
 
       let imageUrl: string | null = null;
       if (imageFile) {
         const ext = imageFile.name.split('.').pop();
         const path = `events/${session.user.id}/${eventId}/main.${ext}`;
         const { error: upErr } = await supabase.storage.from('event-images').upload(path, imageFile, { upsert: true });
-        if (upErr) {
-          console.error('Image upload failed:', upErr);
-          throw new Error('Failed to upload image. Please try again.');
-        }
+        if (upErr) throw new Error('Failed to upload image. Please try again.');
         const { data: pub } = supabase.storage.from('event-images').getPublicUrl(path);
         imageUrl = pub.publicUrl;
       }
 
-      const startTimeIso =
-        formData.startTime ||
-        (formData.date ? new Date(`${formData.date}T${formData.time || '00:00'}`).toISOString() : '');
-
-      if (!startTimeIso) {
-        throw new Error('Please set the event start date and time.');
-      }
+      const startTimeIso = formData.startTime || (formData.date ? new Date(`${formData.date}T${formData.time || '00:00'}`).toISOString() : '');
+      if (!startTimeIso) throw new Error('Please set the event start date and time.');
 
       const visibility = formData.locationVisibility ?? 'public';
       const rawLocation = formData.location?.trim() || '';
-      const locationValue =
-        visibility === 'undisclosed'
-          ? null
-          : (rawLocation || (formData.isVirtual ? 'Online' : ''));
+      const locationValue = visibility === 'undisclosed' ? null : (rawLocation || (formData.isVirtual ? 'Online' : ''));
 
-      if (!formData.isVirtual && visibility !== 'undisclosed' && !rawLocation) {
+      if (!formData.isVirtual && visibility !== 'undisclosed' && !rawLocation)
         throw new Error('Please provide the event location before saving.');
-      }
-
-      if (formData.isVirtual && visibility === 'undisclosed') {
+      if (formData.isVirtual && visibility === 'undisclosed')
         throw new Error('Virtual events require access details instead of an undisclosed location.');
-      }
 
-      const categoryCustomValue = formData.categoryId
-        ? null
-        : (formData.categoryCustom?.trim() || null);
+      const categoryCustomValue = formData.categoryId ? null : (formData.categoryCustom?.trim() || null);
       const venueValue = formData.isVirtual ? 'Virtual Event' : (formData.venue?.trim() || null);
       const finalVenue = visibility === 'undisclosed' ? null : venueValue;
       const addressValue = visibility === 'undisclosed' ? null : formData.address?.trim() || null;
@@ -195,120 +154,41 @@ function Update() {
       const longitudeValue = visibility === 'undisclosed' ? null : formData.longitude ?? null;
       const locationIdValue = visibility === 'undisclosed' ? null : formData.locationId ?? null;
 
-      // Update event
-      const { error: evErr } = await supabase
-        .from('events')
-        .update({
-          title: formData.title,
-          description: formData.description,
-          start_time: startTimeIso,
-          end_time: formData.endTime || null,
-          venue: finalVenue,
-          location: locationValue,
-          location_visibility: visibility,
-          address: addressValue,
-          city: cityValue,
-          country: countryValue,
-          latitude: latitudeValue,
-          longitude: longitudeValue,
-          location_id: locationIdValue,
-          category_id: formData.categoryId ?? null,
-          category_custom: categoryCustomValue,
-          is_virtual: !!formData.isVirtual,
-          virtual_details: formData.isVirtual && formData.virtualEventDetails ? formData.virtualEventDetails : null,
-          social_links: formData.socialMediaLinks || {},
-          image_url: imageUrl || undefined,
-        })
-        .eq('id', eventId);
-      if (evErr) {
-        console.error('Failed to update event:', evErr);
-        throw new Error('Failed to update event. Please try again.');
-      }
+      const { error: evErr } = await supabase.from('events').update({
+        title: formData.title, description: formData.description,
+        start_time: startTimeIso, end_time: formData.endTime || null,
+        venue: finalVenue, location: locationValue, location_visibility: visibility,
+        address: addressValue, city: cityValue, country: countryValue,
+        latitude: latitudeValue, longitude: longitudeValue, location_id: locationIdValue,
+        category_id: formData.categoryId ?? null, category_custom: categoryCustomValue,
+        is_virtual: !!formData.isVirtual,
+        virtual_details: formData.isVirtual && formData.virtualEventDetails ? formData.virtualEventDetails : null,
+        social_links: formData.socialMediaLinks || {},
+        image_url: imageUrl || undefined,
+      }).eq('id', eventId);
+      if (evErr) throw new Error('Failed to update event. Please try again.');
 
-      // Handle ticket types: update existing or insert new ones (preserve IDs to maintain ticket relationships)
       if (formData.ticketType?.length) {
-        // Fetch existing ticket types to match by name and preserve sold count
-        const { data: existingTypes, error: fetchErr } = await supabase
-          .from('ticket_types')
-          .select('id, name, sold')
-          .eq('event_id', eventId);
-        
-        if (fetchErr) {
-          console.error('Failed to fetch existing ticket types:', fetchErr);
-          throw new Error('Failed to update tickets. Please try again.');
-        }
-
-        // Create maps for efficient lookup
+        const { data: existingTypes } = await supabase.from('ticket_types').select('id, name, sold').eq('event_id', eventId);
         const existingMap = new Map((existingTypes || []).map(t => [t.name, { id: t.id, sold: Number(t.sold || 0) }]));
         const newTicketNames = new Set(formData.ticketType.map(t => t.name));
-        
-        // Delete ticket types that are no longer in the form (only if they have no sold tickets)
         const typesToDelete = (existingTypes || []).filter(t => !newTicketNames.has(t.name));
-        if (typesToDelete.length > 0) {
-          const idsToDelete = typesToDelete.map(t => t.id);
-          // Only delete if sold count is 0 to preserve analytics
-          const { error: delErr } = await supabase
-            .from('ticket_types')
-            .delete()
-            .in('id', idsToDelete)
-            .eq('sold', 0);
-          if (delErr) {
-            console.error('Failed to delete unused ticket types:', delErr);
-            // Don't throw - allow update to continue even if deletion fails
-          }
-        }
+        if (typesToDelete.length > 0)
+          await supabase.from('ticket_types').delete().in('id', typesToDelete.map(t => t.id)).eq('sold', 0);
 
-        // Update or insert ticket types
         for (const ticket of formData.ticketType) {
           const existing = existingMap.get(ticket.name);
-          const ticketData = {
-            event_id: eventId,
-            name: ticket.name,
-            price: Number(ticket.price || 0),
-            quantity: Number(ticket.quantity || 0),
-            // Preserve the actual sold count from database, not from form (form may be stale)
-            sold: existing ? existing.sold : Number(ticket.sold || 0),
-            details: ticket.details || null,
-          };
-
-          if (existing) {
-            // Update existing ticket type (preserves ID and maintains relationship with tickets)
-            const { error: updateErr } = await supabase
-              .from('ticket_types')
-              .update(ticketData)
-              .eq('id', existing.id);
-            if (updateErr) {
-              console.error('Failed to update ticket type:', updateErr);
-              throw new Error('Failed to update tickets. Please try again.');
-            }
-          } else {
-            // Insert new ticket type
-            const { error: insErr } = await supabase
-              .from('ticket_types')
-              .insert(ticketData);
-            if (insErr) {
-              console.error('Failed to insert new ticket type:', insErr);
-              throw new Error('Failed to save tickets. Please try again.');
-            }
-          }
+          const ticketData = { event_id: eventId, name: ticket.name, price: Number(ticket.price || 0), quantity: Number(ticket.quantity || 0), sold: existing ? existing.sold : Number(ticket.sold || 0), details: ticket.details || null };
+          if (existing) await supabase.from('ticket_types').update(ticketData).eq('id', existing.id);
+          else await supabase.from('ticket_types').insert(ticketData);
         }
       } else {
-        // If no ticket types in form, only delete ones with no sales
-        const { error: delErr } = await supabase
-          .from('ticket_types')
-          .delete()
-          .eq('event_id', eventId)
-          .eq('sold', 0);
-        if (delErr) {
-          console.error('Failed to delete ticket types:', delErr);
-          // Don't throw - allow update to continue
-        }
+        await supabase.from('ticket_types').delete().eq('event_id', eventId).eq('sold', 0);
       }
 
       toast("success", "Event updated successfully!");
       setShouldRedirect(true);
     } catch (error: unknown) {
-      console.error("Error updating event:", error);
       const message = error instanceof Error ? error.message : "Failed to update event";
       toast("error", message);
     } finally {
@@ -317,142 +197,156 @@ function Update() {
   };
 
   useEffect(() => {
-    return () => {
-      if (imagePreview) {
-        URL.revokeObjectURL(imagePreview);
-      }
-    };
+    return () => { if (imagePreview) URL.revokeObjectURL(imagePreview); };
   }, [imagePreview]);
 
-  const ConfirmationDialog = () => (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-    >
-      <motion.div
-        initial={{ scale: 0.95 }}
-        animate={{ scale: 1 }}
-        exit={{ scale: 0.95 }}
-        className="bg-white dark:bg-gray-800 rounded-[5px] p-4 sm:p-6 max-w-md w-full shadow-xl"
-      >
-        <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-gray-900 dark:text-white">
-          Event Updated Successfully
-        </h3>
-        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mb-4 sm:mb-6">
-          What would you like to do next?
-        </p>
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-          <button
-            onClick={() => {
-              setShouldRedirect(false);
-              setShowToast(false);
-            }}
-            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-[5px] transition-colors text-sm sm:text-base"
-          >
-            Continue Editing
-          </button>
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="px-4 py-2 bg-[#f54502] hover:bg-[#d63a02] text-white rounded-[5px] transition-colors text-sm sm:text-base"
-          >
-            Go to Dashboard
-          </button>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 py-6 sm:py-12 px-4 sm:px-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      {/* Toast */}
+      {showToast && (
+        <div className="fixed top-4 right-4 z-50 w-full max-w-sm">
+          <Toast type={toastProps.type} message={toastProps.message} onClose={() => setShowToast(false)} />
+        </div>
+      )}
+
+      {/* Success dialog */}
       <AnimatePresence>
-        {showToast && (
-          <Toast
-            type={toastProps.type}
-            message={toastProps.message}
-            onClose={() => setShowToast(false)}
-          />
+        {shouldRedirect && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-gray-100 dark:border-gray-800"
+            >
+              <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-center text-gray-900 dark:text-white mb-1">Event Updated</h3>
+              <p className="text-sm text-center text-gray-500 dark:text-gray-400 mb-6">Your changes have been saved successfully.</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => { setShouldRedirect(false); setShowToast(false); }}
+                  className="flex-1 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+                >
+                  Keep Editing
+                </button>
+                <button
+                  onClick={() => router.push("/dashboard")}
+                  className="flex-1 py-2.5 rounded-lg bg-[#f54502] hover:bg-[#d63a02] text-white text-sm font-medium transition"
+                >
+                  Dashboard
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
-        {shouldRedirect && <ConfirmationDialog />}
       </AnimatePresence>
 
-      <motion.div
-        className="w-full sm:max-w-7xl sm:mx-auto mx-full space-y-10 "
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <EventHeader onBack={() => router.push("/dashboard")} />
+      {/* Sticky top header */}
+      <header className="sticky top-0 z-20 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
+        <div className="max-w-5xl mx-auto px-4 h-16 flex items-center gap-4">
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+          >
+            <BsArrowLeft size={18} />
+          </button>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-base font-semibold text-gray-900 dark:text-white truncate">
+              Edit Event{event?.title ? ` — ${event.title}` : ''}
+            </h1>
+          </div>
+        </div>
+      </header>
 
-        
+      {/* Page content */}
+      <div className="max-w-5xl mx-auto px-4 py-6 pb-28">
+        {!event ? (
+          <PageSkeleton />
+        ) : (
+          <form id="edit-event-form" onSubmit={handleSubmit} className="space-y-4">
+            {/* Cover image */}
+            <SectionCard title="Cover Image">
+              <EventImageUpload
+                imagePreview={imagePreview || (typeof event?.image === "string" ? event.image : undefined)}
+                handleImageChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    if (!file.type.startsWith("image/")) { toast("error", "Please upload a valid image file"); return; }
+                    if (imagePreview) URL.revokeObjectURL(imagePreview);
+                    setImageFile(file);
+                    setImagePreview(URL.createObjectURL(file));
+                  }
+                }}
+              />
+            </SectionCard>
 
-        <motion.div
-          className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-[5px] shadow-2xl p-4 sm:p-6 md:p-10 border border-gray-200/50 dark:border-gray-700/50"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <EventImageUpload 
-          imagePreview={imagePreview || (typeof event?.image === "string" ? event.image : undefined)}
-          handleImageChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) {
-              if (!file.type.startsWith("image/")) {
-                toast("error", "Please upload a valid image file");
-                return;
-              }
-              if (imagePreview) URL.revokeObjectURL(imagePreview);
-              setImageFile(file);
-              setImagePreview(URL.createObjectURL(file));
-            }
-          }}
-        />
-          {event ? (
-            <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8 md:space-y-12">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-10">
-                <EventBasicDetails
-                  formData={formData}
-                  setFormData={setFormData}
-                  notify={toast}
-                />
+            {/* Basic details */}
+            <SectionCard title="Event Details">
+              <EventBasicDetails formData={formData} setFormData={setFormData} notify={toast} />
+            </SectionCard>
 
-                <div className="space-y-6 sm:space-y-8 md:space-y-10">
-                  <VirtualEventSettings
-                    formData={formData}
-                    setFormData={setFormData}
-                  />
-
-                  {!formData?.isVirtual && (
-                    <PhysicalEventDetails 
-                      formData={formData}
-                      setFormData={setFormData}
-                      notify={toast}
-                    />
-                  )}
+            {/* Location / virtual */}
+            <SectionCard title={formData?.isVirtual ? "Virtual Event Settings" : "Location"}>
+              <VirtualEventSettings formData={formData} setFormData={setFormData} />
+              {!formData?.isVirtual && (
+                <div className="mt-5 pt-5 border-t border-gray-100 dark:border-gray-800">
+                  <PhysicalEventDetails formData={formData} setFormData={setFormData} notify={toast} />
                 </div>
-              </div>
+              )}
+            </SectionCard>
 
-              <SocialMediaLinks 
-                formData={formData}
-                setFormData={setFormData}
-              />
+            {/* Social links */}
+            <SectionCard title="Social Links">
+              <SocialMediaLinks formData={formData} setFormData={setFormData} />
+            </SectionCard>
 
-              <TicketTypesSection
-                formData={formData}
-                setFormData={setFormData}
-              />
+            {/* Tickets */}
+            <SectionCard title="Ticket Types">
+              <TicketTypesSection formData={formData} setFormData={setFormData} />
+            </SectionCard>
+          </form>
+        )}
+      </div>
 
-              <FormActions 
-                isLoading={isLoading}
-                onCancel={() => router.push("/dashboard")}
-              />
-            </form>
-          ) : (
-            <PageSkeleton />
-          )}
-        </motion.div>
-      </motion.div>
+      {/* Sticky save bar */}
+      {event && (
+        <div className="fixed bottom-0 left-0 right-0 z-20 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
+          <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+            <p className="text-xs text-gray-400 dark:text-gray-500 hidden sm:block">
+              Changes are only saved when you click Save.
+            </p>
+            <div className="flex items-center gap-3 ml-auto">
+              <button
+                type="button"
+                onClick={() => router.push("/dashboard")}
+                className="px-5 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                form="edit-event-form"
+                disabled={isLoading}
+                className="px-6 py-2.5 rounded-lg bg-[#f54502] hover:bg-[#d63a02] text-white text-sm font-semibold transition disabled:opacity-60 flex items-center gap-2"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Saving…
+                  </>
+                ) : (
+                  'Save Changes'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

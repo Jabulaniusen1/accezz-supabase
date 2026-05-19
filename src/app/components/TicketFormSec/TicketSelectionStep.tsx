@@ -49,12 +49,16 @@ const TicketSelectionStep = ({
         {tickets.map((ticket) => {
           const ticketRemaining = parseInt(ticket.quantity) - parseInt(ticket.sold);
           const isSoldOut = ticketRemaining <= 0;
-          const isSelected = selectedTicket?.id === ticket.id;
+          const ticketIdentity = `${ticket.id}::${ticket.name}::${ticket.price}`;
+          const selectedIdentity = selectedTicket
+            ? `${selectedTicket.id}::${selectedTicket.name}::${selectedTicket.price}`
+            : null;
+          const isSelected = selectedIdentity === ticketIdentity;
           const isFree = parsePriceValue(ticket.price) === 0;
 
           return (
             <button
-              key={ticket.id}
+              key={ticketIdentity}
               type="button"
               disabled={isSoldOut}
               onClick={() => !isSoldOut && handleTicketSelection(ticket)}

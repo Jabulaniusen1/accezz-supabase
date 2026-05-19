@@ -396,54 +396,31 @@ const TicketTypeForm = ({
         return;
       }
 
+      // Include affiliate ref if present so paid conversions can be attributed.
+      // Clicks are tracked on event page load, but commission needs this on order meta.
+      let affiliateCode: string | null = null;
+      try { affiliateCode = localStorage.getItem('affiliateRef'); } catch { /* ignore */ }
+
       const res = await fetch('/api/paystack/initialize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           orderId, amount: totalPrice, email, currency: 'NGN',
           callbackUrl: `${window.location.origin}/success?orderId=${orderId}`,
+          affiliateCode: affiliateCode || undefined,
         }),
       });
 
-      const data = await res.json() as { authorization_url?: string; access_code?: string; reference?: string; error?: string };
+      const data = await res.json() as { authorization_url?: string; reference?: string; error?: string };
       if (!res.ok || !data?.authorization_url) throw new Error(data?.error || 'Failed to initialize payment');
 
-      // Load Paystack script
-      await new Promise<void>((resolve, reject) => {
-        if (window.PaystackPop) { resolve(); return; }
-        const script = document.createElement('script');
-        script.src = 'https://js.paystack.co/v1/inline.js';
-        script.async = true;
-        script.onload  = () => resolve();
-        script.onerror = () => reject(new Error('Failed to load Paystack'));
-        document.head.appendChild(script);
-      });
+      clearTicketPurchaseState();
+      try { localStorage.removeItem('pendingPayment'); } catch { /* ignore */ }
 
-      const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
-      if (!publicKey || !window.PaystackPop) throw new Error('Paystack not configured');
-
-      const handler = window.PaystackPop.setup({
-        key: publicKey,
-        email,
-        amount: Math.round(totalPrice * 100),
-        currency: 'NGN',
-        ref: data.reference || `ORD-${orderId}-${Date.now()}`,
-        callback: (response: { reference: string }) => {
-          // The Paystack webhook is the single source of truth.
-          // It receives charge.success, marks the order paid, creates tickets,
-          // sends confirmation emails, and triggers Inngest reminders.
-          // The client only needs to hand the reference to the success page.
-          clearTicketPurchaseState();
-          try { localStorage.removeItem('pendingPayment'); } catch { /* ignore */ }
-          window.location.href = `/success?orderId=${orderId}&reference=${encodeURIComponent(response.reference)}`;
-        },
-        onClose: () => {
-          setIsLoading(false);
-          setToast({ type: 'error', message: 'Payment cancelled.' });
-        },
-      });
-
-      handler.openIframe();
+      // Redirect to Paystack hosted checkout — simplest and most reliable approach.
+      // Paystack fires a webhook (charge.success) which marks the order paid and
+      // creates tickets server-side. The callback_url brings the user to /success.
+      window.location.href = data.authorization_url;
     } catch (error: unknown) {
       setIsLoading(false);
       setToast({ type: 'error', message: (error instanceof Error ? error.message : 'Error processing payment') });

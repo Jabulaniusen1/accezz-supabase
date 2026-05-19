@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { supabaseAdmin } from '@/utils/processOrder';
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,19 +10,53 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json().catch(() => null);
-    const { email, amount, currency = 'NGN', orderId, callbackUrl } = body || {};
+    const { email, amount, currency = 'NGN', orderId, callbackUrl, affiliateCode } = body || {};
 
     if (!email || !amount || !orderId) {
       return NextResponse.json({ error: 'Missing required fields: email, amount, orderId' }, { status: 400 });
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${req.nextUrl.protocol}//${req.nextUrl.host}`;
-    const callback = callbackUrl || `${baseUrl}/success?orderId=${encodeURIComponent(orderId)}`;
+    // Validate callbackUrl against trusted origins to prevent open redirect
+    const allowedHosts = new Set([
+      new URL(baseUrl).host,
+      req.nextUrl.host,
+    ]);
+    let callback = `${baseUrl}/success?orderId=${encodeURIComponent(orderId)}`;
+    if (callbackUrl) {
+      try {
+        const parsed = new URL(callbackUrl);
+        if (allowedHosts.has(parsed.host)) {
+          callback = callbackUrl;
+        }
+      } catch {
+        // malformed URL — use default
+      }
+    }
 
     const reference = `ORD-${orderId}-${Date.now()}`;
 
+    // Persist affiliateCode into the order meta so processOrder can attribute commission
+    if (affiliateCode && orderId) {
+      try {
+        const { data: currentOrder } = await supabaseAdmin
+          .from('orders')
+          .select('meta')
+          .eq('id', orderId)
+          .single();
+        const existingMeta = (currentOrder?.meta as Record<string, unknown>) || {};
+        await supabaseAdmin
+          .from('orders')
+          .update({ meta: { ...existingMeta, affiliateCode } })
+          .eq('id', orderId);
+      } catch {
+        // Non-critical — don't block payment initialization
+      }
+    }
+
     const initRes = await fetch('https://api.paystack.co/transaction/initialize', {
       method: 'POST',
+      signal: AbortSignal.timeout(10000),
       headers: {
         'Authorization': `Bearer ${secretKey}`,
         'Content-Type': 'application/json'

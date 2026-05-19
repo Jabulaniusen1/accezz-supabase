@@ -4,9 +4,10 @@ import { processSuccessfulPayment } from '@/utils/processOrder';
 
 export async function POST(req: NextRequest) {
   try {
-    // Only use server-side keys — NEVER fall back to a NEXT_PUBLIC_ variable
-    const secret = process.env.PAYSTACK_WEBHOOK_SECRET || process.env.PAYSTACK_SECRET_KEY;
+    // Require a dedicated webhook secret — never fall back to the secret key
+    const secret = process.env.PAYSTACK_WEBHOOK_SECRET;
     if (!secret) {
+      console.error('[webhook] PAYSTACK_WEBHOOK_SECRET is not set — rejecting request');
       return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 });
     }
 

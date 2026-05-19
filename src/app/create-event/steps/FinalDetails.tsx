@@ -27,6 +27,11 @@ export default function FinalDetails({
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
+  // Affiliate settings
+  const [affiliateEnabled, setAffiliateEnabled] = useState(false);
+  const [commissionType, setCommissionType] = useState<'percentage' | 'fixed'>('percentage');
+  const [commissionValue, setCommissionValue] = useState(10);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -181,6 +186,16 @@ export default function FinalDetails({
           }
         }
 
+        // Save affiliate settings if enabled
+        if (affiliateEnabled) {
+          await supabase.from('affiliate_settings').upsert({
+            event_id: created.id,
+            enabled: true,
+            commission_type: commissionType,
+            commission_value: commissionValue,
+          }, { onConflict: 'event_id' });
+        }
+
         clearFormProgress();
 
         setToast({ type: "success", message: "Event created successfully!", onClose: () => setToast(null) });
@@ -289,6 +304,57 @@ export default function FinalDetails({
               />
             </div>
           </div>
+        </div>
+
+        {/* Affiliate Program */}
+        <div className="space-y-3 pt-2">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-800 dark:text-white">Allow affiliates</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                Let others earn commissions by promoting this event
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setAffiliateEnabled(v => !v)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full flex-shrink-0 transition-colors ${
+                affiliateEnabled ? 'bg-[#f54502]' : 'bg-gray-200 dark:bg-gray-600'
+              }`}
+            >
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                affiliateEnabled ? 'translate-x-6' : 'translate-x-1'
+              }`} />
+            </button>
+          </div>
+
+          {affiliateEnabled && (
+            <div className="grid grid-cols-2 gap-3 pl-4 border-l-2 border-[#f54502]/30">
+              <div>
+                <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Commission type</label>
+                <select
+                  value={commissionType}
+                  onChange={e => setCommissionType(e.target.value as 'percentage' | 'fixed')}
+                  className="w-full h-9 px-2 text-sm rounded-[5px] border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f54502]"
+                >
+                  <option value="percentage">Percentage (%)</option>
+                  <option value="fixed">Fixed amount (₦)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
+                  {commissionType === 'percentage' ? 'Commission rate (%)' : 'Commission amount (₦)'}
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  value={commissionValue}
+                  onChange={e => setCommissionValue(Number(e.target.value))}
+                  className="w-full h-9 px-3 text-sm rounded-[5px] border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f54502]"
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Navigation */}

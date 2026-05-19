@@ -41,7 +41,7 @@ const AdminEvents = () => {
       // Fetch all events
       const { data: eventsData, error: eventsError } = await supabase
         .from('events')
-        .select('id, title, slug, start_time, end_time, location, address, city, status, created_at, user_id')
+        .select('id, title, slug, start_time, end_time, venue, address, city, status, created_at, user_id')
         .order('created_at', { ascending: false });
 
       if (eventsError) throw eventsError;
@@ -129,7 +129,7 @@ const AdminEvents = () => {
           title: event.title,
           slug: event.slug || event.id,
           date: event.start_time,
-          location: event.location || event.address || event.city || null,
+          location: event.venue || event.address || event.city || null,
           status: event.status,
           created_at: event.created_at,
           creator_email: emailMap.get(event.user_id as string) || 'N/A',
@@ -326,7 +326,7 @@ const AdminEvents = () => {
                         <FiBarChart2 />
                       </button>
                       <Link
-                        href={`/${event.slug}`}
+                        href={`/${event.slug}/event`}
                         target="_blank"
                         className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                         title="View Event"

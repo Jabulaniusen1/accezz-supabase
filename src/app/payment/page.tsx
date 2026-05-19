@@ -82,15 +82,20 @@ function PaymentContent() {
       }
 
       try {
+        // Pick up affiliate code stored when the user visited via a ref link
+        let affiliateCode: string | null = null;
+        try { affiliateCode = localStorage.getItem('affiliateRef'); } catch {}
+
         const res = await fetch('/api/paystack/initialize', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            orderId, 
-            amount: Number(amount), 
-            email, 
+          body: JSON.stringify({
+            orderId,
+            amount: Number(amount),
+            email,
             currency: 'NGN',
-            callbackUrl: `${window.location.origin}/success?orderId=${orderId}`
+            callbackUrl: `${window.location.origin}/success?orderId=${orderId}`,
+            affiliateCode: affiliateCode || undefined,
           })
         });
 
@@ -151,7 +156,10 @@ function PaymentContent() {
                   const { markOrderAsPaid, createTicketsForOrder } = await import('@/utils/paymentUtils');
                   await markOrderAsPaid(verifyData.orderId, response.reference, 'paystack');
                   await createTicketsForOrder(verifyData.orderId);
-                  
+
+                  // Clear affiliate ref so it doesn't apply to future orders
+                  try { localStorage.removeItem('affiliateRef'); } catch {}
+
                   // Redirect to invoice page
                   router.replace(`/invoice/${verifyData.orderId}`);
                 } else {

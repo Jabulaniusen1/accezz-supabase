@@ -151,11 +151,8 @@ export default function CreateEventPage() {
           throw profileError;
         }
 
-        const hasBankDetails = Boolean(
-          profile?.account_number &&
-          profile?.bank_code &&
-          profile?.bank_name
-        );
+        const hasText = (value: unknown) => typeof value === 'string' && value.trim().length > 0;
+        const hasBankDetails = hasText(profile?.account_number) && (hasText(profile?.bank_code) || hasText(profile?.bank_name));
 
         setShowAccountSetup(!hasBankDetails);
 

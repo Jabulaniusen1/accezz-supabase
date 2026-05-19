@@ -6,7 +6,7 @@ import { supabase } from '@/utils/supabaseClient';
 import { getSession } from '@/utils/supabaseAuth';
 import Toast from '@/components/ui/Toast';
 import AdminUsers from './components/AdminUsers';
-import { FiUsers, FiCalendar, FiTrendingUp, FiLogOut, FiUser, FiX, FiMenu } from 'react-icons/fi';
+import { FiUsers, FiCalendar, FiTrendingUp, FiLogOut, FiUser, FiX, FiMenu, FiDollarSign } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import AdminAnalytics from './components/AdminAnalytics';
@@ -138,7 +138,7 @@ const AdminDashboard = () => {
                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                 }`}
                 style={{ borderRadius: '5px' }}
-                onClick={() => setActiveTab('analytics')}
+                onClick={() => { setActiveTab('analytics'); setIsSidebarOpen(false); }}
               >
                 <FiTrendingUp size={20} />
                 <span className="font-medium">Analytics</span>
@@ -151,7 +151,7 @@ const AdminDashboard = () => {
                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                 }`}
                 style={{ borderRadius: '5px' }}
-                onClick={() => setActiveTab('users')}
+                onClick={() => { setActiveTab('users'); setIsSidebarOpen(false); }}
               >
                 <FiUsers size={20} />
                 <span className="font-medium">Users</span>
@@ -164,7 +164,7 @@ const AdminDashboard = () => {
                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                 }`}
                 style={{ borderRadius: '5px' }}
-                onClick={() => setActiveTab('events')}
+                onClick={() => { setActiveTab('events'); setIsSidebarOpen(false); }}
               >
                 <FiCalendar size={20} />
                 <span className="font-medium">Events</span>
@@ -177,9 +177,10 @@ const AdminDashboard = () => {
                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                 }`}
                 style={{ borderRadius: '5px' }}
-                onClick={() => setActiveTab('withdrawals')}
+                onClick={() => { setActiveTab('withdrawals'); setIsSidebarOpen(false); }}
               >
-                <span className="font-medium">Withdrawal Requests</span>
+                <FiDollarSign size={20} />
+                <span className="font-medium">Withdrawals</span>
               </button>
             </nav>
 
@@ -245,7 +246,7 @@ const AdminDashboard = () => {
           </header>
 
           {/* Welcome Header */}
-          <div className="bg-white sticky top-0 z-40 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+          <div className="bg-white md:sticky md:top-0 md:z-30 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
             <div className="px-6 py-6">
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                 Welcome, Boss! 👋

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import EventList from "../components/EventList";
 import Earnings from "../components/Earning";
 import Withdrawals from "../components/Withdrawals";
@@ -11,58 +11,105 @@ import Profile from "../components/settings/Profile";
 import LocationManager from "../components/LocationManager";
 import LocationBookings from "../components/LocationBookings";
 import CustomerTickets from "../components/CustomerTickets";
+import AffiliateSection from "../components/AffiliateSection";
+import SavedEvents from "../components/SavedEvents";
 import ToggleMode from "../../components/ui/mode/toggleMode";
-import { BiMenuAltLeft, BiX, BiMoneyWithdraw } from "react-icons/bi";
-import { FiLogOut } from "react-icons/fi";
-import { Notyf } from "notyf";
-import "notyf/notyf.min.css";
 import { useRouter, usePathname } from "next/navigation";
 import { getSession, signOut } from "@/utils/supabaseAuth";
 import { supabase } from "@/utils/supabaseClient";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import EventTypeModal from "@/components/Modal/EventType";
 import Link from "next/link";
+import Logo from "@/components/ui/Logo";
+import {
+  BsBell,
+  BsBookmark,
+  BsCalendar2Event,
+  BsGear,
+  BsPerson,
+  BsTicketPerforated,
+} from "react-icons/bs";
+import {
+  BiMenuAltLeft,
+  BiX,
+  BiMoneyWithdraw,
+  BiLogOut,
+} from "react-icons/bi";
 import { GiTakeMyMoney } from "react-icons/gi";
-import { BsBell, BsCalendar2Event, BsGear, BsPerson, BsTicketPerforated } from "react-icons/bs";
 import { MdOutlineLocationCity } from "react-icons/md";
 import { RiCalendarCheckLine } from "react-icons/ri";
-import Logo from "@/components/ui/Logo";
+import { Link2, Plus } from "lucide-react";
 
+// ── Tab IDs ───────────────────────────────────────────────────────────────────
+const TAB = {
+  EVENTS: 0,
+  EARNINGS: 1,
+  NOTIFICATIONS: 2,
+  SETTINGS: 3,
+  PROFILE: 4,
+  WITHDRAWALS: 5,
+  LOCATIONS: 6,
+  BOOKINGS: 7,
+  MY_TICKETS: 8,
+  TICKETS_SOLD: 9,
+  AFFILIATES: 10,
+  SAVED_EVENTS: 11,
+} as const;
+
+type TabId = (typeof TAB)[keyof typeof TAB];
+
+// ── Nav item helper ───────────────────────────────────────────────────────────
+interface NavItemProps {
+  id: TabId;
+  label: string;
+  icon: React.ReactNode;
+  activeTab: TabId;
+  onClick: (id: TabId) => void;
+}
+
+function NavItem({ id, label, icon, activeTab, onClick }: NavItemProps) {
+  const isActive = activeTab === id;
+  return (
+    <button
+      onClick={() => onClick(id)}
+      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+        isActive
+          ? "bg-[#f54502]/10 text-[#f54502]"
+          : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
+      }`}
+    >
+      <span className={`flex-shrink-0 ${isActive ? "text-[#f54502]" : ""}`}>
+        {icon}
+      </span>
+      {label}
+    </button>
+  );
+}
+
+// ── Section label ─────────────────────────────────────────────────────────────
+function NavSection({ label }: { label: string }) {
+  return (
+    <p className="px-3 pt-4 pb-1 text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+      {label}
+    </p>
+  );
+}
+
+// ── Dashboard ─────────────────────────────────────────────────────────────────
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState(0);
-  const [showEventTypeModal, setShowEventTypeModal] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabId>(TAB.MY_TICKETS);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const notyfRef = useRef<Notyf | null>(null);
-  const [showSessionModal, setShowSessionModal] = useState(false);
+  const [showEventTypeModal, setShowEventTypeModal] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isAddEventLoading, setIsAddEventLoading] = useState(false);
-  const [userType, setUserType] = useState<"creator" | "customer" | null>(null);
-  const [currentMode, setCurrentMode] = useState<"creator" | "customer">("customer");
+  const [userType, setUserType] = useState<"creator" | "customer">("customer");
+  const [userName, setUserName] = useState<string>("");
   const router = useRouter();
   const pathname = usePathname();
   const isMounted = useRef(true);
 
-  // Initialize Notyf and check auth
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    notyfRef.current = new Notyf({
-      duration: 3000,
-      position: { x: "right", y: "top" },
-      types: [
-        {
-          type: "success",
-          background: "#4CAF50",
-          dismissible: true
-        },
-        {
-          type: "error",
-          background: "#F44336",
-          dismissible: true
-        }
-      ]
-    });
-
     const checkAuth = async () => {
       try {
         const session = await getSession();
@@ -71,388 +118,245 @@ const Dashboard = () => {
           return;
         }
 
-        // Fetch user profile to get user_type
-        const { data: profile, error: profileError } = await supabase
+        const { data: profile } = await supabase
           .from("profiles")
-          .select("user_type")
+          .select("user_type, full_name")
           .eq("user_id", session.user.id)
           .single();
 
-        if (profileError) {
-          console.error("Error fetching profile:", profileError);
-        }
-
         const type = (profile?.user_type as "creator" | "customer") || "customer";
         setUserType(type);
-        
-        // Set initial mode based on user type
-        // Customers see customer view by default, creators see creator view
-        setCurrentMode(type === "creator" ? "creator" : "customer");
-        
-        // For customers, set active tab to tickets (tab 8)
-        if (type === "customer") {
-          setActiveTab(8);
-        }
+        setUserName(
+          profile?.full_name ||
+            session.user.user_metadata?.full_name ||
+            session.user.email?.split("@")[0] ||
+            "User"
+        );
 
-        const welcomeShown = localStorage.getItem("welcomeShown");
-        const displayName = session.user.user_metadata?.full_name || session.user.email;
-        if (displayName && welcomeShown !== "true") {
-          notyfRef.current?.success(`Welcome back, ${displayName}!`);
-          localStorage.setItem("welcomeShown", "true");
-        }
+        // Default tab: creators see Events, customers see My Tickets
+        setActiveTab(type === "creator" ? TAB.EVENTS : TAB.MY_TICKETS);
         setIsLoading(false);
-      } catch (error) {
-        console.error("Auth check failed:", error);
+      } catch {
         router.push("/auth/login");
       }
     };
 
     checkAuth();
-
     return () => {
       isMounted.current = false;
     };
   }, [router]);
 
-
-  // (removed unused window width tracking)
-
-  const handleAddEvent = () => {
-    setShowEventTypeModal(true);
-  };
-  
-  const handleEventType = () => {
-    setShowEventTypeModal(false);
-    setIsAddEventLoading(true);
-    router.push('/create-event');
+  const navigate = (id: TabId) => {
+    setActiveTab(id);
+    setSidebarOpen(false); // always close sidebar on mobile
   };
 
-  const handleLogout = () => {
-    setShowSessionModal(true);
-  };
-
-  const confirmLogout = async () => {
+  const handleLogout = async () => {
     try {
       setIsLoading(true);
       localStorage.setItem("lastVisitedPath", pathname);
       localStorage.removeItem("welcomeShown");
       await signOut();
-      setShowSessionModal(false);
-      setTimeout(() => router.push("/auth/login"), 500);
-    } catch (error) {
-      console.error("Logout error:", error);
+      setShowLogoutModal(false);
+      setTimeout(() => router.push("/auth/login"), 400);
+    } catch {
+      setIsLoading(false);
     }
   };
 
-  // const navItems = [
-  //   { 
-  //     id: 0, 
-  //     icon: <BiCalendar size={22} className="text-blue-500" />, 
-  //     label: "Events" 
-  //   },
-  //   { 
-  //     id: 1, 
-  //     icon: <span className="text-blue-500 text-[20px]">₦</span>, 
-  //     label: "Earnings" 
-  //   },
-  //   { 
-  //     id: 2, 
-  //     icon: <FiBell size={20} className="text-blue-500" />, 
-  //     label: "Notifications" 
-  //   },
-  //   { 
-  //     id: 3, 
-  //     icon: <FiSettings size={20} className="text-blue-500" />, 
-  //     label: "Settings" 
-  //   }
-  // ];
+  const isCreator = userType === "creator";
 
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-
-      <EventTypeModal 
-        isOpen={showEventTypeModal}
-        onClose={() => setShowEventTypeModal(false)}
-        onSelectType={handleEventType}
-      />
-
-      {/* ========================= && •HEADER• && =================== */}
-      <header className="sticky top-0 z-40 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
-        <div className="flex items-center justify-between px-4 py-0">
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="md:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          >
-            {isSidebarOpen ? <BiX size={24} /> : <BiMenuAltLeft size={24} />}
-          </button>
-
-          {/* Logo */}
-          <Link
-            href="/"
-            className="flex items-center justify-center space-x-3 group"
-          >
-            <div className="relative">
-              <Logo
-                variant="default"
-                width={80}
-                height={80}
-                className="object-contain group-hover:scale-105 w-24 h-24 transition-transform duration-200"
-                priority
-              />
-            </div>
-          </Link>
-
-          {/* Theme Toggle */}
-          <ToggleMode />
-        </div>
-      </header>
-
-      <div className="flex">
-        {/* ========================= && •SIDEBAR• && =================== */}
-        <aside
-          className={`fixed inset-y-0 left-0 z-30 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform transition-transform duration-300 ease-in-out ${
-            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } md:translate-x-0`}
+  const sidebar = (
+    <aside
+      className={`fixed inset-y-0 left-0 z-40 flex flex-col w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-transform duration-300 ease-in-out ${
+        sidebarOpen ? "translate-x-0" : "-translate-x-full"
+      } md:translate-x-0`}
+    >
+      {/* Logo */}
+      <div className="flex items-center justify-between h-16 px-4 border-b border-gray-100 dark:border-gray-800">
+        <Link href="/" className="flex items-center">
+          <Logo variant="default" width={80} height={80} className="w-20 h-20 object-contain" priority />
+        </Link>
+        <button
+          className="md:hidden p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+          onClick={() => setSidebarOpen(false)}
         >
-          <div className="flex flex-col h-full pt-20">
-            {/* Mode Switcher removed: creators remain in creator mode; customers see their tickets */}
-
-            {/* Navigation */}
-            <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-              {/* Customer View - My Tickets */}
-              {(currentMode === "customer" || userType === "customer") && (
-                <button
-                  className={`w-full flex items-center space-x-3 px-4 py-3 transition-all duration-200 ${
-                    activeTab === 8
-                      ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
-                      : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  }`}
-                  style={{ borderRadius: '5px' }}
-                  onClick={() => setActiveTab(8)}
-                >
-                  <BsTicketPerforated size={20} />
-                  <span className="font-medium">My Tickets</span>
-                </button>
-              )}
-
-              {/* Creator View - Only show when in creator mode */}
-              {currentMode === "creator" && (
-                <>
-                  <button
-                    className={`w-full flex items-center space-x-3 px-4 py-3 transition-all duration-200 ${
-                      activeTab === 0
-                        ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
-                        : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    }`}
-                    style={{ borderRadius: '5px' }}
-                    onClick={() => setActiveTab(0)}
-                  >
-                    <BsCalendar2Event size={20} />
-                    <span className="font-medium">Events</span>
-                  </button>
-
-                  <button
-                    className={`w-full flex items-center space-x-3 px-4 py-3 transition-all duration-200 ${
-                      activeTab === 9
-                        ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
-                        : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    }`}
-                    style={{ borderRadius: '5px' }}
-                    onClick={() => setActiveTab(9)}
-                  >
-                    <BsTicketPerforated size={20} />
-                    <span className="font-medium">Tickets</span>
-                  </button>
-
-                  <button
-                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                      activeTab === 6
-                        ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
-                        : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    }`}
-                    style={{ borderRadius: '5px' }}
-                    onClick={() => setActiveTab(6)}
-                  >
-                    <MdOutlineLocationCity size={20} />
-                    <span className="font-medium">Locations</span>
-                  </button>
-
-                  <button
-                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                      activeTab === 7
-                        ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
-                        : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    }`}
-                    style={{ borderRadius: '5px' }}
-                    onClick={() => setActiveTab(7)}
-                  >
-                    <RiCalendarCheckLine size={20} />
-                    <span className="font-medium">Bookings</span>
-                  </button>
-
-                  <button
-                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                      activeTab === 1
-                        ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
-                        : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    }`}
-                    style={{ borderRadius: '5px' }}
-                    onClick={() => setActiveTab(1)}
-                  >
-                    <GiTakeMyMoney size={20} />
-                    <span className="font-medium">Earnings</span>
-                  </button>
-
-                  <button
-                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                      activeTab === 5
-                        ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
-                        : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    }`}
-                    style={{ borderRadius: '5px' }}
-                    onClick={() => setActiveTab(5)}
-                  >
-                    <BiMoneyWithdraw size={20} />
-                    <span className="font-medium">Withdrawals</span>
-                  </button>
-                </>
-              )}
-
-          <button
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-              activeTab === 2
-                    ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
-                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-            }`}
-            style={{ borderRadius: '5px' }}
-            onClick={() => setActiveTab(2)}
-          >
-                <BsBell size={20} />
-                <span className="font-medium">Notifications</span>
-          </button>
-
-          <button
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-              activeTab === 3
-                    ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
-                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-            }`}
-            style={{ borderRadius: '5px' }}
-            onClick={() => setActiveTab(3)}
-          >
-                <BsGear size={20} />
-                <span className="font-medium">Settings</span>
-              </button>
-            </nav>
-
-            {/* Profile Button */}
-            <div className="px-4 pb-4">
-              <button
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                  activeTab === 4
-                    ? "bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm"
-                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                }`}
-                style={{ borderRadius: '5px' }}
-                onClick={() => setActiveTab(4)}
-              >
-                <BsPerson size={20} />
-                <span className="font-medium">Profile</span>
-          </button>
-            </div>
-
-            {/* Logout Button */}
-            <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-          <button
-                className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200"
-                style={{ borderRadius: '5px' }}
-            onClick={handleLogout}
-          >
-                <FiLogOut size={20} />
-                <span className="font-medium">Logout</span>
-          </button>
-            </div>
-          </div>
-      </aside>
-
-      {/* ========================= && •MAIN CONTENT• && =================== */}
-        <main className="flex-1 md:ml-64">
-          {/* Mobile Overlay */}
-          {isSidebarOpen && (
-            <div
-              className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden"
-              onClick={() => setIsSidebarOpen(false)}
-            />
-          )}
-
-          {/* Content Area */}
-          <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-            {isLoading ? (
-              <div className="flex h-full min-h-[60vh] items-center justify-center">
-                <div className="h-12 w-12 animate-spin rounded-full border-4 border-[#f54502]/30 border-t-[#f54502]" />
-              </div>
-            ) : (
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeTab}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
-                  className="p-6"
-                >
-                  {activeTab === 0 && currentMode === "creator" && <EventList />}
-                  {activeTab === 1 && currentMode === "creator" && <Earnings />}
-                  {activeTab === 5 && currentMode === "creator" && <Withdrawals />}
-                  {activeTab === 6 && currentMode === "creator" && <LocationManager />}
-                  {activeTab === 7 && currentMode === "creator" && <LocationBookings />}
-                  {activeTab === 9 && currentMode === "creator" && <CustomerTickets />}
-                  {activeTab === 2 && <Notifications />}
-                  {activeTab === 3 && <Setting />}
-                  {activeTab === 4 && <Profile />}
-                  {activeTab === 8 && <CustomerTickets />}
-                </motion.div>
-              </AnimatePresence>
-            )}
-          </div>
-
-        {/* Add Event Button - Only show in creator mode */}
-        {currentMode === "creator" && (
-          <button
-            onClick={handleAddEvent}
-            disabled={isAddEventLoading}
-            className="fixed bottom-6 right-6 px-6 py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 flex items-center space-x-2 transform hover:scale-105"
-          >
-            {isAddEventLoading ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>Loading...</span>
-              </>
-            ) : (
-              <>
-                <span className="text-lg">+</span>
-                <span>Add Event</span>
-              </>
-            )}
-          </button>
-        )}
-      </main>
+          <BiX size={20} />
+        </button>
       </div>
 
-      {/* Session Expiration Modal */}
+      {/* User info */}
+      <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-full bg-[#f54502]/10 flex items-center justify-center flex-shrink-0">
+            <BsPerson size={18} className="text-[#f54502]" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{userName}</p>
+            <p className="text-[11px] text-gray-400 capitalize">{userType}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Nav */}
+      <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-0.5">
+        {/* Customer section — always visible */}
+        <NavSection label="My Account" />
+        <NavItem id={TAB.MY_TICKETS} label="My Tickets" icon={<BsTicketPerforated size={17} />} activeTab={activeTab} onClick={navigate} />
+        <NavItem id={TAB.SAVED_EVENTS} label="Saved Events" icon={<BsBookmark size={17} />} activeTab={activeTab} onClick={navigate} />
+        {!isCreator && (
+          <NavItem id={TAB.AFFILIATES} label="Affiliates" icon={<Link2 size={17} />} activeTab={activeTab} onClick={navigate} />
+        )}
+        <NavItem id={TAB.WITHDRAWALS} label="Withdrawals" icon={<BiMoneyWithdraw size={17} />} activeTab={activeTab} onClick={navigate} />
+        <NavItem id={TAB.NOTIFICATIONS} label="Notifications" icon={<BsBell size={17} />} activeTab={activeTab} onClick={navigate} />
+
+        {/* Creator section */}
+        {isCreator && (
+          <>
+            <NavSection label="Creator" />
+            <NavItem id={TAB.EVENTS} label="Events" icon={<BsCalendar2Event size={17} />} activeTab={activeTab} onClick={navigate} />
+            <NavItem id={TAB.TICKETS_SOLD} label="Tickets Sold" icon={<BsTicketPerforated size={17} />} activeTab={activeTab} onClick={navigate} />
+            <NavItem id={TAB.EARNINGS} label="Earnings" icon={<GiTakeMyMoney size={17} />} activeTab={activeTab} onClick={navigate} />
+            <NavItem id={TAB.LOCATIONS} label="Locations" icon={<MdOutlineLocationCity size={17} />} activeTab={activeTab} onClick={navigate} />
+            <NavItem id={TAB.BOOKINGS} label="Bookings" icon={<RiCalendarCheckLine size={17} />} activeTab={activeTab} onClick={navigate} />
+          </>
+        )}
+
+        {/* Account */}
+        <NavSection label="Account" />
+        <NavItem id={TAB.PROFILE} label="Profile" icon={<BsPerson size={17} />} activeTab={activeTab} onClick={navigate} />
+        <NavItem id={TAB.SETTINGS} label="Settings" icon={<BsGear size={17} />} activeTab={activeTab} onClick={navigate} />
+      </nav>
+
+      {/* Logout */}
+      <div className="px-3 py-3 border-t border-gray-100 dark:border-gray-800">
+        <button
+          onClick={() => setShowLogoutModal(true)}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+        >
+          <BiLogOut size={17} />
+          Logout
+        </button>
+      </div>
+    </aside>
+  );
+
+  const tabTitle: Record<TabId, string> = {
+    [TAB.EVENTS]: "Events",
+    [TAB.EARNINGS]: "Earnings",
+    [TAB.NOTIFICATIONS]: "Notifications",
+    [TAB.SETTINGS]: "Settings",
+    [TAB.PROFILE]: "Profile",
+    [TAB.WITHDRAWALS]: "Withdrawals",
+    [TAB.LOCATIONS]: "Locations",
+    [TAB.BOOKINGS]: "Bookings",
+    [TAB.MY_TICKETS]: "My Tickets",
+    [TAB.TICKETS_SOLD]: "Tickets Sold",
+    [TAB.AFFILIATES]: "Affiliates",
+    [TAB.SAVED_EVENTS]: "Saved Events",
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors">
+      <EventTypeModal
+        isOpen={showEventTypeModal}
+        onClose={() => setShowEventTypeModal(false)}
+        onSelectType={() => {
+          setShowEventTypeModal(false);
+          setIsAddEventLoading(true);
+          router.push("/create-event");
+        }}
+      />
+
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {sidebar}
+
+      {/* Right side */}
+      <div className="md:pl-64 flex flex-col min-h-screen">
+        {/* Top bar */}
+        <header className="sticky top-0 z-20 flex items-center justify-between h-16 px-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
+          <div className="flex items-center gap-3">
+            <button
+              className="md:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+            >
+              <BiMenuAltLeft size={22} />
+            </button>
+            <h1 className="text-base font-semibold text-gray-900 dark:text-white">
+              {tabTitle[activeTab]}
+            </h1>
+          </div>
+          <ToggleMode />
+        </header>
+
+        {/* Content */}
+        <main className="flex-1 p-4 md:p-6">
+          {isLoading ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="h-10 w-10 rounded-full border-4 border-[#f54502]/20 border-t-[#f54502] animate-spin" />
+            </div>
+          ) : (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.2 }}
+              >
+                {activeTab === TAB.EVENTS && isCreator && <EventList />}
+                {activeTab === TAB.EARNINGS && isCreator && <Earnings />}
+                {activeTab === TAB.WITHDRAWALS && <Withdrawals />}
+                {activeTab === TAB.LOCATIONS && isCreator && <LocationManager />}
+                {activeTab === TAB.BOOKINGS && isCreator && <LocationBookings />}
+                {activeTab === TAB.TICKETS_SOLD && isCreator && <CustomerTickets />}
+                {activeTab === TAB.MY_TICKETS && <CustomerTickets />}
+                {activeTab === TAB.NOTIFICATIONS && <Notifications />}
+                {activeTab === TAB.SETTINGS && <Setting />}
+                {activeTab === TAB.PROFILE && <Profile />}
+                {activeTab === TAB.AFFILIATES && !isCreator && <AffiliateSection />}
+                {activeTab === TAB.SAVED_EVENTS && <SavedEvents />}
+              </motion.div>
+            </AnimatePresence>
+          )}
+        </main>
+      </div>
+
+      {/* Floating Create Event button — creators only */}
+      {isCreator && !isLoading && (
+        <button
+          onClick={() => setShowEventTypeModal(true)}
+          disabled={isAddEventLoading}
+          className="fixed bottom-6 right-6 flex items-center gap-2 px-5 py-3 bg-[#f54502] hover:bg-[#d63a02] text-white text-sm font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          {isAddEventLoading ? (
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <Plus size={18} />
+          )}
+          Create Event
+        </button>
+      )}
+
       <ConfirmationModal
-        isOpen={showSessionModal}
-        onClose={() => setShowSessionModal(false)}
-        onConfirm={confirmLogout}
-        itemName="Logout" 
-        message="Are you sure you want to log out of your account?"
-        confirmText="Logout" 
-        confirmButtonClass="bg-red-500 hover:bg-red-600" 
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={handleLogout}
+        itemName="Logout"
+        message="Are you sure you want to log out?"
+        confirmText="Logout"
+        confirmButtonClass="bg-red-500 hover:bg-red-600"
       />
     </div>
   );
 };
 
 export default Dashboard;
-

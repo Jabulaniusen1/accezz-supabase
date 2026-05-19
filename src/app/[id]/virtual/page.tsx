@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import Header from '@/app/components/layout/Header';
@@ -27,6 +27,7 @@ export default function VirtualEventPage() {
   const [error, setError] = useState(false);
   const [toast, setToast] = useState<ToastState>(null);
   const [showTicketForm, setShowTicketForm] = useState(false);
+  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
 
   const ticketsSectionRef = useRef<HTMLDivElement>(null);
   const toastTimeoutRef = useRef<number | null>(null);
@@ -47,6 +48,19 @@ export default function VirtualEventPage() {
       }, 3000);
     }
   }, []);
+
+  const selectedTicketOption = useMemo(() => {
+    if (!selectedTicket) return undefined;
+
+    return {
+      id: selectedTicket.id,
+      name: selectedTicket.name,
+      price: selectedTicket.price,
+      quantity: selectedTicket.quantity,
+      sold: selectedTicket.sold,
+      details: selectedTicket.details || '',
+    };
+  }, [selectedTicket]);
 
   useEffect(() => {
     let isMounted = true;
@@ -129,12 +143,13 @@ export default function VirtualEventPage() {
   }, []);
 
   const handleGetTicket = useCallback((ticket: Ticket) => {
-    void ticket;
+    setSelectedTicket(ticket);
     setShowTicketForm(true);
   }, []);
 
   const closeTicketForm = useCallback(() => {
     setShowTicketForm(false);
+    setSelectedTicket(null);
   }, []);
 
   if (loading) {
@@ -221,7 +236,7 @@ export default function VirtualEventPage() {
         <TicketTypeForm
           closeForm={closeTicketForm}
           tickets={event.ticketType.map((ticket) => ({
-            id: event.id || '',
+            id: ticket.id,
             name: ticket.name,
             price: ticket.price,
             quantity: ticket.quantity,
@@ -231,6 +246,7 @@ export default function VirtualEventPage() {
           eventSlug={eventSlug as string}
           setToast={showToast}
           isOpen={showTicketForm}
+          initialTicket={selectedTicketOption}
         />
       )}
 

@@ -54,9 +54,14 @@ const FALLBACK_CATEGORIES: CategoryRecord[] = [
 
 const PAGE_SIZE = 8;
 
+const isEventEnded = (event: { endTime?: string | null; startTime?: string; date?: string }): boolean => {
+  const cutoff = event.endTime || event.startTime || event.date;
+  if (!cutoff) return false;
+  return new Date(cutoff) < new Date();
+};
+
 const EventsExplorerPage = () => {
-  const [showPastEvents, setShowPastEvents] = useState(false);
-  const { data: events = [], isLoading } = useAllEvents(showPastEvents);
+  const { data: events = [], isLoading } = useAllEvents(true);
   const [categories, setCategories] = useState<CategoryRecord[]>([{ id: "all", name: "All Events", slug: "all" }]);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -154,9 +159,19 @@ const EventsExplorerPage = () => {
     });
   }, [events, selectedCategory, searchTerm, selectedLocation, formatFilter]);
 
-  const totalMatches = filteredEvents.length;
+  // Upcoming events first (nearest first), ended events at the tail (most recent past first)
+  const sortedEvents = [...filteredEvents].sort((a, b) => {
+    const aEnded = isEventEnded(a);
+    const bEnded = isEventEnded(b);
+    if (aEnded !== bEnded) return aEnded ? 1 : -1;
+    const aMs = new Date(a.startTime || a.date || 0).getTime();
+    const bMs = new Date(b.startTime || b.date || 0).getTime();
+    return aEnded ? bMs - aMs : aMs - bMs;
+  });
+
+  const totalMatches = sortedEvents.length;
   const totalPages = Math.ceil(totalMatches / PAGE_SIZE) || 1;
-  const paginatedEvents = filteredEvents.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const paginatedEvents = sortedEvents.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   const scrollCategories = (direction: "left" | "right") => {
     const container = categoryScrollRef.current;
@@ -304,25 +319,11 @@ const EventsExplorerPage = () => {
           </section>
 
           <section className="mt-14">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h3 className="text-xl font-semibold text-gray-900 sm:text-2xl">
-                  {showPastEvents ? "All events" : "Upcoming events"}
-                </h3>
-                <p className="text-sm text-gray-500 sm:text-base">
-                  {isLoading ? "Loading events..." : `${totalMatches} event${totalMatches === 1 ? "" : "s"} found`}
-                </p>
-              </div>
-              <button
-                onClick={() => setShowPastEvents(!showPastEvents)}
-                className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
-                  showPastEvents
-                    ? "border-[#f54502] bg-[#fff0e7] text-[#f54502]"
-                    : "border-gray-200 text-gray-600 hover:border-[#f54502] hover:text-[#f54502]"
-                }`}
-              >
-                {showPastEvents ? "Hide Past Events" : "Show Past Events"}
-              </button>
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900 sm:text-2xl">All events</h3>
+              <p className="text-sm text-gray-500 sm:text-base">
+                {isLoading ? "Loading events..." : `${totalMatches} event${totalMatches === 1 ? "" : "s"} found`}
+              </p>
             </div>
 
             {isLoading ? (
@@ -342,6 +343,7 @@ const EventsExplorerPage = () => {
             ) : (
               <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-2">
                 {paginatedEvents.map((event) => {
+                  const ended = isEventEnded(event);
                   const parsedPrices =
                     (event.ticketType || [])
                       .map((ticket) => parseFloat(ticket.price ?? ""))
@@ -359,7 +361,11 @@ const EventsExplorerPage = () => {
                     <div
                       key={event.id}
                       onClick={() => handleViewDetails(event.slug)}
-                      className="flex cursor-pointer gap-3 rounded-[24px] border border-gray-200 bg-white p-4 transition-all duration-200 hover:border-[#f54502]/50 hover:shadow-lg sm:flex-row sm:items-center sm:gap-4 sm:p-6"
+                      className={`flex cursor-pointer gap-3 rounded-[24px] border bg-white p-4 transition-all duration-200 sm:flex-row sm:items-center sm:gap-4 sm:p-6 ${
+                        ended
+                          ? "border-gray-200 opacity-75"
+                          : "border-gray-200 hover:border-[#f54502]/50 hover:shadow-lg"
+                      }`}
                     >
                       <div className="relative overflow-hidden rounded-2xl lg:h-40 lg:w-40 h-32 w-32 sm:flex-shrink-0">
                         <Image
@@ -367,13 +373,20 @@ const EventsExplorerPage = () => {
                           alt={event.title}
                           width={160}
                           height={160}
-                          className="h-full w-full object-cover"
+                          className={`h-full w-full object-cover${ended ? " grayscale-[25%]" : ""}`}
                         />
                       </div>
 
                       <div className="flex min-w-0 flex-1 flex-col justify-between gap-3">
                         <div>
-                          <h3 className="truncate text-lg font-semibold text-gray-900 sm:text-xl">{event.title}</h3>
+                          <div className="flex items-start gap-2">
+                            <h3 className="truncate text-lg font-semibold text-gray-900 sm:text-xl flex-1">{event.title}</h3>
+                            {ended && (
+                              <span className="flex-shrink-0 text-[10px] font-medium text-gray-400 border border-gray-200 px-2 py-0.5 rounded-full whitespace-nowrap mt-1">
+                                Event has ended
+                              </span>
+                            )}
+                          </div>
 
                           <div className="mt-3 space-y-2 text-sm text-gray-600 sm:space-y-3">
                             <div className="flex items-center gap-2">

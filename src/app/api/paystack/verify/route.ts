@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { processSuccessfulPayment } from '@/utils/processOrder';
 
 export async function GET(req: NextRequest) {
@@ -26,16 +26,19 @@ export async function GET(req: NextRequest) {
     const orderId: string | undefined = data.data?.metadata?.orderId;
     const amount: number | undefined = typeof data.data.amount === 'number' ? data.data.amount / 100 : undefined;
 
-    // When Paystack confirms success, process the order synchronously before returning.
-    // Fire-and-forget does NOT work on Vercel — the serverless function is frozen
-    // the moment a response is sent, killing any background async work.
+    // Schedule order processing to run after the response is sent.
+    // next/server `after()` keeps the function alive post-response on Vercel,
+    // so ticket creation, QR generation, and emails don't block the client.
+    // The function is fully idempotent, so a concurrent webhook call is safe.
     if (status === 'success' && orderId) {
-      try {
-        await processSuccessfulPayment(orderId, reference);
-      } catch (err) {
-        console.error('[verify] processSuccessfulPayment error:', err);
-        // Don't block the response — tickets may already exist (idempotent)
-      }
+      const capturedOrderId = orderId;
+      after(async () => {
+        try {
+          await processSuccessfulPayment(capturedOrderId, reference);
+        } catch (err) {
+          console.error('[verify] processSuccessfulPayment error:', err);
+        }
+      });
     }
 
     return NextResponse.json({

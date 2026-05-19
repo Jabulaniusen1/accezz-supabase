@@ -82,12 +82,20 @@ const AdminAnalytics = () => {
 
         if (ordersError) throw ordersError;
 
-        // Fetch all ticket types for ticket count
+        // Fetch all ticket types for total ticket count
         const { data: ticketTypes, error: ticketError } = await supabase
           .from('ticket_types')
           .select('event_id, sold');
 
         if (ticketError) throw ticketError;
+
+        // Fetch individual tickets for accurate daily chart
+        const { data: allTickets, error: allTicketsError } = await supabase
+          .from('tickets')
+          .select('created_at')
+          .order('created_at', { ascending: true });
+
+        if (allTicketsError) throw allTicketsError;
 
         // Fetch all users with created_at
         const { data: profiles, error: profilesError } = await supabase
@@ -237,30 +245,19 @@ const AdminAnalytics = () => {
           count: dailyEventsMap.get(date) || 0,
         }));
 
-        // Calculate daily tickets (from ticket types - approximate using order dates)
+        // Calculate daily tickets from actual tickets table
         const dailyTicketsMap = new Map<string, number>();
         last30Days.forEach(date => dailyTicketsMap.set(date, 0));
-        
-        // Group tickets by order date
-        const ticketsByDate = new Map<string, number>();
-        (orders || []).forEach(order => {
-          const orderDate = new Date(order.created_at as string).toISOString().split('T')[0];
-          // Estimate tickets from orders (you might want to join with actual tickets table)
-          const orderTickets = ticketTypes?.filter(tt => {
-            const event = events?.find(e => e.id === order.event_id);
-            return event && tt.event_id === event.id;
-          }).reduce((sum, tt) => sum + Number(tt.sold || 0), 0) || 0;
-          
-          if (ticketsByDate.has(orderDate)) {
-            ticketsByDate.set(orderDate, (ticketsByDate.get(orderDate) || 0) + orderTickets);
-          } else {
-            ticketsByDate.set(orderDate, orderTickets);
+        (allTickets || []).forEach(ticket => {
+          const ticketDate = new Date(ticket.created_at as string).toISOString().split('T')[0];
+          if (dailyTicketsMap.has(ticketDate)) {
+            dailyTicketsMap.set(ticketDate, (dailyTicketsMap.get(ticketDate) || 0) + 1);
           }
         });
 
         const dailyTickets = last30Days.map(date => ({
           date,
-          count: ticketsByDate.get(date) || 0,
+          count: dailyTicketsMap.get(date) || 0,
         }));
 
         // Calculate monthly revenue (last 12 months)

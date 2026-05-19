@@ -1,13 +1,15 @@
 'use client';
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { Megaphone, Zap } from 'lucide-react';
 import { type Event, type Ticket } from '@/types/event';
 import Toast from '../../../components/ui/Toast';
 import Header from '@/app/components/layout/Header';
 import Footer from '@/app/components/layout/Footer';
 import { fetchEventBySlug } from '@/utils/eventUtils';
 import { getTicketPurchaseState } from '@/utils/localStorage';
+import { supabase } from '@/utils/supabaseClient';
 import { EventPageSkeleton } from './components/EventPageSkeleton';
 
 const EventHeroSection = React.lazy(() => import('./components/EventHeroSection').then(module => ({ default: module.EventHeroSection })));
@@ -19,6 +21,59 @@ type ToastType = {
   type: 'error' | 'success';
   message: string;
 } | null;
+
+// ── Promotion Banner ───────────────────────────────────────────────────────
+
+interface AffiliateSettings {
+  commission_type: string;
+  commission_value: number;
+}
+
+function PromotionBanner({ eventId }: { eventId: string }) {
+  const [settings, setSettings] = useState<AffiliateSettings | null>(null);
+
+  useEffect(() => {
+    supabase
+      .from('affiliate_settings')
+      .select('commission_type, commission_value')
+      .eq('event_id', eventId)
+      .eq('enabled', true)
+      .single()
+      .then(({ data }) => { if (data) setSettings(data as AffiliateSettings); });
+  }, [eventId]);
+
+  if (!settings) return null;
+
+  const commission =
+    settings.commission_type === 'percentage'
+      ? `${settings.commission_value}%`
+      : `₦${settings.commission_value.toLocaleString()}`;
+
+  return (
+    <div className="mx-auto lg:px-32 px-4 sm:px-6 py-4">
+      <div className="flex items-center gap-4 bg-gradient-to-r from-[#fff5f2] to-[#fff9f7] dark:from-[#2a1208] dark:to-[#1f0d05] border border-[#f54502]/20 rounded-xl px-5 py-4">
+        <div className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-xl bg-[#f54502]/10">
+          <Megaphone className="w-5 h-5 text-[#f54502]" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-gray-900 dark:text-white">
+            Earn {commission} promoting this event
+          </p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            Share your unique link — get paid for every ticket sold through it
+          </p>
+        </div>
+        <Link
+          href="/dashboard"
+          className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 bg-[#f54502] hover:bg-[#d63a02] text-white text-xs font-semibold rounded-lg transition"
+        >
+          <Zap className="w-3.5 h-3.5" />
+          Get link
+        </Link>
+      </div>
+    </div>
+  );
+}
 
 const EventDetail = () => {
   // State management
@@ -45,7 +100,23 @@ const EventDetail = () => {
   // Refs and routing
   const ticketsSectionRef = useRef<HTMLDivElement>(null);
   const params = useParams();
+  const searchParams = useSearchParams();
   const eventSlug = params?.id;
+
+  // Capture affiliate ref param and track the click
+  useEffect(() => {
+    const ref = searchParams?.get('ref');
+    if (!ref) return;
+    try {
+      localStorage.setItem('affiliateRef', ref);
+    } catch {}
+    // Fire-and-forget click tracking
+    fetch('/api/affiliates/track-click', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ affiliateCode: ref }),
+    }).catch(() => {});
+  }, [searchParams]);
 
   // Memoized handlers
   const handleGetTicket = useCallback((ticket: Ticket) => {
@@ -190,12 +261,14 @@ const EventDetail = () => {
           <EventHeroSection event={event} scrollToTickets={scrollToTickets} />
           
           <div ref={ticketsSectionRef}>
-            <EventTicketsSection 
-              event={event} 
-              handleGetTicket={handleGetTicket} 
+            <EventTicketsSection
+              event={event}
+              handleGetTicket={handleGetTicket}
             />
           </div>
-          
+
+          {event.id && <PromotionBanner eventId={event.id} />}
+
         </React.Suspense>
 
         <React.Suspense fallback={<div>Loading related events...</div>}>

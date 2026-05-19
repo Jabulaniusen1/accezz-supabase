@@ -3,7 +3,7 @@ import { Suspense, lazy } from "react";
 import Hero from "./components/home/Hero";
 // import { BASE_URL } from "../../config";
 // import axios from "axios";
-import ServerDown from "./503/page";
+import ServerDown from "./components/home/ServerDown";
 import { useServerStatus } from "@/hooks/useEvents";
 import { CardSkeleton } from "@/components/ui/Skeleton";
 // import PartnerCarousel from "@/components/ui/PartnerCarousel";

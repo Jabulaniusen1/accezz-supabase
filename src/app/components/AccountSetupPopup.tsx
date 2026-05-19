@@ -21,7 +21,13 @@ type Bank = {
   name: string;
 };
 
-const AccountSetupPopup = ({ onClose }: { onClose: () => void }) => {
+const AccountSetupPopup = ({
+  onClose,
+  onSetupComplete,
+}: {
+  onClose: () => void;
+  onSetupComplete?: () => void;
+}) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [verifying, setVerifying] = useState(false);
@@ -310,7 +316,11 @@ const AccountSetupPopup = ({ onClose }: { onClose: () => void }) => {
 
       toast('success', 'Bank account setup complete! Your account is ready to receive payments.');
       setTimeout(() => {
-        onClose();
+        if (onSetupComplete) {
+          onSetupComplete();
+        } else {
+          onClose();
+        }
       }, 1500);
     } catch (error) {
       console.error('Submission error:', error);
