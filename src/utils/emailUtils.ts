@@ -1,37 +1,6 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
-// Smart transporter: uses ZeptoMail if configured, falls back to Gmail
-const createTransporter = () => {
-  if (process.env.ZEPTOMAIL_PASSWORD) {
-    return nodemailer.createTransport({
-      host: 'smtp.zeptomail.com',
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.ZEPTOMAIL_USER || 'emailapikey',
-        pass: process.env.ZEPTOMAIL_PASSWORD,
-      },
-      tls: {
-        minVersion: 'TLSv1.2',
-      },
-    });
-  }
-
-  if (process.env.GMAIL_APP_PASSWORD && process.env.GMAIL_USER) {
-    return nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD,
-      },
-    });
-  }
-
-  console.error('[email] No email provider configured');
-  throw new Error(
-    'No email provider configured. Set ZEPTOMAIL_PASSWORD or GMAIL_APP_PASSWORD + GMAIL_USER environment variables.'
-  );
-};
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 interface Attachment {
   filename: string;
@@ -47,40 +16,29 @@ interface SendEmailOptions {
   attachments?: Attachment[];
 }
 
-/**
- * Send an email using the configured SMTP provider (ZeptoMail or Gmail)
- */
 export async function sendEmail({ to, subject, html, text, attachments }: SendEmailOptions): Promise<void> {
-  const provider = process.env.ZEPTOMAIL_PASSWORD ? 'ZeptoMail' : 'Gmail';
-  console.log(`[email] Using provider: ${provider}, sending to: ${to}, subject: "${subject}"`);
+  const from = process.env.RESEND_FROM_EMAIL || 'Accezz <noreply@accezzlive.com>';
+  console.log(`[email] Sending via Resend to: ${to}, subject: "${subject}"`);
 
-  try {
-    const transporter = createTransporter();
+  const { error } = await resend.emails.send({
+    from,
+    to,
+    subject,
+    html,
+    text: text || subject,
+    attachments: attachments?.map(a => ({
+      filename: a.filename,
+      content: a.content,
+      contentType: a.contentType,
+    })),
+  });
 
-    // Verify SMTP connection before sending
-    await transporter.verify();
-    console.log('[email] SMTP connection verified');
-
-    // Derive sender based on active provider
-    const senderEmail = process.env.ZEPTOMAIL_SENDER_EMAIL
-      || (process.env.GMAIL_USER ? process.env.GMAIL_USER : 'noreply@accezzlive.com');
-    const senderName = process.env.ZEPTOMAIL_SENDER_NAME || 'Accezz';
-
-    const mailOptions = {
-      from: `"${senderName}" <${senderEmail}>`,
-      to,
-      subject,
-      html,
-      text: text || subject,
-      attachments: attachments || [],
-    };
-
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`[email] Sent successfully. MessageId: ${info.messageId}`);
-  } catch (error) {
-    console.error(`[email] Failed (provider: ${provider}, to: ${to}):`, error);
-    throw error;
+  if (error) {
+    console.error(`[email] Resend failed (to: ${to}):`, error);
+    throw new Error(error.message);
   }
+
+  console.log(`[email] Sent successfully via Resend`);
 }
 
 /**
