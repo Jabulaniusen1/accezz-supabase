@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Header from '@/app/components/layout/Header';
 import Footer from '@/app/components/layout/Footer';
 import Toast from '@/components/ui/Toast';
@@ -32,8 +32,25 @@ export default function VirtualEventPage() {
   const ticketsSectionRef = useRef<HTMLDivElement>(null);
   const toastTimeoutRef = useRef<number | null>(null);
   const params = useParams();
+  const searchParams = useSearchParams();
   const eventSlug = params?.id;
   const router = useRouter();
+
+  // Capture affiliate ref param and track the click (virtual events path).
+  useEffect(() => {
+    const ref = searchParams?.get('ref');
+    if (!ref) return;
+    try {
+      localStorage.setItem('affiliateRef', ref);
+    } catch {
+      // ignore
+    }
+    fetch('/api/affiliates/track-click', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ affiliateCode: ref }),
+    }).catch(() => {});
+  }, [searchParams]);
 
   const showToast = useCallback((toastValue: ToastState) => {
     setToast(toastValue);

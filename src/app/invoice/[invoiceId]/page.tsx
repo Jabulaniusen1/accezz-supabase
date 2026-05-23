@@ -60,8 +60,25 @@ const InvoiceContent = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [qrCodes, setQrCodes] = useState<Record<string, string>>({});
+  const [isPollingTickets, setIsPollingTickets] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+
+    const fetchTicketsForOrder = async () => {
+      const { data: ticketsData, error: ticketsError } = await supabase
+        .from('tickets')
+        .select('*')
+        .eq('order_id', invoiceId)
+        .order('created_at', { ascending: true });
+
+      if (ticketsError) {
+        throw new Error(ticketsError.message);
+      }
+
+      return (ticketsData as Ticket[]) || [];
+    };
+
     const fetchInvoiceData = async () => {
       try {
         if (!invoiceId) {
@@ -95,86 +112,97 @@ const InvoiceContent = () => {
         }
 
         const orderWithEvents = orderData as Order & { events: Event };
+        if (cancelled) return;
+
         setOrder(orderWithEvents);
         setEvent(orderWithEvents.events);
 
-        // Fetch tickets for this order
-        const { data: ticketsData, error: ticketsError } = await supabase
-          .from('tickets')
-          .select('*')
-          .eq('order_id', invoiceId)
-          .order('created_at', { ascending: true });
+        const initialTickets = await fetchTicketsForOrder();
+        if (cancelled) return;
 
-        if (ticketsError) {
-          throw new Error(ticketsError.message);
-        }
-
-        const ticketsList = ticketsData as Ticket[] || [];
-        setTickets(ticketsList);
-
-        // If no tickets yet (order paid or still processing), poll until they appear
-        if (ticketsList.length === 0 && (orderWithEvents.status === 'paid' || orderWithEvents.status === 'pending')) {
-          let attempts = 0;
-          const maxAttempts = 10;
-          const poll = async () => {
-            if (attempts >= maxAttempts) return;
-            attempts++;
-            await new Promise(r => setTimeout(r, 2000));
-            const { data: retryTickets } = await supabase
-              .from('tickets')
-              .select('*')
-              .eq('order_id', invoiceId)
-              .order('created_at', { ascending: true });
-            if (retryTickets && retryTickets.length > 0) {
-              setTickets(retryTickets as Ticket[]);
-            } else {
-              poll();
-            }
-          };
-          poll();
-        }
-
-        // Generate QR codes for tickets that don't have them
-        const qrPromises = ticketsList.map(async (ticket) => {
-          if (ticket.qr_code_url) {
-            return { ticketId: ticket.id, qrCode: ticket.qr_code_url };
-          }
-          
-          // Generate fallback QR code
-          try {
-            const QRCodeLib = await import('qrcode').then(m => m.default);
-            const baseUrl = window.location.origin;
-            const validateUrl = `${baseUrl}/validate-ticket?ticketId=${ticket.id}&signature=${ticket.ticket_code}`;
-            const qrCode = await QRCodeLib.toDataURL(validateUrl, { width: 200, margin: 1 });
-            return { ticketId: ticket.id, qrCode };
-          } catch {
-            const baseUrl = window.location.origin;
-            const encodedUrl = encodeURIComponent(`${baseUrl}/validate-ticket?ticketId=${ticket.id}&signature=${ticket.ticket_code}`);
-            return {
-              ticketId: ticket.id,
-              qrCode: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedUrl}`
-            };
-          }
-        });
-
-        const qrResults = await Promise.all(qrPromises);
-        const qrMap: Record<string, string> = {};
-        qrResults.forEach(({ ticketId, qrCode }) => {
-          qrMap[ticketId] = qrCode;
-        });
-        setQrCodes(qrMap);
-
+        setTickets(initialTickets);
         setError(null);
+        setIsPollingTickets(false);
+
+        // If no tickets yet, keep polling in the background for up to ~60 seconds.
+        if (initialTickets.length === 0 && (orderWithEvents.status === 'paid' || orderWithEvents.status === 'pending')) {
+          setIsPollingTickets(true);
+          const maxAttempts = 30;
+          for (let attempt = 0; attempt < maxAttempts && !cancelled; attempt++) {
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+            const retryTickets = await fetchTicketsForOrder();
+            if (cancelled) return;
+            if (retryTickets.length > 0) {
+              setTickets(retryTickets);
+              break;
+            }
+          }
+          if (!cancelled) setIsPollingTickets(false);
+        }
       } catch (err: unknown) {
         console.error('Error fetching invoice:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load invoice');
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Failed to load invoice');
+          setIsPollingTickets(false);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchInvoiceData();
+
+    return () => {
+      cancelled = true;
+    };
   }, [invoiceId]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const generateQrCodes = async () => {
+      if (tickets.length === 0) {
+        if (!cancelled) setQrCodes({});
+        return;
+      }
+
+      const qrPromises = tickets.map(async (ticket) => {
+        if (ticket.qr_code_url) {
+          return { ticketId: ticket.id, qrCode: ticket.qr_code_url };
+        }
+
+        try {
+          const QRCodeLib = await import('qrcode').then(m => m.default);
+          const baseUrl = window.location.origin;
+          const validateUrl = `${baseUrl}/validate-ticket?ticketId=${ticket.id}&signature=${ticket.ticket_code}`;
+          const qrCode = await QRCodeLib.toDataURL(validateUrl, { width: 200, margin: 1 });
+          return { ticketId: ticket.id, qrCode };
+        } catch {
+          const baseUrl = window.location.origin;
+          const encodedUrl = encodeURIComponent(`${baseUrl}/validate-ticket?ticketId=${ticket.id}&signature=${ticket.ticket_code}`);
+          return {
+            ticketId: ticket.id,
+            qrCode: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedUrl}`
+          };
+        }
+      });
+
+      const qrResults = await Promise.all(qrPromises);
+      if (cancelled) return;
+
+      const qrMap: Record<string, string> = {};
+      qrResults.forEach(({ ticketId, qrCode }) => {
+        qrMap[ticketId] = qrCode;
+      });
+      setQrCodes(qrMap);
+    };
+
+    generateQrCodes();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [tickets]);
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'TBD';
@@ -499,7 +527,9 @@ const InvoiceContent = () => {
           {tickets.length === 0 && (order.status === 'paid' || order.status === 'pending') ? (
             <div className="text-center py-8">
               <p className="text-gray-500 mb-2">Tickets are being generated...</p>
-              <p className="text-sm text-gray-400">Please refresh the page in a moment</p>
+              <p className="text-sm text-gray-400">
+                {isPollingTickets ? 'This page will update automatically. No refresh needed.' : 'Still processing. Please wait a little longer.'}
+              </p>
             </div>
           ) : tickets.length === 0 ? (
             <div className="text-center py-8">
@@ -600,4 +630,3 @@ const InvoicePage = () => {
 };
 
 export default InvoicePage;
-

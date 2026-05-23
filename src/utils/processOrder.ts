@@ -41,27 +41,36 @@ export async function processSuccessfulPayment(orderId: string, reference: strin
     return;
   }
 
-  // Idempotency guard — already processed
-  if (order.status === 'paid') {
-    // Tickets may already exist; nothing more to do.
+  // Idempotency guard — if tickets already exist, this order is fully processed.
+  const { data: existingTickets } = await supabaseAdmin
+    .from('tickets')
+    .select('id')
+    .eq('order_id', orderId)
+    .limit(1);
+
+  if (existingTickets && existingTickets.length > 0) {
     return;
   }
 
-  // Mark order as paid (only if still pending — race-condition guard)
-  const { error: updateError } = await supabaseAdmin
-    .from('orders')
-    .update({
-      status: 'paid',
-      payment_reference: reference,
-      payment_provider: 'paystack',
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', orderId)
-    .eq('status', 'pending');
+  // Mark order as paid unless it is already paid.
+  // This keeps retries recoverable when a previous run marked the order paid
+  // but failed before ticket creation.
+  if (order.status !== 'paid') {
+    const { error: updateError } = await supabaseAdmin
+      .from('orders')
+      .update({
+        status: 'paid',
+        payment_reference: reference,
+        payment_provider: 'paystack',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', orderId)
+      .neq('status', 'paid');
 
-  if (updateError) {
-    console.error('[processOrder] Failed to mark order as paid:', updateError);
-    return;
+    if (updateError) {
+      console.error('[processOrder] Failed to mark order as paid:', updateError);
+      return;
+    }
   }
 
   const meta = (order.meta as Record<string, unknown> | null) || {};
@@ -93,17 +102,6 @@ export async function processSuccessfulPayment(orderId: string, reference: strin
 
   if (!ticketType) {
     console.error('[processOrder] Ticket type not found:', ticketTypeName);
-    return;
-  }
-
-  // Idempotency guard — tickets already created
-  const { data: existingTickets } = await supabaseAdmin
-    .from('tickets')
-    .select('id')
-    .eq('order_id', orderId)
-    .limit(1);
-
-  if (existingTickets && existingTickets.length > 0) {
     return;
   }
 

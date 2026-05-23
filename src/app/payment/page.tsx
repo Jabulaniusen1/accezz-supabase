@@ -4,6 +4,15 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { PageSkeleton } from '@/components/ui/Skeleton';
 
+type PendingCheckoutSession = {
+  orderId: string;
+  authorizationUrl: string;
+  createdAt: string;
+};
+
+const CHECKOUT_SESSION_KEY = 'pendingPaystackCheckout';
+const CHECKOUT_SESSION_TTL_MS = 30 * 60 * 1000;
+
 function PaymentContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -11,80 +20,85 @@ function PaymentContent() {
 
   useEffect(() => {
     const start = async () => {
-      const orderId = searchParams.get('orderId');
-      const amount = searchParams.get('amount');
-      const email = searchParams.get('email');
+      const rawOrderId = searchParams.get('orderId');
+      const rawAmount = searchParams.get('amount');
+      const rawEmail = searchParams.get('email');
       const status = searchParams.get('status');
-      const reference = searchParams.get('reference');
+      const reference = searchParams.get('reference') || searchParams.get('trxref');
 
-      // If Paystack redirected back with cancelled/failed status, redirect to event
+      // If we get bounced back here with a reference, continue verification on success page.
+      if (reference) {
+        const nextOrderId = rawOrderId ? `&orderId=${encodeURIComponent(rawOrderId)}` : '';
+        router.replace(`/success?reference=${encodeURIComponent(reference)}${nextOrderId}`);
+        return;
+      }
+
+      // If Paystack redirected back with cancelled/failed status, send user back to event page.
       if (status === 'cancelled' || status === 'failed') {
-        // Get event slug before clearing localStorage
         let eventSlug: string | null = null;
         try {
           const raw = localStorage.getItem('pendingPayment');
           if (raw) {
-            const p = JSON.parse(raw);
-            eventSlug = p.eventSlug || null;
-          } 
-        } catch {}
-        // Clear localStorage
-        try { localStorage.removeItem('pendingPayment'); } catch {}
-        // Redirect to event details page using stored event slug
+            const parsed = JSON.parse(raw) as { eventSlug?: string };
+            eventSlug = parsed.eventSlug || null;
+          }
+        } catch {
+          // ignore
+        }
+
+        try { localStorage.removeItem(CHECKOUT_SESSION_KEY); } catch { /* ignore */ }
+        try { localStorage.removeItem('pendingPayment'); } catch { /* ignore */ }
+
         if (eventSlug) {
           router.replace(`/${eventSlug}`);
           return;
         }
-        // Fallback to browser back if no event slug found
         router.back();
         return;
       }
 
-      // If this is a return from Paystack with reference but no status (cancelled payment)
-      // Paystack doesn't send status when cancelled, just redirects back
-      const wasRedirectedBack = sessionStorage.getItem('paystack_redirected');
-      if (wasRedirectedBack && !reference && orderId) {
-        // Get event slug before clearing localStorage
-        let eventSlug: string | null = null;
+      let orderId = rawOrderId;
+      let amount = rawAmount;
+      let email = rawEmail;
+
+      // Fallback to pendingPayment when query params are missing.
+      if (!orderId || !amount || !email) {
         try {
           const raw = localStorage.getItem('pendingPayment');
           if (raw) {
-            const p = JSON.parse(raw);
-            eventSlug = p.eventSlug || null;
+            const parsed = JSON.parse(raw) as { orderId?: string; amount?: number | string; email?: string };
+            orderId = orderId || parsed.orderId || null;
+            amount = amount || (parsed.amount !== undefined ? String(parsed.amount) : null);
+            email = email || parsed.email || null;
           }
-        } catch {}
-        // Clear the flag and localStorage
-        sessionStorage.removeItem('paystack_redirected');
-        try { localStorage.removeItem('pendingPayment'); } catch {}
-        // Redirect to event details
-        if (eventSlug) {
-          router.replace(`/${eventSlug}`);
-          return;
+        } catch {
+          // ignore
         }
-        router.back();
-        return;
       }
 
       if (!orderId || !amount || !email) {
-        // try localStorage fallback
-        try {
-          const raw = localStorage.getItem('pendingPayment');
-          if (raw) {
-            const p = JSON.parse(raw);
-            if (!orderId && p.orderId) {
-              router.replace(`/payment?orderId=${p.orderId}&amount=${p.amount}&email=${encodeURIComponent(p.email)}`);
-              return;
-            }
-          }
-        } catch {}
         setError('Missing payment information. Please go back and try again.');
         return;
       }
 
+      // Refresh-safe resume: if we already initialized checkout recently for this order, reuse it.
       try {
-        // Pick up affiliate code stored when the user visited via a ref link
+        const rawSession = localStorage.getItem(CHECKOUT_SESSION_KEY);
+        if (rawSession) {
+          const session = JSON.parse(rawSession) as PendingCheckoutSession;
+          const age = Date.now() - new Date(session.createdAt).getTime();
+          if (session.orderId === orderId && session.authorizationUrl && age < CHECKOUT_SESSION_TTL_MS) {
+            window.location.replace(session.authorizationUrl);
+            return;
+          }
+        }
+      } catch {
+        // ignore
+      }
+
+      try {
         let affiliateCode: string | null = null;
-        try { affiliateCode = localStorage.getItem('affiliateRef'); } catch {}
+        try { affiliateCode = localStorage.getItem('affiliateRef'); } catch { /* ignore */ }
 
         const res = await fetch('/api/paystack/initialize', {
           method: 'POST',
@@ -100,8 +114,8 @@ function PaymentContent() {
         });
 
         const raw = await res.text();
-        let data: { authorization_url?: string; access_code?: string; reference?: string; error?: string } | null = null;
-        try { data = raw ? (JSON.parse(raw) as { authorization_url?: string; access_code?: string; reference?: string; error?: string }) : null; } catch { data = null; }
+        let data: { authorization_url?: string; reference?: string; error?: string } | null = null;
+        try { data = raw ? (JSON.parse(raw) as { authorization_url?: string; reference?: string; error?: string }) : null; } catch { data = null; }
 
         if (!res.ok) {
           const msg = data?.error || raw || 'Failed to start payment';
@@ -111,77 +125,23 @@ function PaymentContent() {
           throw new Error('Invalid response from payment initializer');
         }
 
-        // Load Paystack inline JS SDK dynamically
-        const loadPaystackScript = (): Promise<void> => {
-          return new Promise((resolve, reject) => {
-            if (window.PaystackPop) {
-              resolve();
-              return;
-            }
-            const script = document.createElement('script');
-            script.src = 'https://js.paystack.co/v1/inline.js';
-            script.async = true;
-            script.onload = () => resolve();
-            script.onerror = () => reject(new Error('Failed to load Paystack script'));
-            document.head.appendChild(script);
-          });
-        };
-
-        await loadPaystackScript();
-
-        const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
-        if (!publicKey) {
-          throw new Error('Paystack public key not configured');
+        try {
+          localStorage.setItem(CHECKOUT_SESSION_KEY, JSON.stringify({
+            orderId,
+            authorizationUrl: data.authorization_url,
+            createdAt: new Date().toISOString(),
+          }));
+        } catch {
+          // non-critical
         }
 
-        if (!window.PaystackPop) {
-          throw new Error('Paystack SDK not loaded');
-        }
-
-        // Initialize Paystack popup
-        const handler = window.PaystackPop.setup({
-          key: publicKey,
-          email: email,
-          amount: Math.round(Number(amount) * 100),
-          currency: 'NGN',
-          ref: data.reference || `ORD-${orderId}-${Date.now()}`,
-          callback: (response: { reference: string; status: string }) => {
-            // Note: callback must be synchronous, so we handle async operations inside
-            (async () => {
-              try {
-                const verifyRes = await fetch(`/api/paystack/verify?reference=${encodeURIComponent(response.reference)}`);
-                const verifyData = await verifyRes.json() as { status?: string; orderId?: string; error?: string };
-                
-                if (verifyRes.ok && verifyData.status === 'success' && verifyData.orderId) {
-                  const { markOrderAsPaid, createTicketsForOrder } = await import('@/utils/paymentUtils');
-                  await markOrderAsPaid(verifyData.orderId, response.reference, 'paystack');
-                  await createTicketsForOrder(verifyData.orderId);
-
-                  // Clear affiliate ref so it doesn't apply to future orders
-                  try { localStorage.removeItem('affiliateRef'); } catch {}
-
-                  // Redirect to invoice page
-                  router.replace(`/invoice/${verifyData.orderId}`);
-                } else {
-                  throw new Error(verifyData.error || 'Payment verification failed');
-                }
-              } catch (error) {
-                console.error('Payment verification error:', error);
-                setError('Payment verification failed. Please contact support.');
-              }
-            })();
-          },
-          onClose: () => {
-            setError('Payment cancelled');
-          }
-        });
-
-        handler.openIframe();
+        window.location.replace(data.authorization_url);
       } catch (e: unknown) {
         const message = e instanceof Error ? e.message : 'Failed to start payment';
         setError(message);
       }
     };
+
     start();
   }, [searchParams, router]);
 
@@ -206,5 +166,3 @@ export default function PaymentPage() {
     </Suspense>
   );
 }
-
-
