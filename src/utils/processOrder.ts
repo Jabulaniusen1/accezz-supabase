@@ -52,11 +52,12 @@ export async function processSuccessfulPayment(orderId: string, reference: strin
     return;
   }
 
-  // Mark order as paid unless it is already paid.
-  // This keeps retries recoverable when a previous run marked the order paid
-  // but failed before ticket creation.
+  // Atomic gate: attempt to claim this order by transitioning status to 'paid'.
+  // .neq('status', 'paid') means the update only executes if no other concurrent
+  // call has already claimed it. If 0 rows are returned, bail out — another
+  // execution won the race and will handle tickets + email.
   if (order.status !== 'paid') {
-    const { error: updateError } = await supabaseAdmin
+    const { data: claimed, error: updateError } = await supabaseAdmin
       .from('orders')
       .update({
         status: 'paid',
@@ -65,10 +66,15 @@ export async function processSuccessfulPayment(orderId: string, reference: strin
         updated_at: new Date().toISOString(),
       })
       .eq('id', orderId)
-      .neq('status', 'paid');
+      .neq('status', 'paid')
+      .select('id');
 
     if (updateError) {
       console.error('[processOrder] Failed to mark order as paid:', updateError);
+      return;
+    }
+
+    if (!claimed || claimed.length === 0) {
       return;
     }
   }
