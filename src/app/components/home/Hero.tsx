@@ -3,12 +3,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { FiMenu, FiX, FiLogOut, FiUser } from "react-icons/fi";
-import { MdSpaceDashboard } from "react-icons/md";
+import { FiMenu, FiX, FiLogOut, FiUser } from '@/icon-adapters/react-icons/fi';
+import { MdSpaceDashboard } from '@/icon-adapters/react-icons/md';
 import { motion, AnimatePresence } from "framer-motion";
 import Toast from "@/components/ui/Toast";
 import ToggleMode from '@/components/ui/mode/toggleMode';
-import { FaArrowRight } from 'react-icons/fa';
+import { FaArrowRight } from '@/icon-adapters/react-icons/fa';
 
 const Hero = () => {
   const router = useRouter();

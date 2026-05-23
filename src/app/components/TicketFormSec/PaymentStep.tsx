@@ -1,6 +1,6 @@
 import React from 'react';
 import { formatPrice } from '../../../utils/formatPrice';
-import { FaLock, FaTicketAlt } from 'react-icons/fa';
+import { FaLock, FaTicketAlt } from '@/icon-adapters/react-icons/fa';
 
 interface PaymentStepProps {
   selectedTicket: { name: string; price: string } | null;

@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { FaGlobe, FaMapMarkerAlt } from "react-icons/fa";
+import { FaGlobe, FaMapMarkerAlt } from '@/icon-adapters/react-icons/fa';
 import SearchableSelect from "@/components/ui/SearchableSelect";
 import { supabase } from "@/utils/supabaseClient";
 import { Event } from "../../../../types/event";

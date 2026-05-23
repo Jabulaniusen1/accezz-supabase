@@ -1,9 +1,9 @@
 import { motion } from "framer-motion";
-import { FaLink, FaVideo } from "react-icons/fa";
-import { RiEarthLine } from "react-icons/ri";
-import { SiGooglemeet } from "react-icons/si";
-import { BiLogoZoom } from "react-icons/bi";
-import { BsMicrosoftTeams } from "react-icons/bs";
+import { FaLink, FaVideo } from '@/icon-adapters/react-icons/fa';
+import { RiEarthLine } from '@/icon-adapters/react-icons/ri';
+import { SiGooglemeet } from '@/icon-adapters/react-icons/si';
+import { BiLogoZoom } from '@/icon-adapters/react-icons/bi';
+import { BsMicrosoftTeams } from '@/icon-adapters/react-icons/bs';
 import { Event } from "../../../../types/event";
 
 interface VirtualEventSettingsProps {

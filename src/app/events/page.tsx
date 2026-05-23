@@ -19,7 +19,7 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
-} from "lucide-react";
+} from '@/icon-adapters/lucide-react';
 
 type CategoryRecord = {
   id: string;
@@ -54,10 +54,14 @@ const FALLBACK_CATEGORIES: CategoryRecord[] = [
 
 const PAGE_SIZE = 8;
 
+const ENDED_BUFFER_MS = 24 * 60 * 60 * 1000; // 24 hours after start
+
 const isEventEnded = (event: { endTime?: string | null; startTime?: string; date?: string }): boolean => {
-  const cutoff = event.endTime || event.startTime || event.date;
-  if (!cutoff) return false;
-  return new Date(cutoff) < new Date();
+  const now = Date.now();
+  if (event.endTime) return new Date(event.endTime).getTime() < now;
+  const start = event.startTime || event.date;
+  if (!start) return false;
+  return new Date(start).getTime() + ENDED_BUFFER_MS < now;
 };
 
 const EventsExplorerPage = () => {

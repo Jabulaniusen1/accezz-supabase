@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { FaWhatsapp, FaTimes } from 'react-icons/fa';
+import { FaWhatsapp, FaTimes } from '@/icon-adapters/react-icons/fa';
 import { type Ticket } from '@/types/event';
 
 interface WhatsAppPurchaseModalProps {

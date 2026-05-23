@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { type Event } from '@/types/event';
-import { FaUserTie, FaLinkedin, FaTwitter, FaGlobe } from 'react-icons/fa';
+import { FaUserTie, FaLinkedin, FaTwitter, FaGlobe } from '@/icon-adapters/react-icons/fa';
 import Image from 'next/image';
 
 interface VirtualEventHostProps {

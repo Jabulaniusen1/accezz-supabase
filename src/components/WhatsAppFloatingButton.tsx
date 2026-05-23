@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { FaWhatsapp } from 'react-icons/fa';
+import { FaWhatsapp } from '@/icon-adapters/react-icons/fa';
 import { useTicketPurchase } from '@/contexts/TicketPurchaseContext';
 
 const WhatsAppFloatingButton = () => {

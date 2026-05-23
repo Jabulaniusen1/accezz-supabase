@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/utils/supabaseClient';
 import Toast from '../../components/ui/Toast';
 import SearchableSelect from '@/components/ui/SearchableSelect';
-import { FaSpinner, FaCheck, FaTimes } from 'react-icons/fa';
+import { FaSpinner, FaCheck, FaTimes } from '@/icon-adapters/react-icons/fa';
 
 type AccountData = {
   account_name: string;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaTelegram, FaWhatsapp, FaDiscord, FaArrowRight } from 'react-icons/fa';
+import { FaTelegram, FaWhatsapp, FaDiscord, FaArrowRight } from '@/icon-adapters/react-icons/fa';
 import { motion } from 'framer-motion';
 
 type Props = {

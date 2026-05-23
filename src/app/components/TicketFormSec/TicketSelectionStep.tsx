@@ -1,6 +1,6 @@
 import React from 'react';
 import { formatPrice } from '../../../utils/formatPrice';
-import { FaTicketAlt } from 'react-icons/fa';
+import { FaTicketAlt } from '@/icon-adapters/react-icons/fa';
 
 const parsePriceValue = (value: string | number | null | undefined): number => {
   if (typeof value === 'number') return Number.isFinite(value) ? value : 0;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { format } from 'date-fns';
 import { Event } from '@/types/analytics';
-import { FiMapPin, FiTag, FiClock, FiInfo } from 'react-icons/fi';
+import { FiMapPin, FiTag, FiClock, FiInfo } from '@/icon-adapters/react-icons/fi';
 
 interface EventDetailsProps {
   event: Event;

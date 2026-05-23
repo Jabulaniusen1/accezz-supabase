@@ -2,8 +2,8 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Toast } from "./Toast";
 import { motion } from "framer-motion";
-import { IoMailUnreadOutline } from "react-icons/io5";
-import { MdDeleteOutline } from "react-icons/md";
+import { IoMailUnreadOutline } from '@/icon-adapters/react-icons/io5';
+import { MdDeleteOutline } from '@/icon-adapters/react-icons/md';
 import { supabase } from '@/utils/supabaseClient';
 import ConfirmationModal from "@/components/ConfirmationModal";
 

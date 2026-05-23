@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { FaRegCalendarAlt, FaTicketAlt, FaChartBar } from "react-icons/fa";
+import { FaRegCalendarAlt, FaTicketAlt, FaChartBar } from '@/icon-adapters/react-icons/fa';
 
 const FeaturedEvent = () => {
   const features = [

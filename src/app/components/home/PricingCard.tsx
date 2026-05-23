@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { FiMapPin, FiCalendar, FiShoppingBag, FiSliders } from "react-icons/fi";
+import { FiMapPin, FiCalendar, FiShoppingBag, FiSliders } from '@/icon-adapters/react-icons/fi';
 
 type Market = {
   label: string;

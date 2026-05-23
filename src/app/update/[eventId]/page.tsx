@@ -12,7 +12,7 @@ import VirtualEventSettings from "./components/VirtualEventSettings";
 import PhysicalEventDetails from "./components/PhysicalEventDetails";
 import SocialMediaLinks from "./components/SocialMediaLinks";
 import TicketTypesSection from "./components/TicketTypeSection";
-import { BsArrowLeft } from "react-icons/bs";
+import { BsArrowLeft } from '@/icon-adapters/react-icons/bs';
 import { AnimatePresence, motion } from "framer-motion";
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {

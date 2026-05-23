@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { type Event } from '@/types/event';
-import { FaShareAlt, FaCopy, FaLinkedin, FaTwitter, FaFacebook, FaLink } from 'react-icons/fa';
+import { FaShareAlt, FaCopy, FaLinkedin, FaTwitter, FaFacebook, FaLink } from '@/icon-adapters/react-icons/fa';
 // import { Button } from '@mui/material';
-import { SiWhatsapp, SiTelegram } from 'react-icons/si';
-import { MdEmail } from 'react-icons/md';
+import { SiWhatsapp, SiTelegram } from '@/icon-adapters/react-icons/si';
+import { MdEmail } from '@/icon-adapters/react-icons/md';
 
 interface VirtualEventShareProps {
   event: Event;

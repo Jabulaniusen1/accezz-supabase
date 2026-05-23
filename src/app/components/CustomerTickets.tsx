@@ -4,9 +4,9 @@ import React, { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/utils/supabaseClient";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { BsTicketPerforated } from "react-icons/bs";
-import { FiArrowDownLeft } from "react-icons/fi";
-import { ChevronRightIcon } from "lucide-react";
+import { BsTicketPerforated } from '@/icon-adapters/react-icons/bs';
+import { FiArrowDownLeft } from '@/icon-adapters/react-icons/fi';
+import { ChevronRightIcon } from '@/icon-adapters/lucide-react';
 import { PageSkeleton } from "@/components/ui/Skeleton";
 import Toast from "@/components/ui/Toast";
 

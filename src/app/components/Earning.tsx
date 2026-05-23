@@ -1,7 +1,7 @@
 'use client';
 import React from "react";
 import { useMemo, useCallback, useState } from "react";
-import { FaMoneyBillWave, FaChartLine, FaChartBar, FaChartPie } from "react-icons/fa";
+import { FaMoneyBillWave, FaChartLine, FaChartBar, FaChartPie } from '@/icon-adapters/react-icons/fa';
 import { Bar, Line, Pie } from "react-chartjs-2";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";

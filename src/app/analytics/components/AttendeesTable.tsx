@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Ticket } from '@/types/analytics';
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, CheckCircle2, XCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, CheckCircle2, XCircle } from '@/icon-adapters/lucide-react';
 
 interface AttendeesTableProps {
   tickets: Ticket[];

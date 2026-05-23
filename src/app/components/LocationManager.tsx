@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { MapPin, Trash2 } from 'lucide-react';
+import { MapPin, Trash2 } from '@/icon-adapters/lucide-react';
 import { useDeleteLocation, useMyLocations } from '@/hooks/useLocations';
 import ManageLocationForm from './locations/ManageLocationForm';
 import { Location } from '@/types/location';

@@ -4,8 +4,8 @@ import { motion } from "framer-motion";
 import { 
   FaInstagram, 
   FaFacebookF
-} from "react-icons/fa";
-import { FaXTwitter } from "react-icons/fa6";
+} from '@/icon-adapters/react-icons/fa';
+import { FaXTwitter } from '@/icon-adapters/react-icons/fa6';
 import { Event, ToastProps } from '@/types/event';
 import { supabase } from '@/utils/supabaseClient';
 import { clearFormProgress } from '@/utils/localStorage';

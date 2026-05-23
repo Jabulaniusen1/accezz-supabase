@@ -3,12 +3,12 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiMenu, FiX, FiLogOut, FiUser } from "react-icons/fi";
-import { MdSpaceDashboard } from "react-icons/md";
+import { FiMenu, FiX, FiLogOut, FiUser } from '@/icon-adapters/react-icons/fi';
+import { MdSpaceDashboard } from '@/icon-adapters/react-icons/md';
 // import ToggleMode from "../../../components/ui/mode/toggleMode";
 import { useRouter, usePathname } from "next/navigation";
 import Toast from "@/components/ui/Toast";
-import { FaArrowRight } from "react-icons/fa";
+import { FaArrowRight } from '@/icon-adapters/react-icons/fa';
 // import Logo from "@/components/ui/Logo";
 
 const Header = () => {

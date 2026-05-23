@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { FaTrash } from "react-icons/fa";
+import { FaTrash } from '@/icon-adapters/react-icons/fa';
 import { Event } from "../../../../types/event";
 import AttendeesList from "./AttendeesList";
 

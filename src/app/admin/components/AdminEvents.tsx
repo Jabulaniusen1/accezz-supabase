@@ -5,7 +5,7 @@ import { supabase } from '@/utils/supabaseClient';
 import Toast from '@/components/ui/Toast';
 import { Skeleton, CardSkeleton } from '@/components/ui/Skeleton';
 import ConfirmationModal from '@/components/ConfirmationModal';
-import { FiSearch, FiTrash2, FiExternalLink, FiBarChart2 } from 'react-icons/fi';
+import { FiSearch, FiTrash2, FiExternalLink, FiBarChart2, FiEdit2 } from '@/icon-adapters/react-icons/fi';
 import Link from 'next/link';
 import TicketTypesModal from './TicketTypesModal';
 
@@ -326,6 +326,13 @@ const AdminEvents = () => {
                         <FiBarChart2 />
                       </button>
                       <Link
+                        href={`/update/${event.id}`}
+                        className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300"
+                        title="Edit Event"
+                      >
+                        <FiEdit2 />
+                      </Link>
+                      <Link
                         href={`/${event.slug}/event`}
                         target="_blank"
                         className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
@@ -383,4 +390,3 @@ const AdminEvents = () => {
 };
 
 export default AdminEvents;
-

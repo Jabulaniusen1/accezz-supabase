@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, X } from 'lucide-react';
+import { Search, X } from '@/icon-adapters/lucide-react';
 import { TicketType } from '@/types/analytics';
 
 interface FiltersProps {

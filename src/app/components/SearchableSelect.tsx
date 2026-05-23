@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { FaChevronDown, FaSearch } from "react-icons/fa";
+import { FaChevronDown, FaSearch } from '@/icon-adapters/react-icons/fa';
 
 interface SearchableSelectProps {
   options: Array<{ value: string; label: string }>;

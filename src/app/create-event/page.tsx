@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { BiArrowBack } from 'react-icons/bi';
+import { BiArrowBack } from '@/icon-adapters/react-icons/bi';
 
 // Components
 import { FormContainer } from './components/FormContainer';
@@ -78,6 +78,13 @@ export default function CreateEventPage() {
   const [showAccountSetup, setShowAccountSetup] = useState(false);
   const prevStep = useRef(step);
 
+  const hasValue = useCallback((value: unknown): boolean => {
+    if (value === null || value === undefined) return false;
+    if (typeof value === 'string') return value.trim().length > 0;
+    if (typeof value === 'number') return Number.isFinite(value);
+    return String(value).trim().length > 0;
+  }, []);
+
   // Memoized update function
   const updateFormData = useCallback((data: Partial<Event>) => {
     setFormData(prev => ({ ...prev, ...data }));
@@ -125,54 +132,54 @@ export default function CreateEventPage() {
     return () => clearTimeout(timer);
   }, [formData]);
 
-  // Check authentication and bank account status
-  useEffect(() => {
-    const checkAuthAndAccount = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          setToast({ 
-            type: 'error', 
-            message: 'Please login to create an event',
-            onClose: () => setToast(null)
-          });
-          router.push('/auth/login');
-          return;
-        }
-
-        // Check if user has bank account setup
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('account_number, bank_code, bank_name, full_name, country')
-          .eq('user_id', session.user.id)
-          .maybeSingle();
-
-        if (profileError) {
-          throw profileError;
-        }
-
-        const hasText = (value: unknown) => typeof value === 'string' && value.trim().length > 0;
-        const hasBankDetails = hasText(profile?.account_number) && (hasText(profile?.bank_code) || hasText(profile?.bank_name));
-
-        setShowAccountSetup(!hasBankDetails);
-
-        setFormData(prev => ({
-          ...prev,
-          hostName: prev.hostName || profile?.full_name || session.user.user_metadata?.full_name || '',
-          country: prev.country || profile?.country || ''
-        }));
-      } catch (error) {
-        console.error('Error checking auth:', error);
-        setToast({ 
-          type: 'error', 
-          message: 'Failed to verify authentication',
+  const checkAuthAndAccount = useCallback(async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setToast({
+          type: 'error',
+          message: 'Please login to create an event',
           onClose: () => setToast(null)
         });
+        router.push('/auth/login');
+        return;
       }
-    };
 
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('account_name, account_number, bank_code, bank_name, full_name, country')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+
+      if (profileError) {
+        throw profileError;
+      }
+
+      const hasBankDetails =
+        hasValue(profile?.account_number) &&
+        (hasValue(profile?.bank_code) || hasValue(profile?.bank_name) || hasValue(profile?.account_name));
+
+      setShowAccountSetup(!hasBankDetails);
+
+      setFormData(prev => ({
+        ...prev,
+        hostName: prev.hostName || profile?.full_name || session.user.user_metadata?.full_name || '',
+        country: prev.country || profile?.country || ''
+      }));
+    } catch (error) {
+      console.error('Error checking auth:', error);
+      setToast({
+        type: 'error',
+        message: 'Failed to verify authentication',
+        onClose: () => setToast(null)
+      });
+    }
+  }, [hasValue, router]);
+
+  // Check authentication and bank account status
+  useEffect(() => {
     checkAuthAndAccount();
-  }, [router]);
+  }, [checkAuthAndAccount]);
 
   // Step validation
   const validateStep = useCallback((currentStep: number): boolean => {
@@ -351,7 +358,13 @@ export default function CreateEventPage() {
       </main>
 
       {showAccountSetup && (
-        <AccountSetupPopup onClose={() => setShowAccountSetup(false)} />
+        <AccountSetupPopup
+          onClose={() => setShowAccountSetup(false)}
+          onSetupComplete={() => {
+            setShowAccountSetup(false);
+            checkAuthAndAccount();
+          }}
+        />
       )}
     </div>
   );

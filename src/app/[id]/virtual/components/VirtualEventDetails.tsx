@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaCalendarAlt, FaClock, FaInfoCircle, FaLink, FaVideo } from 'react-icons/fa';
+import { FaCalendarAlt, FaClock, FaInfoCircle, FaLink, FaVideo } from '@/icon-adapters/react-icons/fa';
 import { type Event } from '@/types/event';
 import { formatEventDate, formatEventTime } from '@/utils/formatDateTime';
 

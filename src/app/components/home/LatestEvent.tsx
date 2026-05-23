@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { FaCalendar, FaMapMarkerAlt, FaUser, FaArrowRight, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaCalendar, FaMapMarkerAlt, FaUser, FaArrowRight, FaChevronLeft, FaChevronRight } from '@/icon-adapters/react-icons/fa';
 import { useLatestEvents } from '@/hooks/useEvents';
 import { formatEventDate } from '@/utils/formatDateTime';
 import Toast from '@/components/ui/Toast';

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabaseClient";
-import { BsX, BsCheckCircle, BsPersonPlus } from "react-icons/bs";
+import { BsX, BsCheckCircle, BsPersonPlus } from '@/icon-adapters/react-icons/bs';
 
 interface CreateAccountPromptProps {
   isOpen: boolean;

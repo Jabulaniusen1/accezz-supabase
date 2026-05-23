@@ -9,7 +9,7 @@ import {
   FaLock,
   FaMobileAlt,
   FaLayerGroup,
-} from 'react-icons/fa';
+} from '@/icon-adapters/react-icons/fa';
 import { motion, useInView } from 'framer-motion';
 import Link from 'next/link';
 

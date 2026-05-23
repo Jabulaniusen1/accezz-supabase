@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Megaphone, Zap } from 'lucide-react';
+import { Megaphone, Zap } from '@/icon-adapters/lucide-react';
 import { type Event, type Ticket } from '@/types/event';
 import Toast from '../../../components/ui/Toast';
 import Header from '@/app/components/layout/Header';

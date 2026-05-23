@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { BiImageAdd } from "react-icons/bi";
-import { RiImageEditFill } from "react-icons/ri";
+import { BiImageAdd } from '@/icon-adapters/react-icons/bi';
+import { RiImageEditFill } from '@/icon-adapters/react-icons/ri';
 
 interface EventImageUploadProps {
   imagePreview: string | null | undefined;

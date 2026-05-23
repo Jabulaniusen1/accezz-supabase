@@ -19,7 +19,18 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "lucide-react": ["./src/icon-adapters/lucide-react"],
+      "react-icons/bi": ["./src/icon-adapters/react-icons/bi"],
+      "react-icons/bs": ["./src/icon-adapters/react-icons/bs"],
+      "react-icons/fa": ["./src/icon-adapters/react-icons/fa"],
+      "react-icons/fa6": ["./src/icon-adapters/react-icons/fa6"],
+      "react-icons/fi": ["./src/icon-adapters/react-icons/fi"],
+      "react-icons/gi": ["./src/icon-adapters/react-icons/gi"],
+      "react-icons/io5": ["./src/icon-adapters/react-icons/io5"],
+      "react-icons/md": ["./src/icon-adapters/react-icons/md"],
+      "react-icons/ri": ["./src/icon-adapters/react-icons/ri"],
+      "react-icons/si": ["./src/icon-adapters/react-icons/si"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

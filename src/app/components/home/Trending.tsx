@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { FaFire, FaClock, FaArrowRight } from 'react-icons/fa';
+import { FaFire, FaClock, FaArrowRight } from '@/icon-adapters/react-icons/fa';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { formatPrice } from '@/utils/formatPrice';

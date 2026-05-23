@@ -1,4 +1,4 @@
-import { FaUserPlus, FaTrash } from "react-icons/fa";
+import { FaUserPlus, FaTrash } from '@/icon-adapters/react-icons/fa';
 import { Event } from "../../../../types/event";
 
 interface AttendeesListProps {

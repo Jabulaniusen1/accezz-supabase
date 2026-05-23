@@ -1,8 +1,8 @@
 'use client';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaUserPlus, FaTrash, FaChevronDown, FaChevronUp, FaPlus, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
-import { MdDescription } from 'react-icons/md';
+import { FaUserPlus, FaTrash, FaChevronDown, FaChevronUp, FaPlus, FaArrowLeft, FaArrowRight } from '@/icon-adapters/react-icons/fa';
+import { MdDescription } from '@/icon-adapters/react-icons/md';
 import { Event, ToastProps } from '@/types/event';
 
 interface TicketDetailsProps {

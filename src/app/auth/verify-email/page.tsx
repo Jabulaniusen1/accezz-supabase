@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { FaEnvelope, FaArrowRight } from 'react-icons/fa';
+import { FaEnvelope, FaArrowRight } from '@/icon-adapters/react-icons/fa';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { supabase } from '@/utils/supabaseClient';

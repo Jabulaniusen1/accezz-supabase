@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { type Event } from '@/types/event';
-import { FaCalendarAlt, FaClock, FaUserAlt, FaVideo } from 'react-icons/fa';
+import { FaCalendarAlt, FaClock, FaUserAlt, FaVideo } from '@/icon-adapters/react-icons/fa';
 import { formatEventDate, formatEventTime } from '@/utils/formatDateTime';
 
 

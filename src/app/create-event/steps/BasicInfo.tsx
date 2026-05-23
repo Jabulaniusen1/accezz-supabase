@@ -3,14 +3,14 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { FaCloudUploadAlt, FaExclamationTriangle, FaIdCard, FaInfoCircle, FaLink, FaTrash, FaTags, FaMapMarkerAlt, FaGlobe } from 'react-icons/fa';
+import { FaCloudUploadAlt, FaExclamationTriangle, FaIdCard, FaInfoCircle, FaLink, FaTrash, FaMapMarkerAlt, FaGlobe } from '@/icon-adapters/react-icons/fa';
 import { type Event } from '@/types/event';
-import { RiEarthLine } from 'react-icons/ri';
+import { RiEarthLine } from '@/icon-adapters/react-icons/ri';
 import { ToastProps } from '@/types/event';
 import DateTimePicker from '@/components/ui/DateTimePicker';
-import { SiGooglemeet } from 'react-icons/si';
-import { BiLogoZoom } from 'react-icons/bi';
-import { BsMicrosoftTeams } from 'react-icons/bs';
+import { SiGooglemeet } from '@/icon-adapters/react-icons/si';
+import { BiLogoZoom } from '@/icon-adapters/react-icons/bi';
+import { BsMicrosoftTeams } from '@/icon-adapters/react-icons/bs';
 import SearchableSelect from '@/components/ui/SearchableSelect';
 import { supabase } from '@/utils/supabaseClient';
 import { useCountryCityOptions } from '@/hooks/useCountryCityOptions';
@@ -104,6 +104,102 @@ type GoogleMapsEventListener = {
   remove: () => void;
 };
 
+// ── Category picker ───────────────────────────────────────────────────────────
+const INITIAL_VISIBLE = 20;
+
+interface CategoryPickerProps {
+  categories: EventCategory[];
+  loading: boolean;
+  selectedId: string;
+  customValue: string;
+  onSelect: (value: string) => void;
+  onCustomChange: (value: string) => void;
+}
+
+function CategoryPicker({
+  categories,
+  loading,
+  selectedId,
+  customValue,
+  onSelect,
+  onCustomChange,
+}: CategoryPickerProps) {
+  const [showAll, setShowAll] = useState(false);
+
+  const pills = [
+    ...categories.map(c => ({ value: c.id, label: c.name })),
+    { value: '__custom__', label: 'Other' },
+  ];
+
+  const visible = showAll ? pills : pills.slice(0, INITIAL_VISIBLE);
+
+  return (
+    <div>
+      <h3 className="text-base font-bold text-gray-900 dark:text-white mb-1">Event Category</h3>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+        <span className="text-[#f54502] mr-1">*</span>
+        What&apos;s this event about? Pick the one category that best describes it.
+      </p>
+
+      {loading ? (
+        <div className="flex flex-wrap gap-2">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div key={i} className="h-8 w-24 rounded-full bg-gray-100 dark:bg-gray-700 animate-pulse" />
+          ))}
+        </div>
+      ) : (
+        <>
+          <div className="flex flex-wrap gap-2">
+            {visible.map(pill => {
+              const isActive = selectedId === pill.value;
+              return (
+                <button
+                  key={pill.value}
+                  type="button"
+                  onClick={() => onSelect(pill.value)}
+                  className={`px-4 py-1.5 rounded-full border text-sm transition-all duration-150 ${
+                    isActive
+                      ? 'border-[#f54502] bg-[#f54502] text-white font-medium'
+                      : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:border-[#f54502] hover:text-[#f54502]'
+                  }`}
+                >
+                  {pill.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {pills.length > INITIAL_VISIBLE && (
+            <button
+              type="button"
+              onClick={() => setShowAll(v => !v)}
+              className="mt-3 text-sm text-[#f54502] hover:underline"
+            >
+              {showAll ? 'see less' : 'see more'}
+            </button>
+          )}
+
+          {selectedId === '__custom__' && (
+            <div className="mt-4">
+              <input
+                type="text"
+                value={customValue}
+                onChange={e => onCustomChange(e.target.value)}
+                placeholder="Enter your category"
+                className="w-full px-4 py-2.5 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+              />
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                We&apos;ll attach this category to your event only.
+              </p>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+// ── BasicInfo ─────────────────────────────────────────────────────────────────
 interface BasicInfoProps {
   formData: Event;
   updateFormData: (data: Partial<Event>) => void;
@@ -389,17 +485,6 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
   const endTimeValue = useMemo(
     () => (formData.endTime ? toTimeInputValue(formData.endTime) : ''),
     [formData.endTime]
-  );
-
-  const categoryOptions = useMemo(
-    () => [
-      ...categories.map((category) => ({
-        value: category.id,
-        label: category.name
-      })),
-      { value: '__custom__', label: 'Other (add my own)' }
-    ],
-    [categories]
   );
 
   const platformLocationOptions = useMemo(
@@ -1095,34 +1180,14 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
           />
         </div>
 
-        <div>
-          <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
-            <FaTags className="text-[#f54502]" />
-            Category *
-          </label>
-          <SearchableSelect
-            options={categoryOptions}
-            value={categorySelectValue}
-            onChange={handleCategoryChange}
-            placeholder={categoriesLoading ? 'Loading categories...' : 'Select a category'}
-            disabled={categoriesLoading}
-            className="text-sm"
-          />
-          {categorySelectValue === '__custom__' && (
-            <div className="mt-3">
-              <input
-                type="text"
-                value={customCategoryInput}
-                onChange={(e) => handleCustomCategoryChange(e.target.value)}
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
-                placeholder="Enter your category"
-              />
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                We&apos;ll attach this category to your event only.
-              </p>
-            </div>
-          )}
-        </div>
+        <CategoryPicker
+          categories={categories}
+          loading={categoriesLoading}
+          selectedId={categorySelectValue}
+          customValue={customCategoryInput}
+          onSelect={handleCategoryChange}
+          onCustomChange={handleCustomCategoryChange}
+        />
 
         <div className="space-y-4 sm:space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">

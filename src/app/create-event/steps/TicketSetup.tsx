@@ -1,7 +1,7 @@
 'use client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaPlus, FaTrash, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
-import { RiTicketLine } from 'react-icons/ri';
+import { FaPlus, FaTrash, FaArrowLeft, FaArrowRight } from '@/icon-adapters/react-icons/fa';
+import { RiTicketLine } from '@/icon-adapters/react-icons/ri';
 import { useCallback, memo, useEffect, useRef } from 'react';
 import { Event, Ticket, ToastProps } from '@/types/event';
 import { formatPrice } from '@/utils/formatPrice';

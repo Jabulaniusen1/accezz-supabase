@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { RiTicketLine } from "react-icons/ri";
+import { RiTicketLine } from '@/icon-adapters/react-icons/ri';
 import { useEffect, useRef } from "react";
 import { Event } from "../../../../types/event";
 import TicketTypeCard from "./TicketTypeCard";

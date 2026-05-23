@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { RefreshCw, AlertTriangle, Mail } from 'lucide-react';
+import { RefreshCw, AlertTriangle, Mail } from '@/icon-adapters/lucide-react';
 
 export default function ServerDown() {
   useEffect(() => {

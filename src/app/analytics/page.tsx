@@ -10,7 +10,7 @@ import { AnalyticsHeader } from './components/AnalyticsHeader';
 import { Filters } from './components/Filters';
 import { AttendeesTable } from './components/AttendeesTable';
 import { EmailMarketing } from './components/EmailMarketing';
-import { Ticket as TicketIcon, CircleDollarSign, ScanLine, Users } from 'lucide-react';
+import { Ticket as TicketIcon, CircleDollarSign, ScanLine, Users } from '@/icon-adapters/lucide-react';
 
 // ─── Stat card ────────────────────────────────────────────────────────────────
 const StatCard = ({

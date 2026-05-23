@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FaIdCard, FaTags } from "react-icons/fa";
+import { FaIdCard, FaTags } from '@/icon-adapters/react-icons/fa';
 import DateTimePicker from "@/components/ui/DateTimePicker";
 import SearchableSelect from "@/components/ui/SearchableSelect";
 import { supabase } from "@/utils/supabaseClient";

@@ -5,7 +5,7 @@ import { supabase } from '@/utils/supabaseClient';
 import {
   Copy, Check, ExternalLink, TrendingUp, Users, DollarSign,
   Link2, ChevronDown, ChevronUp, Settings2, Zap,
-} from 'lucide-react';
+} from '@/icon-adapters/lucide-react';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 

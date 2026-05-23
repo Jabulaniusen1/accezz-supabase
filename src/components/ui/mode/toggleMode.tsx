@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { BiBulb } from "react-icons/bi";
+import { BiBulb } from '@/icon-adapters/react-icons/bi';
 
 const ToggleMode = () => {
   const [isDarkMode, setIsDarkMode] = useState(() => {

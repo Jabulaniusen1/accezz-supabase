@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Eye, EyeOff, Mail, Lock, ArrowLeft, RotateCcw } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, ArrowLeft, RotateCcw } from '@/icon-adapters/lucide-react';
 import Toast from '../../../components/ui/Toast';
 import Link from 'next/link';
 import Image from 'next/image';

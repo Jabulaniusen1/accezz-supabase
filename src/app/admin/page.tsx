@@ -6,7 +6,7 @@ import { supabase } from '@/utils/supabaseClient';
 import { getSession } from '@/utils/supabaseAuth';
 import Toast from '@/components/ui/Toast';
 import AdminUsers from './components/AdminUsers';
-import { FiUsers, FiCalendar, FiTrendingUp, FiLogOut, FiUser, FiX, FiMenu, FiDollarSign, FiTag } from 'react-icons/fi';
+import { FiUsers, FiCalendar, FiTrendingUp, FiLogOut, FiUser, FiX, FiMenu, FiDollarSign, FiTag } from '@/icon-adapters/react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import AdminAnalytics from './components/AdminAnalytics';
@@ -296,4 +296,3 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
-

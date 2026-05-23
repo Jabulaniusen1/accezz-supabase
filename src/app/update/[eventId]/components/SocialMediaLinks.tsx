@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { FaInstagram, FaFacebookF, FaTwitter, FaLinkedin } from "react-icons/fa";
+import { FaInstagram, FaFacebookF, FaTwitter, FaLinkedin } from '@/icon-adapters/react-icons/fa';
 import { Event } from "../../../../types/event";
 
 interface SocialMediaLinksProps {

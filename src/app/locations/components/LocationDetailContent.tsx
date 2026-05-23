@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
-import { MapPin, Mail, Phone, Share2, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MapPin, Mail, Phone, Share2, X, ChevronLeft, ChevronRight } from '@/icon-adapters/lucide-react';
 import LocationBookingModal from './LocationBookingModal';
 import { Location } from '@/types/location';
 

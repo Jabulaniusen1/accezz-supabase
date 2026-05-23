@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { FaTimes, FaCheckCircle, FaHandshake, FaLock, FaUserShield } from 'react-icons/fa';
+import { FaTimes, FaCheckCircle, FaHandshake, FaLock, FaUserShield } from '@/icon-adapters/react-icons/fa';
 
 interface AgreeTermsProps {
   onClose: () => void;

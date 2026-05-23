@@ -1,36 +1,26 @@
 import { supabase } from './supabaseClient';
 import { Event } from '@/types/event';
 
+const ENDED_BUFFER_MS = 24 * 60 * 60 * 1000; // 24 hours after start
+
 /**
- * Checks if an event is past (has finished)
- * An event is considered past if:
- * - end_time has passed (if it exists), OR
- * - start_time has passed (if no end_time)
- * @param event - The event to check
- * @returns true if the event is past, false otherwise
+ * Checks if an event has ended.
+ * If an explicit end_time is set, that is the cutoff.
+ * Otherwise the event is considered ended 24 hours after start_time,
+ * so attendees can still purchase tickets while the event is running.
  */
 export function isEventPast(event: Event): boolean {
-  const now = new Date();
-  
-  // If end_time exists, check if it has passed
+  const now = Date.now();
+
   if (event.endTime) {
-    const endTime = new Date(event.endTime);
-    return endTime < now;
+    return new Date(event.endTime).getTime() < now;
   }
-  
-  // If no end_time, check if start_time has passed
-  if (event.startTime) {
-    const startTime = new Date(event.startTime);
-    return startTime < now;
+
+  const start = event.startTime || event.date;
+  if (start) {
+    return new Date(start).getTime() + ENDED_BUFFER_MS < now;
   }
-  
-  // Fallback to date if startTime is not available
-  if (event.date) {
-    const eventDate = new Date(event.date);
-    return eventDate < now;
-  }
-  
-  // If no time information, consider it not past
+
   return false;
 }
 

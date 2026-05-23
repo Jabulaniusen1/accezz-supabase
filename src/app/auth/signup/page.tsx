@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { User, Mail, Lock, Eye, EyeOff, Phone, ArrowLeft, Globe, MapPin } from 'lucide-react';
+import { User, Mail, Lock, Eye, EyeOff, Phone, ArrowLeft, Globe, MapPin } from '@/icon-adapters/lucide-react';
 import Toast from '../../../components/ui/Toast';
 import { signUpWithEmail } from '@/utils/supabaseAuth';
 import { useCountryCityOptions } from '@/hooks/useCountryCityOptions';

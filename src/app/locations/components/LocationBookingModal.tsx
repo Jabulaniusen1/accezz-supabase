@@ -7,7 +7,7 @@ import { createLocationBooking } from '@/hooks/useLocations';
 import { Location } from '@/types/location';
 import Calendar from 'react-calendar';
 import { format } from 'date-fns';
-import { CalendarDays, Clock, ChevronDown } from 'lucide-react';
+import { CalendarDays, Clock, ChevronDown } from '@/icon-adapters/lucide-react';
 import 'react-calendar/dist/Calendar.css';
 
 type LocationBookingModalProps = {

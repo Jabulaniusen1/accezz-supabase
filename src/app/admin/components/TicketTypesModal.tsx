@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiX, FiDollarSign, FiUsers } from 'react-icons/fi';
+import { FiX, FiDollarSign, FiUsers } from '@/icon-adapters/react-icons/fi';
 import { Skeleton } from '@/components/ui/Skeleton';
 
 interface TicketType {
@@ -262,4 +262,3 @@ const TicketTypesModal: React.FC<TicketTypesModalProps> = ({
 };
 
 export default TicketTypesModal;
-

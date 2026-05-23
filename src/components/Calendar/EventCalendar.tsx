@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { FaCalendarAlt, FaExternalLinkAlt, FaTimes } from 'react-icons/fa';
+import { FaCalendarAlt, FaExternalLinkAlt, FaTimes } from '@/icon-adapters/react-icons/fa';
 import { Calendar } from 'react-calendar';
 import { useRouter } from 'next/navigation';
 import 'react-calendar/dist/Calendar.css';

@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
-import { FaMapMarkerAlt, FaCalendarAlt, FaTimes, FaBookmark, FaRegBookmark } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaCalendarAlt, FaTimes, FaBookmark, FaRegBookmark } from '@/icon-adapters/react-icons/fa';
 import Image from 'next/image';
 import { useAllEvents } from '@/hooks/useEvents';
 import { useSavedEvents } from '@/hooks/useSavedEvents';
@@ -10,10 +10,14 @@ import Toast from '@/components/ui/Toast';
 import type { Event as AppEvent, Ticket as AppTicket } from '@/types/event';
 import Link from 'next/link';
 
+const ENDED_BUFFER_MS = 24 * 60 * 60 * 1000; // 24 hours after start
+
 const isEventEnded = (event: AppEvent): boolean => {
-  const cutoff = event.endTime || event.startTime || event.date;
-  if (!cutoff) return false;
-  return new Date(cutoff) < new Date();
+  const now = Date.now();
+  if (event.endTime) return new Date(event.endTime).getTime() < now;
+  const start = event.startTime || event.date;
+  if (!start) return false;
+  return new Date(start).getTime() + ENDED_BUFFER_MS < now;
 };
 
 const AllEvents = () => {

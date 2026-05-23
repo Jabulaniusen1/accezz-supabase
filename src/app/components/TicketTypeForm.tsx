@@ -10,7 +10,7 @@ import { supabase } from '@/utils/supabaseClient';
 import { getSession } from '@/utils/supabaseAuth';
 import { useTicketPurchase } from '@/contexts/TicketPurchaseContext';
 import { Event } from '@/types/event';
-import { FaCheckCircle, FaTimes, FaArrowLeft } from 'react-icons/fa';
+import { FaCheckCircle, FaTimes, FaArrowLeft } from '@/icon-adapters/react-icons/fa';
 
 type TicketOption = {
   id: string;

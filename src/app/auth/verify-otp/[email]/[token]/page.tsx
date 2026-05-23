@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { FaRedo, FaCheck } from 'react-icons/fa';
+import { FaRedo, FaCheck } from '@/icon-adapters/react-icons/fa';
 import { motion } from 'framer-motion';
 import Toast from '@/components/ui/Toast';
 import { supabase } from '@/utils/supabaseClient';

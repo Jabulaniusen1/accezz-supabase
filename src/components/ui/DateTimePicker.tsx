@@ -8,7 +8,7 @@ import {
   FaChevronRight, 
   FaTimes,
   FaCheck
-} from 'react-icons/fa';
+} from '@/icon-adapters/react-icons/fa';
 
 interface DateTimePickerProps {
   type: 'date' | 'time';

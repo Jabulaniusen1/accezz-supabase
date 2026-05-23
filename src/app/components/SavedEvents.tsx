@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { FaMapMarkerAlt, FaCalendarAlt, FaBookmark } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaCalendarAlt, FaBookmark } from '@/icon-adapters/react-icons/fa';
 import Image from 'next/image';
 import { useSavedEvents } from '@/hooks/useSavedEvents';
 import { supabase } from '@/utils/supabaseClient';

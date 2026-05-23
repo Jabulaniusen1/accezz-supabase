@@ -1,6 +1,5 @@
 'use client';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
 import { supabase } from '@/utils/supabaseClient';
 import { useRouter } from 'next/navigation';
@@ -8,8 +7,8 @@ import { Toast } from './Toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatPrice } from '@/utils/formatPrice';
 import { TableSkeleton } from '@/components/ui/Skeleton';
-import { ChartAreaIcon, PencilIcon, Share2, TrashIcon, MoreVertical } from 'lucide-react';
-import { FaCalendarAlt } from 'react-icons/fa';
+import { ChartAreaIcon, PencilIcon, Share2, TrashIcon, MoreVertical } from '@/icon-adapters/lucide-react';
+import { FaCalendarAlt } from '@/icon-adapters/react-icons/fa';
 // Removed REST API usage; using Supabase instead
 
 interface Event {
@@ -88,13 +87,27 @@ const ConfirmationModal: React.FC<{
   );
 };
 
-const EventList: React.FC = () => {
+type EventTab = 'all' | 'published' | 'drafts' | 'ended';
+
+const EVENT_TABS: { id: EventTab; label: string }[] = [
+  { id: 'all', label: 'All Events' },
+  { id: 'published', label: 'Published' },
+  { id: 'drafts', label: 'Drafts' },
+  { id: 'ended', label: 'Ended' },
+];
+
+const EventList: React.FC<{
+  onCreateEvent?: () => void;
+  onEditEvent?: (id: string) => void;
+  onAnalyticsEvent?: (id: string) => void;
+}> = ({ onCreateEvent, onEditEvent, onAnalyticsEvent }) => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [showToast, setShowToast] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<EventTab>('all');
   const [toastProps, setToastProps] = useState<{
     type: 'success' | 'error';
     message: string;
@@ -247,72 +260,138 @@ const EventList: React.FC = () => {
       month: 'short',
       year: 'numeric',
     }),
-    minPrice: event.ticketType?.length > 0 
+    minPrice: event.ticketType?.length > 0
       ? Math.min(...event.ticketType.map(ticket => parseFloat(ticket.price)))
       : 0,
     ticketsSold: event.ticketType?.reduce((acc, ticket) => acc + parseInt(ticket.sold || '0'), 0) || 0,
     totalTickets: event.ticketType?.reduce((acc, ticket) => acc + parseInt(ticket.quantity || '0'), 0) || 0,
   })), [events]);
 
+  const filteredEvents = useMemo(() => {
+    const now = Date.now();
+    const ENDED_BUFFER = 24 * 60 * 60 * 1000; // 24 hours after start
+    const isEnded = (e: { startTime: string; endTime?: string | null }) => {
+      if (e.endTime) return new Date(e.endTime).getTime() < now;
+      return new Date(e.startTime).getTime() + ENDED_BUFFER < now;
+    };
+    switch (activeTab) {
+      case 'published':
+        return formattedEvents.filter(e => !isEnded(e));
+      case 'ended':
+        return formattedEvents.filter(e => isEnded(e));
+      case 'drafts':
+        return [];
+      default:
+        return formattedEvents;
+    }
+  }, [formattedEvents, activeTab]);
+
   if (loading || isNavigating) return <TableSkeleton />;
+
+  const tabBar = (
+    <div className="mb-6">
+      <div className="flex items-stretch border-b border-gray-100 dark:border-gray-800">
+        {/* Horizontally scrollable tabs — no visible scrollbar */}
+        <div className="flex flex-1 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          {EVENT_TABS.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition-all duration-150 ${
+                activeTab === tab.id
+                  ? 'border-[#f54502] text-[#f54502]'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        {/* Action buttons — always visible, never pushed off screen */}
+        <div className="flex items-center gap-1 pb-1 pl-1 flex-shrink-0">
+          <button className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+            </svg>
+            <span className="hidden sm:inline text-xs font-medium">Filter</span>
+          </button>
+          <button
+            onClick={() => onCreateEvent?.()}
+            className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-2 bg-[#f54502] hover:bg-[#d63a02] active:bg-[#c03200] text-white text-sm font-semibold rounded-lg transition-all duration-200 whitespace-nowrap"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            <span className="sm:hidden">New</span>
+            <span className="hidden sm:inline">Add new event</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   if (events.length === 0) {
     return (
-      <div className="col-span-full flex flex-col items-center justify-center min-h-[50vh] px-4 text-center">
-        <div className="w-24 h-24 mb-6 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
-          <FaCalendarAlt size={40} className="text-[#f54502]" />
+      <div>
+        {tabBar}
+        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-280px)] px-4 text-center bg-gray-50 dark:bg-gray-900 rounded-xl py-16">
+          {/* Calendar/notebook icon */}
+          <div className="mb-6">
+            <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="10" y="16" width="56" height="54" rx="6" fill="#f9a88a" />
+              <rect x="18" y="8" width="8" height="16" rx="4" fill="#f47847" />
+              <rect x="54" y="8" width="8" height="16" rx="4" fill="#f47847" />
+              <rect x="18" y="36" width="40" height="4" rx="2" fill="white" opacity="0.9" />
+              <rect x="18" y="46" width="28" height="4" rx="2" fill="white" opacity="0.7" />
+              <rect x="10" y="16" width="56" height="14" rx="6" fill="#f47847" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">You have no events!</h2>
+          <p className="text-gray-500 dark:text-gray-400 max-w-xs text-sm mb-8">
+            Click on the &quot;Add new event&quot; button below to create your first event.
+          </p>
+          <button
+            onClick={() => onCreateEvent?.()}
+            className="flex items-center gap-2 px-6 py-3 bg-[#f54502] hover:bg-[#d63a02] text-white text-sm font-semibold rounded-xl shadow-sm transition-all duration-200"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Add new event
+          </button>
         </div>
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">No Events Yet</h2>
-        <p className="text-gray-500 dark:text-gray-400 max-w-md mb-6">
-          You haven&apos;t created any events yet. Start by creating your first event to manage tickets and track attendees.
-        </p>
-        <button
-          onClick={() => router.push('/create-event')}
-          style={{ borderRadius: '5px' }}
-          className="px-6 py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 text-white font-medium shadow-md transition-all duration-200 transform hover:-translate-y-0.5"
-        >
-          Create Your First Event
-        </button>
       </div>
     );
   }
 
   return (
     <div className="max-w-7xl mx-auto">
-      {/* Header Section */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Your Events</h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-2">
-              Manage, edit, and track all your events in one place
-            </p>
-          </div>
-          <div className="hidden sm:flex items-center space-x-4">
-            <div className="text-right">
-              <p className="text-sm text-gray-500 dark:text-gray-400">Total Events</p>
-              <p className="text-2xl font-bold text-[#f54502]">{formattedEvents.length}</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      {tabBar}
 
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-      >
-        {formattedEvents.map((event) => (
-          <EventCard
-            key={event.id}
-            event={event}
-            onCopyLink={copyLink}
-            onEdit={() => handleNavigation(`update/${event.id}`)}
-            onDelete={() => handleDeleteClick(event.id)}
-          />
-        ))}
-      </motion.div>
+      {filteredEvents.length === 0 ? (
+        <div className="flex flex-col items-center justify-center min-h-[40vh] text-center">
+          <FaCalendarAlt size={40} className="text-gray-300 dark:text-gray-600 mb-4" />
+          <p className="text-gray-500 dark:text-gray-400 text-sm">No events in this category</p>
+        </div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        >
+          {filteredEvents.map((event) => (
+            <EventCard
+              key={event.id}
+              event={event}
+              onCopyLink={copyLink}
+              onEdit={() => onEditEvent ? onEditEvent(event.id) : handleNavigation(`update/${event.id}`)}
+              onAnalytics={() => onAnalyticsEvent ? onAnalyticsEvent(event.id) : handleNavigation(`analytics?id=${event.id}`)}
+              onDelete={() => handleDeleteClick(event.id)}
+            />
+          ))}
+        </motion.div>
+      )}
 
       <ConfirmationModal
         isOpen={deleteModalOpen}
@@ -333,16 +412,17 @@ const EventList: React.FC = () => {
 };
 
 const EventCard: React.FC<{
-  event: Event & { 
-    formattedDate: string; 
+  event: Event & {
+    formattedDate: string;
     minPrice: number;
     ticketsSold: number;
     totalTickets: number;
   };
   onCopyLink: (slug: string) => void;
   onEdit: () => void;
+  onAnalytics: () => void;
   onDelete: () => void;
-}> = ({ event, onCopyLink, onEdit, onDelete }) => {
+}> = ({ event, onCopyLink, onEdit, onAnalytics, onDelete }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const progressPercentage = event.totalTickets > 0 
     ? Math.min(100, (event.ticketsSold / event.totalTickets) * 100)
@@ -431,14 +511,14 @@ const EventCard: React.FC<{
             <PencilIcon className="h-4 w-4 mr-2" />
             <span>Edit</span>
           </button>
-          <Link
-            href={`/analytics?id=${event.id}`} passHref
+          <button
+            onClick={onAnalytics}
             style={{ borderRadius: '5px' }}
-            className="flex-1 flex items-center justify-center px-3 py-2 bg-orange-500 text-white bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 text-sm text-gray-700 dark:text-white-300 hover:bg-orange-600 dark:hover:bg-orange-600 transition-colors duration-200"
+            className="flex-1 flex items-center justify-center px-3 py-2 bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 text-white text-sm transition-colors duration-200"
           >
             <ChartAreaIcon className="h-4 w-4 mr-2" />
             <span>Analytics</span>
-          </Link>
+          </button>
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 // components/EventTicketsSection.tsx
 import React, { forwardRef } from 'react';
-import { CheckCircleIcon, TicketIcon } from 'lucide-react';
+import { CheckCircleIcon, TicketIcon } from '@/icon-adapters/lucide-react';
 import { formatPrice } from '@/utils/formatPrice';
 import { type Event } from '@/types/event';
 import { type Ticket } from '@/types/event';

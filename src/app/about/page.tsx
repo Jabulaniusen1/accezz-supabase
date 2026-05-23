@@ -3,7 +3,7 @@ import Layout from '@/components/Layout/Layout';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { FaTicketAlt, FaChartLine, FaQrcode, FaLinkedinIn, FaTwitter } from 'react-icons/fa';
+import { FaTicketAlt, FaChartLine, FaQrcode, FaLinkedinIn, FaTwitter } from '@/icon-adapters/react-icons/fa';
 
 const whyChoose = [
   {

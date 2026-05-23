@@ -4,7 +4,7 @@ import { type Event } from '@/types/event';
 import { Facebook, Instagram } from '@mui/icons-material';  
 import XIcon from '@mui/icons-material/X';
 import { formatEventTime, formatEventDate } from '@/utils/formatDateTime';
-import { ClockIcon, MapPinIcon, CalendarIcon } from 'lucide-react';
+import { ClockIcon, MapPinIcon, CalendarIcon } from '@/icon-adapters/lucide-react';
 import { isEventPast } from '@/utils/eventUtils';
 
 interface EventHeroSectionProps {

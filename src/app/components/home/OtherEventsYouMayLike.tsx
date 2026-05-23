@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import Image from 'next/image';
-import { FaCalendarAlt, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaCalendarAlt, FaMapMarkerAlt } from '@/icon-adapters/react-icons/fa';
 import { useLatestEvents } from '@/hooks/useEvents';
 import { CardSkeleton } from '@/components/ui/Skeleton';
 import { formatPrice } from '@/utils/formatPrice';

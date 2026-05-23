@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { FiSearch, FiExternalLink, FiFilter, FiPlus, FiX } from 'react-icons/fi';
+import { FiSearch, FiExternalLink, FiFilter, FiPlus, FiX } from '@/icon-adapters/react-icons/fi';
 import Link from 'next/link';
 
 interface TicketRow {
@@ -36,6 +36,38 @@ interface TicketTypeOption {
   currency: string;
 }
 
+type TicketOrderRelation = {
+  id: string;
+  status: string;
+  event_id: string | null;
+};
+
+type TicketTypeRelation = {
+  name: string | null;
+};
+
+type TicketEventRelation = {
+  id: string;
+  title: string;
+};
+
+interface TicketQueryRow {
+  id: string;
+  ticket_code: string;
+  attendee_name: string | null;
+  attendee_email: string | null;
+  price: number | string | null;
+  currency: string | null;
+  validation_status: string | null;
+  is_scanned: boolean | null;
+  created_at: string;
+  order_id: string;
+  event_id: string;
+  orders?: TicketOrderRelation | TicketOrderRelation[] | null;
+  ticket_types?: TicketTypeRelation | TicketTypeRelation[] | null;
+  events?: TicketEventRelation | TicketEventRelation[] | null;
+}
+
 interface GenerateForm {
   eventId: string;
   ticketTypeId: string;
@@ -50,14 +82,6 @@ const STATUS_COLORS: Record<string, string> = {
   invalid: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
   refunded: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300',
   revoked: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
-};
-
-const ORDER_STATUS_COLORS: Record<string, string> = {
-  paid: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
-  pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300',
-  failed: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
-  refunded: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300',
-  cancelled: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
 };
 
 const AdminTickets: React.FC = () => {
@@ -118,7 +142,12 @@ const AdminTickets: React.FC = () => {
       const { data: ticketsData, error: ticketsError } = await query;
       if (ticketsError) throw ticketsError;
 
-      const rows: TicketRow[] = (ticketsData || []).map((t: any) => ({
+      const rows: TicketRow[] = (ticketsData as TicketQueryRow[] | null || []).map((t) => {
+        const order = Array.isArray(t.orders) ? t.orders[0] : t.orders;
+        const event = Array.isArray(t.events) ? t.events[0] : t.events;
+        const ticketType = Array.isArray(t.ticket_types) ? t.ticket_types[0] : t.ticket_types;
+
+        return {
         id: t.id,
         ticket_code: t.ticket_code,
         attendee_name: t.attendee_name,
@@ -128,15 +157,16 @@ const AdminTickets: React.FC = () => {
         validation_status: t.validation_status || 'valid',
         is_scanned: Boolean(t.is_scanned),
         created_at: t.created_at,
-        order_id: t.orders?.id ?? t.order_id,
-        order_status: t.orders?.status ?? 'unknown',
-        event_id: t.events?.id ?? t.event_id,
-        event_title: t.events?.title ?? 'Unknown Event',
-        ticket_type_name: t.ticket_types?.name ?? null,
-      }));
+        order_id: order?.id ?? t.order_id,
+        order_status: order?.status ?? 'unknown',
+        event_id: event?.id ?? t.event_id,
+        event_title: event?.title ?? 'Unknown Event',
+        ticket_type_name: ticketType?.name ?? null,
+      };
+      });
 
       setTickets(rows);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error('AdminTickets error:', e);
       setError('Failed to load tickets. Please try again.');
     } finally {

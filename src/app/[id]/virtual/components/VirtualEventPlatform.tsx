@@ -2,7 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { type Event } from '@/types/event';
-import { FaGoogle, FaVideo, FaLink,  FaQrcode, FaCopy } from 'react-icons/fa';
+import { FaGoogle, FaVideo, FaLink,  FaQrcode, FaCopy } from '@/icon-adapters/react-icons/fa';
 import { Button } from '@mui/material';
 import Image from 'next/image';
 import { useState } from 'react';

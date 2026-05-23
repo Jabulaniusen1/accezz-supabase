@@ -1,6 +1,6 @@
 import ToggleMode from "@/components/ui/mode/toggleMode";
 import { motion } from "framer-motion";
-import { BiArrowBack } from "react-icons/bi";
+import { BiArrowBack } from '@/icon-adapters/react-icons/bi';
 
 interface EventHeaderProps {
   onBack: () => void;

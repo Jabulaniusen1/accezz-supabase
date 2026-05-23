@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import LocationDetailContent from '../components/LocationDetailContent';
 import { Location } from '@/types/location';
-import { BiArrowBack } from 'react-icons/bi';
+import { BiArrowBack } from '@/icon-adapters/react-icons/bi';
 
 const supabaseServer = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import Toast from '@/components/ui/Toast';
-import { FiSearch, FiCheck, FiX, FiEye, FiEyeOff } from 'react-icons/fi';
+import { FiSearch, FiCheck, FiX, FiEye, FiEyeOff } from '@/icon-adapters/react-icons/fi';
 import { formatDistanceToNow } from 'date-fns';
 import { Skeleton, TableSkeleton, CardSkeleton } from '@/components/ui/Skeleton';
 
@@ -585,4 +585,3 @@ const AdminUsers = () => {
 };
 
 export default AdminUsers;
-

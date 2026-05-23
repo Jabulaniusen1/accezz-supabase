@@ -3,8 +3,8 @@ import SuccessModal from './modal/successModal';
 import Toast from '../../../components/ui/Toast';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/utils/supabaseClient';
-import { FiUser, FiMail, FiPhone, FiMapPin, FiGlobe, FiSave } from 'react-icons/fi';
-import { Building2 } from 'lucide-react';
+import { FiUser, FiMail, FiPhone, FiMapPin, FiGlobe, FiSave } from '@/icon-adapters/react-icons/fi';
+import { Building2 } from '@/icon-adapters/lucide-react';
 
 
 type UserDataType = {

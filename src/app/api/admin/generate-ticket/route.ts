@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     if (evErr || !event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     if (ttErr || !ticketType) return NextResponse.json({ error: 'Ticket type not found' }, { status: 404 });
 
-    const currency = event.currency || ticketType.currency || 'NGN';
+    const currency = event.currency || 'NGN';
 
     // Create a paid order (admin-generated, complimentary)
     const { data: order, error: orderErr } = await supabaseAdmin

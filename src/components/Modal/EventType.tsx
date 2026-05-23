@@ -1,6 +1,6 @@
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment, useState } from 'react';
-import { IoClose } from 'react-icons/io5';
+import { IoClose } from '@/icon-adapters/react-icons/io5';
 
 interface EventTypeModalProps {
   isOpen: boolean;

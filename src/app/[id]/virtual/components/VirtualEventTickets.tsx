@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { type Event } from '@/types/event';
-import { FaTicketAlt, FaLock } from 'react-icons/fa';
+import { FaTicketAlt, FaLock } from '@/icon-adapters/react-icons/fa';
 import { Button } from '@mui/material';
 import { formatPrice } from '@/utils/formatPrice';
 import { isEventPast } from '@/utils/eventUtils';

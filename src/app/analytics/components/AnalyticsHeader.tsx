@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Share2 } from 'lucide-react';
+import { ArrowLeft, Share2 } from '@/icon-adapters/lucide-react';
 import ToggleMode from '@/components/ui/mode/toggleMode';
 
 interface AnalyticsHeaderProps {

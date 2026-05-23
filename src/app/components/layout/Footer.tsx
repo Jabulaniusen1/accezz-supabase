@@ -1,8 +1,8 @@
 'use client';
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { FaInstagram, FaTiktok, FaWhatsapp } from 'react-icons/fa';
-import { FaXTwitter } from 'react-icons/fa6';
+import { FaInstagram, FaTiktok, FaWhatsapp } from '@/icon-adapters/react-icons/fa';
+import { FaXTwitter } from '@/icon-adapters/react-icons/fa6';
 import Image from 'next/image';
 
 const Footer = () => {

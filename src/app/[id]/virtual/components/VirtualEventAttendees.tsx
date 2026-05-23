@@ -2,7 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { type Event } from '@/types/event';
-import { FaUserFriends } from 'react-icons/fa';
+import { FaUserFriends } from '@/icon-adapters/react-icons/fa';
 import Image from 'next/image';
 
 interface VirtualEventAttendeesProps {
