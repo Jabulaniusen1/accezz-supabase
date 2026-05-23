@@ -137,7 +137,7 @@ const Withdrawals: React.FC = () => {
     loadWalletContext();
   }, [loadWalletContext]);
 
-  // Affiliate commissions earned by this user
+  // Affiliate commissions earned by this user (as an affiliate)
   const { data: affiliateEarnings } = useQuery<number>({
     queryKey: ['affiliateEarnings', userType],
     enabled: userType !== 'creator',
@@ -149,6 +149,22 @@ const Withdrawals: React.FC = () => {
         .from('affiliate_commissions')
         .select('amount')
         .eq('user_id', session.user.id);
+      return (data || []).reduce((sum, row) => sum + Number(row.amount || 0), 0);
+    },
+    staleTime: 60_000,
+  });
+
+  // Total affiliate commissions owed on this organizer's events (deducted from creator balance)
+  const { data: affiliateCommissionsOwed } = useQuery<number>({
+    queryKey: ['affiliateCommissionsOwed', (events || []).map(e => e.id)],
+    enabled: userType === 'creator' && !!events && events.length > 0,
+    queryFn: async () => {
+      const eventIds = (events || []).map(e => e.id);
+      if (!eventIds.length) return 0;
+      const { data } = await supabase
+        .from('affiliate_commissions')
+        .select('amount')
+        .in('event_id', eventIds);
       return (data || []).reduce((sum, row) => sum + Number(row.amount || 0), 0);
     },
     staleTime: 60_000,
@@ -187,12 +203,15 @@ const Withdrawals: React.FC = () => {
   const isCreator = userType === 'creator';
 
   // Available balance is role-based:
-  // - creators: event earnings only
-  // - normal affiliates: affiliate earnings only
-  const availableBalance = useMemo(
-    () => Math.max(0, (isCreator ? (totalEarnings || 0) : (affiliateEarnings || 0)) - totalWithdrawn),
-    [affiliateEarnings, isCreator, totalEarnings, totalWithdrawn]
-  );
+  // - creators: event earnings minus affiliate commissions owed, minus withdrawals
+  // - affiliates: their earned commissions minus withdrawals
+  const availableBalance = useMemo(() => {
+    if (isCreator) {
+      const creatorNet = (totalEarnings || 0) - (affiliateCommissionsOwed || 0);
+      return Math.max(0, creatorNet - totalWithdrawn);
+    }
+    return Math.max(0, (affiliateEarnings || 0) - totalWithdrawn);
+  }, [affiliateCommissionsOwed, affiliateEarnings, isCreator, totalEarnings, totalWithdrawn]);
 
   const isAffiliateSource = !isCreator;
   const maxRequestable = availableBalance;

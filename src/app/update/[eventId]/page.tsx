@@ -17,7 +17,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-visible">
       <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800">
         <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">{title}</h2>
       </div>
@@ -37,6 +37,11 @@ function Update() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [shouldRedirect, setShouldRedirect] = useState(false);
+
+  // Affiliate settings
+  const [affiliateEnabled, setAffiliateEnabled] = useState(false);
+  const [commissionType, setCommissionType] = useState<'percentage' | 'fixed'>('percentage');
+  const [commissionValue, setCommissionValue] = useState(10);
 
   const toast = useCallback((type: "success" | "error", message: string) => {
     setToastProps({ type, message });
@@ -104,6 +109,18 @@ function Update() {
           setEvent(eventData);
           setFormData(eventData);
           if (ev.image_url) setImagePreview(ev.image_url);
+
+          // Load existing affiliate settings
+          const { data: affSettings } = await supabase
+            .from('affiliate_settings')
+            .select('enabled, commission_type, commission_value')
+            .eq('event_id', eventId)
+            .maybeSingle();
+          if (affSettings) {
+            setAffiliateEnabled(!!affSettings.enabled);
+            setCommissionType(affSettings.commission_type || 'percentage');
+            setCommissionValue(Number(affSettings.commission_value) || 10);
+          }
         } catch (error) {
           console.error("Error fetching event:", error);
           toast("error", "Failed to load event data");
@@ -185,6 +202,14 @@ function Update() {
       } else {
         await supabase.from('ticket_types').delete().eq('event_id', eventId).eq('sold', 0);
       }
+
+      // Save affiliate settings
+      await supabase.from('affiliate_settings').upsert({
+        event_id: eventId,
+        enabled: affiliateEnabled,
+        commission_type: commissionType,
+        commission_value: commissionValue,
+      }, { onConflict: 'event_id' });
 
       toast("success", "Event updated successfully!");
       setShouldRedirect(true);
@@ -308,6 +333,63 @@ function Update() {
             {/* Tickets */}
             <SectionCard title="Ticket Types">
               <TicketTypesSection formData={formData} setFormData={setFormData} />
+            </SectionCard>
+
+            {/* Affiliate Program */}
+            <SectionCard title="Affiliate Program">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-800 dark:text-white">Allow affiliates</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                      Let others earn commissions by promoting this event
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setAffiliateEnabled(v => !v)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full flex-shrink-0 transition-colors ${
+                      affiliateEnabled ? 'bg-[#f54502]' : 'bg-gray-200 dark:bg-gray-600'
+                    }`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      affiliateEnabled ? 'translate-x-6' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+
+                {affiliateEnabled && (
+                  <div className="space-y-3 pt-1">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                        Commission type
+                      </label>
+                      <select
+                        value={commissionType}
+                        onChange={e => setCommissionType(e.target.value as 'percentage' | 'fixed')}
+                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f54502] focus:border-transparent"
+                      >
+                        <option value="percentage">Percentage (%)</option>
+                        <option value="fixed">Fixed amount</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                        Commission {commissionType === 'percentage' ? 'rate (%)' : 'amount'}
+                      </label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={commissionType === 'percentage' ? 100 : undefined}
+                        value={commissionValue}
+                        onChange={e => setCommissionValue(Number(e.target.value))}
+                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f54502] focus:border-transparent"
+                        placeholder={commissionType === 'percentage' ? 'e.g. 10' : 'e.g. 500'}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
             </SectionCard>
           </form>
         )}

@@ -6,16 +6,17 @@ import { supabase } from '@/utils/supabaseClient';
 import { getSession } from '@/utils/supabaseAuth';
 import Toast from '@/components/ui/Toast';
 import AdminUsers from './components/AdminUsers';
-import { FiUsers, FiCalendar, FiTrendingUp, FiLogOut, FiUser, FiX, FiMenu, FiDollarSign } from 'react-icons/fi';
+import { FiUsers, FiCalendar, FiTrendingUp, FiLogOut, FiUser, FiX, FiMenu, FiDollarSign, FiTag } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import AdminAnalytics from './components/AdminAnalytics';
 import AdminEvents from './components/AdminEvents';
 import AdminWithdrawals from './components/AdminWithdrawals';
+import AdminTickets from './components/AdminTickets';
 import { Skeleton, CardSkeleton } from '@/components/ui/Skeleton';
 import Logo from '@/components/ui/Logo';
 
-type AdminTab = 'users' | 'events' | 'analytics' | 'withdrawals';
+type AdminTab = 'users' | 'events' | 'analytics' | 'withdrawals' | 'tickets';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState<AdminTab>('analytics');
@@ -182,6 +183,19 @@ const AdminDashboard = () => {
                 <FiDollarSign size={20} />
                 <span className="font-medium">Withdrawals</span>
               </button>
+
+              <button
+                className={`w-full flex items-center space-x-3 px-4 py-3 transition-all duration-200 ${
+                  activeTab === 'tickets'
+                    ? 'bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                }`}
+                style={{ borderRadius: '5px' }}
+                onClick={() => { setActiveTab('tickets'); setIsSidebarOpen(false); }}
+              >
+                <FiTag size={20} />
+                <span className="font-medium">Tickets</span>
+              </button>
             </nav>
 
             {/* Profile Button */}
@@ -271,6 +285,7 @@ const AdminDashboard = () => {
                 {activeTab === 'users' && <AdminUsers />}
                 {activeTab === 'events' && <AdminEvents />}
                 {activeTab === 'withdrawals' && <AdminWithdrawals />}
+                {activeTab === 'tickets' && <AdminTickets />}
               </motion.div>
             </AnimatePresence>
           </div>
