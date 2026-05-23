@@ -6,17 +6,18 @@ import { supabase } from '@/utils/supabaseClient';
 import { getSession } from '@/utils/supabaseAuth';
 import Toast from '@/components/ui/Toast';
 import AdminUsers from './components/AdminUsers';
-import { FiUsers, FiCalendar, FiTrendingUp, FiLogOut, FiUser, FiX, FiMenu, FiDollarSign, FiTag } from '@/icon-adapters/react-icons/fi';
+import { FiUsers, FiCalendar, FiTrendingUp, FiLogOut, FiUser, FiX, FiMenu, FiDollarSign, FiTag, FiMapPin } from '@/icon-adapters/react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import AdminAnalytics from './components/AdminAnalytics';
 import AdminEvents from './components/AdminEvents';
 import AdminWithdrawals from './components/AdminWithdrawals';
 import AdminTickets from './components/AdminTickets';
+import AdminLocations from './components/AdminLocations';
 import { Skeleton, CardSkeleton } from '@/components/ui/Skeleton';
 import Logo from '@/components/ui/Logo';
 
-type AdminTab = 'users' | 'events' | 'analytics' | 'withdrawals' | 'tickets';
+type AdminTab = 'users' | 'events' | 'analytics' | 'withdrawals' | 'tickets' | 'locations';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState<AdminTab>('analytics');
@@ -196,6 +197,19 @@ const AdminDashboard = () => {
                 <FiTag size={20} />
                 <span className="font-medium">Tickets</span>
               </button>
+
+              <button
+                className={`w-full flex items-center space-x-3 px-4 py-3 transition-all duration-200 ${
+                  activeTab === 'locations'
+                    ? 'bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                }`}
+                style={{ borderRadius: '5px' }}
+                onClick={() => { setActiveTab('locations'); setIsSidebarOpen(false); }}
+              >
+                <FiMapPin size={20} />
+                <span className="font-medium">Locations</span>
+              </button>
             </nav>
 
             {/* Profile Button */}
@@ -286,6 +300,7 @@ const AdminDashboard = () => {
                 {activeTab === 'events' && <AdminEvents />}
                 {activeTab === 'withdrawals' && <AdminWithdrawals />}
                 {activeTab === 'tickets' && <AdminTickets />}
+                {activeTab === 'locations' && <AdminLocations />}
               </motion.div>
             </AnimatePresence>
           </div>

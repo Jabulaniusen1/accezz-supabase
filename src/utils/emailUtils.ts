@@ -1,7 +1,3 @@
-import { Resend } from 'resend';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 interface Attachment {
   filename: string;
   content: Buffer | string;
@@ -17,6 +13,8 @@ interface SendEmailOptions {
 }
 
 export async function sendEmail({ to, subject, html, text, attachments }: SendEmailOptions): Promise<void> {
+  const { Resend } = await import('resend');
+  const resend = new Resend(process.env.RESEND_API_KEY);
   const from = process.env.RESEND_FROM_EMAIL || 'Accezz <noreply@accezzlive.com>';
   console.log(`[email] Sending via Resend to: ${to}, subject: "${subject}"`);
 
@@ -55,50 +53,65 @@ function emailShell(title: string, body: string): string {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title}</title>
 </head>
-<body style="margin:0;padding:0;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
-  <table role="presentation" cellspacing="0" cellpadding="0" width="100%">
+<body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+  <table role="presentation" cellspacing="0" cellpadding="0" width="100%" style="max-width:600px;margin:0 auto;">
+
+    <!-- Header -->
     <tr>
-      <td style="padding:32px 16px;">
-        <table role="presentation" cellspacing="0" cellpadding="0" width="100%" style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb;">
-
-          <!-- Header -->
-          <tr>
-            <td style="background:#f54502;padding:24px 40px;text-align:center;">
-              <img src="${LOGO_URL}" alt="Accezz" width="100" style="display:block;margin:0 auto;filter:brightness(0) invert(1);">
-            </td>
-          </tr>
-
-          <!-- Body -->
-          <tr>
-            <td style="padding:36px 40px;">
-              ${body}
-            </td>
-          </tr>
-
-          <!-- Footer -->
-          <tr>
-            <td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:20px 40px;text-align:center;">
-              <p style="margin:0 0 4px;font-size:13px;color:#6b7280;">
-                The Accezz Team &middot;
-                <a href="mailto:support@accezzlive.com" style="color:#f54502;text-decoration:none;">support@accezzlive.com</a>
-              </p>
-              <p style="margin:0;font-size:12px;color:#9ca3af;">This is an automated message. Please do not reply directly to this email.</p>
-            </td>
-          </tr>
-
-        </table>
+      <td style="background:#f54502;padding:20px 24px;text-align:center;">
+        <img src="${LOGO_URL}" alt="Accezz" width="90" style="display:block;margin:0 auto;filter:brightness(0) invert(1);">
       </td>
     </tr>
+
+    <!-- Body -->
+    <tr>
+      <td style="padding:32px 24px;">
+        ${body}
+      </td>
+    </tr>
+
+    <!-- Footer -->
+    <tr>
+      <td style="border-top:1px solid #e5e7eb;padding:20px 24px;text-align:center;background:#f9fafb;">
+        <p style="margin:0 0 4px;font-size:13px;color:#6b7280;">
+          The Accezz Team &middot;
+          <a href="mailto:support@accezzlive.com" style="color:#f54502;text-decoration:none;">support@accezzlive.com</a>
+        </p>
+        <p style="margin:0;font-size:12px;color:#9ca3af;">This is an automated message. Please do not reply directly to this email.</p>
+      </td>
+    </tr>
+
   </table>
 </body>
 </html>`;
 }
 
+// ---------------------------------------------------------------------------
+// Icon helper — externally hosted PNG (Icons8 CDN), renders in all email clients
+// ---------------------------------------------------------------------------
+
+function icon(name: string, size = 18, color = 'f54502'): string {
+  return `<img src="https://img.icons8.com/ios-filled/${size}/${color}/${name}.png" width="${size}" height="${size}" alt="" style="display:inline-block;vertical-align:middle;margin-right:8px;">`;
+}
+
+const ICONS = {
+  rocket:    'rocket',
+  share:     'share',
+  megaphone: 'megaphone',
+  link:      'link',
+  check:     'checkmark',
+  ticket:    'ticket',
+  calendar:  'calendar',
+  clock:     'clock',
+  location:  'place-marker',
+  bell:      'alarm',
+};
+
 function row(label: string, value: string, last = false): string {
   const border = last ? '' : 'border-bottom:1px solid #f3f4f6;';
   return `<tr>
-    <td style="padding:10px 0;${border}font-size:13px;color:#6b7280;width:42%;vertical-align:top;">${label}</td>
-    <td style="padding:10px 0;${border}font-size:14px;color:#111827;font-weight:600;text-align:right;vertical-align:top;">${value}</td>
+    <td style="padding:10px 16px;${border}font-size:13px;color:#6b7280;width:42%;vertical-align:top;">${label}</td>
+    <td style="padding:10px 16px;${border}font-size:14px;color:#111827;font-weight:600;text-align:right;vertical-align:top;">${value}</td>
   </tr>`;
 }
 
@@ -333,5 +346,83 @@ export function generateEventReminderEmailHTML(data: {
     ${virtualLinkSection}
 
     ${ctaButton('View My Tickets', `${baseUrl}/dashboard`)}
+  `);
+}
+
+// ---------------------------------------------------------------------------
+// Event published / congratulations email
+// ---------------------------------------------------------------------------
+
+export function generateEventPublishedEmailHTML(data: {
+  fullName: string;
+  eventTitle: string;
+  eventUrl: string;
+  dashboardUrl: string;
+  affiliateSettingsUrl: string;
+  blogUrl: string;
+}): string {
+  const firstName = data.fullName?.split(' ')[0] || 'there';
+
+  const step = (iconName: string, title: string, body: string, btn?: { label: string; href: string }) => `
+    <tr>
+      <td style="padding:20px 0;border-bottom:1px solid #f3f4f6;">
+        <table role="presentation" cellspacing="0" cellpadding="0" width="100%">
+          <tr>
+            <td style="width:36px;vertical-align:top;padding-top:2px;">
+              <span style="display:inline-block;width:32px;height:32px;background:#fff3ee;border-radius:8px;text-align:center;line-height:36px;">
+                ${icon(iconName, 18)}
+              </span>
+            </td>
+            <td style="padding-left:14px;vertical-align:top;">
+              <p style="margin:0 0 6px;font-size:15px;font-weight:700;color:#111827;">${title}</p>
+              <p style="margin:0 0 12px;font-size:14px;color:#6b7280;line-height:1.7;">${body}</p>
+              ${btn ? `<a href="${btn.href}" style="display:inline-block;padding:9px 20px;background:#f9fafb;border:1px solid #e5e7eb;color:#374151;text-decoration:none;border-radius:6px;font-size:13px;font-weight:600;">${btn.label} →</a>` : ''}
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>`;
+
+  return emailShell(`Your event is live — ${data.eventTitle}`, `
+    <p style="margin:0 0 4px;font-size:22px;font-weight:800;color:#111827;">
+      ${icon(ICONS.rocket, 24)} You did it!
+    </p>
+    <p style="margin:0 0 28px;font-size:15px;color:#6b7280;line-height:1.7;">
+      Hi ${firstName}, <strong style="color:#111827;">${data.eventTitle}</strong> is officially live on Accezz.
+      Your event page is ready — now let's get people through the door.
+    </p>
+
+    ${ctaButton('View Your Event Page', data.eventUrl)}
+
+    <p style="margin:0 0 16px;font-size:17px;font-weight:700;color:#111827;">What's next?</p>
+    <table role="presentation" cellspacing="0" cellpadding="0" width="100%" style="border:1px solid #e5e7eb;border-radius:6px;padding:0 20px;margin:0 0 28px;">
+      ${step(ICONS.share, 'Share with friends, family & community',
+        `The fastest path to ticket sales is your own network. Drop your event link in WhatsApp groups, DMs, community pages, and anywhere your people hang out. It costs nothing and it works.`,
+        { label: 'Copy Your Event Link', href: data.eventUrl }
+      )}
+      ${step(ICONS.megaphone, 'Run Ads',
+        `Want to reach beyond your circle? A small budget on Instagram, Facebook, or X can put your event in front of thousands of the right people. Even ₦5,000 can make a real difference.`,
+        { label: 'Learn How to Run Ads', href: data.blogUrl }
+      )}
+      ${step(ICONS.link, 'Share Your Affiliate Link',
+        `This one's a secret weapon. Accezz has a built-in affiliate program — you can let promoters, influencers, or friends earn a commission for every ticket they sell on your behalf. You set the rate, they drive the sales, you only pay when it works.`,
+        { label: 'Set Up Affiliates', href: data.affiliateSettingsUrl }
+      )}
+    </table>
+
+    <table role="presentation" cellspacing="0" cellpadding="0" width="100%" style="background:#fff8f5;border:1px solid #fde8df;border-radius:6px;margin:0 0 28px;">
+      <tr><td style="padding:18px 20px;">
+        <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#c2410c;">Want to learn more about growing your event?</p>
+        <p style="margin:0 0 14px;font-size:13px;color:#9a3412;line-height:1.6;">
+          Check out our blog for tips on promotion, pricing, and running a great event — written for Nigerian event creators.
+        </p>
+        <a href="${data.blogUrl}" style="display:inline-block;padding:10px 22px;background:#f54502;color:#fff;text-decoration:none;border-radius:6px;font-size:13px;font-weight:600;">Read the Blog</a>
+      </td></tr>
+    </table>
+
+    <p style="margin:0;font-size:13px;color:#9ca3af;line-height:1.7;">
+      You can manage your event, track ticket sales, and update details anytime from your
+      <a href="${data.dashboardUrl}" style="color:#f54502;text-decoration:none;">dashboard</a>.
+    </p>
   `);
 }

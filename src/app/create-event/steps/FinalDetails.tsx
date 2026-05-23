@@ -198,6 +198,52 @@ export default function FinalDetails({
 
         clearFormProgress();
 
+        // Fire-and-forget: save custom location for platform (pending admin approval)
+        if (
+          !formData.isVirtual &&
+          locationVisibility !== 'undisclosed' &&
+          !formData.locationId &&
+          venueValue &&
+          cityValue &&
+          countryValue
+        ) {
+          supabase
+            .from('locations')
+            .select('id')
+            .ilike('name', venueValue)
+            .eq('city', cityValue)
+            .eq('country', countryValue)
+            .limit(1)
+            .then(({ data }) => {
+              if (!data || data.length === 0) {
+                supabase.from('locations').insert({
+                  user_id: session.user.id,
+                  name: venueValue,
+                  address: addressValue || null,
+                  city: cityValue,
+                  country: countryValue,
+                  latitude: latitudeValue,
+                  longitude: longitudeValue,
+                  is_active: false,
+                }).then(() => {});
+              }
+            });
+        }
+
+        // Fire-and-forget: send event published congratulations email
+        fetch('/api/emails/event-published', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            eventTitle: formData.title.trim(),
+            eventSlug: (created as { slug?: string }).slug || created.id,
+            eventId: created.id,
+          }),
+        }).catch(err => console.error('[event-published email]', err));
+
         setToast({ type: "success", message: "Event created successfully!", onClose: () => setToast(null) });
         router.push('/dashboard');
       } catch (error) {

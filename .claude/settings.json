@@ -14,7 +14,8 @@
       "Bash(grep -n \"CREATE TABLE.*orders\\\\|CREATE TABLE.*profiles\" /Users/mac/Desktop/accezz-supabase/supabase/migrations/*.sql)",
       "Bash(xargs ls:*)",
       "Bash(python3 -c \"import secrets; print\\(secrets.token_hex\\(32\\)\\)\")",
-      "Bash(npx next:*)"
+      "Bash(npx next:*)",
+      "Bash(node -e \"const icons = require\\('@hugeicons/core-free-icons'\\); const keys = Object.keys\\(icons\\).filter\\(k => k.toLowerCase\\(\\).includes\\('refresh'\\) || k.toLowerCase\\(\\).includes\\('rotate'\\)\\); console.log\\(keys.slice\\(0,10\\)\\);\")"
     ]
   }
 }
