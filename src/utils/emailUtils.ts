@@ -426,3 +426,127 @@ export function generateEventPublishedEmailHTML(data: {
     </p>
   `);
 }
+
+// ---------------------------------------------------------------------------
+// Event ended — organizer recap report
+// ---------------------------------------------------------------------------
+
+export function generateEventEndedReportEmailHTML(data: {
+  fullName: string;
+  eventTitle: string;
+  eventDate: string;
+  currency: string;
+  totalRevenue: number;
+  ticketsSold: number;
+  totalCapacity: number;
+  checkedIn: number;
+  pageViews: number;
+  noShows: number;
+  ticketTypeBreakdown: { name: string; sold: number; quantity: number; revenue: number }[];
+  genderBreakdown?: { label: string; count: number }[];
+  topAffiliate?: { name: string; conversions: number; earned: number } | null;
+  analyticsUrl: string;
+  createEventUrl: string;
+}): string {
+  const firstName = data.fullName?.split(' ')[0] || 'there';
+  const money = (n: number) => `${data.currency} ${n.toLocaleString()}`;
+
+  const checkInRate = data.ticketsSold > 0 ? Math.round((data.checkedIn / data.ticketsSold) * 100) : 0;
+  const sellThroughRate = data.totalCapacity > 0 ? Math.round((data.ticketsSold / data.totalCapacity) * 100) : null;
+
+  const bestSeller = [...data.ticketTypeBreakdown].sort((a, b) => b.sold - a.sold)[0];
+
+  const statCard = (label: string, value: string, color: string) => `
+    <td width="50%" style="padding:6px;">
+      <table role="presentation" cellspacing="0" cellpadding="0" width="100%" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;">
+        <tr><td style="padding:16px;">
+          <p style="margin:0 0 4px;font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.04em;">${label}</p>
+          <p style="margin:0;font-size:20px;font-weight:800;color:${color};">${value}</p>
+        </td></tr>
+      </table>
+    </td>`;
+
+  const statsGrid = `
+    <table role="presentation" cellspacing="0" cellpadding="0" width="100%" style="margin:0 0 8px;">
+      <tr>
+        ${statCard('Tickets Sold', `${data.ticketsSold}${data.totalCapacity ? ` / ${data.totalCapacity}` : ''}`, '#111827')}
+        ${statCard('Checked In', `${data.checkedIn} (${checkInRate}%)`, '#111827')}
+      </tr>
+      <tr>
+        ${statCard('Page Views', String(data.pageViews), '#111827')}
+        ${statCard('No-shows', String(data.noShows), '#111827')}
+      </tr>
+    </table>`;
+
+  const breakdownRows = data.ticketTypeBreakdown
+    .sort((a, b) => b.sold - a.sold)
+    .map((t, i, arr) => {
+      const pct = t.quantity > 0 ? Math.min(100, Math.round((t.sold / t.quantity) * 100)) : 0;
+      const isBest = bestSeller && t.name === bestSeller.name && t.sold > 0;
+      return `<tr>
+        <td style="padding:12px 16px;${i < arr.length - 1 ? 'border-bottom:1px solid #f3f4f6;' : ''}font-size:13px;color:#374151;">
+          ${t.name}${isBest ? ' <span style="display:inline-block;margin-left:6px;padding:2px 8px;background:#fff3ee;color:#f54502;font-size:10px;font-weight:700;border-radius:10px;text-transform:uppercase;letter-spacing:0.03em;">Top seller</span>' : ''}
+          <br><span style="font-size:11px;color:#9ca3af;">${t.sold} sold${t.quantity ? ` of ${t.quantity}` : ''} &middot; ${pct}% &middot; ${money(t.revenue)}</span>
+        </td>
+      </tr>`;
+    })
+    .join('');
+
+  const genderSection = data.genderBreakdown && data.genderBreakdown.length > 0
+    ? `
+    <p style="margin:0 0 12px;font-size:14px;font-weight:600;color:#111827;">Who showed up</p>
+    ${detailTable(data.genderBreakdown.map((g, i, arr) =>
+      row(g.label, String(g.count), i === arr.length - 1)
+    ).join(''))}` : '';
+
+  const affiliateSection = data.topAffiliate
+    ? `
+    <table role="presentation" cellspacing="0" cellpadding="0" width="100%" style="background:#fff8f5;border:1px solid #fde8df;border-radius:6px;margin:0 0 28px;">
+      <tr><td style="padding:16px 20px;">
+        <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#c2410c;">${icon(ICONS.megaphone, 16)}Affiliate MVP</p>
+        <p style="margin:0;font-size:13px;color:#9a3412;line-height:1.6;">
+          <strong>${data.topAffiliate.name}</strong> drove ${data.topAffiliate.conversions} sale${data.topAffiliate.conversions === 1 ? '' : 's'} for you, earning ${money(data.topAffiliate.earned)} in commission. Consider sending them a thank-you.
+        </p>
+      </td></tr>
+    </table>` : '';
+
+  const sellThroughBanner = sellThroughRate !== null
+    ? `<p style="margin:0 0 28px;font-size:14px;color:#374151;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:14px 18px;">
+        ${sellThroughRate >= 90 ? '🔥' : sellThroughRate >= 50 ? '📈' : '🌱'} You sold <strong>${sellThroughRate}%</strong> of your total capacity.
+      </p>`
+    : '';
+
+  return emailShell(`Your event recap — ${data.eventTitle}`, `
+    <p style="margin:0 0 4px;font-size:22px;font-weight:800;color:#111827;">It's a wrap! 🎉</p>
+    <p style="margin:0 0 24px;font-size:15px;color:#6b7280;line-height:1.7;">
+      Hi ${firstName}, <strong style="color:#111827;">${data.eventTitle}</strong> wrapped up on ${data.eventDate}.
+      Here's how it went.
+    </p>
+
+    <table role="presentation" cellspacing="0" cellpadding="0" width="100%" style="background:#111827;border-radius:8px;margin:0 0 20px;">
+      <tr><td style="padding:22px 24px;text-align:center;">
+        <p style="margin:0 0 4px;font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.06em;">Total revenue</p>
+        <p style="margin:0;font-size:32px;font-weight:800;color:#ffffff;">${money(data.totalRevenue)}</p>
+      </td></tr>
+    </table>
+
+    ${statsGrid}
+    ${sellThroughBanner}
+
+    ${data.ticketTypeBreakdown.length > 0 ? `
+    <p style="margin:0 0 12px;font-size:14px;font-weight:600;color:#111827;">Ticket type breakdown</p>
+    ${detailTable(breakdownRows)}` : ''}
+
+    ${genderSection}
+    ${affiliateSection}
+
+    ${ctaButton('View Full Analytics', data.analyticsUrl)}
+
+    <table role="presentation" cellspacing="0" cellpadding="0" width="100%" style="border-top:1px solid #f3f4f6;margin:0;">
+      <tr><td style="padding:20px 0 0;text-align:center;">
+        <p style="margin:0 0 12px;font-size:14px;color:#6b7280;">Loved how that went? Let's do it again.</p>
+        <a href="${data.createEventUrl}" style="display:inline-block;padding:10px 22px;background:#f9fafb;border:1px solid #e5e7eb;color:#374151;text-decoration:none;border-radius:6px;font-size:13px;font-weight:600;">Create Your Next Event →</a>
+      </td></tr>
+    </table>
+  `);
+}

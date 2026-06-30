@@ -1,6 +1,6 @@
 import { inngest } from '@/utils/inngest';
 import { createClient } from '@supabase/supabase-js';
-import { sendEmail, generateEventReminderEmailHTML } from '@/utils/emailUtils';
+import { sendEmail, generateEventReminderEmailHTML, generateEventEndedReportEmailHTML } from '@/utils/emailUtils';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || '',
@@ -357,5 +357,171 @@ async function sendRemindersForOrder(
       console.error(`[reminder] Failed to send reminder to ${ticket.attendee_email}:`, err);
     }
   }
+}
+
+/**
+ * Inngest cron function — scans for events that have just ended and sends the
+ * organizer a recap report (revenue, tickets sold, check-ins, etc).
+ * Runs every 20 minutes; relies on events.organizer_report_sent_at to avoid
+ * sending duplicates.
+ */
+export const sendEventEndedReports = inngest.createFunction(
+  {
+    id: 'send-event-ended-reports',
+    name: 'Send Event Ended Reports',
+  },
+  { cron: '*/20 * * * *' },
+  async ({ step }) => {
+    const endedEvents = await step.run('find-recently-ended-events', async () => {
+      const { data, error } = await supabaseAdmin
+        .from('events')
+        .select('id, user_id, title, slug, end_time, currency')
+        .eq('status', 'published')
+        .is('organizer_report_sent_at', null)
+        .not('end_time', 'is', null)
+        .lte('end_time', new Date().toISOString());
+
+      if (error) {
+        console.error('Error finding ended events:', error);
+        throw error;
+      }
+
+      return data || [];
+    });
+
+    if (endedEvents.length === 0) {
+      return { skipped: true, reason: 'no_ended_events' };
+    }
+
+    const results = [];
+    for (const ev of endedEvents) {
+      const result = await step.run(`send-report-${ev.id}`, async () => {
+        try {
+          await sendOrganizerReport(ev);
+          await supabaseAdmin
+            .from('events')
+            .update({ organizer_report_sent_at: new Date().toISOString() })
+            .eq('id', ev.id);
+          return { eventId: ev.id, sent: true };
+        } catch (err) {
+          console.error(`[event-report] Failed for event ${ev.id}:`, err);
+          return { eventId: ev.id, sent: false, error: err instanceof Error ? err.message : String(err) };
+        }
+      });
+      results.push(result);
+    }
+
+    return { success: true, processed: results.length, results };
+  }
+);
+
+async function sendOrganizerReport(ev: {
+  id: string;
+  user_id: string;
+  title: string;
+  slug: string | null;
+  end_time: string;
+  currency: string | null;
+}) {
+  const currency = ev.currency || 'NGN';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://accezzlive.com';
+
+  const [{ data: profile }, { data: { user: organizer } = { user: null } }, { data: ticketTypes }, { data: tickets }, { count: pageViews }] =
+    await Promise.all([
+      supabaseAdmin.from('profiles').select('full_name').eq('user_id', ev.user_id).maybeSingle(),
+      supabaseAdmin.auth.admin.getUserById(ev.user_id),
+      supabaseAdmin.from('ticket_types').select('id, name, quantity, sold').eq('event_id', ev.id),
+      supabaseAdmin.from('tickets').select('ticket_type_id, price, is_scanned, validation_status, gender').eq('event_id', ev.id),
+      supabaseAdmin.from('event_views').select('id', { count: 'exact', head: true }).eq('event_id', ev.id),
+    ]);
+
+  const organizerEmail = organizer?.email;
+  if (!organizerEmail) {
+    throw new Error(`No email found for organizer ${ev.user_id}`);
+  }
+
+  const validTickets = (tickets || []).filter((t) => t.validation_status === 'valid');
+  const ticketsSold = validTickets.length;
+  const totalRevenue = validTickets.reduce((sum, t) => sum + Number(t.price || 0), 0);
+  const checkedIn = validTickets.filter((t) => t.is_scanned).length;
+  const totalCapacity = (ticketTypes || []).reduce((sum, t) => sum + Number(t.quantity || 0), 0);
+
+  const typeMap = new Map((ticketTypes || []).map((t) => [t.id, t]));
+  const breakdownMap = new Map<string, { name: string; sold: number; quantity: number; revenue: number }>();
+  for (const t of validTickets) {
+    const type = typeMap.get(t.ticket_type_id);
+    const name = type?.name || 'General';
+    const entry = breakdownMap.get(name) || { name, sold: 0, quantity: Number(type?.quantity || 0), revenue: 0 };
+    entry.sold += 1;
+    entry.revenue += Number(t.price || 0);
+    breakdownMap.set(name, entry);
+  }
+
+  const genderLabels: Record<string, string> = {
+    male: 'Male',
+    female: 'Female',
+    other: 'Other',
+    'prefer-not-to-say': 'Prefer not to say',
+  };
+  const genderCounts = new Map<string, number>();
+  for (const t of validTickets) {
+    if (!t.gender) continue;
+    const label = genderLabels[t.gender] || t.gender;
+    genderCounts.set(label, (genderCounts.get(label) || 0) + 1);
+  }
+
+  const { data: topAffiliateRow } = await supabaseAdmin
+    .from('affiliates')
+    .select('user_id, conversions, total_earned')
+    .eq('event_id', ev.id)
+    .gt('conversions', 0)
+    .order('conversions', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  let topAffiliate: { name: string; conversions: number; earned: number } | null = null;
+  if (topAffiliateRow) {
+    const { data: affiliateProfile } = await supabaseAdmin
+      .from('profiles')
+      .select('full_name')
+      .eq('user_id', topAffiliateRow.user_id)
+      .maybeSingle();
+    topAffiliate = {
+      name: affiliateProfile?.full_name || 'An affiliate',
+      conversions: topAffiliateRow.conversions,
+      earned: Number(topAffiliateRow.total_earned || 0),
+    };
+  }
+
+  const eventDate = new Date(ev.end_time).toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  const html = generateEventEndedReportEmailHTML({
+    fullName: profile?.full_name || organizer?.user_metadata?.full_name || 'there',
+    eventTitle: ev.title,
+    eventDate,
+    currency,
+    totalRevenue,
+    ticketsSold,
+    totalCapacity,
+    checkedIn,
+    pageViews: pageViews || 0,
+    noShows: Math.max(0, ticketsSold - checkedIn),
+    ticketTypeBreakdown: Array.from(breakdownMap.values()),
+    genderBreakdown: Array.from(genderCounts.entries()).map(([label, count]) => ({ label, count })),
+    topAffiliate,
+    analyticsUrl: `${baseUrl}/analytics?id=${ev.id}`,
+    createEventUrl: `${baseUrl}/create-event`,
+  });
+
+  await sendEmail({
+    to: organizerEmail,
+    subject: `Your event recap — ${ev.title}`,
+    html,
+  });
 }
 
