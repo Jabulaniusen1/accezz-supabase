@@ -53,11 +53,6 @@ async function postNotification(payload: NotificationPayload) {
   }
 }
 
-export async function notifyTicketPurchase(orderId: string) {
-  if (!orderId) return;
-  await postNotification({ type: 'ticket_purchase', orderId });
-}
-
 export async function notifyLocationBooking(bookingId: string) {
   if (!bookingId) return;
   await postNotification({ type: 'location_booking', bookingId });

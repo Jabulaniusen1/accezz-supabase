@@ -9,42 +9,37 @@ import Toast from '../../components/ui/Toast';
 import { supabase } from '@/utils/supabaseClient';
 import Logo from '@/components/ui/Logo';
 
-interface Event {
-  id: string;
-  title: string;
-  description: string;
-  image: string;
-  start_time: string;
-  location: string;
-  ticketType: TicketType[];
-}
-
-interface TicketType {
-  name: string;
-  sold: string;
-  price: string;
-  quantity: string;
-}
-
-interface Attendee {
-  name: string;
-  email: string;
-}
+type ScanStatus = 'valid' | 'invalid' | 'refunded' | 'revoked';
 
 interface TicketData {
   id: string;
-  email: string;
-  phone: string;
-  fullName: string;
-  eventId: string;
+  attendeeName: string;
+  attendeeEmail: string;
+  buyerName: string;
+  buyerPhone: string;
   ticketType: string;
   price: number;
-  purchaseDate: string;
-  qrCode: string;
   currency: string;
-  attendees: Attendee[];
+  purchaseDate: string;
+  validationStatus: ScanStatus;
   isScanned: boolean;
+  scannedAt: string | null;
+  event: {
+    id: string;
+    title: string;
+    image: string;
+    startTime: string;
+    endTime: string | null;
+    location: string;
+  } | null;
 }
+
+type ScanResponse = {
+  ticket?: TicketData;
+  result?: 'success' | 'duplicate' | 'revoked' | 'invalid';
+  error?: string;
+  reason?: string;
+};
 
 interface InfoFieldProps {
   label: string;
@@ -65,166 +60,112 @@ const ValidateContent = () => {
   const signature = searchParams.get('signature');
   const [ticketData, setTicketData] = useState<TicketData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [validating, setValidating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [needsLogin, setNeedsLogin] = useState(false);
   const [toast, setToast] = useState<{ type: 'success' | 'error' | 'info'; message: string; } | null>(null);
-  // const eventId = ticketData?.eventId;
-  const [event, setEvent] = useState<Event | undefined>();
+
+  const getAccessToken = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token || null;
+  };
 
   const handleValidate = async () => {
-    if (!ticketData || !signature || !ticketId || isScanned) return;
+    if (!ticketData || !signature || !ticketId || ticketData.isScanned || validating) return;
 
+    setValidating(true);
     try {
-      // Verify signature matches ticket code
-      const { data: ticket, error: ticketError } = await supabase
-        .from('tickets')
-        .select('ticket_code, is_scanned, validation_status')
-        .eq('id', ticketId)
-        .single();
-
-      if (ticketError || !ticket) {
-        throw new Error('Ticket not found');
-      }
-
-      // Verify signature matches ticket code
-      if (ticket.ticket_code !== signature) {
-        throw new Error('Invalid ticket signature');
-      }
-
-      // Check if already scanned
-      if (ticket.is_scanned) {
-        setTicketData({ ...ticketData, isScanned: true });
-        setToast({ type: 'info', message: 'Ticket already validated' });
+      const token = await getAccessToken();
+      if (!token) {
+        setNeedsLogin(true);
         return;
       }
 
-      // Get current session for scanner user ID
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      // Mark ticket as scanned
-      const { error: updateError } = await supabase
-        .from('tickets')
-        .update({
-          is_scanned: true,
-          scanned_at: new Date().toISOString(),
-          validation_status: 'valid',
-        })
-        .eq('id', ticketId);
+      const res = await fetch('/api/tickets/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ ticketId, signature }),
+      });
+      const data = await res.json().catch(() => ({})) as ScanResponse;
 
-      if (updateError) throw updateError;
+      if (data.ticket) setTicketData(data.ticket);
 
-      // Create ticket scan record (if user is authenticated)
-      if (session?.user?.id) {
-        const { error: scanError } = await supabase
-          .from('ticket_scans')
-          .insert({
-            ticket_id: ticketId,
-            scanned_by_user_id: session.user.id,
-            result: 'success',
-          });
-        
-        if (scanError) {
-          console.error('Error creating scan record:', scanError);
-        }
+      if (data.result === 'success') {
+        setToast({ type: 'success', message: 'Ticket validated successfully!' });
+      } else if (data.result === 'duplicate') {
+        setToast({ type: 'error', message: 'This ticket has already been used.' });
+      } else if (data.result === 'revoked' || data.result === 'invalid') {
+        setToast({ type: 'error', message: 'This ticket is not valid for entry.' });
+      } else {
+        throw new Error(data.error || 'Failed to validate ticket');
       }
-
-      setTicketData({ ...ticketData, isScanned: true });
-      setToast({ type: 'success', message: 'Ticket validated successfully!' });
     } catch (err: unknown) {
       console.error('Error validating ticket:', err);
       const message = err instanceof Error ? err.message : 'Failed to validate ticket';
       setToast({ type: 'error', message });
+    } finally {
+      setValidating(false);
     }
   };
 
-
   useEffect(() => {
     const fetchTicketData = async () => {
-      if (!ticketId) {
-        setError('No ticket ID provided');
+      if (!ticketId || !signature) {
+        setError('Invalid ticket link');
         setLoading(false);
         return;
       }
 
       try {
-        // Fetch ticket with order and event details
-        const { data: ticket, error: ticketError } = await supabase
-          .from('tickets')
-          .select(`
-            *,
-            orders!inner(
-              buyer_email,
-              buyer_full_name,
-              buyer_phone,
-              currency,
-              total_amount,
-              meta
-            ),
-            events!inner(
-              id,
-              title,
-              image_url,
-              start_time,
-              venue,
-              location
-            ),
-            ticket_types!inner(
-              name
-            )
-          `)
-          .eq('id', ticketId)
-          .single();
-
-        if (ticketError || !ticket) {
-          throw ticketError || new Error('Ticket not found');
+        const token = await getAccessToken();
+        if (!token) {
+          setNeedsLogin(true);
+          return;
         }
 
-        // Map ticket data
-        const mappedTicketData: TicketData = {
-          id: ticket.id,
-          email: ticket.orders.buyer_email || '',
-          phone: ticket.orders.buyer_phone || '',
-          fullName: ticket.orders.buyer_full_name || '',
-          eventId: ticket.event_id,
-          ticketType: ticket.ticket_types.name,
-          price: Number(ticket.price),
-          purchaseDate: ticket.created_at,
-          qrCode: ticket.qr_code_url || '',
-          currency: ticket.currency || 'NGN',
-          attendees: ticket.orders.meta?.attendees || [],
-          isScanned: ticket.is_scanned || false,
-        };
+        const params = new URLSearchParams({ ticketId, signature });
+        const res = await fetch(`/api/tickets/scan?${params.toString()}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json().catch(() => ({})) as ScanResponse;
 
-        setTicketData(mappedTicketData);
-        setLoading(false);
-
-        // Fetch event data
-        const { data: eventData, error: eventError } = await supabase
-          .from('events')
-          .select('id, title, image_url, start_time, end_time, venue, location, address, city')
-          .eq('id', ticket.event_id)
-          .single();
-
-        if (!eventError && eventData) {
-          const mappedEvent: Event = {
-            id: eventData.id,
-            title: eventData.title,
-            description: '',
-            image: eventData.image_url || '',
-            start_time: eventData.start_time,
-            location: eventData.location || eventData.address || eventData.city || '',
-            ticketType: [],
-          };
-          setEvent(mappedEvent);
+        if (res.status === 401) {
+          setNeedsLogin(true);
+          return;
         }
+        if (!res.ok || !data.ticket) {
+          setError(data.error || 'Failed to fetch ticket details');
+          return;
+        }
+        setTicketData(data.ticket);
       } catch (err: unknown) {
         setError('Failed to fetch ticket details');
-        setLoading(false);
         console.error('Error fetching ticket:', err);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchTicketData();
-  }, [ticketId]);
+  }, [ticketId, signature]);
+
+  if (needsLogin) {
+    const redirect = `/validate-ticket?${searchParams.toString()}`;
+    return (
+      <div className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 px-4">
+        <div className="text-center max-w-md space-y-4">
+          <p className="text-gray-900 text-lg sm:text-xl font-semibold">Sign in to check in tickets</p>
+          <p className="text-gray-600">Only the event organizer can validate tickets. Sign in with the organizer account on this device to continue.</p>
+          <a
+            href={`/auth/login?redirect=${encodeURIComponent(redirect)}`}
+            className="inline-block py-3 px-6 rounded-xl bg-[#f54502] hover:bg-[#d63a02] text-white font-bold"
+          >
+            Sign in
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) return (
     <div className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
@@ -248,6 +189,14 @@ const ValidateContent = () => {
 
   
   const isScanned = ticketData.isScanned;
+  const isInvalid = ticketData.validationStatus !== 'valid';
+  const event = ticketData.event;
+
+  const statusBadge = isInvalid
+    ? { className: 'bg-red-600 text-white', icon: '✕', label: `Not valid (${ticketData.validationStatus})` }
+    : isScanned
+      ? { className: 'bg-green-500 text-white', icon: '✓', label: 'Checked in' }
+      : { className: 'bg-[#f54502] text-white', icon: '⏳', label: 'Pending Validation' };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex flex-col p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6 md:space-y-8">
@@ -281,24 +230,16 @@ const ValidateContent = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className={`inline-flex items-center gap-2 px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold rounded-lg shadow-md ${
-          isScanned 
-            ? 'bg-green-500 text-white' 
-            : 'bg-[#f54502] text-white'
-        }`}
+        className={`inline-flex items-center gap-2 px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold rounded-lg shadow-md ${statusBadge.className}`}
       >
-        {isScanned === true ? (
-          <>
-            <span aria-hidden="true" className="text-lg sm:text-xl">✓</span>
-            <span>Validated</span>
-          </>
-        ) : (
-          <>
-            <span aria-hidden="true" className="text-lg sm:text-xl">⏳</span>
-            <span>Pending Validation</span>
-          </>
-        )}
+        <span aria-hidden="true" className="text-lg sm:text-xl">{statusBadge.icon}</span>
+        <span>{statusBadge.label}</span>
       </motion.div>
+      {isScanned && ticketData.scannedAt && (
+        <p className="text-sm text-gray-600">
+          Checked in at {new Date(ticketData.scannedAt).toLocaleString('en-GB')}
+        </p>
+      )}
     </section>
 
     {event && (
@@ -310,11 +251,11 @@ const ValidateContent = () => {
       >
         <div className="absolute inset-0 bg-gradient-to-br from-black/60 to-black/40 flex flex-col justify-center items-center text-center p-4 sm:p-6">
           <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-white leading-tight">{event.title}</h1>
-          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-200 mt-2">{new Date(event.start_time).toLocaleDateString('en-GB', {
+          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-200 mt-2">{new Date(event.startTime).toLocaleDateString('en-GB', {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric',
-          })}, {new Date(event.start_time).toLocaleTimeString('en-GB', {
+          })}, {new Date(event.startTime).toLocaleTimeString('en-GB', {
             hour: '2-digit',
             minute: '2-digit',
           })}</p>
@@ -348,55 +289,37 @@ const ValidateContent = () => {
       <div className="bg-white rounded-xl p-6 sm:p-8 shadow-md border border-gray-200">
         <h3 className="text-xl sm:text-2xl font-bold border-b-2 border-[#f54502] pb-3 mb-6 text-gray-900">Attendee Details</h3>
         <div className="space-y-4 sm:space-y-5">
-          <InfoField label="Name" value={ticketData.fullName} className="text-base sm:text-lg font-medium text-gray-900" />
-          <InfoField label="Email" value={ticketData.email} className="text-base sm:text-lg font-medium text-gray-900" />
-          <InfoField label="Phone" value={ticketData.phone} className="text-base sm:text-lg font-medium text-gray-900" />
+          <InfoField label="Name" value={ticketData.attendeeName} className="text-base sm:text-lg font-medium text-gray-900" />
+          <InfoField label="Email" value={ticketData.attendeeEmail} className="text-base sm:text-lg font-medium text-gray-900" />
+          {ticketData.buyerName && ticketData.buyerName !== ticketData.attendeeName && (
+            <InfoField label="Purchased by" value={ticketData.buyerName} className="text-base sm:text-lg font-medium text-gray-900" />
+          )}
+          {ticketData.buyerPhone && (
+            <InfoField label="Buyer phone" value={ticketData.buyerPhone} className="text-base sm:text-lg font-medium text-gray-900" />
+          )}
         </div>
       </div>
     </section>
 
-
-    {/* Additional Attendees */}
-      {ticketData.attendees?.length > 0 && (
-        <section className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-          <div className="bg-white rounded-xl p-6 sm:p-8 shadow-md border border-gray-200">
-            <h3 className="text-xl sm:text-2xl font-bold border-b-2 border-[#f54502] pb-3 mb-6 text-gray-900">Additional Attendees</h3>
-            <div className="space-y-3 sm:space-y-4">
-              {ticketData.attendees.map((attendee, index) => (
-                <div
-                  key={index}
-                  className="flex flex-wrap text-base sm:text-lg border-b border-gray-200 pb-3 sm:pb-4"
-                >
-                  <p className="font-medium text-gray-900">
-                    {attendee.name} - <span className="text-gray-600">{attendee.email}</span>
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-
   <motion.button
       onClick={handleValidate}
-      disabled={isScanned}
+      disabled={isScanned || isInvalid || validating}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.4 }}
       className={`w-full max-w-md mx-auto py-3 sm:py-4 px-6 sm:px-8 text-base sm:text-lg font-bold rounded-xl shadow-lg transform transition-all duration-300 ${
-        isScanned
+        isScanned || isInvalid
           ? 'bg-gray-400 text-white cursor-not-allowed'
           : 'bg-[#f54502] hover:bg-[#d63a02] text-white hover:scale-105 hover:shadow-xl active:scale-95'
       }`}
     >
-    {isScanned ? 'Ticket Already Validated' : 'Validate Ticket Now'}
+    {isInvalid ? 'Ticket Not Valid' : isScanned ? 'Ticket Already Validated' : validating ? 'Validating…' : 'Validate Ticket Now'}
   </motion.button>
 
 
   </main>
 
- 
+
 </div>
 
 

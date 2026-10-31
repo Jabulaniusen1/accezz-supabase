@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabaseClient";
 import { BsX, BsCheckCircle, BsPersonPlus } from '@/icon-adapters/react-icons/bs';
+import { linkOrderToAccount } from "@/utils/paymentUtils";
 
 interface CreateAccountPromptProps {
   isOpen: boolean;
@@ -59,17 +60,8 @@ export default function CreateAccountPrompt({
         return;
       }
 
-      // Link the order to the current user
-      const { error } = await supabase
-        .from("orders")
-        .update({ buyer_user_id: session.user.id })
-        .eq("id", orderId)
-        .is("buyer_user_id", null); // Only update if buyer_user_id is null
-
-      if (error) {
-        console.error("Error linking account:", error);
-        // Still show success, the order might already be linked
-      }
+      // Link the order to the current user (server checks the email matches)
+      await linkOrderToAccount(orderId).catch(() => false);
 
       onClose();
       router.push("/dashboard");

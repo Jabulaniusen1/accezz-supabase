@@ -115,7 +115,8 @@ export async function POST(req: NextRequest) {
       commissionValue: settings.commission_value,
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Server error';
+    console.error('[affiliates/register]', err);
+    const message = 'Server error';
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

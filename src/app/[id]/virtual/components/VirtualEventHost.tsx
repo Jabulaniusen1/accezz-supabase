@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { type Event } from '@/types/event';
 import { FaUserTie, FaLinkedin, FaTwitter, FaGlobe } from '@/icon-adapters/react-icons/fa';
 import Image from 'next/image';
+import { safeExternalUrl } from '@/utils/safeRedirect';
 
 interface VirtualEventHostProps {
   event: Event;
@@ -50,7 +51,7 @@ export default function VirtualEventHost({ event }: VirtualEventHostProps) {
         <div className="flex justify-center space-x-4">
           {socialLinks.linkedin && (
             <a 
-              href={socialLinks.linkedin} 
+              href={safeExternalUrl(socialLinks.linkedin)} 
               target="_blank" 
               rel="noopener noreferrer"
               className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
@@ -60,7 +61,7 @@ export default function VirtualEventHost({ event }: VirtualEventHostProps) {
           )}
           {socialLinks.twitter && (
             <a 
-              href={socialLinks.twitter} 
+              href={safeExternalUrl(socialLinks.twitter)} 
               target="_blank" 
               rel="noopener noreferrer"
               className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
@@ -70,7 +71,7 @@ export default function VirtualEventHost({ event }: VirtualEventHostProps) {
           )}
           {socialLinks.instagram && (
             <a 
-              href={socialLinks.instagram} 
+              href={safeExternalUrl(socialLinks.instagram)} 
               target="_blank" 
               rel="noopener noreferrer"
               className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white flex items-center justify-center hover:from-purple-600 hover:to-pink-600 transition-colors"

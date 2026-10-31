@@ -158,14 +158,16 @@ const Password = () => {
             Two-Factor Authentication
           </h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            Enable two-factor authentication (2FA) for an extra layer of
-            security.
+            Two-factor authentication (2FA) adds an extra layer of security to
+            your account. It isn&apos;t available yet.
           </p>
-          <a href="auth/twoFacAuth" target="_blank" rel="noopener noreferrer">
-            <button className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-6 rounded-lg hover:from-green-600 hover:to-green-700 focus:ring-2 focus:ring-green-400 focus:outline-none transition-all duration-200 transform hover:scale-105">
-              Set Up Two-Factor Authentication
-            </button>
-          </a>
+          <button
+            type="button"
+            disabled
+            className="w-full bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-300 py-3 px-6 rounded-lg cursor-not-allowed"
+          >
+            Coming soon
+          </button>
         </div>
 
         <div className="col-span-1 md:col-span-2 w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg p-4 md:p-6">

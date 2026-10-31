@@ -5,6 +5,7 @@ import DateTimePicker from "@/components/ui/DateTimePicker";
 import SearchableSelect from "@/components/ui/SearchableSelect";
 import { supabase } from "@/utils/supabaseClient";
 import { Event } from "../../../../types/event";
+import { toLocalDateInput, toLocalTimeInput, todayLocalDateInput } from '@/utils/dateInputs';
 
 type EventCategory = {
   id: string;
@@ -15,14 +16,14 @@ const toDateInputValue = (iso?: string | null): string => {
   if (!iso) return "";
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "";
-  return date.toISOString().slice(0, 10);
+  return toLocalDateInput(date);
 };
 
 const toTimeInputValue = (iso?: string | null): string => {
   if (!iso) return "";
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "";
-  return date.toISOString().slice(11, 16);
+  return toLocalTimeInput(date);
 };
 
 const combineDateAndTime = (date: string, time: string): string => {
@@ -399,7 +400,7 @@ export default function EventBasicDetails({
                 type="date"
                 value={startDateValue}
                 onChange={handleStartDateChange}
-                minDate={new Date().toISOString().split("T")[0]}
+                minDate={todayLocalDateInput()}
                 className="w-full"
               />
             </div>
@@ -457,7 +458,7 @@ export default function EventBasicDetails({
                   type="date"
                   value={endDateValue}
                   onChange={handleEndDateChange}
-                  minDate={startDateValue || new Date().toISOString().split("T")[0]}
+                  minDate={startDateValue || todayLocalDateInput()}
                   className="w-full"
                 />
               </div>

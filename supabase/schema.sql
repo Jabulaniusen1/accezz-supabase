@@ -761,6 +761,23 @@ for update using (
   or (status = 'paid' and buyer_email is not null)  -- Only allow setting to 'paid' status
 );
 
+-- Helper used by the tickets insert policy below (must exist before it)
+create or replace function public.is_order_paid(p_order_id uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  return exists(
+    select 1
+    from public.orders
+    where id = p_order_id
+      and status = 'paid'
+  );
+end;
+$$;
+
 -- tickets policies
 drop policy if exists "tickets_buyer_or_owner_read" on public.tickets;
 create policy "tickets_buyer_or_owner_read" on public.tickets
@@ -854,23 +871,6 @@ $$;
 
 alter table public.tickets
   alter column ticket_code set default public.generate_ticket_code();
-
--- 15b) Helper function to check if order is paid (for RLS policies)
-create or replace function public.is_order_paid(p_order_id uuid)
-returns boolean
-language plpgsql
-security definer
-set search_path = public
-as $$
-begin
-  return exists(
-    select 1
-    from public.orders
-    where id = p_order_id
-      and status = 'paid'
-  );
-end;
-$$;
 
 -- 16) Inventory check on creating tickets (availability)
 create or replace function public.ensure_inventory_available()

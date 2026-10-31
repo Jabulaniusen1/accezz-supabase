@@ -10,6 +10,7 @@ import { supabase } from '@/utils/supabaseClient';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { Event as AppEvent, Ticket as AppTicket } from '@/types/event';
 // Withdrawals moved to its own tab
+import { fetchAllRows } from '@/utils/fetchAllRows';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -164,10 +165,12 @@ const Earnings = () => {
       if (!eventIds.length) return {};
 
       // Fetch tickets for these events (including currency for orphaned ticket recovery)
-      const { data: tickets } = await supabase
+      const tickets = await fetchAllRows((from, to) => supabase
         .from('tickets')
         .select('event_id, price, currency, validation_status, order_id, ticket_type_id')
-        .in('event_id', eventIds);
+        .in('event_id', eventIds)
+        .order('id')
+        .range(from, to));
 
       // Fetch ticket type names for mapping
       const { data: ticketTypes } = await supabase
@@ -213,15 +216,14 @@ const Earnings = () => {
         });
       }
 
-      const orderIds = Array.from(new Set((tickets || []).map(t => t.order_id as string).filter(Boolean)));
-      let orderMap = new Map<string, string>();
-      if (orderIds.length) {
-        const { data: orders } = await supabase
-          .from('orders')
-          .select('id, status')
-          .in('id', orderIds);
-        orderMap = new Map<string, string>((orders || []).map(o => [o.id as string, o.status as string]));
-      }
+      // By event rather than by a (possibly huge) list of order ids
+      const orders = await fetchAllRows((from, to) => supabase
+        .from('orders')
+        .select('id, status')
+        .in('event_id', eventIds)
+        .order('id')
+        .range(from, to));
+      const orderMap = new Map<string, string>(orders.map(o => [o.id as string, o.status as string]));
 
       const aggregates: Record<string, { revenue: number; sold: number; byType: Record<string, { revenue: number; sold: number }> }> = {};
       (tickets || []).forEach(t => {

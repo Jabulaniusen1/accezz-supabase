@@ -6,6 +6,7 @@ import XIcon from '@mui/icons-material/X';
 import { formatEventTime, formatEventDate } from '@/utils/formatDateTime';
 import { ClockIcon, MapPinIcon, CalendarIcon } from '@/icon-adapters/lucide-react';
 import { isEventPast } from '@/utils/eventUtils';
+import { safeExternalUrl } from '@/utils/safeRedirect';
 
 interface EventHeroSectionProps {
   event: Event;
@@ -160,9 +161,9 @@ export const EventHeroSection = ({
                 <div className="space-y-3 sm:space-y-4">
                   <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Follow & Share</h4>
                   <div className="flex items-center gap-3 sm:gap-4">
-                    {event?.socialMediaLinks?.instagram && (
+                    {safeExternalUrl(event?.socialMediaLinks?.instagram) && (
                       <a
-                        href={event.socialMediaLinks.instagram}
+                        href={safeExternalUrl(event?.socialMediaLinks?.instagram)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="p-2 sm:p-3 bg-gradient-to-r from-[#f54502]/10 to-[#d63a02]/10 hover:from-[#f54502]/20 hover:to-[#d63a02]/20 rounded-xl hover:scale-105 transition-all"
@@ -170,9 +171,9 @@ export const EventHeroSection = ({
                         <Instagram className="w-5 h-5 sm:w-6 sm:h-6 text-[#f54502]" />
                       </a>
                     )}
-                    {event?.socialMediaLinks?.twitter && (
+                    {safeExternalUrl(event?.socialMediaLinks?.twitter) && (
                       <a
-                        href={event.socialMediaLinks.twitter}
+                        href={safeExternalUrl(event?.socialMediaLinks?.twitter)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="p-2 sm:p-3 bg-gradient-to-r from-[#f54502]/10 to-[#d63a02]/10 hover:from-[#f54502]/20 hover:to-[#d63a02]/20 rounded-xl hover:scale-105 transition-all"
@@ -180,9 +181,9 @@ export const EventHeroSection = ({
                         <XIcon className="w-5 h-5 sm:w-6 sm:h-6 text-[#f54502]" />
                       </a>
                     )}
-                    {event?.socialMediaLinks?.facebook && (
+                    {safeExternalUrl(event?.socialMediaLinks?.facebook) && (
                       <a
-                        href={event.socialMediaLinks.facebook}
+                        href={safeExternalUrl(event?.socialMediaLinks?.facebook)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="p-2 sm:p-3 bg-gradient-to-r from-[#f54502]/10 to-[#d63a02]/10 hover:from-[#f54502]/20 hover:to-[#d63a02]/20 rounded-xl hover:scale-105 transition-all"

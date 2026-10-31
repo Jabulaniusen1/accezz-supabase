@@ -8,6 +8,7 @@ import { useCountryCityOptions } from '@/hooks/useCountryCityOptions';
 import SearchableSelect from '../../components/SearchableSelect';
 import Link from 'next/link';
 import Image from 'next/image';
+import { safeRedirectPath } from '@/utils/safeRedirect';
 
 const AgreeTerms = React.lazy(() => import('../../components/home/agreeTerms'));
 
@@ -101,12 +102,12 @@ function SignupContent() {
         await fetch('/api/emails/welcome', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, fullName: `${firstName} ${lastName}` }),
+          body: JSON.stringify({ email }),
         });
       } catch {}
 
       toast('success', 'Account created! Please check your email to verify.');
-      const redirectUrl = searchParams.get('redirect') || '/dashboard';
+      const redirectUrl = safeRedirectPath(searchParams.get('redirect'));
       setTimeout(() => {
         router.push(`/auth/login?verify=true&email=${encodeURIComponent(email)}${orderId ? `&orderId=${orderId}` : ''}${redirectUrl !== '/dashboard' ? `&redirect=${encodeURIComponent(redirectUrl)}` : ''}`);
       }, 1200);

@@ -308,7 +308,11 @@ export const createLocationBooking = async (payload: CreateBookingPayload): Prom
     data: { session },
   } = await supabase.auth.getSession();
 
+  // Generated here because guests can't read the row back after inserting
+  // it (bookings are only visible to the venue owner and signed-in requester)
+  const bookingId = crypto.randomUUID();
   const insertPayload = {
+    id: bookingId,
     location_id: payload.locationId,
     requester_name: payload.requesterName || null,
     requester_email: payload.requesterEmail || null,
@@ -321,35 +325,32 @@ export const createLocationBooking = async (payload: CreateBookingPayload): Prom
     requester_user_id: session?.user?.id || null,
   };
 
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from('location_bookings')
-    .insert(insertPayload)
-    .select('*')
-    .single();
+    .insert(insertPayload);
 
   if (error) {
     throw error;
   }
 
-  if (data?.id) {
-    await notifyLocationBooking(data.id);
-  }
+  await notifyLocationBooking(bookingId);
 
+  const now = new Date().toISOString();
   return {
-    id: data.id,
-    locationId: data.location_id,
-    requesterUserId: data.requester_user_id,
-    requesterName: data.requester_name,
-    requesterEmail: data.requester_email,
-    requesterPhone: data.requester_phone,
-    eventType: data.event_type,
-    eventDate: data.event_date,
-    startTime: data.start_time,
-    endTime: data.end_time,
-    notes: data.notes,
-    status: data.status,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    id: bookingId,
+    locationId: insertPayload.location_id,
+    requesterUserId: insertPayload.requester_user_id,
+    requesterName: insertPayload.requester_name,
+    requesterEmail: insertPayload.requester_email,
+    requesterPhone: insertPayload.requester_phone,
+    eventType: insertPayload.event_type,
+    eventDate: insertPayload.event_date,
+    startTime: insertPayload.start_time,
+    endTime: insertPayload.end_time,
+    notes: insertPayload.notes,
+    status: 'pending',
+    createdAt: now,
+    updatedAt: now,
   };
 };
 

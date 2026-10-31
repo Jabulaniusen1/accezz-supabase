@@ -1,7 +1,11 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import { FaCalendarAlt, FaClock, FaInfoCircle, FaLink, FaVideo } from '@/icon-adapters/react-icons/fa';
 import { type Event } from '@/types/event';
 import { formatEventDate, formatEventTime } from '@/utils/formatDateTime';
+import { supabase } from '@/utils/supabaseClient';
+import { fetchVirtualAccess, type VirtualAccessDetails } from '@/utils/virtualAccess';
 
 interface VirtualEventDetailsProps {
   event: Event;
@@ -36,10 +40,26 @@ export const getVirtualPlatformLabel = (event: Event): string => {
 };
 
 export default function VirtualEventDetails({ event }: VirtualEventDetailsProps) {
-  const virtualDetails = event.virtualEventDetails;
+  // Meeting details are only readable by the organizer and ticket holders (RLS)
+  const [access, setAccess] = useState<VirtualAccessDetails | null>(null);
+
+  const eventId = event?.id;
+  useEffect(() => {
+    let cancelled = false;
+    if (!eventId) return;
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) return;
+      fetchVirtualAccess(supabase, eventId).then((details) => {
+        if (!cancelled) setAccess(details);
+      });
+    });
+    return () => { cancelled = true; };
+  }, [eventId]);
+
   const platformLabel = getVirtualPlatformLabel(event);
-  const meetingUrl = virtualDetails?.meetingUrl;
-  const meetingId = virtualDetails?.meetingId;
+  // Organizer-entered: only allow web links (no javascript: etc.)
+  const meetingUrl = access?.meetingUrl && /^https?:\/\//i.test(access.meetingUrl) ? access.meetingUrl : undefined;
+  const meetingId = access?.meetingId;
   const formattedDate = formatEventDate(event?.date || '');
   const formattedTime = formatEventTime(event?.time || '');
 
@@ -86,9 +106,14 @@ export default function VirtualEventDetails({ event }: VirtualEventDetailsProps)
 
           <div className="space-y-3">
             {meetingUrl ? (
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Your access link will be shared in the confirmation email once your booking is completed.
-              </p>
+              <a
+                href={meetingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#f54502] px-4 py-2 text-sm font-semibold text-white hover:bg-[#d63a02]"
+              >
+                <FaLink /> Join the event
+              </a>
             ) : (
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 Joining details will be shared with you immediately after you secure your ticket.

@@ -3,7 +3,7 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { supabase } from '@/utils/supabaseClient';
+import { fetchOrderDetails } from '@/utils/paymentUtils';
 import { PageSkeleton } from '@/components/ui/Skeleton';
 import { CheckCircle2, Download, Calendar, MapPin, Ticket } from '@/icon-adapters/lucide-react';
 import jsPDF from 'jspdf';
@@ -61,22 +61,16 @@ const InvoiceContent = () => {
   const [error, setError] = useState<string | null>(null);
   const [qrCodes, setQrCodes] = useState<Record<string, string>>({});
   const [isPollingTickets, setIsPollingTickets] = useState(false);
+  const [transferredCount, setTransferredCount] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
 
+    type InvoiceResponse = { order: Order; event: Event | null; tickets: Ticket[]; transferredCount: number };
+
     const fetchTicketsForOrder = async () => {
-      const { data: ticketsData, error: ticketsError } = await supabase
-        .from('tickets')
-        .select('*')
-        .eq('order_id', invoiceId)
-        .order('created_at', { ascending: true });
-
-      if (ticketsError) {
-        throw new Error(ticketsError.message);
-      }
-
-      return (ticketsData as Ticket[]) || [];
+      const data = await fetchOrderDetails<InvoiceResponse>(invoiceId);
+      return data.tickets || [];
     };
 
     const fetchInvoiceData = async () => {
@@ -85,47 +79,22 @@ const InvoiceContent = () => {
           throw new Error('Invoice ID is required');
         }
 
-        // Fetch order with event details
-        const { data: orderData, error: orderError } = await supabase
-          .from('orders')
-          .select(`
-            *,
-            events (
-              id,
-              title,
-              image_url,
-              start_time,
-              end_time,
-              venue,
-              address,
-              city,
-              country,
-              is_virtual,
-              virtual_details
-            )
-          `)
-          .eq('id', invoiceId)
-          .single();
-
-        if (orderError || !orderData) {
-          throw new Error(orderError?.message || 'Order not found');
-        }
-
-        const orderWithEvents = orderData as Order & { events: Event };
+        const data = await fetchOrderDetails<InvoiceResponse>(invoiceId);
         if (cancelled) return;
 
+        const orderWithEvents = data.order;
         setOrder(orderWithEvents);
-        setEvent(orderWithEvents.events);
+        setEvent(data.event);
+        setTransferredCount(data.transferredCount || 0);
 
-        const initialTickets = await fetchTicketsForOrder();
-        if (cancelled) return;
+        const initialTickets = data.tickets || [];
 
         setTickets(initialTickets);
         setError(null);
         setIsPollingTickets(false);
 
         // If no tickets yet, keep polling in the background for up to ~60 seconds.
-        if (initialTickets.length === 0 && (orderWithEvents.status === 'paid' || orderWithEvents.status === 'pending')) {
+        if (initialTickets.length === 0 && !data.transferredCount && (orderWithEvents.status === 'paid' || orderWithEvents.status === 'pending')) {
           setIsPollingTickets(true);
           const maxAttempts = 30;
           for (let attempt = 0; attempt < maxAttempts && !cancelled; attempt++) {
@@ -524,7 +493,12 @@ const InvoiceContent = () => {
             <h2 className="text-lg sm:text-xl font-bold text-gray-900">Tickets</h2>
             <span className="text-sm sm:text-base text-gray-600">{tickets.length} ticket{tickets.length !== 1 ? 's' : ''}</span>
           </div>
-          {tickets.length === 0 && (order.status === 'paid' || order.status === 'pending') ? (
+          {transferredCount > 0 && (
+            <p className="text-sm text-gray-500 mb-4">
+              {transferredCount} ticket{transferredCount !== 1 ? 's were' : ' was'} transferred to another account and no longer appear{transferredCount === 1 ? 's' : ''} here.
+            </p>
+          )}
+          {tickets.length === 0 && transferredCount > 0 ? null : tickets.length === 0 && (order.status === 'paid' || order.status === 'pending') ? (
             <div className="text-center py-8">
               <p className="text-gray-500 mb-2">Tickets are being generated...</p>
               <p className="text-sm text-gray-400">

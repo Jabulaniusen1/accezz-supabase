@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/utils/supabaseClient';
+// Service role: orders/tickets are not readable with the anon key (RLS)
+import { supabaseAdmin as supabase } from '@/utils/processOrder';
 import { requireInternalSecret } from '@/utils/apiAuth';
 
 /**
@@ -60,7 +61,7 @@ export async function POST(req: NextRequest) {
     if (ordersError) {
       console.error('Error fetching incomplete orders:', ordersError);
       return NextResponse.json(
-        { error: 'Failed to fetch incomplete orders', details: ordersError.message },
+        { error: 'Failed to fetch incomplete orders' },
         { status: 500 }
       );
     }
@@ -237,7 +238,8 @@ export async function POST(req: NextRequest) {
     );
   } catch (error: unknown) {
     console.error('Error processing abandoned carts:', error);
-    const message = error instanceof Error ? error.message : 'Failed to process abandoned carts';
+    console.error('[emails/send-abandoned-carts]', error);
+    const message = 'Failed to process abandoned carts';
     return NextResponse.json(
       { error: message },
       { status: 500 }

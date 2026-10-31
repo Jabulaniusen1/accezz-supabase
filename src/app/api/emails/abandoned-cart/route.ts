@@ -56,7 +56,8 @@ export async function POST(req: NextRequest) {
     );
   } catch (error: unknown) {
     console.error('Error sending abandoned cart email:', error);
-    const message = error instanceof Error ? error.message : 'Failed to send abandoned cart email';
+    console.error('[emails/abandoned-cart]', error);
+    const message = 'Failed to send abandoned cart email';
     return NextResponse.json(
       { error: message },
       { status: 500 }

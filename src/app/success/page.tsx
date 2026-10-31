@@ -5,12 +5,17 @@ import { useRouter, useSearchParams } from "next/navigation";
 import PaymentFailedModal from "@/components/PaymentFailedModal";
 import { supabase } from "@/utils/supabaseClient";
 import { clearTicketPurchaseState } from "@/utils/localStorage";
+import { fetchOrderDetails } from "@/utils/paymentUtils";
 
 type OrderSnapshot = {
-  buyer_email: string | null;
-  buyer_user_id: string | null;
   id: string;
   status: string;
+};
+
+type OrderDetails = {
+  order: OrderSnapshot;
+  event: { id: string; slug: string | null } | null;
+  tickets: Array<{ id: string }>;
 };
 
 const POLL_INTERVAL_MS = 1500;
@@ -28,6 +33,7 @@ const SuccessContent = () => {
   const [isVerifying, setIsVerifying] = useState(true);
   const [statusMessage, setStatusMessage] = useState('Verifying your payment...');
   const [showFailureModal, setShowFailureModal] = useState(false);
+  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
   const [eventSlug, setEventSlug] = useState<string | null>(null);
 
   const redirectToInvoice = (targetOrderId: string) => {
@@ -39,47 +45,32 @@ const SuccessContent = () => {
   useEffect(() => {
     let cancelled = false;
 
-    const fetchOrderSnapshot = async (targetOrderId: string): Promise<OrderSnapshot | null> => {
-      const { data, error } = await supabase
-        .from('orders')
-        .select('buyer_email, buyer_user_id, id, status')
-        .eq('id', targetOrderId)
-        .single();
-
-      if (error || !data) return null;
-      return data as OrderSnapshot;
+    const fetchDetails = async (targetOrderId: string): Promise<OrderDetails | null> => {
+      try {
+        return await fetchOrderDetails<OrderDetails>(targetOrderId);
+      } catch {
+        return null;
+      }
     };
 
-    const waitForTicketProcessing = async (targetOrderId: string): Promise<{ orderData: OrderSnapshot | null; failed: boolean }> => {
+    const waitForTicketProcessing = async (targetOrderId: string): Promise<{ orderData: OrderSnapshot | null; failed: boolean; hasTicket: boolean }> => {
       let latestOrder: OrderSnapshot | null = null;
 
       for (let attempt = 0; attempt < MAX_PROCESSING_ATTEMPTS; attempt++) {
-        const [orderRes, ticketRes] = await Promise.all([
-          supabase
-            .from('orders')
-            .select('buyer_email, buyer_user_id, id, status')
-            .eq('id', targetOrderId)
-            .single(),
-          supabase
-            .from('tickets')
-            .select('id')
-            .eq('order_id', targetOrderId)
-            .limit(1),
-        ]);
-
-        if (orderRes.data) {
-          latestOrder = orderRes.data as OrderSnapshot;
+        const details = await fetchDetails(targetOrderId);
+        if (details) {
+          latestOrder = details.order;
         }
 
         const currentStatus = latestOrder?.status || '';
-        const hasTicket = Boolean(ticketRes.data && ticketRes.data.length > 0);
+        const hasTicket = Boolean(details && details.tickets.length > 0);
 
         if (currentStatus === 'failed' || currentStatus === 'cancelled' || currentStatus === 'refunded') {
-          return { orderData: latestOrder, failed: true };
+          return { orderData: latestOrder, failed: true, hasTicket };
         }
 
         if (currentStatus === 'paid' && hasTicket) {
-          return { orderData: latestOrder, failed: false };
+          return { orderData: latestOrder, failed: false, hasTicket };
         }
 
         if (!cancelled) {
@@ -93,7 +84,7 @@ const SuccessContent = () => {
         await sleep(POLL_INTERVAL_MS);
       }
 
-      return { orderData: latestOrder, failed: false };
+      return { orderData: latestOrder, failed: false, hasTicket: false };
     };
 
     const verifyPayment = async () => {
@@ -129,26 +120,11 @@ const SuccessContent = () => {
         }
 
         if (urlOrderId) {
-          try {
-            const { data: order, error: orderError } = await supabase
-              .from('orders')
-              .select('event_id, events(slug)')
-              .eq('id', urlOrderId)
-              .single();
-
-            if (!orderError && order) {
-              const slug = (order as { events?: { slug?: string | null } | null }).events?.slug || undefined;
-              if (slug) {
-                router.replace(`/${slug}`);
-                return;
-              }
-              if (order.event_id) {
-                router.replace(`/${order.event_id}`);
-                return;
-              }
-            }
-          } catch (e) {
-            console.error('Failed to fetch order for redirect:', e instanceof Error ? e.message : e);
+          const details = await fetchDetails(urlOrderId);
+          const target = details?.event?.slug || details?.event?.id;
+          if (target) {
+            router.replace(`/${target}`);
+            return;
           }
         }
 
@@ -192,6 +168,7 @@ const SuccessContent = () => {
         }
 
         let resolvedOrderId = urlOrderId;
+        let paymentPending = false;
 
         // Verify via Paystack API when reference is present
         if (reference) {
@@ -202,7 +179,11 @@ const SuccessContent = () => {
             throw new Error(vData?.error || 'Verification failed');
           }
 
-          if (vData.status !== 'success') {
+          if (vData.status === 'pending') {
+            // Bank transfer / USSD still settling: the webhook will issue the
+            // tickets once it clears, so keep waiting instead of failing.
+            paymentPending = true;
+          } else if (vData.status !== 'success') {
             if (!cancelled) {
               setShowFailureModal(true);
               setIsVerifying(false);
@@ -218,7 +199,7 @@ const SuccessContent = () => {
         }
 
         if (!cancelled) setStatusMessage('Confirming payment and generating your ticket...');
-        const { orderData, failed } = await waitForTicketProcessing(resolvedOrderId);
+        const { orderData, failed, hasTicket } = await waitForTicketProcessing(resolvedOrderId);
 
         if (failed) {
           if (!cancelled) {
@@ -228,16 +209,17 @@ const SuccessContent = () => {
           return;
         }
 
-        // Fallback in case polling window elapsed before tickets appeared
-        const finalOrderData = orderData || await fetchOrderSnapshot(resolvedOrderId);
+        if (paymentPending && !hasTicket && orderData?.status !== 'paid') {
+          if (!cancelled) {
+            setPendingOrderId(resolvedOrderId);
+            setIsVerifying(false);
+          }
+          return;
+        }
 
         try { clearTicketPurchaseState(); } catch { /* ignore */ }
         try { localStorage.removeItem('pendingPayment'); } catch { /* ignore */ }
         try { localStorage.removeItem('pendingPaystackCheckout'); } catch { /* ignore */ }
-
-        // Do not block invoice redirect behind account creation prompts.
-        // Guests can still create/link account from the invoice flow later.
-        void finalOrderData;
 
         if (!cancelled) {
           setIsVerifying(false);
@@ -260,6 +242,27 @@ const SuccessContent = () => {
       cancelled = true;
     };
   }, [referenceParam, ticketIdParam, orderIdParam, statusParam, router]);
+
+  if (pendingOrderId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center max-w-md px-6 space-y-4">
+          <div className="animate-pulse rounded-full h-12 w-12 bg-[#f54502]/20 mx-auto"></div>
+          <h1 className="text-xl font-semibold text-gray-900">Your payment is still being confirmed</h1>
+          <p className="text-gray-700">
+            Your bank hasn&apos;t confirmed the payment yet. This can take a few minutes for bank transfers and USSD.
+            <strong> Please don&apos;t pay again.</strong> We&apos;ll email your tickets as soon as it clears.
+          </p>
+          <a
+            href={`/invoice/${pendingOrderId}`}
+            className="inline-block py-3 px-6 rounded-xl bg-[#f54502] hover:bg-[#d63a02] text-white font-semibold"
+          >
+            View order status
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   if (isVerifying) {
     return (

@@ -7,6 +7,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { signInWithEmail, getSession } from '@/utils/supabaseAuth';
 import { supabase } from '@/utils/supabaseClient';
+import { linkOrderToAccount } from '@/utils/paymentUtils';
+import { safeRedirectPath } from '@/utils/safeRedirect';
 
 type FormData = { email: string; password: string };
 type ToastType = 'success' | 'error' | 'warning' | 'info';
@@ -30,11 +32,6 @@ function LoginContent() {
     }
   }, [searchParams]);
 
-  const linkOrderToUser = async (userId: string, orderId: string) => {
-    try {
-      await supabase.from('orders').update({ buyer_user_id: userId }).eq('id', orderId).is('buyer_user_id', null);
-    } catch {}
-  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -56,11 +53,11 @@ function LoginContent() {
       if (session) {
         const orderId = searchParams.get('orderId') || (typeof window !== 'undefined' ? localStorage.getItem('pendingOrderLink') : null);
         if (orderId) {
-          await linkOrderToUser(session.user.id, orderId);
+          await linkOrderToAccount(orderId).catch(() => false);
           if (typeof window !== 'undefined') localStorage.removeItem('pendingOrderLink');
         }
       }
-      const redirectUrl = searchParams.get('redirect') || '/dashboard';
+      const redirectUrl = safeRedirectPath(searchParams.get('redirect'));
       router.push(redirectUrl);
     } catch (error: unknown) {
       const err = error as { status?: number; code?: string; message?: string };

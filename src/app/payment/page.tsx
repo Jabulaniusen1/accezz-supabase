@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { PageSkeleton } from '@/components/ui/Skeleton';
+import { startPaystackCheckout } from '@/utils/paymentUtils';
 
 type PendingCheckoutSession = {
   orderId: string;
@@ -21,8 +22,6 @@ function PaymentContent() {
   useEffect(() => {
     const start = async () => {
       const rawOrderId = searchParams.get('orderId');
-      const rawAmount = searchParams.get('amount');
-      const rawEmail = searchParams.get('email');
       const status = searchParams.get('status');
       const reference = searchParams.get('reference') || searchParams.get('trxref');
 
@@ -58,25 +57,21 @@ function PaymentContent() {
       }
 
       let orderId = rawOrderId;
-      let amount = rawAmount;
-      let email = rawEmail;
 
-      // Fallback to pendingPayment when query params are missing.
-      if (!orderId || !amount || !email) {
+      // Fallback to pendingPayment when the query param is missing.
+      if (!orderId) {
         try {
           const raw = localStorage.getItem('pendingPayment');
           if (raw) {
-            const parsed = JSON.parse(raw) as { orderId?: string; amount?: number | string; email?: string };
-            orderId = orderId || parsed.orderId || null;
-            amount = amount || (parsed.amount !== undefined ? String(parsed.amount) : null);
-            email = email || parsed.email || null;
+            const parsed = JSON.parse(raw) as { orderId?: string };
+            orderId = parsed.orderId || null;
           }
         } catch {
           // ignore
         }
       }
 
-      if (!orderId || !amount || !email) {
+      if (!orderId) {
         setError('Missing payment information. Please go back and try again.');
         return;
       }
@@ -97,45 +92,20 @@ function PaymentContent() {
       }
 
       try {
-        let affiliateCode: string | null = null;
-        try { affiliateCode = localStorage.getItem('affiliateRef'); } catch { /* ignore */ }
-
-        const res = await fetch('/api/paystack/initialize', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            orderId,
-            amount: Number(amount),
-            email,
-            currency: 'NGN',
-            callbackUrl: `${window.location.origin}/success?orderId=${orderId}`,
-            affiliateCode: affiliateCode || undefined,
-          })
-        });
-
-        const raw = await res.text();
-        let data: { authorization_url?: string; reference?: string; error?: string } | null = null;
-        try { data = raw ? (JSON.parse(raw) as { authorization_url?: string; reference?: string; error?: string }) : null; } catch { data = null; }
-
-        if (!res.ok) {
-          const msg = data?.error || raw || 'Failed to start payment';
-          throw new Error(msg);
-        }
-        if (!data?.authorization_url) {
-          throw new Error('Invalid response from payment initializer');
-        }
+        // Amount, currency and email come from the server-side order
+        const authorizationUrl = await startPaystackCheckout(orderId);
 
         try {
           localStorage.setItem(CHECKOUT_SESSION_KEY, JSON.stringify({
             orderId,
-            authorizationUrl: data.authorization_url,
+            authorizationUrl,
             createdAt: new Date().toISOString(),
           }));
         } catch {
           // non-critical
         }
 
-        window.location.replace(data.authorization_url);
+        window.location.replace(authorizationUrl);
       } catch (e: unknown) {
         const message = e instanceof Error ? e.message : 'Failed to start payment';
         setError(message);

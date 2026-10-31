@@ -2,19 +2,21 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { FiMenu, FiX, FiLogOut, FiUser } from '@/icon-adapters/react-icons/fi';
 import { MdSpaceDashboard } from '@/icon-adapters/react-icons/md';
 import { motion, AnimatePresence } from "framer-motion";
 import Toast from "@/components/ui/Toast";
 import ToggleMode from '@/components/ui/mode/toggleMode';
 import { FaArrowRight } from '@/icon-adapters/react-icons/fa';
+import { useIsLoggedIn } from '@/hooks/useIsLoggedIn';
+import { signOut } from '@/utils/supabaseAuth';
 
 const Hero = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useIsLoggedIn();
   const [loading, setLoading] = useState(false); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [toast, setToast] = useState<{
     type: "success" | "error";
@@ -31,32 +33,19 @@ const Hero = () => {
     { name: "Pricing", href: "/pricing" },
   ];
 
-  useEffect(() => {
-    const checkLoginStatus = () => {
-      const token = localStorage.getItem("token");
-      setIsLoggedIn(!!token);
-    };
-  
-    checkLoginStatus();
-    window.addEventListener("storage", checkLoginStatus);
-  
-    return () => {
-      window.removeEventListener("storage", checkLoginStatus);
-    };
-  }, []);
 
   const handleLogout = async () => {
     try {
-      setTimeout(() => {
-        setLoading(true);
-        localStorage.setItem("lastVisitedPath", pathname);
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+      setLoading(true);
+      localStorage.setItem("lastVisitedPath", pathname);
+      // End the Supabase session (not just local flags), so shared devices are safe
+      await signOut();
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
 
-        setToast({ type: "success", message: "Logged out successfully" });
-        setIsLoggedIn(false);
-        router.push("/auth/login");
-      }, 1500);
+      setToast({ type: "success", message: "Logged out successfully" });
+      setIsLoggedIn(false);
+      router.push("/auth/login");
     } catch (error) {
       console.error("Error logging out", error);
       setToast({ type: "error", message: "Error logging out" });
@@ -82,8 +71,7 @@ const Hero = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      if (token) {
+      if (isLoggedIn) {
         localStorage.setItem("lastVisitedPath", pathname);
         const latestEvent = document.getElementById('latestEvents');
         latestEvent?.scrollIntoView({ behavior: 'smooth' });

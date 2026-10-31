@@ -30,11 +30,14 @@ export const formatEventDate = (dateString: string): string => {
   const date = new Date(dateString);
   if (isNaN(date.getTime())) return '';
 
+  // "YYYY-MM-DD" is a calendar date (parsed as UTC midnight): show it as-is.
+  // Full timestamps are shown in the viewer's local time, like the event time.
+  const isDateOnly = /^\d{4}-\d{2}-\d{2}$/.test(dateString);
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
-    timeZone: 'UTC'
+    ...(isDateOnly ? { timeZone: 'UTC' } : {}),
   });
 };
 

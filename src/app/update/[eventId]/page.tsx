@@ -14,6 +14,9 @@ import SocialMediaLinks from "./components/SocialMediaLinks";
 import TicketTypesSection from "./components/TicketTypeSection";
 import { BsArrowLeft } from '@/icon-adapters/react-icons/bs';
 import { AnimatePresence, motion } from "framer-motion";
+import { withVirtualAccess } from '@/utils/virtualAccess';
+import { toLocalDateInput, toLocalTimeInput } from '@/utils/dateInputs';
+import { saveEventTicketTypes } from '@/utils/eventTicketTypes';
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -74,9 +77,9 @@ function Update() {
           const startTimeIso: string | null = ev.start_time;
           const startDateObj = startTimeIso ? new Date(startTimeIso) : null;
           const formattedDate = startDateObj && !Number.isNaN(startDateObj.getTime())
-            ? startDateObj.toISOString().split('T')[0] : '';
+            ? toLocalDateInput(startDateObj) : '';
           const formattedTime = startDateObj && !Number.isNaN(startDateObj.getTime())
-            ? startDateObj.toISOString().slice(11, 16) : '';
+            ? toLocalTimeInput(startDateObj) : '';
           const endTimeIso: string | null = ev.end_time;
 
           const eventData: Event = {
@@ -95,7 +98,9 @@ function Update() {
             locationVisibility: ev.location_visibility ?? 'public',
             hostName: hostProfile?.full_name || '',
             gallery: [], isVirtual: !!ev.is_virtual,
-            virtualEventDetails: ev.virtual_details || (ev.is_virtual ? { platform: undefined, meetingUrl: '', meetingId: '' } : undefined),
+            virtualEventDetails: ev.is_virtual
+              ? { platform: undefined, meetingUrl: '', meetingId: '', ...((await withVirtualAccess(supabase, ev.id, ev.virtual_details)) || {}) }
+              : ev.virtual_details || undefined,
             socialMediaLinks: ev.social_links || {},
             ticketType: (types || []).map(t => ({
               id: t.id, name: t.name, price: String(t.price || '0'),
@@ -171,7 +176,7 @@ function Update() {
       const longitudeValue = visibility === 'undisclosed' ? null : formData.longitude ?? null;
       const locationIdValue = visibility === 'undisclosed' ? null : formData.locationId ?? null;
 
-      const { error: evErr } = await supabase.from('events').update({
+      const { data: updatedEvent, error: evErr } = await supabase.from('events').update({
         title: formData.title, description: formData.description,
         start_time: startTimeIso, end_time: formData.endTime || null,
         venue: finalVenue, location: locationValue, location_visibility: visibility,
@@ -182,26 +187,12 @@ function Update() {
         virtual_details: formData.isVirtual && formData.virtualEventDetails ? formData.virtualEventDetails : null,
         social_links: formData.socialMediaLinks || {},
         image_url: imageUrl || undefined,
-      }).eq('id', eventId);
+      }).eq('id', eventId).select('id');
       if (evErr) throw new Error('Failed to update event. Please try again.');
+      // RLS silently matches no rows for events you don't own
+      if (!updatedEvent || updatedEvent.length === 0) throw new Error('You can only edit your own events.');
 
-      if (formData.ticketType?.length) {
-        const { data: existingTypes } = await supabase.from('ticket_types').select('id, name, sold').eq('event_id', eventId);
-        const existingMap = new Map((existingTypes || []).map(t => [t.name, { id: t.id, sold: Number(t.sold || 0) }]));
-        const newTicketNames = new Set(formData.ticketType.map(t => t.name));
-        const typesToDelete = (existingTypes || []).filter(t => !newTicketNames.has(t.name));
-        if (typesToDelete.length > 0)
-          await supabase.from('ticket_types').delete().in('id', typesToDelete.map(t => t.id)).eq('sold', 0);
-
-        for (const ticket of formData.ticketType) {
-          const existing = existingMap.get(ticket.name);
-          const ticketData = { event_id: eventId, name: ticket.name, price: Number(ticket.price || 0), quantity: Number(ticket.quantity || 0), sold: existing ? existing.sold : Number(ticket.sold || 0), details: ticket.details || null };
-          if (existing) await supabase.from('ticket_types').update(ticketData).eq('id', existing.id);
-          else await supabase.from('ticket_types').insert(ticketData);
-        }
-      } else {
-        await supabase.from('ticket_types').delete().eq('event_id', eventId).eq('sold', 0);
-      }
+      await saveEventTicketTypes(eventId, formData.ticketType || []);
 
       // Save affiliate settings
       await supabase.from('affiliate_settings').upsert({

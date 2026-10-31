@@ -42,7 +42,8 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ banks });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Server error';
+    console.error('[paystack/banks]', err);
+    const message = 'Server error';
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

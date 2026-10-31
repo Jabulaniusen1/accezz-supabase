@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
-import { sendEmail } from '@/utils/emailUtils';
+import { sendEmail, escapeHtml } from '@/utils/emailUtils';
+import { isInternalRequest } from '@/utils/apiAuth';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
@@ -147,15 +148,15 @@ async function sendTicketPurchaseEmails(params: {
   quantity?: number;
 }) {
   const formattedAmount = formatCurrency(params.totalAmount, params.currency || 'NGN');
-  const eventTitle = params.eventTitle || 'your event';
+  const eventTitle = escapeHtml(params.eventTitle || 'your event');
   const qty = params.quantity ?? 1;
-  const ticketLabel = params.ticketTypeName ? params.ticketTypeName : 'General';
-  const buyerDisplayName = params.buyerName || 'A guest';
+  const ticketLabel = escapeHtml(params.ticketTypeName ? params.ticketTypeName : 'General');
+  const buyerDisplayName = escapeHtml(params.buyerName || 'A guest');
 
   const host = await getUserContact(params.hostUserId);
   if (host.email) {
     const hostSubject = `New ticket sale — ${eventTitle}`;
-    const hostGreeting = host.fullName ? `Hi ${host.fullName.split(' ')[0]},` : 'Hello,';
+    const hostGreeting = host.fullName ? `Hi ${escapeHtml(host.fullName.split(' ')[0])},` : 'Hello,';
     const ticketDetails = `${qty} × ${ticketLabel}`;
     const hostHtml = `
       <div style="
@@ -246,13 +247,13 @@ async function sendLocationBookingEmails(params: {
   eventDate: string | null;
   bookingId?: string | null;
 }) {
-  const locationName = params.locationName || 'your location';
+  const locationName = escapeHtml(params.locationName || 'your location');
   const dateFormatted = params.eventDate ? new Date(params.eventDate).toLocaleDateString() : null;
   const dateText = dateFormatted ? `scheduled for ${dateFormatted}` : 'with no date specified';
   const bookingDashboardBase = `${process.env.NEXT_PUBLIC_BASE_URL || ''}/dashboard/`;
   const bookingLink = params.bookingId ? `${bookingDashboardBase}?id=${params.bookingId}` : bookingDashboardBase;
 
-  const requesterGreeting = params.requesterName ? `Hi ${params.requesterName.split(' ')[0]},` : 'Hi there,';
+  const requesterGreeting = params.requesterName ? `Hi ${escapeHtml(params.requesterName.split(' ')[0])},` : 'Hi there,';
   const requesterHtml = `
     <div style="
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -339,7 +340,7 @@ async function sendLocationBookingEmails(params: {
 
   const owner = await getUserContact(params.ownerUserId);
   if (owner.email) {
-    const ownerGreeting = owner.fullName ? `Hi ${owner.fullName.split(' ')[0]},` : 'Hello,';
+    const ownerGreeting = owner.fullName ? `Hi ${escapeHtml(owner.fullName.split(' ')[0])},` : 'Hello,';
     const ownerHtml = `
       <div style="
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -432,7 +433,7 @@ async function sendWithdrawalApprovedEmail(params: {
   if (!contact.email) return;
 
   const formattedAmount = formatCurrency(params.amount, params.currency || 'NGN');
-  const greeting = contact.fullName ? `Hi ${contact.fullName.split(' ')[0]},` : 'Hi there,';
+  const greeting = contact.fullName ? `Hi ${escapeHtml(contact.fullName.split(' ')[0])},` : 'Hi there,';
   const html = `
     <div style="
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -660,19 +661,17 @@ async function handleLocationBooking(context: HandlerContext, payload: LocationB
     return NextResponse.json({ error: 'Location not found' }, { status: 404 });
   }
 
-  // For location bookings, allow notification if booking exists (bookingId is sufficient verification)
-  // Authorization check is optional - if user is authenticated, verify they're requester/owner/admin
-  // If not authenticated, still allow notification since booking existence confirms validity
-  const hasUser = context.user.id && context.user.id.trim() !== '';
-  const isAuthorized =
-    !hasUser || // No user context (unauthenticated) - allow for valid bookings
-    (booking.requester_user_id && context.user.id === booking.requester_user_id) ||
-    context.user.id === location.user_id ||
-    context.isAdmin;
+  // Guests can book, so this can't require a login. Instead each booking is
+  // notified exactly once: claim it atomically, replays get a no-op.
+  const { data: claimed } = await supabaseAdmin
+    .from('location_bookings')
+    .update({ host_notified_at: new Date().toISOString() })
+    .eq('id', booking.id)
+    .is('host_notified_at', null)
+    .select('id');
 
-  if (!isAuthorized && hasUser) {
-    // Only block if user is authenticated but not authorized
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  if (!claimed || claimed.length === 0) {
+    return NextResponse.json({ success: true, message: 'Already notified' });
   }
 
   const notificationsMap = new Map<string, { user_id: string; type: string; title: string; body: string }>();
@@ -772,7 +771,7 @@ async function handleWithdrawalRequest(context: HandlerContext, payload: Withdra
   // Send confirmation email to the user
   const contact = await getUserContact(withdrawal.user_id);
   if (contact.email) {
-    const greeting = contact.fullName ? `Hi ${contact.fullName.split(' ')[0]},` : 'Hi there,';
+    const greeting = contact.fullName ? `Hi ${escapeHtml(contact.fullName.split(' ')[0])},` : 'Hi there,';
     const html = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; padding: 32px 16px;">
         <table role="presentation" cellspacing="0" cellpadding="0" style="max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 18px; overflow: hidden; box-shadow: 0 18px 34px rgba(15,23,42,0.12); border: 1px solid rgba(15,23,42,0.06);">
@@ -895,11 +894,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing notification type' }, { status: 400 });
     }
 
-    // For ticket purchases and location bookings, allow unauthenticated requests
-    // (orderId/bookingId verification is sufficient)
-    // For other notification types, require authentication
+    // Ticket purchase notifications are sent by the server after fulfilment only
+    if (type === 'ticket_purchase' && !isInternalRequest(request)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Location bookings may come from guests; every other type needs a signed-in user
     const { user, isAdmin } = await getRequestUser(request);
-    
+
     if (!user && type !== 'ticket_purchase' && type !== 'location_booking') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

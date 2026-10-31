@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAuth } from '@/utils/apiAuth';
 
+// Resolving an account number to a name uses our Paystack key and reveals
+// personal data, so only signed-in users (setting up payouts) may call it.
 export async function POST(req: NextRequest) {
+  const auth = await requireAuth(req);
+  if ('error' in auth) return auth.error;
+
   try {
     const secretKey = process.env.PAYSTACK_SECRET_KEY;
     if (!secretKey) {
@@ -43,7 +49,8 @@ export async function POST(req: NextRequest) {
       account_number: paystackData.data.account_number,
     });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Server error';
+    console.error('[paystack/verify-bank]', err);
+    const message = 'Server error';
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

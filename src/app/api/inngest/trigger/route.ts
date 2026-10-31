@@ -25,7 +25,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ message: 'Event triggered successfully', ids: result.ids }, { status: 200 });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to trigger event';
+    console.error('[inngest/trigger]', error);
+    const message = 'Failed to trigger event';
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

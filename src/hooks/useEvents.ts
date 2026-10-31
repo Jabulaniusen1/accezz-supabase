@@ -98,19 +98,37 @@ const mapSupabaseEventToEvent = (supabaseEvent: SupabaseEventRow, ticketTypes: T
   };
 };
 
-const PAGE_SIZE = 100;
+const UPCOMING_LIMIT = 200;
+const PAST_LIMIT = 100;
 
 // Fetch published/public events with their ticket types
 const fetchEventsFromSupabase = async (includePastEvents: boolean = false): Promise<Event[]> => {
-  // Fetch all published events — past/future filtering is done in-memory below
-  // because a server-side `gte('end_time', now)` would exclude events with NULL end_time
-  const { data: events, error: eventsError } = await supabase
+  // Past/upcoming is decided in the query (end_time, or start_time when there
+  // is no end_time) so the limit never cuts off newer events.
+  const now = new Date().toISOString();
+  const baseQuery = () => supabase
     .from('events')
-    .select('*, category:event_categories(name, slug)')
+    // Ticket types embedded: one request, no long list of event ids in the URL
+    .select('*, category:event_categories(name, slug), ticket_types(*)')
     .eq('status', 'published')
-    .eq('visibility', 'public')
+    .eq('visibility', 'public');
+
+  const upcomingQuery = baseQuery()
+    .or(`end_time.gte.${now},and(end_time.is.null,start_time.gte.${now})`)
     .order('start_time', { ascending: true })
-    .limit(PAGE_SIZE);
+    .limit(UPCOMING_LIMIT);
+
+  // Most recent past events first, then flipped so the list stays oldest-first
+  const pastQuery = includePastEvents
+    ? baseQuery()
+        .or(`end_time.lt.${now},and(end_time.is.null,start_time.lt.${now})`)
+        .order('start_time', { ascending: false })
+        .limit(PAST_LIMIT)
+    : null;
+
+  const [upcomingRes, pastRes] = await Promise.all([upcomingQuery, pastQuery]);
+  const eventsError = upcomingRes.error || pastRes?.error;
+  const events = [...(pastRes?.data || []).reverse(), ...(upcomingRes.data || [])];
 
   if (eventsError) {
     throw eventsError;
@@ -120,35 +138,10 @@ const fetchEventsFromSupabase = async (includePastEvents: boolean = false): Prom
     return [];
   }
 
-  // Fetch ticket types for all events
-  const eventIds = events.map(e => e.id);
-  const { data: ticketTypes, error: ticketTypesError } = await supabase
-    .from('ticket_types')
-    .select('*')
-    .in('event_id', eventIds);
-
-  if (ticketTypesError) {
-    throw ticketTypesError;
-  }
-
-  if (!ticketTypes) {
-    return [];
-  }
-
-  // Filter out past events in-memory (handles NULL end_time correctly)
-  const now = new Date();
-  const filteredEvents = includePastEvents
-    ? events
-    : events.filter((event) => {
-        // If end_time is set, use it; otherwise fall back to start_time
-        const cutoff = event.end_time ? new Date(event.end_time) : new Date(event.start_time);
-        return cutoff >= now;
-      });
-
   // Map events with their ticket types
-  return filteredEvents.map((event) => {
-    const eventTicketTypes = (ticketTypes || []).filter((tt) => tt.event_id === event.id) as TicketTypeRow[];
-    return mapSupabaseEventToEvent(event as unknown as SupabaseEventRow, eventTicketTypes);
+  return events.map((event) => {
+    const { ticket_types: eventTicketTypes, ...eventRow } = event as typeof event & { ticket_types?: TicketTypeRow[] | null };
+    return mapSupabaseEventToEvent(eventRow as unknown as SupabaseEventRow, eventTicketTypes || []);
   });
 };
 
