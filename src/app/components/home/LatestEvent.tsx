@@ -112,7 +112,7 @@ const LatestEvent = () => {
           <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-6 md:gap-8 items-center">
             {/* Content */}
             <div className="relative z-10">
-              <div className="space-y-4 md:space-y-6 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm p-4 md:p-8 rounded-xl md:rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
+              <div className="space-y-4 md:space-y-6 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm p-4 md:p-8 rounded-card border border-gray-100 dark:border-gray-800 shadow-sm">
                 <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
                   <span className="px-2 md:px-3 py-1 text-xs md:text-sm text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 rounded-full w-fit">
                     Featured
@@ -174,7 +174,7 @@ const LatestEvent = () => {
                 priority
               />
               <div className="absolute bottom-3 md:bottom-6 left-3 md:left-6 right-3 md:right-6 z-20">
-                <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm p-3 md:p-4 rounded-lg shadow-sm">
+                <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm p-3 md:p-4 rounded-2xl shadow-sm">
                   <div className="flex items-center space-x-2 text-blue-600 dark:text-blue-400">
                     <FaCalendar className="text-sm md:text-base" />
                     <span className="font-medium text-sm md:text-base">{formatEventDate(currentEvent?.date || '')}</span>

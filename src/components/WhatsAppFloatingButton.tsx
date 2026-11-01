@@ -4,23 +4,24 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaWhatsapp } from '@/icon-adapters/react-icons/fa';
-import { useTicketPurchase } from '@/contexts/TicketPurchaseContext';
 
 const WhatsAppFloatingButton = () => {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
-  const { isPurchasing } = useTicketPurchase();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Hide on dashboard routes or when purchasing tickets
-  const isDashboard = pathname?.startsWith('/dashboard') || 
-                      pathname?.startsWith('/admin') || 
-                      pathname?.startsWith('/analytics');
+  // Hide on dashboard/admin, sign-in screens, the door-scanning tool and checkout
+  const isHidden = pathname?.startsWith('/dashboard') ||
+                   pathname?.startsWith('/admin') ||
+                   pathname?.startsWith('/analytics') ||
+                   pathname?.startsWith('/auth') ||
+                   pathname?.startsWith('/validate-ticket') ||
+                   pathname?.endsWith('/checkout');
 
-  if (!mounted || isDashboard || isPurchasing) {
+  if (!mounted || isHidden) {
     return null;
   }
 
@@ -32,15 +33,8 @@ const WhatsAppFloatingButton = () => {
   };
 
   return (
-    <div 
-      className="fixed bottom-6 right-6 z-[999] pointer-events-auto"
-      style={{ 
-        position: 'fixed',
-        bottom: '24px',
-        right: '24px',
-        zIndex: 999,
-      }}
-    >
+    // whatsapp-fab: lifted above mobile bottom bars in globals.css
+    <div className="whatsapp-fab fixed bottom-6 right-6 z-[999] pointer-events-auto">
       <motion.button
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}

@@ -22,7 +22,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ orde
   const { data: order } = await supabaseAdmin
     .from('orders')
     .select(`
-      id, buyer_user_id, buyer_full_name, buyer_email, buyer_phone, total_amount, currency,
+      id, buyer_user_id, buyer_full_name, buyer_email, buyer_phone, total_amount, service_fee,
+      processing_fee, amount_due, currency,
       status, payment_reference, created_at, meta,
       events (
         id, slug, title, image_url, start_time, end_time, venue, address, city, country,
@@ -78,17 +79,27 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ orde
       buyer_full_name: isRecipientView ? (viewer?.user_metadata?.full_name ?? null) : order.buyer_full_name,
       buyer_email: isRecipientView ? (viewer?.email ?? '') : order.buyer_email,
       buyer_phone: isRecipientView ? null : order.buyer_phone,
+      // total_amount = tickets; amount_due = tickets + service charge + processing fee.
+      // A transfer recipient only sees the value of their own tickets.
       total_amount: isRecipientView
         ? visibleTickets.reduce((sum, t) => sum + (Number(t.price) || 0), 0)
         : order.total_amount,
+      service_fee: isRecipientView ? 0 : order.service_fee,
+      processing_fee: isRecipientView ? 0 : order.processing_fee,
+      amount_due: isRecipientView
+        ? visibleTickets.reduce((sum, t) => sum + (Number(t.price) || 0), 0)
+        : order.amount_due,
       currency: order.currency,
       status: order.status,
       payment_reference: isRecipientView ? null : order.payment_reference,
       created_at: order.created_at,
       meta: {
+        ticketTypeId: meta.ticketTypeId ?? null,
         ticketTypeName: meta.ticketTypeName ?? null,
         quantity: meta.quantity ?? null,
         attendees: isRecipientView ? null : meta.attendees ?? null,
+        // Lets the buyer resume a pending order at checkout
+        primaryBuyerGender: isRecipientView ? null : meta.primaryBuyerGender ?? null,
       },
     },
     // Meeting links are only for paid orders

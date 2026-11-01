@@ -35,7 +35,7 @@ export default function VirtualEventHero({ event }: VirtualEventHeroProps) {
         </p>
 
         <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-          <div className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-gray-50 dark:bg-gray-800/80 rounded-lg shadow-sm">
+          <div className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-gray-50 dark:bg-gray-800/80 rounded-2xl shadow-sm">
             <FaCalendarAlt className="text-blue-500 flex-shrink-0" />
             <div>
               <p className="text-xs text-gray-500 dark:text-gray-400">DATE</p>
@@ -45,7 +45,7 @@ export default function VirtualEventHero({ event }: VirtualEventHeroProps) {
             </div>
           </div>
 
-          <div className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-gray-50 dark:bg-gray-800/80 rounded-lg shadow-sm">
+          <div className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-gray-50 dark:bg-gray-800/80 rounded-2xl shadow-sm">
             <FaClock className="text-blue-500 flex-shrink-0" />
             <div>
               <p className="text-xs text-gray-500 dark:text-gray-400">TIME</p>
@@ -55,7 +55,7 @@ export default function VirtualEventHero({ event }: VirtualEventHeroProps) {
             </div>
           </div>
 
-          <div className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-gray-50 dark:bg-gray-800/80 rounded-lg shadow-sm">
+          <div className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-gray-50 dark:bg-gray-800/80 rounded-2xl shadow-sm">
             <FaUserAlt className="text-blue-500 flex-shrink-0" />
             <div>
               <p className="text-xs text-gray-500 dark:text-gray-400">HOST</p>

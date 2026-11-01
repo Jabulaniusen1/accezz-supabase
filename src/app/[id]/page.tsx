@@ -71,11 +71,7 @@ export default function EventRouterPage() {
   }
 
   if (error || eventType === null) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <p className="text-gray-700 dark:text-gray-300"><EventNotFound /></p>
-      </div>
-    );
+    return <EventNotFound />;
   }
 
   return eventType === 'virtual' ? <VirtualEventPage /> : <PhysicalEventPage />;

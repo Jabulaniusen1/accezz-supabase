@@ -93,7 +93,7 @@ export default function VirtualEventSettings({
       case 'custom':
         return (
           <div className="space-y-3 sm:space-y-4 mt-4 sm:mt-6">
-            <div className="flex items-center space-x-2 sm:space-x-3 text-[#f54502]">
+            <div className="flex items-center space-x-2 sm:space-x-3 text-brand">
               <FaLink className="text-sm sm:text-base" />
               <h4 className="font-medium text-sm sm:text-base">Custom Meeting Link</h4>
             </div>
@@ -111,7 +111,7 @@ export default function VirtualEventSettings({
                     meetingUrl: e.target.value
                   }
                 })}
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-800 dark:text-gray-100 text-gray-800 text-sm sm:text-base"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-brand focus:border-transparent bg-white dark:bg-gray-800 dark:text-gray-100 text-gray-800 text-sm sm:text-base"
                 placeholder="https://example.com/meeting"
                 required
               />
@@ -122,7 +122,7 @@ export default function VirtualEventSettings({
       case 'zoom':
         return (
           <div className="space-y-3 sm:space-y-4 mt-4 sm:mt-6">
-            <div className="flex items-center space-x-2 sm:space-x-3 text-[#f54502]">
+            <div className="flex items-center space-x-2 sm:space-x-3 text-brand">
               <FaVideo className="text-sm sm:text-base" />
               <h4 className="font-medium text-sm sm:text-base">Zoom Meeting Details</h4>
             </div>
@@ -140,7 +140,7 @@ export default function VirtualEventSettings({
                     meetingId: e.target.value
                   }
                 })}
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-800 dark:text-gray-100 text-gray-800 text-sm sm:text-base"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-brand focus:border-transparent bg-white dark:bg-gray-800 dark:text-gray-100 text-gray-800 text-sm sm:text-base"
                 placeholder="123 456 789 0"
                 required
               />
@@ -151,7 +151,7 @@ export default function VirtualEventSettings({
       case 'meets':
         return (
           <div className="space-y-3 sm:space-y-4 mt-4 sm:mt-6">
-            <div className="flex items-center space-x-2 sm:space-x-3 text-[#f54502]">
+            <div className="flex items-center space-x-2 sm:space-x-3 text-brand">
               <FaVideo className="text-sm sm:text-base" />
               <h4 className="font-medium text-sm sm:text-base">Meets Details</h4>
             </div>
@@ -169,7 +169,7 @@ export default function VirtualEventSettings({
                     meetingUrl: e.target.value
                   }
                 })}
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-800 dark:text-gray-100 text-gray-800 text-sm sm:text-base"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-brand focus:border-transparent bg-white dark:bg-gray-800 dark:text-gray-100 text-gray-800 text-sm sm:text-base"
                 placeholder="https://meets.your-platform.com/example"
                 required
               />
@@ -180,7 +180,7 @@ export default function VirtualEventSettings({
       case 'google-meet':
         return (
           <div className="space-y-3 sm:space-y-4 mt-4 sm:mt-6">
-        <div className="flex items-center space-x-2 sm:space-x-3 text-[#f54502]">
+        <div className="flex items-center space-x-2 sm:space-x-3 text-brand">
           <SiGooglemeet className="text-sm sm:text-base" />
           <h4 className="font-medium text-sm sm:text-base">Google Meet Details</h4>
         </div>
@@ -198,7 +198,7 @@ export default function VirtualEventSettings({
             meetingUrl: e.target.value
           }
             })}
-            className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-800 dark:text-gray-100 text-gray-800 text-sm sm:text-base"
+            className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-brand focus:border-transparent bg-white dark:bg-gray-800 dark:text-gray-100 text-gray-800 text-sm sm:text-base"
             placeholder="https://meet.google.com/xxx-xxxx-xxx"
             required
           />
@@ -227,7 +227,7 @@ export default function VirtualEventSettings({
             onChange={(e) => handleVirtualToggle(e.target.checked)}
             className="sr-only peer" 
           />
-          <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#f54502]/30 dark:peer-focus:ring-[#f54502]/50 rounded-[5px] peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-[5px] after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-[#f54502]"></div>
+          <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand/30 dark:peer-focus:ring-brand/50 rounded-[5px] peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-[5px] after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-brand"></div>
           <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">
             {formData?.isVirtual ? 'Virtual Event' : 'In-Person Event'}
           </span>
@@ -239,7 +239,7 @@ export default function VirtualEventSettings({
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           transition={{ duration: 0.3 }}
-          className="bg-[#f54502]/10 dark:bg-[#f54502]/20 p-4 sm:p-6 rounded-[5px] border border-[#f54502]/20 dark:border-[#f54502]/30 space-y-4 sm:space-y-6"
+          className="bg-brand/10 dark:bg-brand/20 p-4 sm:p-6 rounded-[5px] border border-brand/20 dark:border-brand/30 space-y-4 sm:space-y-6"
         >
           <div className="space-y-2">
             <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -258,8 +258,8 @@ export default function VirtualEventSettings({
                     onClick={() => handleLocationVisibilityChange(option.value)}
                     className={`px-3 py-2 rounded-[5px] border text-xs sm:text-sm transition ${
                       isActive
-                        ? 'bg-[#f54502] text-white border-[#f54502] shadow-sm'
-                        : 'border-[#f54502]/40 text-[#f54502] bg-white dark:bg-gray-900 hover:border-[#f54502]'
+                        ? 'bg-brand text-white border-brand shadow-sm'
+                        : 'border-brand/40 text-brand bg-white dark:bg-gray-900 hover:border-brand'
                     }`}
                   >
                     {option.label}
@@ -279,8 +279,8 @@ export default function VirtualEventSettings({
           </div>
 
           <div>
-            <h3 className="text-lg sm:text-xl font-semibold text-[#f54502] dark:text-[#f54502] mb-3 sm:mb-4 flex items-center">
-              <RiEarthLine className="mr-2 text-[#f54502]" /> Virtual Event Platform
+            <h3 className="text-lg sm:text-xl font-semibold text-brand dark:text-brand mb-3 sm:mb-4 flex items-center">
+              <RiEarthLine className="mr-2 text-brand" /> Virtual Event Platform
             </h3>
             <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-3 sm:mb-4">
               Select the platform you&apos;ll use for your virtual event
@@ -291,32 +291,32 @@ export default function VirtualEventSettings({
                 { 
                   id: 'google-meet',
                   name: 'Google Meet',
-                  icon: <SiGooglemeet className="text-[#f54502] text-lg sm:text-xl" />
+                  icon: <SiGooglemeet className="text-brand text-lg sm:text-xl" />
                 },
                 { 
                   id: 'zoom',
                   name: 'Zoom',
-                  icon: <BiLogoZoom className="text-[#f54502] text-lg sm:text-xl" />
+                  icon: <BiLogoZoom className="text-brand text-lg sm:text-xl" />
                 },
                 { 
                   id: 'meets',
                   name: 'Meets',
-                  icon: <BsMicrosoftTeams className="text-[#f54502] text-lg sm:text-xl" />
+                  icon: <BsMicrosoftTeams className="text-brand text-lg sm:text-xl" />
                 },
                 { 
                   id: 'custom',
                   name: 'Custom',
-                  icon: <FaLink className="text-[#f54502] text-lg sm:text-xl" />
+                  icon: <FaLink className="text-brand text-lg sm:text-xl" />
                 }
               ].map((platform) => (
                 <motion.button
                   key={platform.id}
                   type="button"
                   onClick={() => handleVirtualPlatformChange(platform.id as 'google-meet' | 'zoom' | 'meets' | 'custom')}
-                  className={`p-3 sm:p-4 rounded-[5px] border-2 transition-all duration-200 flex flex-col items-center bg-white dark:bg-gray-800
+                  className={`p-3 sm:p-4 rounded-2xl border-2 transition-all duration-200 flex flex-col items-center bg-white dark:bg-gray-800
                     ${formData.virtualEventDetails?.platform === platform.id
-                      ? 'ring-2 ring-offset-2 ring-[#f54502] border-[#f54502] scale-[1.02] shadow-md bg-[#f54502]/10 dark:bg-[#f54502]/20'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-[#f54502] dark:hover:border-[#f54502]'
+                      ? 'ring-2 ring-offset-2 ring-brand border-brand scale-[1.02] shadow-md bg-brand/10 dark:bg-brand/20'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-brand dark:hover:border-brand'
                     }`}
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.98 }}

@@ -1,15 +1,16 @@
 "use client";
 
 import { useMemo, useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { Location } from '@/types/location';
+import ImageWithFallback from '@/components/ui/ImageWithFallback';
 
 interface LocationCardProps {
   location: Location;
 }
 
-const PlaceholderImage = '/accezz logo c.png';
+// Empty means "no image": ImageWithFallback shows a neutral placeholder
+const PlaceholderImage = '';
 
 export const LocationCard: React.FC<LocationCardProps> = ({ location }) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -33,10 +34,10 @@ export const LocationCard: React.FC<LocationCardProps> = ({ location }) => {
   const priceLabel = formattedPrice ? (formattedPrice.startsWith('₦') ? formattedPrice : `₦${formattedPrice}`) : 'Contact for price';
 
   return (
-    <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-200">
+    <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-card overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-200">
       <div className="relative">
         <div className="relative aspect-[4/3] overflow-hidden">
-          <Image
+          <ImageWithFallback
             src={currentImage?.imageUrl || PlaceholderImage}
             alt={location.name}
             fill
@@ -84,7 +85,7 @@ export const LocationCard: React.FC<LocationCardProps> = ({ location }) => {
               </div>
             )}
           </div>
-          <span className="text-sm font-semibold text-[#f54502] whitespace-nowrap">{priceLabel}</span>
+          <span className="text-sm font-semibold text-brand whitespace-nowrap">{priceLabel}</span>
         </div>
         {location.address && (
           <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">{location.address}</p>

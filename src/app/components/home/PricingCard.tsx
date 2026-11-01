@@ -37,8 +37,8 @@ const featureCards = [
     icon: <FiShoppingBag className="h-5 w-5" />,
     items: [
       "No fee on free tickets",
-      "6% flat fee per paid ticket — no extras",
-      "Pass fees to attendees or absorb them",
+      "10% fee on paid tickets, 7% once an event passes ₦1m",
+      "Buyers cover the payment processing fee",
       "Advanced ticket types & inventory limits",
       "Instant order receipts & QR codes",
       "Automated refund handling",
@@ -68,7 +68,7 @@ const PricingCard = () => {
             Simple pricing. Sign Up for free.
           </h1>
           <p className="mt-3 text-sm text-gray-500 sm:mt-4 sm:text-lg">
-            Host unlimited free events at zero cost. When you collect payments, we keep a simple flat fee.
+            Host unlimited free events at zero cost. When you sell paid tickets, we keep a small share of your sales.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -80,11 +80,11 @@ const PricingCard = () => {
                   onClick={() => setSelectedMarket(market)}
                   className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
                     isActive
-                      ? "border-[#f54502] bg-[#fff0e7] text-[#f54502]"
-                      : "border-gray-200 bg-white text-gray-600 hover:border-[#f54502]/60 hover:text-[#f54502]"
+                      ? "border-brand bg-[#fff0e7] text-brand"
+                      : "border-gray-200 bg-white text-gray-600 hover:border-brand/60 hover:text-brand"
                   }`}
                 >
-                  <FiMapPin className={isActive ? "text-[#f54502]" : "text-gray-400"} />
+                  <FiMapPin className={isActive ? "text-brand" : "text-gray-400"} />
                   {market.label}
             </button>
               );
@@ -93,15 +93,15 @@ const PricingCard = () => {
 
           <div className="mt-10 flex justify-center">
             <div className="w-full max-w-md rounded-[28px] border border-[#ffd9c9] bg-[#fff4ee] px-6 py-10 text-center shadow-sm sm:px-10 sm:py-12">
-              <p className="text-xs font-medium uppercase tracking-wide text-[#f54502] sm:text-sm">
-                6% flat fee — no add-ons
+              <p className="text-xs font-medium uppercase tracking-wide text-brand sm:text-sm">
+                Fee on paid tickets
               </p>
-              <p className="mt-3 text-4xl font-semibold text-gray-900 sm:mt-4 sm:text-5xl">6%</p>
+              <p className="mt-3 text-4xl font-semibold text-gray-900 sm:mt-4 sm:text-5xl">10%</p>
               <p className="mt-2 text-xs text-gray-600 sm:mt-3 sm:text-sm">
                 {selectedMarket.subtitle}
               </p>
-              <p className="mt-2 text-xs uppercase tracking-wide text-[#f54502] sm:mt-1">
-                Keep 94% of every paid ticket
+              <p className="mt-2 text-xs uppercase tracking-wide text-brand sm:mt-1">
+                Drops to 7% once an event&apos;s sales reach ₦1m
               </p>
             </div>
           </div>
@@ -111,9 +111,9 @@ const PricingCard = () => {
           {featureCards.map((card) => (
             <div
               key={card.title}
-              className="rounded-[24px] border border-gray-200 bg-white p-6 shadow-sm sm:rounded-[28px] sm:p-8"
+              className="rounded-card border border-gray-200 bg-white p-6 shadow-sm sm:p-8"
             >
-              <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#fff0e7] text-[#f54502] sm:mb-5 sm:h-12 sm:w-12">
+              <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#fff0e7] text-brand sm:mb-5 sm:h-12 sm:w-12">
                 {card.icon}
                 </div>
               <h3 className="text-base font-semibold text-gray-900 sm:text-lg">{card.title}</h3>

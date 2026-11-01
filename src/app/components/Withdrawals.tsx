@@ -211,7 +211,7 @@ const Withdrawals: React.FC = () => {
       )}
 
       {/* ── Balance Hero Card ── */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#f54502] to-[#c03800] p-6 text-white shadow-lg shadow-[#f54502]/20">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand to-[#c03800] p-6 text-white shadow-lg shadow-brand/20">
         <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-white/5 -translate-y-10 translate-x-10" />
         <div className="absolute bottom-0 left-0 w-24 h-24 rounded-full bg-white/5 translate-y-8 -translate-x-6" />
         <div className="relative">
@@ -241,14 +241,19 @@ const Withdrawals: React.FC = () => {
       </div>
 
       {/* ── Request Withdrawal Card ── */}
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-card overflow-hidden">
         <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
           <h3 className="text-sm font-semibold text-gray-800 dark:text-white">
             {isAffiliateSource ? 'Withdraw Affiliate Earnings' : 'Withdraw Event Earnings'}
           </h3>
-          {isAffiliateSource && (
+          {isAffiliateSource ? (
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
               Fixed fee of {formatCurrency(AFFILIATE_WITHDRAWAL_FEE_NGN, PAYOUT_CURRENCY)} per request
+            </p>
+          ) : (
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+              Your ticket sales minus the Accezz fee (10%, or 7% once an event&apos;s sales reach ₦1m)
+              and any affiliate commissions
             </p>
           )}
         </div>
@@ -272,12 +277,12 @@ const Withdrawals: React.FC = () => {
               value={displayAmount}
               onChange={onAmountChange}
               placeholder="0.00"
-              className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-base font-semibold focus:outline-none focus:ring-2 focus:ring-[#f54502]/30 focus:border-[#f54502] transition"
+              className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-base font-semibold focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition"
             />
             <button
               onClick={submitWithdrawal}
               disabled={submitting || hasPendingRequest || maxRequestable <= appliedFee}
-              className="px-6 py-3 rounded-xl font-semibold text-sm text-white bg-[#f54502] hover:bg-[#d63a02] disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2 whitespace-nowrap"
+              className="px-6 py-3 rounded-xl font-semibold text-sm text-white bg-brand hover:bg-brand-dark disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2 whitespace-nowrap"
             >
               {submitting && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
               {submitting ? 'Submitting…' : hasPendingRequest ? 'Pending' : 'Request'}
@@ -291,7 +296,7 @@ const Withdrawals: React.FC = () => {
                 key={label}
                 type="button"
                 onClick={() => setQuickAmount(ratio)}
-                className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-[#f54502]/50 hover:text-[#f54502] transition"
+                className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-brand/50 hover:text-brand transition"
               >
                 {label}
               </button>
@@ -300,20 +305,20 @@ const Withdrawals: React.FC = () => {
 
           {/* Fee breakdown */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
+            <div className="p-3 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
               <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">Fee</p>
               <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">{formatCurrency(appliedFee, payoutCurrency)}</p>
             </div>
-            <div className="p-3 rounded-xl bg-[#f54502]/5 dark:bg-[#f54502]/10 border border-[#f54502]/20">
+            <div className="p-3 rounded-xl bg-brand/5 dark:bg-brand/10 border border-brand/20">
               <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">You Receive</p>
-              <p className="text-sm font-bold text-[#f54502]">{formatCurrency(netPayoutPreview, payoutCurrency)}</p>
+              <p className="text-sm font-bold text-brand">{formatCurrency(netPayoutPreview, payoutCurrency)}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* ── Withdrawal History ── */}
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-card overflow-hidden">
         <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-semibold text-gray-800 dark:text-white">Withdrawal History</h3>
@@ -365,15 +370,15 @@ const Withdrawals: React.FC = () => {
       {/* Success Modal */}
       {showSuccessModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border-2 border-[#f54502]/20 dark:border-[#f54502]/30">
+          <div className="bg-white dark:bg-gray-800 rounded-card shadow-2xl w-full max-w-md overflow-hidden border-2 border-brand/20 dark:border-brand/30">
             {/* Decorative gradient header */}
-            <div className="bg-gradient-to-r from-[#f54502] to-[#d63a02] p-6 text-center relative overflow-hidden">
+            <div className="bg-gradient-to-r from-brand to-brand-dark p-6 text-center relative overflow-hidden">
               <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-20"></div>
               {/* Success Icon */}
               <div className="relative z-10">
                 <div className="mx-auto w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-4">
                   <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg">
-                    <svg className="w-10 h-10 text-[#f54502]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-10 h-10 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
@@ -386,10 +391,10 @@ const Withdrawals: React.FC = () => {
             <div className="p-6 text-center">
               <div className="mb-4">
                 <p className="text-base text-gray-700 dark:text-gray-300 leading-relaxed">
-                  You will get your money in <span className="font-semibold text-[#f54502] dark:text-[#f54502]">1 - 5 business days</span>.
+                  You will get your money in <span className="font-semibold text-brand dark:text-brand">1 - 5 business days</span>.
                 </p>
                 <p className="text-base text-gray-700 dark:text-gray-300 mt-2">
-                  Sometimes, in less than <span className="font-semibold text-[#f54502] dark:text-[#f54502]">30mins</span> 😉
+                  Sometimes, in less than <span className="font-semibold text-brand dark:text-brand">30mins</span> 😉
                 </p>
                 {isAffiliateSource && (
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
@@ -400,13 +405,13 @@ const Withdrawals: React.FC = () => {
               
               {/* Decorative elements */}
               <div className="flex justify-center gap-2 mb-6">
-                <div className="w-2 h-2 rounded-full bg-[#f54502] animate-pulse"></div>
-                <div className="w-2 h-2 rounded-full bg-[#f54502] animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-                <div className="w-2 h-2 rounded-full bg-[#f54502] animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+                <div className="w-2 h-2 rounded-full bg-brand animate-pulse"></div>
+                <div className="w-2 h-2 rounded-full bg-brand animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+                <div className="w-2 h-2 rounded-full bg-brand animate-pulse" style={{ animationDelay: '0.4s' }}></div>
               </div>
               
               <button
-                className="w-full px-6 py-3 text-white font-semibold bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg"
+                className="w-full px-6 py-3 text-white font-semibold bg-gradient-to-r from-brand to-brand-dark hover:from-brand/90 hover:to-brand-dark/90 transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg"
                 style={{ borderRadius: '5px' }}
                 onClick={() => setShowSuccessModal(false)}
               >

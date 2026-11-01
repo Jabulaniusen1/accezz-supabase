@@ -61,7 +61,7 @@ function CopyButton({ text }: { text: string }) {
       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition flex-shrink-0 ${
         copied
           ? 'bg-green-50 border-green-200 text-green-600 dark:bg-green-900/20 dark:border-green-700 dark:text-green-400'
-          : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-[#f54502]/50 hover:text-[#f54502]'
+          : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-brand/50 hover:text-brand'
       }`}
     >
       {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
@@ -230,11 +230,11 @@ const AffiliateSection: React.FC = () => {
       {myAffiliates.length > 0 && (
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label: 'Total Earned', value: `₦${totalEarned.toLocaleString()}`, icon: DollarSign, color: 'text-[#f54502]', bg: 'bg-[#f54502]/8 dark:bg-[#f54502]/10' },
+            { label: 'Total Earned', value: `₦${totalEarned.toLocaleString()}`, icon: DollarSign, color: 'text-brand', bg: 'bg-brand/8 dark:bg-brand/10' },
             { label: 'Total Clicks', value: totalClicks.toLocaleString(), icon: TrendingUp, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/20' },
             { label: 'Conversions', value: totalSales.toLocaleString(), icon: Users, color: 'text-green-600 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-900/20' },
           ].map(({ label, value, icon: Icon, color, bg }) => (
-            <div key={label} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 text-center">
+            <div key={label} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-card p-4 text-center">
               <div className={`inline-flex items-center justify-center w-8 h-8 rounded-lg ${bg} mb-2`}>
                 <Icon className={`w-4 h-4 ${color}`} />
               </div>
@@ -263,13 +263,13 @@ const AffiliateSection: React.FC = () => {
               const link = `${baseUrl}/${aff.event.slug}?ref=${aff.affiliate_code}`;
               const cr = aff.clicks > 0 ? ((aff.conversions / aff.clicks) * 100).toFixed(1) : '0';
               return (
-                <div key={aff.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+                <div key={aff.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-card overflow-hidden">
                   {/* Card header */}
                   <div className="px-4 pt-4 pb-3 flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{aff.event.title}</p>
                       {aff.affiliate_settings && (
-                        <span className="inline-flex items-center gap-1 mt-1 text-xs font-medium text-[#f54502]">
+                        <span className="inline-flex items-center gap-1 mt-1 text-xs font-medium text-brand">
                           <Zap className="w-3 h-3" />
                           {commissionLabel(aff.affiliate_settings.commission_type, aff.affiliate_settings.commission_value)}
                         </span>
@@ -279,7 +279,7 @@ const AffiliateSection: React.FC = () => {
                       href={`/${aff.event.slug}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex-shrink-0 p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-400 hover:text-[#f54502] hover:border-[#f54502]/40 transition"
+                      className="flex-shrink-0 p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-400 hover:text-brand hover:border-brand/40 transition"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
                     </a>
@@ -302,7 +302,7 @@ const AffiliateSection: React.FC = () => {
                       { label: 'Earned', value: `₦${aff.total_earned.toLocaleString()}`, highlight: true },
                     ].map(({ label, value, highlight }) => (
                       <div key={label} className="py-3 flex flex-col items-center gap-0.5">
-                        <p className={`text-sm font-bold ${highlight ? 'text-[#f54502]' : 'text-gray-800 dark:text-gray-200'}`}>{value}</p>
+                        <p className={`text-sm font-bold ${highlight ? 'text-brand' : 'text-gray-800 dark:text-gray-200'}`}>{value}</p>
                         <p className="text-xs text-gray-400 dark:text-gray-500">{label}</p>
                       </div>
                     ))}
@@ -315,7 +315,7 @@ const AffiliateSection: React.FC = () => {
       </section>
 
       {/* ── Browse events to promote ── */}
-      <section className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+      <section className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-card overflow-hidden">
         <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
           <h3 className="text-sm font-semibold text-gray-800 dark:text-white">Events to Promote</h3>
         </div>
@@ -332,14 +332,14 @@ const AffiliateSection: React.FC = () => {
               <div key={ev.id} className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition">
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{ev.title}</p>
-                  <p className="text-xs text-[#f54502] mt-0.5">
+                  <p className="text-xs text-brand mt-0.5">
                     {commissionLabel(ev.affiliate_settings.commission_type, ev.affiliate_settings.commission_value)}
                   </p>
                 </div>
                 <button
                   onClick={() => handleJoin(ev.id)}
                   disabled={joining === ev.id}
-                  className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 bg-[#f54502] hover:bg-[#d63a02] text-white text-xs font-semibold rounded-lg transition disabled:opacity-50"
+                  className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 bg-brand hover:bg-brand-dark text-white text-xs font-semibold rounded-lg transition disabled:opacity-50"
                 >
                   {joining === ev.id ? (
                     <div className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" />
@@ -406,13 +406,13 @@ function CreatorEventSettings({ event, saving, onSave }: {
   const update = <T,>(setter: (v: T) => void) => (v: T) => { setter(v); setDirty(true); };
 
   return (
-    <div className="px-4 py-4 space-y-3">
+    <div className="space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-gray-800 dark:text-white truncate pr-4">{event.title}</p>
         <button
           type="button"
           onClick={() => { setEnabled(v => !v); setDirty(true); }}
-          className={`relative inline-flex h-6 w-11 items-center rounded-full flex-shrink-0 transition-colors ${enabled ? 'bg-[#f54502]' : 'bg-gray-300 dark:bg-gray-600'}`}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full flex-shrink-0 transition-colors ${enabled ? 'bg-brand' : 'bg-gray-300 dark:bg-gray-600'}`}
           aria-label="Toggle affiliate"
         >
           <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${enabled ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -426,7 +426,7 @@ function CreatorEventSettings({ event, saving, onSave }: {
             <select
               value={commissionType}
               onChange={e => update(setCommissionType)(e.target.value)}
-              className="w-full h-9 px-3 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-[#f54502]/30"
+              className="w-full h-9 px-3 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-brand/30"
             >
               <option value="percentage">Percentage (%)</option>
               <option value="fixed">Fixed (₦)</option>
@@ -441,7 +441,7 @@ function CreatorEventSettings({ event, saving, onSave }: {
               min={0}
               value={commissionValue}
               onChange={e => update(setCommissionValue)(Number(e.target.value))}
-              className="w-full h-9 px-3 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-[#f54502]/30"
+              className="w-full h-9 px-3 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-brand/30"
             />
           </div>
         </div>
@@ -450,7 +450,7 @@ function CreatorEventSettings({ event, saving, onSave }: {
       <button
         onClick={() => { onSave(enabled, commissionType, commissionValue); setDirty(false); }}
         disabled={saving || !dirty}
-        className="w-full py-2 text-xs font-semibold rounded-lg transition disabled:opacity-40 flex items-center justify-center gap-1.5 bg-[#f54502] hover:bg-[#d63a02] text-white disabled:bg-gray-200 dark:disabled:bg-gray-700 disabled:text-gray-400"
+        className="w-full py-2 text-xs font-semibold rounded-lg transition disabled:opacity-40 flex items-center justify-center gap-1.5 bg-brand hover:bg-brand-dark text-white disabled:bg-gray-200 dark:disabled:bg-gray-700 disabled:text-gray-400"
       >
         {saving ? (
           <><div className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />Saving…</>

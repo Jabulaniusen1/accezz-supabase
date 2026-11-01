@@ -189,10 +189,10 @@ export default async function LocationDetailPage({ params }: LocationPageProps) 
   }));
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-12">
+    <div className="page-container py-12 sm:py-16 space-y-12">
       <Link
         href="/locations"
-        className="inline-flex items-center space-x-1 sm:space-x-2 text-gray-600 dark:text-gray-300 hover:text-[#f54502] dark:hover:text-[#f54502] transition-colors text-sm sm:text-base"
+        className="inline-flex items-center space-x-1 sm:space-x-2 text-gray-600 dark:text-gray-300 hover:text-brand dark:hover:text-brand transition-colors text-sm sm:text-base"
       >
         <BiArrowBack className="text-lg sm:text-xl" />
         <span className="hidden sm:inline">Back</span>

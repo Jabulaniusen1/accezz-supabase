@@ -26,7 +26,7 @@ export default function VirtualEventAttendees({ event }: VirtualEventAttendeesPr
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.4 }}
-      className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+      className="bg-white dark:bg-gray-800 p-6 rounded-card shadow-sm border border-gray-200 dark:border-gray-700"
     >
       <h3 className="text-xl font-bold mb-4 flex items-center">
         <FaUserFriends className="mr-2 text-purple-500" />

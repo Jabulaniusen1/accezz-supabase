@@ -90,7 +90,7 @@ const Password = () => {
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-        <div className="w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg p-4 md:p-6">
+        <div className="w-full bg-white dark:bg-gray-800 shadow-lg rounded-card p-4 md:p-6">
           <h2 className="text-lg font-semibold mb-4 dark:text-white">
             Change Password
           </h2>
@@ -103,7 +103,7 @@ const Password = () => {
                 type="password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full px-4 py-3 mt-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-colors"
+                className="w-full px-4 py-3 mt-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-brand focus:border-brand transition-colors"
                 placeholder="Enter current password"
                 required
               />
@@ -116,7 +116,7 @@ const Password = () => {
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-4 py-3 mt-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-colors"
+                className="w-full px-4 py-3 mt-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-brand focus:border-brand transition-colors"
                 placeholder="Enter new password"
                 required
                 minLength={6}
@@ -130,7 +130,7 @@ const Password = () => {
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-4 py-3 mt-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-colors"
+                className="w-full px-4 py-3 mt-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-brand focus:border-brand transition-colors"
                 placeholder="Confirm new password"
                 required
                 minLength={6}
@@ -141,9 +141,9 @@ const Password = () => {
               disabled={loading}
               className={`w-full ${
                 loading
-                  ? "bg-[#f54502]/70"
-                  : "bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90"
-              } text-white py-3 px-6 rounded-lg focus:ring-2 focus:ring-[#f54502]/50 focus:outline-none flex items-center justify-center transition-all duration-200 transform hover:scale-105`}
+                  ? "bg-brand/70"
+                  : "bg-gradient-to-r from-brand to-brand-dark hover:from-brand/90 hover:to-brand-dark/90"
+              } text-white py-3 px-6 rounded-lg focus:ring-2 focus:ring-brand/50 focus:outline-none flex items-center justify-center transition-all duration-200 transform hover:scale-105`}
             >
               {loading && (
                 <span className="inline-block animate-spin rounded-full h-4 w-4 border-t-2 border-white mr-2" />
@@ -153,7 +153,7 @@ const Password = () => {
           </form>
         </div>
 
-        <div className="w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg p-4 md:p-6">
+        <div className="w-full bg-white dark:bg-gray-800 shadow-lg rounded-card p-4 md:p-6">
           <h2 className="text-lg font-semibold mb-4 dark:text-white">
             Two-Factor Authentication
           </h2>
@@ -170,7 +170,7 @@ const Password = () => {
           </button>
         </div>
 
-        <div className="col-span-1 md:col-span-2 w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg p-4 md:p-6">
+        <div className="col-span-1 md:col-span-2 w-full bg-white dark:bg-gray-800 shadow-lg rounded-card p-4 md:p-6">
           <h2 className="text-lg font-semibold mb-4 dark:text-white">
             Password Recovery
           </h2>

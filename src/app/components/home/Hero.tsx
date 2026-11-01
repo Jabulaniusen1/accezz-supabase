@@ -104,7 +104,7 @@ const Hero = () => {
       </div>
 
       <header className=" relative w-full z-50 top-0 bg-black/20 backdrop-blur-md">
-        <div className="mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="page-container">
           <div className="flex items-center justify-between h-16">
             <Link
               href="/"
@@ -198,9 +198,9 @@ const Hero = () => {
                 animate={{ y: 0 }}
                 exit={{ y: '-100%' }}
                 transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                className="fixed top-0 left-0 right-0 bg-white dark:bg-gray-900 z-[101] md:hidden shadow-2xl border-b-2 border-[#f54502]"
+                className="fixed top-0 left-0 right-0 bg-white dark:bg-gray-900 z-[101] md:hidden shadow-2xl border-b-2 border-brand"
               >
-                <div className="flex items-center justify-between px-6 py-5 border-b-2 border-gray-200 dark:border-gray-700 bg-gradient-to-r from-[#f54502] to-[#d63a02]">
+                <div className="flex items-center justify-between px-6 py-5 border-b-2 border-gray-200 dark:border-gray-700 bg-gradient-to-r from-brand to-brand-dark">
                   <Link
                     href="/"
                     className="flex items-center space-x-3"
@@ -228,7 +228,7 @@ const Hero = () => {
                       >
                         <Link
                           href={item.href}
-                          className="flex items-center justify-between px-5 py-4 text-lg font-bold text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800 rounded-xl hover:bg-[#f54502] hover:text-white dark:hover:bg-[#f54502] active:bg-[#f54502] active:text-white visited:text-gray-900 dark:visited:text-white transition-all duration-200 group shadow-sm"
+                          className="flex items-center justify-between px-5 py-4 text-lg font-bold text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800 rounded-xl hover:bg-brand hover:text-white dark:hover:bg-brand active:bg-brand active:text-white visited:text-gray-900 dark:visited:text-white transition-all duration-200 group shadow-sm"
                           style={{ borderRadius: '5px' }}
                           onClick={() => setIsMenuOpen(false)}
                         >
@@ -248,7 +248,7 @@ const Hero = () => {
                           handleRedirect("/dashboard");
                           setIsMenuOpen(false);
                         }}
-                        className="flex items-center justify-center space-x-3 w-full px-5 py-4 text-lg font-bold text-white bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 rounded-xl transition-all shadow-lg"
+                        className="flex items-center justify-center space-x-3 w-full px-5 py-4 text-lg font-bold text-white bg-gradient-to-r from-brand to-brand-dark hover:from-brand/90 hover:to-brand-dark/90 rounded-xl transition-all shadow-lg"
                         style={{ borderRadius: '5px' }}
                       >
                         <MdSpaceDashboard className="w-6 h-6" />
@@ -284,7 +284,7 @@ const Hero = () => {
                           handleRedirect("/auth/signup");
                           setIsMenuOpen(false);
                         }}
-                        className="w-full px-5 py-4 text-lg font-bold text-center text-white bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 rounded-xl transition-all shadow-lg"
+                        className="w-full px-5 py-4 text-lg font-bold text-center text-white bg-gradient-to-r from-brand to-brand-dark hover:from-brand/90 hover:to-brand-dark/90 rounded-xl transition-all shadow-lg"
                         style={{ borderRadius: '5px' }}
                       >
                         Sign Up
@@ -298,9 +298,9 @@ const Hero = () => {
         </AnimatePresence>
       </header>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[80vh] md:h-[90vh] flex items-center mt-10">
+      <div className="relative page-container h-[80vh] md:h-[90vh] flex items-center mt-10">
         <div className="max-w-4xl text-center mx-auto">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight my-8">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-balance text-white leading-tight my-8">
             Find the Vibes. Live the Moment.
           </h1>
           
@@ -311,7 +311,7 @@ const Hero = () => {
           <div className="flex flex-col lg:flex-row lg:items-center justify-center gap-4 mb-12">
             <button
               onClick={handleGetStarted}
-              className="flex items-center justify-center gap-3 px-8 py-4 bg-[#f54502] hover:bg-[#f54502]/90 text-white text-base font-medium rounded-xl transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
+              className="flex items-center justify-center gap-3 px-8 py-4 bg-brand hover:bg-brand/90 text-white text-base font-medium rounded-xl transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
               Get Started
             </button>

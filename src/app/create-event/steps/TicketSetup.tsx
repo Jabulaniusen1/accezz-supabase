@@ -155,8 +155,8 @@ const TicketSetup = memo(function TicketSetup({
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 200 }}
         >
-          <RiTicketLine className="mr-2 sm:mr-3 text-[#f54502]" size={20} />
-          <span className="bg-gradient-to-r from-[#f54502] to-[#d63a02] bg-clip-text text-transparent">
+          <RiTicketLine className="mr-2 sm:mr-3 text-brand" size={20} />
+          <span className="bg-gradient-to-r from-brand to-brand-dark bg-clip-text text-transparent">
             Create Your Tickets
           </span>
         </motion.h2>
@@ -218,10 +218,10 @@ const TicketCard = memo(function TicketCard({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, x: -50 }}
       transition={{ type: "spring", stiffness: 300 }}
-      className="relative bg-white dark:bg-gray-800 rounded-[5px] p-4 sm:p-6 border-2 border-gray-100 dark:border-gray-700 shadow-lg hover:shadow-xl transition-shadow duration-300"
+      className="relative bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 border-2 border-gray-100 dark:border-gray-700 shadow-lg hover:shadow-xl transition-shadow duration-300"
       whileHover={{ y: -3 }}
     >
-      <div className="absolute -top-3 -left-3 bg-[#f54502] text-white px-2 sm:px-3 py-1 rounded-[5px] text-xs font-bold shadow-md">
+      <div className="absolute -top-3 -left-3 bg-brand text-white px-2 sm:px-3 py-1 rounded-[5px] text-xs font-bold shadow-md">
         Ticket #{index + 1}
       </div>
       
@@ -234,7 +234,7 @@ const TicketCard = memo(function TicketCard({
             type="text"
             value={ticket.name}
             onChange={(e) => onTicketChange(index, 'name', e.target.value)}
-            className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border-2 border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-200 text-sm sm:text-base"
+            className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border-2 border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-200 text-sm sm:text-base"
             placeholder="e.g., VIP Pass, Early Bird"
             required
           />
@@ -254,7 +254,7 @@ const TicketCard = memo(function TicketCard({
               type="text"
               value={ticket.price}
               onChange={(e) => onTicketChange(index, 'price', e.target.value)}
-              className="w-full pl-8 sm:pl-10 pr-12 sm:pr-16 py-2 sm:py-3 rounded-[5px] border-2 border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-200 text-sm sm:text-base"
+              className="w-full pl-8 sm:pl-10 pr-12 sm:pr-16 py-2 sm:py-3 rounded-[5px] border-2 border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-200 text-sm sm:text-base"
               placeholder="0.00"
               required
             />
@@ -274,7 +274,7 @@ const TicketCard = memo(function TicketCard({
             type="text"
             value={ticket.quantity}
             onChange={(e) => onTicketChange(index, 'quantity', e.target.value)}
-            className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border-2 border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-200 text-sm sm:text-base"
+            className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border-2 border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-200 text-sm sm:text-base"
             placeholder="100"
             required
           />
@@ -291,7 +291,7 @@ const TicketCard = memo(function TicketCard({
               className="sr-only peer"
             />
             <div className="w-12 h-6 bg-gray-200 dark:bg-gray-600 rounded-[5px] peer 
-              peer-checked:after:translate-x-6 peer-checked:bg-[#f54502]
+              peer-checked:after:translate-x-6 peer-checked:bg-brand
               after:content-[''] after:absolute after:top-[2px] after:left-[2px] 
               after:bg-white after:border-gray-300 after:rounded-[5px] after:h-5 after:w-5 
               after:transition-all after:duration-300 peer-hover:shadow-lg
@@ -322,13 +322,13 @@ const AddTicketButton = memo(function AddTicketButton({ onClick }: { onClick: ()
       whileHover={{ scale: 1.02, boxShadow: "0 5px 15px rgba(59, 130, 246, 0.3)" }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className="w-full py-4 sm:py-5 border-2 border-dashed border-[#f54502] dark:border-[#f54502]
-              rounded-[5px] text-[#f54502] dark:text-[#f54502] font-medium text-sm sm:text-base
-              hover:bg-[#f54502]/10 dark:hover:bg-[#f54502]/20 transition-all duration-300
+      className="w-full py-4 sm:py-5 border-2 border-dashed border-brand dark:border-brand
+              rounded-[5px] text-brand dark:text-brand font-medium text-sm sm:text-base
+              hover:bg-brand/10 dark:hover:bg-brand/20 transition-all duration-300
               flex flex-col items-center justify-center space-y-2 group"
     >
-      <div className="w-8 h-6 sm:w-10 sm:h-7 bg-[#f54502]/20 dark:bg-[#f54502]/30 rounded-[5px] flex items-center justify-center group-hover:scale-110 transition-transform">
-        <FaPlus className="text-[#f54502]" />
+      <div className="w-8 h-6 sm:w-10 sm:h-7 bg-brand/20 dark:bg-brand/30 rounded-[5px] flex items-center justify-center group-hover:scale-110 transition-transform">
+        <FaPlus className="text-brand" />
       </div>
       <span>Add Another Ticket Option</span>
     </motion.button>
@@ -360,8 +360,8 @@ const NavigationButtons = memo(function NavigationButtons({
         whileHover={{ scale: 1.05, boxShadow: "0 5px 20px rgba(124, 58, 237, 0.4)" }}
         whileTap={{ scale: 0.98 }}
         onClick={onNext}
-        className="px-4 sm:px-6 md:px-8 py-2 sm:py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white
-                rounded-[5px] hover:from-[#f54502]/90 hover:to-[#d63a02]/90
+        className="px-4 sm:px-6 md:px-8 py-2 sm:py-3 bg-gradient-to-r from-brand to-brand-dark text-white
+                rounded-[5px] hover:from-brand/90 hover:to-brand-dark/90
                 transition-all duration-300 shadow-lg hover:shadow-xl
                 flex items-center justify-center text-sm sm:text-base w-full sm:w-auto"
       >

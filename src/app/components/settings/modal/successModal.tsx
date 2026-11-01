@@ -9,7 +9,7 @@ type SuccessModalProps = {
 const SuccessModal: React.FC<SuccessModalProps> = ({ title, message, onClose }) => {
   return (
     <div className="fixed  z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg shadow-lg w-11/12 sm:w-96 p-6 rounded-xl" >
+      <div className="bg-white rounded-card shadow-lg w-11/12 sm:w-96 p-6 " >
         <div className="text-center">
           <div className="flex justify-center mb-4">
             <div className="bg-green-100 text-green-600 rounded-full p-3">

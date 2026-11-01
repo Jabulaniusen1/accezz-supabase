@@ -1,14 +1,12 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Header from '@/app/components/layout/Header';
 import Footer from '@/app/components/layout/Footer';
 import Toast from '@/components/ui/Toast';
-import TicketTypeForm from '@/app/components/TicketTypeForm';
 import { fetchEventBySlug } from '@/utils/eventUtils';
-import { getTicketPurchaseState } from '@/utils/localStorage';
 import { type Event, type Ticket } from '@/types/event';
 import { VirtualEventPageSkeleton } from './components/VirtualEventPageSkeleton';
 
@@ -26,8 +24,6 @@ export default function VirtualEventPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [toast, setToast] = useState<ToastState>(null);
-  const [showTicketForm, setShowTicketForm] = useState(false);
-  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
 
   const ticketsSectionRef = useRef<HTMLDivElement>(null);
   const toastTimeoutRef = useRef<number | null>(null);
@@ -65,19 +61,6 @@ export default function VirtualEventPage() {
       }, 3000);
     }
   }, []);
-
-  const selectedTicketOption = useMemo(() => {
-    if (!selectedTicket) return undefined;
-
-    return {
-      id: selectedTicket.id,
-      name: selectedTicket.name,
-      price: selectedTicket.price,
-      quantity: selectedTicket.quantity,
-      sold: selectedTicket.sold,
-      details: selectedTicket.details || '',
-    };
-  }, [selectedTicket]);
 
   useEffect(() => {
     let isMounted = true;
@@ -136,17 +119,6 @@ export default function VirtualEventPage() {
     };
   }, [eventSlug, router, showToast]);
 
-  useEffect(() => {
-    try {
-      const savedState = getTicketPurchaseState();
-      if (savedState && savedState.eventSlug === eventSlug && savedState.showTicketForm) {
-        setShowTicketForm(true);
-      }
-    } catch (error) {
-      console.error('Error restoring ticket state:', error);
-    }
-  }, [eventSlug]);
-
   const scrollToTickets = useCallback(() => {
     ticketsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
@@ -159,15 +131,10 @@ export default function VirtualEventPage() {
     };
   }, []);
 
+  // Buying happens on the checkout page, with the chosen ticket preselected
   const handleGetTicket = useCallback((ticket: Ticket) => {
-    setSelectedTicket(ticket);
-    setShowTicketForm(true);
-  }, []);
-
-  const closeTicketForm = useCallback(() => {
-    setShowTicketForm(false);
-    setSelectedTicket(null);
-  }, []);
+    router.push(`/${eventSlug}/checkout?ticket=${encodeURIComponent(ticket.id)}`);
+  }, [router, eventSlug]);
 
   if (loading) {
     return (
@@ -208,17 +175,17 @@ export default function VirtualEventPage() {
 
       <div className="event-page-main">
         <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-          <div className="mx-auto px-4 sm:px-6 lg:px-32 py-4">
+          <div className="page-container py-4">
             <nav className="flex items-center space-x-2 text-sm">
-              <Link href="/" className="text-gray-500 hover:text-[#f54502] transition-colors">
+              <Link href="/" className="text-gray-500 hover:text-brand transition-colors">
                 Home
               </Link>
               <span className="text-gray-400">/</span>
-              <Link href="/#events" className="text-gray-500 hover:text-[#f54502] transition-colors">
+              <Link href="/#events" className="text-gray-500 hover:text-brand transition-colors">
                 Events
               </Link>
               <span className="text-gray-400">/</span>
-              <span className="text-[#f54502] font-medium truncate">{event.title}</span>
+              <span className="text-brand font-medium truncate">{event.title}</span>
             </nav>
           </div>
         </div>
@@ -230,7 +197,7 @@ export default function VirtualEventPage() {
           virtualPlatformLabel={getVirtualPlatformLabel(event)}
         />
         <div className="bg-white dark:bg-gray-900 py-10">
-          <div className="mx-auto px-4 sm:px-6 lg:px-32 grid grid-cols-1 lg:grid-cols-3 gap-10">
+          <div className="page-container grid grid-cols-1 lg:grid-cols-3 gap-10">
             <div className="lg:col-span-2 space-y-10">
               <VirtualEventDetails event={event} />
             </div>
@@ -249,23 +216,6 @@ export default function VirtualEventPage() {
         <OtherEventsYouMayLike />
       </div>
 
-      {showTicketForm && (
-        <TicketTypeForm
-          closeForm={closeTicketForm}
-          tickets={event.ticketType.map((ticket) => ({
-            id: ticket.id,
-            name: ticket.name,
-            price: ticket.price,
-            quantity: ticket.quantity,
-            sold: ticket.sold,
-            details: ticket.details || '',
-          }))}
-          eventSlug={eventSlug as string}
-          setToast={showToast}
-          isOpen={showTicketForm}
-          initialTicket={selectedTicketOption}
-        />
-      )}
 
       <Footer />
     </div>

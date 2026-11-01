@@ -86,8 +86,8 @@ export default function AttendeesList({
         <button
           type="button"
           onClick={handleAddAttendee}
-          className="flex items-center space-x-1 sm:space-x-2 text-[#f54502] hover:text-[#d63a02]
-               dark:text-[#f54502] dark:hover:text-[#d63a02] text-xs sm:text-sm"
+          className="flex items-center space-x-1 sm:space-x-2 text-brand hover:text-brand-dark
+               dark:text-brand dark:hover:text-brand-dark text-xs sm:text-sm"
         >
           <FaUserPlus size={14} />
           <span>Add Attendee</span>
@@ -102,7 +102,7 @@ export default function AttendeesList({
                 value={attendee.name}
                 onChange={(e) => handleAttendeeChange(attendeeIndex, "name", e.target.value)}
                 className="px-3 sm:px-4 py-2 rounded-[5px] border border-gray-300 dark:border-gray-600
-                     focus:ring-2 focus:ring-[#f54502] focus:border-transparent
+                     focus:ring-2 focus:ring-brand focus:border-transparent
                      bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm sm:text-base"
                 placeholder="Attendee Name"
               />
@@ -111,7 +111,7 @@ export default function AttendeesList({
                 value={attendee.email}
                 onChange={(e) => handleAttendeeChange(attendeeIndex, "email", e.target.value)}
                 className="px-3 sm:px-4 py-2 rounded-[5px] border border-gray-300 dark:border-gray-600
-                     focus:ring-2 focus:ring-[#f54502] focus:border-transparent
+                     focus:ring-2 focus:ring-brand focus:border-transparent
                      bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm sm:text-base"
                 placeholder="Attendee Email"
               />
@@ -119,7 +119,7 @@ export default function AttendeesList({
             <button
               type="button"
               onClick={() => handleRemoveAttendee(attendeeIndex)}
-              className="text-[#f54502] hover:text-[#d63a02] dark:hover:text-[#d63a02] self-end sm:self-auto"
+              className="text-brand hover:text-brand-dark dark:hover:text-brand-dark self-end sm:self-auto"
             >
               <FaTrash size={14} />
             </button>

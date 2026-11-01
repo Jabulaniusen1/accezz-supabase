@@ -10,14 +10,14 @@ const AgreeTerms: React.FC<AgreeTermsProps> = ({ onClose }) => {
   const sections = useMemo(() => [
     {
       title: "Your Protection",
-      icon: <FaUserShield className="text-[#f54502]" />,
+      icon: <FaUserShield className="text-brand" />,
       content: "We prioritize your security and data privacy above all else.",
       highlight: true
     },
     {
       title: "No Hidden Fees",
       icon: <FaHandshake className="text-green-500" />,
-      content: "You keep 100% of your ticket revenue - we never take commissions.",
+      content: "Accezz takes 10% of ticket sales, or 7% once an event's sales reach ₦1m. Free tickets are always free.",
       highlight: true
     },
     {
@@ -26,7 +26,7 @@ const AgreeTerms: React.FC<AgreeTermsProps> = ({ onClose }) => {
     },
     {
       title: "2. Account Security",
-      icon: <FaLock className="text-[#f54502]" />,
+      icon: <FaLock className="text-brand" />,
       content: "You're responsible for maintaining your account security."
     },
     {
@@ -35,7 +35,7 @@ const AgreeTerms: React.FC<AgreeTermsProps> = ({ onClose }) => {
     },
     {
       title: "4. Ticket Sales",
-      content: "Organizers receive full ticket revenue minus payment processor fees."
+      content: "Organizers receive ticket revenue minus the Accezz fee. Buyers pay a ₦100 service charge per order and the payment processing fee."
     },
     {
       title: "5. Final Sales",
@@ -71,13 +71,13 @@ const AgreeTerms: React.FC<AgreeTermsProps> = ({ onClose }) => {
         {/* Content with visual hierarchy */}
         <div className="p-6 space-y-6">
           {/* Social proof badge */}
-          <div className="bg-[#f54502]/5 dark:bg-[#f54502]/10 rounded-lg p-4 border border-[#f54502]/20 dark:border-[#f54502]/30 flex items-start gap-3">
-            <div className="bg-[#f54502]/10 dark:bg-[#f54502]/20 p-2 rounded-full">
-              <FaHandshake className="text-[#f54502] dark:text-[#f54502]" />
+          <div className="bg-brand/5 dark:bg-brand/10 rounded-lg p-4 border border-brand/20 dark:border-brand/30 flex items-start gap-3">
+            <div className="bg-brand/10 dark:bg-brand/20 p-2 rounded-full">
+              <FaHandshake className="text-brand dark:text-brand" />
             </div>
             <div>
-              <h3 className="font-medium text-[#f54502] dark:text-[#f54502]">Trusted by thousands of organizers</h3>
-              <p className="text-sm text-[#f54502] dark:text-[#f54502] mt-1">
+              <h3 className="font-medium text-brand dark:text-brand">Trusted by thousands of organizers</h3>
+              <p className="text-sm text-brand dark:text-brand mt-1">
                 Join our community of event professionals
               </p>
             </div>
@@ -88,19 +88,19 @@ const AgreeTerms: React.FC<AgreeTermsProps> = ({ onClose }) => {
             {sections.map((section, index) => (
               <div 
                 key={index} 
-                className={`p-4 rounded-lg transition-all ${section.highlight ? 'bg-[#f54502]/5 dark:bg-[#f54502]/10 border border-[#f54502]/20 dark:border-[#f54502]/30' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'}`}
+                className={`p-4 rounded-2xl transition-all ${section.highlight ? 'bg-brand/5 dark:bg-brand/10 border border-brand/20 dark:border-brand/30' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'}`}
               >
                 <div className="flex items-start gap-3">
                   {section.icon && (
-                    <div className={`mt-0.5 ${section.highlight ? 'text-[#f54502]' : 'text-gray-400'}`}>
+                    <div className={`mt-0.5 ${section.highlight ? 'text-brand' : 'text-gray-400'}`}>
                       {section.icon}
                     </div>
                   )}
                   <div>
-                    <h3 className={`font-medium ${section.highlight ? 'text-[#f54502] dark:text-[#f54502]' : 'text-gray-800 dark:text-gray-200'}`}>
+                    <h3 className={`font-medium ${section.highlight ? 'text-brand dark:text-brand' : 'text-gray-800 dark:text-gray-200'}`}>
                       {section.title}
                     </h3>
-                    <p className={`mt-1 text-sm ${section.highlight ? 'text-[#f54502] dark:text-[#f54502]' : 'text-gray-600 dark:text-gray-400'}`}>
+                    <p className={`mt-1 text-sm ${section.highlight ? 'text-brand dark:text-brand' : 'text-gray-600 dark:text-gray-400'}`}>
                       {section.content}
                     </p>
                   </div>
@@ -110,7 +110,7 @@ const AgreeTerms: React.FC<AgreeTermsProps> = ({ onClose }) => {
           </div>
 
           {/* Conversion-focused CTA */}
-          <div className="bg-gradient-to-r from-green-50 to-[#f54502]/5 dark:from-gray-800 dark:to-gray-800 rounded-xl p-5 border border-green-100 dark:border-gray-700 mt-6">
+          <div className="bg-gradient-to-r from-green-50 to-brand/5 dark:from-gray-800 dark:to-gray-800 rounded-xl p-5 border border-green-100 dark:border-gray-700 mt-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h3 className="font-medium text-gray-900 dark:text-white">Ready to get started?</h3>
@@ -120,7 +120,7 @@ const AgreeTerms: React.FC<AgreeTermsProps> = ({ onClose }) => {
               </div>
               <button
                 onClick={onClose}
-                className="px-6 py-3 bg-gradient-to-r from-green-500 to-[#f54502] hover:from-green-600 hover:to-[#f54502]/90 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all transform hover:scale-[1.02] active:scale-95 whitespace-nowrap"
+                className="px-6 py-3 bg-gradient-to-r from-green-500 to-brand hover:from-green-600 hover:to-brand/90 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all transform hover:scale-[1.02] active:scale-95 whitespace-nowrap"
               >
                 I Understand - Continue
               </button>

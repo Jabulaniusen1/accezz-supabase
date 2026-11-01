@@ -158,7 +158,7 @@ const ValidateContent = () => {
           <p className="text-gray-600">Only the event organizer can validate tickets. Sign in with the organizer account on this device to continue.</p>
           <a
             href={`/auth/login?redirect=${encodeURIComponent(redirect)}`}
-            className="inline-block py-3 px-6 rounded-xl bg-[#f54502] hover:bg-[#d63a02] text-white font-bold"
+            className="inline-block py-3 px-6 rounded-xl bg-brand hover:bg-brand-dark text-white font-bold"
           >
             Sign in
           </a>
@@ -196,7 +196,7 @@ const ValidateContent = () => {
     ? { className: 'bg-red-600 text-white', icon: '✕', label: `Not valid (${ticketData.validationStatus})` }
     : isScanned
       ? { className: 'bg-green-500 text-white', icon: '✓', label: 'Checked in' }
-      : { className: 'bg-[#f54502] text-white', icon: '⏳', label: 'Pending Validation' };
+      : { className: 'bg-brand text-white', icon: '⏳', label: 'Pending Validation' };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex flex-col p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6 md:space-y-8">
@@ -267,8 +267,8 @@ const ValidateContent = () => {
     {/* Ticket and Attendee Details */}
     <section className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 w-full max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       {/* Ticket Information */}
-      <div className="bg-white rounded-xl p-6 sm:p-8 shadow-md border border-gray-200">
-        <h3 className="text-xl sm:text-2xl font-bold border-b-2 border-[#f54502] pb-3 mb-6 text-gray-900">Ticket Information</h3>
+      <div className="bg-white rounded-card p-6 sm:p-8 shadow-md border border-gray-200">
+        <h3 className="text-xl sm:text-2xl font-bold border-b-2 border-brand pb-3 mb-6 text-gray-900">Ticket Information</h3>
         <div className="space-y-4 sm:space-y-5">
           {event && <InfoField label="Event" value={event.title} className="text-base sm:text-lg font-medium text-gray-900" />}
           <InfoField label="Ticket Type" value={ticketData.ticketType} className="text-base sm:text-lg font-medium text-gray-900" />
@@ -280,14 +280,14 @@ const ValidateContent = () => {
           <InfoField
             label="Price"
             value={formatPrice(ticketData.price, ticketData.currency)}
-            className="text-lg sm:text-xl font-bold text-[#f54502]"
+            className="text-lg sm:text-xl font-bold text-brand"
           />
         </div>
       </div>
 
       {/* Attendee Information */}
-      <div className="bg-white rounded-xl p-6 sm:p-8 shadow-md border border-gray-200">
-        <h3 className="text-xl sm:text-2xl font-bold border-b-2 border-[#f54502] pb-3 mb-6 text-gray-900">Attendee Details</h3>
+      <div className="bg-white rounded-card p-6 sm:p-8 shadow-md border border-gray-200">
+        <h3 className="text-xl sm:text-2xl font-bold border-b-2 border-brand pb-3 mb-6 text-gray-900">Attendee Details</h3>
         <div className="space-y-4 sm:space-y-5">
           <InfoField label="Name" value={ticketData.attendeeName} className="text-base sm:text-lg font-medium text-gray-900" />
           <InfoField label="Email" value={ticketData.attendeeEmail} className="text-base sm:text-lg font-medium text-gray-900" />
@@ -310,7 +310,7 @@ const ValidateContent = () => {
       className={`w-full max-w-md mx-auto py-3 sm:py-4 px-6 sm:px-8 text-base sm:text-lg font-bold rounded-xl shadow-lg transform transition-all duration-300 ${
         isScanned || isInvalid
           ? 'bg-gray-400 text-white cursor-not-allowed'
-          : 'bg-[#f54502] hover:bg-[#d63a02] text-white hover:scale-105 hover:shadow-xl active:scale-95'
+          : 'bg-brand hover:bg-brand-dark text-white hover:scale-105 hover:shadow-xl active:scale-95'
       }`}
     >
     {isInvalid ? 'Ticket Not Valid' : isScanned ? 'Ticket Already Validated' : validating ? 'Validating…' : 'Validate Ticket Now'}

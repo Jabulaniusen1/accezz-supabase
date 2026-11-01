@@ -274,7 +274,7 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
     doc.setFillColor(255, 255, 255);
     doc.rect(0, 0, 210, 297, 'F');
   
-    // Top border accent (matching border-t-4 border-[#f54502])
+    // Top border accent (matching border-t-4 border-brand)
     doc.setFillColor(245, 69, 2);
     doc.rect(0, 0, 210, 4, 'F');
     
@@ -297,13 +297,13 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
     const sectionSpacing = 12;
     let yPos = currentY;
     
-    // Date section with icon background (bg-[#f54502]/10)
+    // Date section with icon background (bg-brand/10)
     if (eventData?.date) {
       const iconSize = 6;
       const iconBgY = yPos - 2;
       
       // Icon background (light orange)
-      doc.setFillColor(255, 235, 230); // Approximate bg-[#f54502]/10
+      doc.setFillColor(255, 235, 230); // Approximate bg-brand/10
       doc.roundedRect(leftMargin, iconBgY, iconSize, iconSize, 1, 1, 'F');
       
       doc.setFont("helvetica", "normal");
@@ -362,7 +362,7 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
       yPos += Math.max(venueLines.length * 6, 12) + sectionSpacing;
     }
     
-    // Ticket Type section (matching site: bg-[#f54502]/10 p-3 rounded-md border border-[#f54502]/20)
+    // Ticket Type section (matching site: bg-brand/10 p-3 rounded-md border border-brand/20)
     const ticketBoxY = yPos;
     const ticketBoxHeight = 20;
     const ticketBoxPadding = 5;
@@ -372,7 +372,7 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
     doc.roundedRect(leftMargin, ticketBoxY, contentWidth, ticketBoxHeight, 2, 2, 'F');
     
     // Border (lighter orange)
-    doc.setDrawColor(245, 200, 190); // Approximate border-[#f54502]/20
+    doc.setDrawColor(245, 200, 190); // Approximate border-brand/20
     doc.setLineWidth(0.5);
     doc.roundedRect(leftMargin, ticketBoxY, contentWidth, ticketBoxHeight, 2, 2, 'S');
     
@@ -596,12 +596,12 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
     <div
       className={containerClasses}
     >
-      <div className="relative w-full max-w-[350px] sm:max-w-[600px] md:max-w-[700px] max-h-auto sm:max-h-[90vh] overflow-visible sm:overflow-auto bg-white rounded-2xl sm:rounded-[20px] shadow-2xl border-2 border-[#f54502]/20">
+      <div className="relative w-full max-w-[350px] sm:max-w-[600px] md:max-w-[700px] max-h-auto sm:max-h-[90vh] overflow-visible sm:overflow-auto bg-white rounded-2xl sm:rounded-[20px] shadow-2xl border-2 border-brand/20">
         {/* Close Button - Only show if modal mode and closeReceipt is provided */}
         {isModal && closeReceipt && (
         <button
           onClick={closeReceipt}
-            className="absolute top-1 right-1 sm:top-2 sm:right-2 text-gray-400 hover:text-[#f54502] z-10 w-7 h-7 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-colors"
+            className="absolute top-1 right-1 sm:top-2 sm:right-2 text-gray-400 hover:text-brand z-10 w-7 h-7 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-colors"
         >
           <svg className="w-4 h-4 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -613,7 +613,7 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
         {!isModal && (
           <button
             onClick={() => router.push('/')}
-            className="absolute top-4 left-4 sm:top-6 sm:left-6 z-10 flex items-center gap-2 px-3 py-2 rounded-lg bg-white/90 hover:bg-white text-gray-600 hover:text-[#f54502] transition-all duration-200 shadow-sm hover:shadow-md"
+            className="absolute top-4 left-4 sm:top-6 sm:left-6 z-10 flex items-center gap-2 px-3 py-2 rounded-lg bg-white/90 hover:bg-white text-gray-600 hover:text-brand transition-all duration-200 shadow-sm hover:shadow-md"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"> 
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -623,7 +623,7 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
         )}
 
         {/* Ticket Content */}
-        <div className="bg-white rounded-xl sm:rounded-[18px] p-4 sm:p-8 md:p-10 relative overflow-hidden border-t-4 border-[#f54502]">
+        <div className="bg-white rounded-xl sm:rounded-[18px] p-4 sm:p-8 md:p-10 relative overflow-hidden border-t-4 border-brand">
           {/* Mobile Version - Compact Layout */}
           <div className="block sm:hidden">
             {/* Event Image */}
@@ -648,7 +648,7 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
               <div className="space-y-3">
                 {eventData?.date && (
                   <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4 text-[#f54502]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     <p className="text-gray-700 text-sm font-medium">
@@ -659,7 +659,7 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
                 
                 {eventData?.time && (
                   <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4 text-[#f54502]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <p className="text-gray-700 text-sm font-medium">{eventData.time}</p>
@@ -668,7 +668,7 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
                 
                 {eventData?.venue && (
                   <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4 text-[#f54502]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
@@ -676,15 +676,15 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
             </div>
                 )}
                 
-                <div className="flex items-center gap-2 bg-[#f54502]/10 p-3 rounded-md border border-[#f54502]/20 mt-4">
-                  <svg className="w-4 h-4 text-[#f54502]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center gap-2 bg-brand/10 p-3 rounded-md border border-brand/20 mt-4">
+                  <svg className="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
                   </svg>
                   <div className="flex-1">
                     <p className="text-gray-500 text-xs">Ticket Type</p>
-                    <p className="font-bold text-[#f54502] text-sm">{ticketData.ticketType}</p>
+                    <p className="font-bold text-brand text-sm">{ticketData.ticketType}</p>
                   </div>
-                  <p className="font-bold text-[#f54502] text-sm">
+                  <p className="font-bold text-brand text-sm">
                     {ticketData.currency} {ticketData.price}
                   </p>
                 </div>
@@ -692,8 +692,8 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
             </div>
 
             {isVirtualEvent ? (
-              <div className="bg-[#f54502]/10 border-2 border-[#f54502]/20 rounded-2xl p-10 mb-8 text-left space-y-4">
-                <h2 className="text-xl font-semibold text-[#f54502]">Virtual Access</h2>
+              <div className="bg-brand/10 border-2 border-brand/20 rounded-2xl p-10 mb-8 text-left space-y-4">
+                <h2 className="text-xl font-semibold text-brand">Virtual Access</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {virtualPlatformLabel && (
                     <p className="text-xs text-gray-600">
@@ -712,7 +712,7 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
                     href={virtualAccessLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-[#f54502] hover:text-[#d63a02] break-all"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-brand hover:text-brand-dark break-all"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14L21 3m0 0h-7m7 0v7" />
@@ -727,7 +727,7 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
               </div>
             ) : (
               ticketData.qrCode ? (
-                <div className="text-center bg-gray-50 p-10 rounded-2xl border-2 border-[#f54502]/20 mb-8">
+                <div className="text-center bg-gray-50 p-10 rounded-2xl border-2 border-brand/20 mb-8">
                   <div className="bg-white p-6 rounded-2xl inline-block shadow-lg">
                     <Image
                       src={ticketData.qrCode}
@@ -755,7 +755,7 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
               </button>
               <button
                 onClick={sharePDF}
-                className="flex-1 bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 text-white font-bold py-3 px-4 rounded-md text-xs transition-all duration-200 flex items-center justify-center gap-1"
+                className="flex-1 bg-gradient-to-r from-brand to-brand-dark hover:from-brand/90 hover:to-brand-dark/90 text-white font-bold py-3 px-4 rounded-md text-xs transition-all duration-200 flex items-center justify-center gap-1"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
@@ -789,8 +789,8 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {eventData?.date && (
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-[#f54502]/10 rounded-lg">
-                      <svg className="w-5 h-5 text-[#f54502]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="p-2 bg-brand/10 rounded-lg">
+                      <svg className="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                     </div>
@@ -805,8 +805,8 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
                 
                 {eventData?.time && (
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-[#f54502]/10 rounded-lg">
-                      <svg className="w-5 h-5 text-[#f54502]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="p-2 bg-brand/10 rounded-lg">
+                      <svg className="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
@@ -819,8 +819,8 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
                 
                 {eventData?.venue && (
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-[#f54502]/10 rounded-lg">
-                      <svg className="w-5 h-5 text-[#f54502]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="p-2 bg-brand/10 rounded-lg">
+                      <svg className="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
@@ -832,9 +832,9 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
                   </div>
                 )}
                 
-                <div className="flex items-center gap-3 bg-[#f54502]/10 p-4 rounded-lg border border-[#f54502]/20">
-                  <div className="p-2 bg-[#f54502]/20 rounded-lg">
-                    <svg className="w-5 h-5 text-[#f54502]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center gap-3 bg-brand/10 p-4 rounded-lg border border-brand/20">
+                  <div className="p-2 bg-brand/20 rounded-lg">
+                    <svg className="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
                     </svg>
                   </div>
@@ -844,7 +844,7 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
                   </div>
                   <div className="text-right">
                     <p className="text-gray-500 text-sm">Price</p>
-                    <p className="text-[#f54502] font-bold text-xl">
+                    <p className="text-brand font-bold text-xl">
                       {ticketData.currency} {ticketData.price}
                     </p>
                   </div>
@@ -862,7 +862,7 @@ const Receipt = ({ closeReceipt, isModal = true, autoDownload = false }: Receipt
               </button>
               <button
                 onClick={sharePDF}
-                className="bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 text-white font-bold py-4 px-8 rounded-xl text-lg transition-all duration-200 flex items-center gap-2"
+                className="bg-gradient-to-r from-brand to-brand-dark hover:from-brand/90 hover:to-brand-dark/90 text-white font-bold py-4 px-8 rounded-xl text-lg transition-all duration-200 flex items-center gap-2"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />

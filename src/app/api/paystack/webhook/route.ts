@@ -93,7 +93,9 @@ async function handleRefund(data: PaystackEvent['data']) {
     return;
   }
 
-  // Partial refunds leave the tickets valid; an admin decides what to revoke
+  // Refunding at least the ticket subtotal (total_amount) revokes the tickets;
+  // the buyer fees may be kept. Smaller refunds leave the tickets valid and an
+  // admin decides what to revoke.
   const refundedKobo = Number(data?.amount) || 0;
   if (refundedKobo < Math.round(Number(order.total_amount) * 100)) {
     console.warn('[webhook] Partial refund recorded without revoking tickets:', order.id, refundedKobo);

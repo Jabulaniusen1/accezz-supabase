@@ -132,7 +132,7 @@ export const AttendeesTable: React.FC<AttendeesTableProps> = ({ tickets }) => {
                     {ticket.attendees.length > 0 ? (
                       <button
                         onClick={() => toggle(ticket.id)}
-                        className="flex items-center gap-1 text-xs text-[#f54502] hover:text-[#d63a02] font-medium"
+                        className="flex items-center gap-1 text-xs text-brand hover:text-brand-dark font-medium"
                       >
                         {ticket.attendees.length}
                         {expanded.has(ticket.id) ? (
@@ -201,7 +201,7 @@ export const AttendeesTable: React.FC<AttendeesTableProps> = ({ tickets }) => {
                 onClick={() => setPage(n)}
                 className={`min-w-[2rem] h-8 px-2 rounded-md border text-xs font-medium transition ${
                   n === page
-                    ? 'bg-[#f54502] border-[#f54502] text-white'
+                    ? 'bg-brand border-brand text-white'
                     : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                 }`}
               >

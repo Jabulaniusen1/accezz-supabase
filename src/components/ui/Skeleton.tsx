@@ -16,7 +16,7 @@ export const Skeleton = memo<SkeletonProps>(({ height = '20px', width = '100%', 
 Skeleton.displayName = 'Skeleton';
 
 export const CardSkeleton = memo(() => (
-  <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+  <div className="bg-white dark:bg-gray-800 p-4 rounded-card shadow">
     <Skeleton height="200px" className="mb-4" />
     <Skeleton height="24px" width="60%" className="mb-2" />
     <Skeleton height="16px" width="40%" className="mb-4" />

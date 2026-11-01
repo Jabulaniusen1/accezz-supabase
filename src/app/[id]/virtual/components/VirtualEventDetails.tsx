@@ -65,9 +65,9 @@ export default function VirtualEventDetails({ event }: VirtualEventDetailsProps)
 
   return (
     <div className="space-y-6">
-      <section className="rounded-3xl border border-[#f54502]/15 bg-white/95 p-6 shadow-lg dark:border-[#f54502]/30 dark:bg-gray-800/80">
+      <section className="rounded-card border border-brand/15 bg-white/95 p-6 shadow-lg dark:border-brand/30 dark:bg-gray-800/80">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#f54502]/15 text-[#f54502]">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-brand/15 text-brand">
             <FaInfoCircle className="text-xl" />
           </div>
           <div>
@@ -77,8 +77,8 @@ export default function VirtualEventDetails({ event }: VirtualEventDetailsProps)
         </div>
 
         <div className="mt-6 space-y-4 text-sm text-gray-700 dark:text-gray-300">
-          <div className="flex items-start gap-3 rounded-2xl border border-[#f54502]/15 bg-[#f54502]/5 p-4 dark:border-[#f54502]/20 dark:bg-[#f54502]/10">
-            <FaVideo className="mt-1 text-[#f54502]" />
+          <div className="flex items-start gap-3 rounded-2xl border border-brand/15 bg-brand/5 p-4 dark:border-brand/20 dark:bg-brand/10">
+            <FaVideo className="mt-1 text-brand" />
             <div>
               <p className="font-semibold text-gray-900 dark:text-white">Hosted on {platformLabel}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -89,14 +89,14 @@ export default function VirtualEventDetails({ event }: VirtualEventDetailsProps)
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="flex items-start gap-3 rounded-2xl border border-gray-200/60 p-4 dark:border-gray-700/60">
-              <FaCalendarAlt className="mt-1 text-[#f54502]" />
+              <FaCalendarAlt className="mt-1 text-brand" />
               <div>
                 <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Date</p>
                 <p className="font-semibold text-gray-900 dark:text-white">{formattedDate}</p>
               </div>
             </div>
             <div className="flex items-start gap-3 rounded-2xl border border-gray-200/60 p-4 dark:border-gray-700/60">
-              <FaClock className="mt-1 text-[#f54502]" />
+              <FaClock className="mt-1 text-brand" />
               <div>
                 <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Time</p>
                 <p className="font-semibold text-gray-900 dark:text-white">{formattedTime}</p>
@@ -110,7 +110,7 @@ export default function VirtualEventDetails({ event }: VirtualEventDetailsProps)
                 href={meetingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl bg-[#f54502] px-4 py-2 text-sm font-semibold text-white hover:bg-[#d63a02]"
+                className="inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark"
               >
                 <FaLink /> Join the event
               </a>
@@ -122,7 +122,7 @@ export default function VirtualEventDetails({ event }: VirtualEventDetailsProps)
 
             {meetingId && (
               <div className="flex items-start gap-3 rounded-xl border border-gray-200/70 p-4 text-sm dark:border-gray-700/70">
-                <FaLink className="mt-1 text-[#f54502]" />
+                <FaLink className="mt-1 text-brand" />
                 <div>
                   <p className="font-semibold text-gray-900 dark:text-white">Meeting ID</p>
                   <p className="text-gray-600 dark:text-gray-300">{meetingId}</p>

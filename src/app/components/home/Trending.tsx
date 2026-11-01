@@ -135,7 +135,7 @@ const Trending = () => {
                   </div>
                   
                   {/* Card with gradient border */}
-                  <div className="relative h-full bg-white dark:bg-gray-900 rounded-2xl overflow-hidden shadow-lg 
+                  <div className="relative h-full bg-white dark:bg-gray-900 rounded-card overflow-hidden shadow-lg 
                                  border border-gray-200 dark:border-gray-800 group-hover:shadow-xl transition-all duration-300">
                     {/* Image with hover zoom */}
                     <div className="relative h-48 overflow-hidden">
@@ -189,8 +189,8 @@ const Trending = () => {
                         <button 
                           onClick={() => event.slug && getTicket(event.slug)}
                           disabled={navigating}
-                          className="w-full mt-4 px-4 py-2.5 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white font-medium rounded-lg 
-                                    hover:from-[#f54502]/90 hover:to-[#d63a02]/90 transition-all duration-300 shadow-md hover:shadow-lg
+                          className="w-full mt-4 px-4 py-2.5 bg-gradient-to-r from-brand to-brand-dark text-white font-medium rounded-lg 
+                                    hover:from-brand/90 hover:to-brand-dark/90 transition-all duration-300 shadow-md hover:shadow-lg
                                     flex items-center justify-center gap-2 disabled:opacity-50"
                         >
                           {navigating ? (

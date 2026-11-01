@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { MapPin, Mail, Phone, Share2, X, ChevronLeft, ChevronRight } from '@/icon-adapters/lucide-react';
 import LocationBookingModal from './LocationBookingModal';
 import { Location } from '@/types/location';
+import ImageWithFallback from '@/components/ui/ImageWithFallback';
 
 interface LocationDetailContentProps {
   location: Location;
@@ -21,7 +22,8 @@ interface LocationDetailContentProps {
   }>;
 }
 
-const PlaceholderImage = '/accezz logo c.png';
+// Empty means "no image": ImageWithFallback shows a neutral placeholder
+const PlaceholderImage = '';
 
 const formatDate = (startValue: string, endValue?: string | null) => {
   const start = new Date(startValue);
@@ -107,7 +109,7 @@ export const LocationDetailContent: React.FC<LocationDetailContentProps> = ({ lo
     <div className="grid gap-12 sm:gap-16">
       <section className="relative overflow-hidden rounded-3xl bg-gray-900">
         <div className="relative aspect-[16/9] sm:aspect-[21/9]">
-          <Image
+          <ImageWithFallback
             src={primaryImage?.imageUrl || PlaceholderImage}
             alt={location.name}
             fill
@@ -127,7 +129,7 @@ export const LocationDetailContent: React.FC<LocationDetailContentProps> = ({ lo
                 onClick={() => setActiveImageIndex(index)}
                 className={`relative h-16 w-24 flex-shrink-0 overflow-hidden rounded-2xl border transition ${
                   index === activeImageIndex
-                    ? 'border-[#f54502] ring-2 ring-[#f54502]/40'
+                    ? 'border-brand ring-2 ring-brand/40'
                     : 'border-transparent opacity-70 hover:opacity-100'
                 }`}
                 aria-label={`View image ${index + 1}`}
@@ -148,13 +150,13 @@ export const LocationDetailContent: React.FC<LocationDetailContentProps> = ({ lo
 
       <section className="grid gap-8 lg:grid-cols-[2fr,1fr] lg:gap-10">
         <div className="space-y-8">
-          <div className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 sm:p-8 space-y-6">
+          <div className="rounded-card border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 sm:p-8 space-y-6">
             <div className="space-y-3">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="space-y-2">
                   <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{location.name}</h1>
                   <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-[#f54502]/10 px-3 py-1 font-medium text-[#f54502]">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-brand/10 px-3 py-1 font-medium text-brand">
                       <MapPin className="h-3.5 w-3.5" /> {location.city}, {location.country}
                     </span>
                     <span className="inline-flex items-center rounded-full bg-gray-100 dark:bg-gray-800 px-3 py-1 text-xs font-semibold text-gray-700 dark:text-gray-300">
@@ -165,7 +167,7 @@ export const LocationDetailContent: React.FC<LocationDetailContentProps> = ({ lo
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => setIsBookingModalOpen(true)}
-                    className="inline-flex items-center rounded-full bg-[#f54502] px-5 py-2 text-sm font-semibold text-white shadow-md hover:shadow-lg transition"
+                    className="inline-flex items-center rounded-full bg-brand px-5 py-2 text-sm font-semibold text-white shadow-md hover:shadow-lg transition"
                   >
                     Book this location
                   </button>
@@ -200,7 +202,7 @@ export const LocationDetailContent: React.FC<LocationDetailContentProps> = ({ lo
           </div>
 
           {!!location.eventTypes.length && (
-            <div className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 sm:p-8 space-y-4">
+            <div className="rounded-card border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 sm:p-8 space-y-4">
               <div>
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Great for</h3>
                 <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Popular event types that work well in this venue.</p>
@@ -216,14 +218,14 @@ export const LocationDetailContent: React.FC<LocationDetailContentProps> = ({ lo
           )}
 
           {!!(location.amenities?.length) && (
-            <div className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 sm:p-8 space-y-4">
+            <div className="rounded-card border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 sm:p-8 space-y-4">
               <div>
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Amenities available</h3>
                 <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Everything provided by the venue to make your event seamless.</p>
               </div>
               <div className="flex flex-wrap gap-2">
                 {location.amenities?.map((amenity) => (
-                  <span key={amenity} className="inline-flex items-center rounded-full bg-[#f54502]/10 text-[#f54502] px-3 py-1 text-xs font-semibold">
+                  <span key={amenity} className="inline-flex items-center rounded-full bg-brand/10 text-brand px-3 py-1 text-xs font-semibold">
                     {amenity}
                   </span>
                 ))}
@@ -232,7 +234,7 @@ export const LocationDetailContent: React.FC<LocationDetailContentProps> = ({ lo
           )}
 
           {!!location.upcomingEvents.length && (
-            <div className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 sm:p-8 space-y-4">
+            <div className="rounded-card border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 sm:p-8 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Upcoming events at this venue</h3>
                 <span className="text-xs text-gray-500 dark:text-gray-400">{location.upcomingEvents.length} listed</span>
@@ -242,9 +244,9 @@ export const LocationDetailContent: React.FC<LocationDetailContentProps> = ({ lo
                   <Link
                     key={event.id}
                     href={`/${event.slug || event.id}`}
-                    className="flex items-center gap-3 rounded-2xl border border-gray-100 dark:border-gray-800 px-4 py-3 hover:border-[#f54502]/30 hover:bg-[#f54502]/5 dark:hover:border-[#f54502]/30"
+                    className="flex items-center gap-3 rounded-2xl border border-gray-100 dark:border-gray-800 px-4 py-3 hover:border-brand/30 hover:bg-brand/5 dark:hover:border-brand/30"
                   >
-                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#f54502] to-[#d63a02] text-xs font-semibold text-white">
+                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand to-brand-dark text-xs font-semibold text-white">
                       {new Date(event.startTime).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
                     </div>
                     <div className="flex-1">
@@ -261,7 +263,7 @@ export const LocationDetailContent: React.FC<LocationDetailContentProps> = ({ lo
         </div>
 
         <aside className="space-y-6">
-          <div className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 sm:p-7 space-y-4">
+          <div className="rounded-card border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 sm:p-7 space-y-4">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Book this venue</h3>
             <p className="text-xs text-gray-500 dark:text-gray-400">
               Ready to host your experience? Share your event details and the venue manager will respond quickly.
@@ -269,7 +271,7 @@ export const LocationDetailContent: React.FC<LocationDetailContentProps> = ({ lo
             <dl className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
               {location.contactEmail && (
                 <div className="flex items-start gap-2">
-                  <Mail className="mt-0.5 h-4 w-4 shrink-0 text-[#f54502]" />
+                  <Mail className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
                   <div>
                     <dt className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Email</dt>
                     <dd>{location.contactEmail}</dd>
@@ -278,7 +280,7 @@ export const LocationDetailContent: React.FC<LocationDetailContentProps> = ({ lo
               )}
               {location.contactPhone && (
                 <div className="flex items-start gap-2">
-                  <Phone className="mt-0.5 h-4 w-4 shrink-0 text-[#f54502]" />
+                  <Phone className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
                   <div>
                     <dt className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Phone</dt>
                     <dd>{location.contactPhone}</dd>
@@ -288,16 +290,16 @@ export const LocationDetailContent: React.FC<LocationDetailContentProps> = ({ lo
             </dl>
             <button
               onClick={() => setIsBookingModalOpen(true)}
-              className="w-full inline-flex items-center justify-center rounded-full bg-[#f54502] px-5 py-2 text-sm font-semibold text-white shadow-md hover:shadow-lg transition"
+              className="w-full inline-flex items-center justify-center rounded-full bg-brand px-5 py-2 text-sm font-semibold text-white shadow-md hover:shadow-lg transition"
             >
               Request booking
             </button>
-            <span className="inline-flex items-center rounded-full bg-[#f54502]/10 px-3 py-1 text-xs font-semibold text-[#f54502]">
+            <span className="inline-flex items-center rounded-full bg-brand/10 px-3 py-1 text-xs font-semibold text-brand">
               {priceLabel}
             </span>
           </div>
 
-          <div className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 sm:p-7 space-y-3">
+          <div className="rounded-card border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 sm:p-7 space-y-3">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Share venue</h3>
             <p className="text-xs text-gray-500 dark:text-gray-400">Copy this link to send to your event partners.</p>
             <button
@@ -320,10 +322,10 @@ export const LocationDetailContent: React.FC<LocationDetailContentProps> = ({ lo
               <Link
                 key={other.id}
                 href={`/locations/${other.slug}`}
-                className="group overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition"
+                className="group overflow-hidden rounded-card border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition"
               >
                 <div className="relative h-40 w-full">
-                  <Image
+                  <ImageWithFallback
                     src={other.imageUrl || PlaceholderImage}
                     alt={other.name}
                     fill
@@ -392,7 +394,7 @@ export const LocationDetailContent: React.FC<LocationDetailContentProps> = ({ lo
               onClick={(event) => event.stopPropagation()}
             >
               <div className="relative aspect-[16/9] w-full">
-                <Image
+                <ImageWithFallback
                   src={gallery[previewIndex]?.imageUrl || PlaceholderImage}
                   alt={`${location.name} gallery image ${previewIndex + 1}`}
                   fill
@@ -411,7 +413,7 @@ export const LocationDetailContent: React.FC<LocationDetailContentProps> = ({ lo
                         setPreviewIndex(index);
                       }}
                       className={`relative h-14 w-20 overflow-hidden rounded-xl border transition ${
-                        index === previewIndex ? 'border-[#f54502] ring-2 ring-[#f54502]/50' : 'border-transparent opacity-70 hover:opacity-100'
+                        index === previewIndex ? 'border-brand ring-2 ring-brand/50' : 'border-transparent opacity-70 hover:opacity-100'
                       }`}
                       aria-label={`Preview image ${index + 1}`}
                     >

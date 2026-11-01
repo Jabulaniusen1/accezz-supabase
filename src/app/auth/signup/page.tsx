@@ -137,7 +137,7 @@ function SignupContent() {
       )}
 
       {/* ── Left brand panel (md+) ── */}
-      <div className="hidden md:flex md:w-[45%] lg:w-[40%] bg-[#f54502] flex-col justify-between p-10 sticky top-0 h-screen">
+      <div className="hidden md:flex md:w-[45%] lg:w-[40%] bg-brand flex-col justify-between p-10 sticky top-0 h-screen">
         <div>
           <div className="w-28 h-12 relative">
             <Image src="/accezz logo c.png" alt="Accezz" fill className="object-contain object-left brightness-0 invert" />
@@ -212,7 +212,7 @@ function SignupContent() {
                       name="firstName"
                       placeholder="Nkechi"
                       required
-                      className="w-full h-10 pl-9 pr-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#f54502]/40 focus:border-[#f54502] transition"
+                      className="w-full h-10 pl-9 pr-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition"
                     />
                   </div>
                 </div>
@@ -228,7 +228,7 @@ function SignupContent() {
                       name="lastName"
                       placeholder="Adesina"
                       required
-                      className="w-full h-10 pl-9 pr-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#f54502]/40 focus:border-[#f54502] transition"
+                      className="w-full h-10 pl-9 pr-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition"
                     />
                   </div>
                 </div>
@@ -247,7 +247,7 @@ function SignupContent() {
                     name="email"
                     placeholder="you@example.com"
                     required
-                    className="w-full h-10 pl-9 pr-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#f54502]/40 focus:border-[#f54502] transition"
+                    className="w-full h-10 pl-9 pr-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition"
                   />
                 </div>
               </div>
@@ -265,7 +265,7 @@ function SignupContent() {
                     name="phone"
                     placeholder="+234 701 000 000"
                     required
-                    className="w-full h-10 pl-9 pr-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#f54502]/40 focus:border-[#f54502] transition"
+                    className="w-full h-10 pl-9 pr-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition"
                   />
                 </div>
               </div>
@@ -283,7 +283,7 @@ function SignupContent() {
                     name="password"
                     placeholder="••••••••"
                     required
-                    className="w-full h-10 pl-9 pr-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#f54502]/40 focus:border-[#f54502] transition"
+                    className="w-full h-10 pl-9 pr-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition"
                   />
                   <button
                     type="button"
@@ -338,11 +338,11 @@ function SignupContent() {
                       onClick={() => setAccountType(type)}
                       className={`py-2.5 rounded-lg border-2 text-left px-3 transition ${
                         accountType === type
-                          ? 'border-[#f54502] bg-[#f54502]/5 dark:bg-[#f54502]/10'
+                          ? 'border-brand bg-brand/5 dark:bg-brand/10'
                           : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                       }`}
                     >
-                      <div className={`text-sm font-medium ${accountType === type ? 'text-[#f54502]' : 'text-gray-700 dark:text-gray-300'}`}>
+                      <div className={`text-sm font-medium ${accountType === type ? 'text-brand' : 'text-gray-700 dark:text-gray-300'}`}>
                         {type === 'customer' ? 'Customer' : 'Creator'}
                       </div>
                       <div className="text-xs text-gray-400 mt-0.5">
@@ -360,14 +360,14 @@ function SignupContent() {
                   id="agreeTerms"
                   checked={agreeTerms}
                   onChange={e => setAgreeTerms(e.target.checked)}
-                  className="w-4 h-4 mt-0.5 text-[#f54502] border-gray-300 rounded focus:ring-[#f54502] focus:ring-2 flex-shrink-0"
+                  className="w-4 h-4 mt-0.5 text-brand border-gray-300 rounded focus:ring-brand focus:ring-2 flex-shrink-0"
                 />
                 <label htmlFor="agreeTerms" className="text-sm text-gray-600 dark:text-gray-400">
                   I agree to the{' '}
                   <button
                     type="button"
                     onClick={() => setShowTermsPopup(true)}
-                    className="text-[#f54502] hover:underline font-medium"
+                    className="text-brand hover:underline font-medium"
                   >
                     Terms and Conditions
                   </button>
@@ -377,7 +377,7 @@ function SignupContent() {
               <button
                 type="submit"
                 disabled={!agreeTerms || loading || isLoadingLocations}
-                className="w-full h-10 bg-[#f54502] hover:bg-[#d63a02] text-white text-sm font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full h-10 bg-brand hover:bg-brand-dark text-white text-sm font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading || isLoadingLocations ? (
                   <>
@@ -390,7 +390,7 @@ function SignupContent() {
 
             <p className="mt-5 text-center text-sm text-gray-500 dark:text-gray-400 pb-6">
               Already have an account?{' '}
-              <Link href="/auth/login" className="text-[#f54502] font-medium hover:underline">
+              <Link href="/auth/login" className="text-brand font-medium hover:underline">
                 Sign in
               </Link>
             </p>

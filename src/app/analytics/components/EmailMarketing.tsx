@@ -35,7 +35,7 @@ export const EmailMarketing: React.FC<EmailMarketingProps> = ({
         value={emailTitle}
         onChange={(e) => setEmailTitle(e.target.value)}
         placeholder="Email subject…"
-        className="w-full h-10 px-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#f54502]/40 transition"
+        className="w-full h-10 px-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand/40 transition"
       />
     </div>
 
@@ -49,13 +49,13 @@ export const EmailMarketing: React.FC<EmailMarketingProps> = ({
         onChange={(e) => setEmailContent(e.target.value)}
         placeholder="Write your message…"
         rows={6}
-        className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-[#f54502]/40 transition"
+        className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-brand/40 transition"
       />
     </div>
 
     <button
       onClick={onSendEmail}
-      className="flex items-center gap-2 px-5 py-2.5 bg-[#f54502] hover:bg-[#d63a02] text-white text-sm font-medium rounded-lg transition"
+      className="flex items-center gap-2 px-5 py-2.5 bg-brand hover:bg-brand-dark text-white text-sm font-medium rounded-lg transition"
     >
       <Send className="w-4 h-4" />
       Send to attendees

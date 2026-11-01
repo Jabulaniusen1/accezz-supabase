@@ -212,7 +212,7 @@ export default function InlineCreateEvent({ onBack, userName }: Props) {
                   <div
                     className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border-2 transition-all ${
                       active || completed
-                        ? 'bg-[#f54502] border-[#f54502] text-white'
+                        ? 'bg-brand border-brand text-white'
                         : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-400'
                     }`}
                   >
@@ -226,7 +226,7 @@ export default function InlineCreateEvent({ onBack, userName }: Props) {
                   </div>
                   <span
                     className={`hidden sm:block mt-1.5 text-xs font-medium whitespace-nowrap ${
-                      active || completed ? 'text-[#f54502]' : 'text-gray-400 dark:text-gray-500'
+                      active || completed ? 'text-brand' : 'text-gray-400 dark:text-gray-500'
                     }`}
                   >
                     {label}
@@ -235,7 +235,7 @@ export default function InlineCreateEvent({ onBack, userName }: Props) {
                 {i < VISUAL_STEPS.length - 1 && (
                   <div
                     className={`flex-1 h-0.5 mx-2 sm:mx-3 mb-0 sm:mb-5 ${
-                      i < visualStep ? 'bg-[#f54502]' : 'bg-gray-200 dark:bg-gray-700'
+                      i < visualStep ? 'bg-brand' : 'bg-gray-200 dark:bg-gray-700'
                     }`}
                   />
                 )}
@@ -245,7 +245,7 @@ export default function InlineCreateEvent({ onBack, userName }: Props) {
         </div>
         {/* Mobile: current step name */}
         <p className="sm:hidden mt-3 text-center text-sm">
-          <span className="font-semibold text-[#f54502]">{VISUAL_STEPS[visualStep]}</span>
+          <span className="font-semibold text-brand">{VISUAL_STEPS[visualStep]}</span>
           <span className="text-gray-400 dark:text-gray-500"> &middot; Step {visualStep + 1} of {VISUAL_STEPS.length}</span>
         </p>
       </div>
@@ -259,7 +259,7 @@ export default function InlineCreateEvent({ onBack, userName }: Props) {
       </div>
 
       {/* Form */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-6 sm:p-8 shadow-sm">
+      <div className="bg-white dark:bg-gray-800 rounded-card border border-gray-100 dark:border-gray-700 p-6 sm:p-8 shadow-sm">
         <AnimatePresence mode="wait">
           <motion.div
             key={step}

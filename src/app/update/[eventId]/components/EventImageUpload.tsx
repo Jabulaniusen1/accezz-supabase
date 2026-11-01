@@ -19,7 +19,7 @@ export default function EventImageUpload({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
-      <div className="relative group w-full max-w-[540px] h-[200px] sm:h-[250px] rounded-[5px] overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-md hover:shadow-lg transition-shadow mx-auto">
+      <div className="relative group w-full max-w-[540px] h-[200px] sm:h-[250px] rounded-card overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-md hover:shadow-lg transition-shadow mx-auto">
         {imagePreview ? (
           <>
             <Image
@@ -32,7 +32,7 @@ export default function EventImageUpload({
             />
             <label className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer rounded-[5px]">
               <div className="flex flex-col items-center justify-center p-3 sm:p-4 bg-white/90 dark:bg-gray-900/90 rounded-[5px] shadow-lg">
-                <RiImageEditFill className="text-xl sm:text-2xl text-[#f54502] mb-1" />
+                <RiImageEditFill className="text-xl sm:text-2xl text-brand mb-1" />
                 <span className="text-sm sm:text-base font-medium text-gray-800 dark:text-white">
                   Change Image
                 </span>
@@ -49,9 +49,9 @@ export default function EventImageUpload({
             </label>
           </>
         ) : (
-          <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer bg-[#f54502]/5 dark:bg-gray-800 rounded-[5px]">
-            <div className="flex flex-col items-center justify-center p-4 sm:p-6 bg-white/85 dark:bg-gray-900/85 rounded-[5px] shadow border-2 border-dashed border-[#f54502]/30 dark:border-gray-600">
-              <BiImageAdd className="text-2xl sm:text-3xl text-[#f54502] mb-2" />
+          <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer bg-brand/5 dark:bg-gray-800 rounded-[5px]">
+            <div className="flex flex-col items-center justify-center p-4 sm:p-6 bg-white/85 dark:bg-gray-900/85 rounded-[5px] shadow border-2 border-dashed border-brand/30 dark:border-gray-600">
+              <BiImageAdd className="text-2xl sm:text-3xl text-brand mb-2" />
               <span className="text-sm sm:text-base font-medium text-gray-800 dark:text-white">
                 Upload Event Image
               </span>

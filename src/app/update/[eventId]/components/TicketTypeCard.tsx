@@ -77,14 +77,14 @@ export default function TicketTypeCard({
           <span className="font-medium text-gray-900 dark:text-white text-sm sm:text-base">
             {ticket.name || `Ticket Type ${ticketIndex + 1}`}
           </span>
-          <span className="px-2 sm:px-3 py-1 bg-[#f54502]/20 dark:bg-[#f54502]/30 text-[#f54502] dark:text-[#f54502] rounded-[5px] text-xs sm:text-sm">
+          <span className="px-2 sm:px-3 py-1 bg-brand/20 dark:bg-brand/30 text-brand dark:text-brand rounded-[5px] text-xs sm:text-sm">
             N{ticket.price}
           </span>
         </div>
         <button
           type="button"
           onClick={onDelete}
-          className="text-[#f54502] hover:text-[#d63a02] dark:hover:text-[#d63a02] transition-colors"
+          className="text-brand hover:text-brand-dark dark:hover:text-brand-dark transition-colors"
         >
           <FaTrash size={14} />
         </button>
@@ -102,7 +102,7 @@ export default function TicketTypeCard({
               value={ticket.name}
               onChange={(e) => handleInputChange(e, "name")}
               className="w-full px-3 sm:px-4 py-2 rounded-[5px] border border-gray-300 dark:border-gray-600
-                  focus:ring-2 focus:ring-[#f54502] focus:border-transparent
+                  focus:ring-2 focus:ring-brand focus:border-transparent
                   bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm sm:text-base"
               placeholder="e.g., VIP, Regular"
               required
@@ -120,7 +120,7 @@ export default function TicketTypeCard({
                 value={ticket.quantity}
                 onChange={(e) => handleInputChange(e, "quantity")}
                 className="w-full px-3 sm:px-4 py-2 rounded-[5px] border border-gray-300 dark:border-gray-600
-                    focus:ring-2 focus:ring-[#f54502] focus:border-transparent
+                    focus:ring-2 focus:ring-brand focus:border-transparent
                     bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm sm:text-base"
                 min="0"
                 required
@@ -136,7 +136,7 @@ export default function TicketTypeCard({
                 value={ticket.price}
                 onChange={(e) => handleInputChange(e, "price")}
                 className="w-full px-3 sm:px-4 py-2 rounded-[5px] border border-gray-300 dark:border-gray-600
-                     focus:ring-2 focus:ring-[#f54502] focus:border-transparent
+                     focus:ring-2 focus:ring-brand focus:border-transparent
                      bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm sm:text-base"
                 step="0.01"
                 min="0"
@@ -153,20 +153,20 @@ export default function TicketTypeCard({
           <div className="space-y-2">
             {(ticket.details || '').split('\n').map((feature: string, index: number) => (
               <div key={index} className="flex items-center space-x-2">
-                <span className="text-[#f54502]">•</span>
+                <span className="text-brand">•</span>
                 <input
                   type="text"
                   value={feature}
                   onChange={(e) => handleFeatureChange(index, e.target.value)}
                   className="w-full px-3 sm:px-4 py-2 rounded-[5px] border border-gray-300 dark:border-gray-600
-                       focus:ring-2 focus:ring-[#f54502] focus:border-transparent
+                       focus:ring-2 focus:ring-brand focus:border-transparent
                        bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm sm:text-base"
                   placeholder="Add a feature..."
                 />
                 <button
                   type="button"
                   onClick={() => handleRemoveFeature(index)}
-                  className="text-[#f54502] hover:text-[#d63a02] dark:hover:text-[#d63a02]"
+                  className="text-brand hover:text-brand-dark dark:hover:text-brand-dark"
                 >
                   <FaTrash size={12} />
                 </button>
@@ -175,7 +175,7 @@ export default function TicketTypeCard({
             <button
               type="button"
               onClick={handleAddFeature}
-              className="text-xs sm:text-sm text-[#f54502] hover:text-[#d63a02] dark:text-[#f54502] dark:hover:text-[#d63a02] mt-2"
+              className="text-xs sm:text-sm text-brand hover:text-brand-dark dark:text-brand dark:hover:text-brand-dark mt-2"
             >
               + Add Feature
             </button>

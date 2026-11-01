@@ -143,7 +143,7 @@ const DateTimePicker = memo(({
           onClick={() => !isDisabled && handleDateSelect(dayDate)}
           disabled={!!isDisabled}
           className={`w-8 h-8 rounded-[5px] flex items-center justify-center text-sm
-            ${isSelected ? 'bg-[#f54502] text-white' : ''}
+            ${isSelected ? 'bg-brand text-white' : ''}
             ${isDisabled ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed' : 
               'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200'}
             transition-colors duration-150
@@ -206,7 +206,7 @@ const DateTimePicker = memo(({
                   onClick={() => setHour(h)}
                   className={`w-full py-2 text-center ${
                     hour === h
-                      ? 'bg-[#f54502]/10 dark:bg-[#f54502]/20 text-[#f54502] dark:text-[#f54502] font-medium'
+                      ? 'bg-brand/10 dark:bg-brand/20 text-brand dark:text-brand font-medium'
                       : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200'
                   }`}
                 >
@@ -229,7 +229,7 @@ const DateTimePicker = memo(({
                   onClick={() => setMinute(m)}
                   className={`w-full py-2 text-center ${
                     minute === m
-                      ? 'bg-[#f54502]/10 dark:bg-[#f54502]/20 text-[#f54502] dark:text-[#f54502] font-medium'
+                      ? 'bg-brand/10 dark:bg-brand/20 text-brand dark:text-brand font-medium'
                       : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200'
                   }`}
                 >
@@ -245,7 +245,7 @@ const DateTimePicker = memo(({
               <button 
                 onClick={() => setIsAm(true)}
                 className={`px-4 py-3 rounded-[5px] ${
-                  isAm ? 'bg-[#f54502] text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                  isAm ? 'bg-brand text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                 }`}
               >
                 AM
@@ -253,7 +253,7 @@ const DateTimePicker = memo(({
               <button 
                 onClick={() => setIsAm(false)}
                 className={`px-4 py-3 rounded-[5px] ${
-                  !isAm ? 'bg-[#f54502] text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                  !isAm ? 'bg-brand text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                 }`}
               >
                 PM
@@ -271,7 +271,7 @@ const DateTimePicker = memo(({
           </button>
           <button
             onClick={handleTimeConfirm}
-            className="px-4 py-2 bg-[#f54502] text-white rounded-[5px] hover:bg-[#d63a02] flex items-center space-x-2"
+            className="px-4 py-2 bg-brand text-white rounded-[5px] hover:bg-brand-dark flex items-center space-x-2"
           >
             <FaCheck size={14} />
             <span>Confirm</span>
@@ -302,7 +302,7 @@ const DateTimePicker = memo(({
         onClick={() => setIsOpen(!isOpen)}
         className={`w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border ${
           isOpen 
-            ? 'border-[#f54502] ring-2 ring-[#f54502]/20 dark:ring-[#f54502]/30' 
+            ? 'border-brand ring-2 ring-brand/20 dark:ring-brand/30' 
             : 'border-gray-300 dark:border-gray-600'
         } bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 flex items-center justify-between transition-all duration-200 text-sm sm:text-base cursor-pointer`}
       >

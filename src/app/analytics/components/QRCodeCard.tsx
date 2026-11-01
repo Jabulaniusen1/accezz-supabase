@@ -8,7 +8,7 @@ interface QRCodeCardProps {
 
 export const QRCodeCard: React.FC<QRCodeCardProps> = ({ eventSlug }) => (
   <motion.div 
-    className="relative bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-yellow-500"
+    className="relative bg-white dark:bg-gray-800 p-6 rounded-card shadow-lg border border-yellow-500"
     whileHover={{ scale: 1.02 }}
   >
     <div className="absolute -top-2 -left-2 w-4 h-4 rounded-full bg-yellow-500"></div>

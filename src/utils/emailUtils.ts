@@ -1,3 +1,5 @@
+import { platformFee, platformFeeRate } from './fees';
+
 interface Attachment {
   filename: string;
   content: Buffer | string;
@@ -263,7 +265,7 @@ export function generateTicketEmailHTML(data: {
       row(isVirtual ? 'Platform' : 'Venue', data.venue),
       row('Ticket type', data.ticketType),
       row('Quantity', String(data.quantity)),
-      row('Amount paid', `${data.currency} ${data.totalAmount.toLocaleString()}`),
+      row('Ticket price', `${data.currency} ${data.totalAmount.toLocaleString()}`),
       row('Order ID', data.orderId, true),
     ].join(''))}
 
@@ -304,7 +306,8 @@ export function generateAbandonedCartEmailHTML(data: {
   data = escapeData(data);
   const firstName = data.fullName?.split(' ')[0] || 'there';
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://accezzlive.com';
-  const completePurchaseUrl = `${baseUrl}/${data.eventSlug}?orderId=${data.orderId}`;
+  // Reopens this order at checkout, ready to pay
+  const completePurchaseUrl = `${baseUrl}/${data.eventSlug}/checkout?orderId=${data.orderId}`;
 
   return emailShell('Complete Your Purchase', `
     <p style="margin:0 0 8px;font-size:20px;font-weight:700;color:#111827;">Hey ${firstName},</p>
@@ -560,6 +563,10 @@ export function generateEventEndedReportEmailHTML(data: {
       <tr><td style="padding:22px 24px;text-align:center;">
         <p style="margin:0 0 4px;font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.06em;">Total revenue</p>
         <p style="margin:0;font-size:32px;font-weight:800;color:#ffffff;">${money(data.totalRevenue)}</p>
+        ${data.totalRevenue > 0 ? `<p style="margin:8px 0 0;font-size:13px;color:#9ca3af;">
+          Accezz fee (${Math.round(platformFeeRate(data.totalRevenue) * 100)}%): ${money(platformFee(data.totalRevenue))}
+          &middot; You earn <strong style="color:#ffffff;">${money(data.totalRevenue - platformFee(data.totalRevenue))}</strong>
+        </p>` : ''}
       </td></tr>
     </table>
 

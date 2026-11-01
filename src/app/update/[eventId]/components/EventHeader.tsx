@@ -11,7 +11,7 @@ export default function EventHeader({ onBack }: EventHeaderProps) {
     <div className="flex justify-between items-center">
       <motion.button
         onClick={onBack}
-        className="flex items-center space-x-1 sm:space-x-2 text-gray-600 dark:text-gray-300 hover:text-[#f54502] dark:hover:text-[#f54502] transition-colors text-sm sm:text-base"
+        className="flex items-center space-x-1 sm:space-x-2 text-gray-600 dark:text-gray-300 hover:text-brand dark:hover:text-brand transition-colors text-sm sm:text-base"
         whileHover={{ scale: 1.05 }}
       >
         <BiArrowBack className="text-lg sm:text-xl" />

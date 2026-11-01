@@ -8,7 +8,7 @@ export default function EventNotFound() {
       <div className="max-w-md">
         <div className="mx-auto mb-6">
           <svg
-            className="w-24 h-24 text-[#f54502] dark:text-[#f54502] mx-auto"
+            className="w-24 h-24 text-brand dark:text-brand mx-auto"
             fill="none"
             stroke="currentColor"
             strokeWidth="1.5"
@@ -29,7 +29,7 @@ export default function EventNotFound() {
         </p>
         <Link
           href="/"
-          className="inline-block bg-[#f54502] hover:bg-[#f54502]/90 text-white font-medium py-2 px-4 rounded-md transition duration-200"
+          className="inline-block bg-brand hover:bg-brand/90 text-white font-medium py-2 px-4 rounded-md transition duration-200"
         >
           Go Back Home
         </Link>

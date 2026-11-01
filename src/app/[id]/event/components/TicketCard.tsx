@@ -20,7 +20,7 @@ export const EventTicketsSection = forwardRef<HTMLDivElement, EventTicketsSectio
           ref={ref} 
           className="bg-white dark:bg-gray-900 py-12"
         >
-            <div className="mx-auto lg:px-32 px-4 sm:px-6">
+            <div className="page-container">
                 {/* Simple Header */}
                 <div className="text-center mb-8">
                     <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
@@ -31,99 +31,77 @@ export const EventTicketsSection = forwardRef<HTMLDivElement, EventTicketsSectio
                     </p>
                 </div>
 
-                {/* Compact Ticket List */}
-                <div className="space-y-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {event?.ticketType.map((ticket, index) => (
-                    <div 
-                        key={index} 
-                        style={{ borderRadius: '10px' }}
-                        className="group relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-all duration-200 hover:shadow-md hover:border-[#f54502]/30"
+                {/* Ticket List: cards in a row share a height; button pinned to the bottom */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                {event?.ticketType.map((ticket, index) => {
+                    const remaining = Math.max(0, (parseInt(ticket.quantity) || 0) - (parseInt(ticket.sold) || 0));
+                    const soldOut = remaining === 0;
+                    const details = ticket.details
+                        ? ticket.details.split('\n').map((d) => d.trim()).filter(Boolean).slice(0, 3)
+                        : ['Standard Event Entry', 'Access to Main Area'];
+
+                    return (
+                    <div
+                        key={index}
+                        className="group flex h-full flex-col rounded-card bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-5 sm:p-6 transition-all duration-200 hover:shadow-md hover:border-brand/30"
                     >
-                        <div className="p-4 sm:p-6">
-                            <div className="flex items-center justify-between">
-                                {/* Left Side - Ticket Info */}
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <div className="p-2 bg-[#f54502]/10 rounded-full">
-                                            <TicketIcon className="w-4 h-4 text-[#f54502]" />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
-                                                {ticket.name}
-                                            </h3>
-                                            <p className="text-2xl font-bold text-[#f54502]">
-                                                {formatPrice(parseFloat(ticket.price), '₦')}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    
-                                    {/* Ticket Details - Compact */}
-                                    <div className="ml-11 space-y-1">
-                                        {ticket.details ? (
-                                            ticket.details.split('\n').slice(0, 2).map((detail, idx) => (
-                                                <div key={idx} className="flex items-center gap-2">
-                                                    <CheckCircleIcon className="w-3 h-3 text-green-500 flex-shrink-0" />
-                                                    <span className="text-xs text-gray-600 dark:text-gray-400 truncate">{detail}</span>
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <div className="space-y-1">
-                                                <div className="flex items-center gap-2">
-                                                    <CheckCircleIcon className="w-3 h-3 text-green-500 flex-shrink-0" />
-                                                    <span className="text-xs text-gray-600 dark:text-gray-400">Standard Event Entry</span>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <CheckCircleIcon className="w-3 h-3 text-green-500 flex-shrink-0" />
-                                                    <span className="text-xs text-gray-600 dark:text-gray-400">Access to Main Area</span>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
+                        <div className="flex items-start justify-between gap-3">
+                            <div className="flex min-w-0 items-center gap-3">
+                                <div className="flex-shrink-0 p-2 bg-brand/10 rounded-full">
+                                    <TicketIcon className="w-4 h-4 text-brand" />
                                 </div>
-
-                                {/* Right Side - Status & Button */}
-                                <div className="flex flex-col items-end gap-3 ml-4">
-                                    {/* Status Badge */}
-                                    {parseInt(ticket.quantity) === 0 ? (
-                                        <span className="px-3 py-1 bg-red-100 text-red-600 text-xs font-medium rounded-full">
-                                            Sold Out
-                                        </span>
-                                    ) : parseInt(ticket.quantity) <= 3 ? (
-                                        <span className="px-3 py-1 bg-orange-100 text-orange-600 text-xs font-medium rounded-full">
-                                            Only {ticket.quantity} left
-                                        </span>
-                                    ) : (
-                                        <span className="px-3 py-1 bg-green-100 text-green-600 text-xs font-medium rounded-full">
-                                            Available
-                                        </span>
-                                    )}
-
-                                    {/* Purchase Button */}
-                                    {eventIsPast ? (
-                                        <span className="px-6 py-2 text-sm font-medium rounded-lg bg-gray-300 text-gray-500 cursor-not-allowed inline-block">
-                                            Event Ended
-                                        </span>
-                                    ) : (
-                                        <button
-                                            disabled={parseInt(ticket.quantity) === 0}
-                                            style={{ borderRadius: '5px' }}
-                                            onClick={() => handleGetTicket(ticket)}
-                                            className={`
-                                                px-6 py-2 text-sm font-medium rounded-lg transition-all duration-200
-                                                ${parseInt(ticket.quantity) === 0 
-                                                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                                                    : 'bg-[#f54502] text-white hover:bg-[#f54502]/90 hover:shadow-md'
-                                                }
-                                            `}
-                                        >
-                                            {parseInt(ticket.quantity) === 0 ? 'Sold Out' : 'Select'}
-                                        </button>
-                                    )}
-                                </div>
+                                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">
+                                    {ticket.name}
+                                </h3>
                             </div>
+                            {soldOut ? (
+                                <span className="flex-shrink-0 px-3 py-1 bg-red-100 text-red-600 text-xs font-medium rounded-full">
+                                    Sold Out
+                                </span>
+                            ) : remaining <= 3 ? (
+                                <span className="flex-shrink-0 px-3 py-1 bg-orange-100 text-orange-600 text-xs font-medium rounded-full">
+                                    Only {remaining} left
+                                </span>
+                            ) : (
+                                <span className="flex-shrink-0 px-3 py-1 bg-green-100 text-green-600 text-xs font-medium rounded-full">
+                                    Available
+                                </span>
+                            )}
                         </div>
+
+                        <p className="mt-3 text-2xl font-bold text-brand">
+                            {formatPrice(parseFloat(ticket.price), '₦')}
+                        </p>
+
+                        <ul className="mt-3 flex-1 space-y-1.5">
+                            {details.map((detail, idx) => (
+                                <li key={idx} className="flex items-start gap-2">
+                                    <CheckCircleIcon className="mt-0.5 w-3.5 h-3.5 text-green-500 flex-shrink-0" />
+                                    <span className="text-sm text-gray-600 dark:text-gray-400">{detail}</span>
+                                </li>
+                            ))}
+                        </ul>
+
+                        {eventIsPast ? (
+                            <span className="mt-5 w-full px-6 py-2.5 text-center text-sm font-medium rounded-lg bg-gray-200 text-gray-500 cursor-not-allowed">
+                                Event Ended
+                            </span>
+                        ) : (
+                            <button
+                                disabled={soldOut}
+                                onClick={() => handleGetTicket(ticket)}
+                                className={`mt-5 w-full px-6 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${
+                                    soldOut
+                                        ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                        : 'bg-brand text-white hover:bg-brand-dark hover:shadow-md'
+                                }`}
+                            >
+                                {soldOut ? 'Sold Out' : 'Select'}
+                            </button>
+                        )}
                     </div>
-                ))}
+                    );
+                })}
                 </div>
             </div>
         </div>

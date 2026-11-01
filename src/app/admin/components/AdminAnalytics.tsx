@@ -5,6 +5,8 @@ import { supabase } from '@/utils/supabaseClient';
 import Toast from '@/components/ui/Toast';
 import { FiTrendingUp, FiDollarSign, FiCalendar, FiUsers, FiArrowUp, FiArrowDown } from '@/icon-adapters/react-icons/fi';
 import { CardSkeleton } from '@/components/ui/Skeleton';
+import { fetchAllRows } from '@/utils/fetchAllRows';
+import { platformFee } from '@/utils/fees';
 import { Line, Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -33,6 +35,10 @@ ChartJS.register(
 
 interface AnalyticsData {
   totalRevenue: number;
+  /** Accezz fee on each event's ticket sales (10%, 7% from ₦1m) */
+  platformFees: number;
+  /** Service charges paid by buyers */
+  serviceFees: number;
   totalEvents: number;
   totalUsers: number;
   totalTicketsSold: number;
@@ -74,13 +80,13 @@ const AdminAnalytics = () => {
         if (eventsError) throw eventsError;
 
         // Fetch all orders (paid) with created_at
-        const { data: orders, error: ordersError } = await supabase
+        const orders = await fetchAllRows((from, to) => supabase
           .from('orders')
-          .select('event_id, total_amount, status, created_at')
+          .select('id, event_id, total_amount, service_fee, status, created_at')
           .eq('status', 'paid')
-          .order('created_at', { ascending: true });
-
-        if (ordersError) throw ordersError;
+          .order('created_at', { ascending: true })
+          .order('id')
+          .range(from, to));
 
         // Fetch all ticket types for total ticket count
         const { data: ticketTypes, error: ticketError } = await supabase
@@ -130,6 +136,15 @@ const AdminAnalytics = () => {
 
         // Calculate total revenue
         const totalRevenue = (orders || []).reduce((sum, order) => sum + Number(order.total_amount || 0), 0);
+
+        // Accezz earnings: the fee rate depends on each event's total sales
+        const salesByEvent = new Map<string, number>();
+        (orders || []).forEach((order) => {
+          const id = order.event_id as string;
+          salesByEvent.set(id, (salesByEvent.get(id) || 0) + Number(order.total_amount || 0));
+        });
+        const platformFees = Array.from(salesByEvent.values()).reduce((sum, sales) => sum + platformFee(sales), 0);
+        const serviceFees = (orders || []).reduce((sum, order) => sum + Number(order.service_fee || 0), 0);
 
         // Calculate total tickets sold
         const totalTicketsSold = (ticketTypes || []).reduce((sum, tt) => sum + Number(tt.sold || 0), 0);
@@ -285,6 +300,8 @@ const AdminAnalytics = () => {
 
         setAnalytics({
           totalRevenue,
+          platformFees,
+          serviceFees,
           totalEvents: events?.length || 0,
           totalUsers: profiles?.length || 0,
           totalTicketsSold,
@@ -445,7 +462,7 @@ const AdminAnalytics = () => {
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border-l-4 border-green-500">
+        <div className="bg-white dark:bg-gray-800 rounded-card shadow-lg p-6 border-l-4 border-green-500">
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Revenue</p>
@@ -467,24 +484,23 @@ const AdminAnalytics = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border-l-4 border-emerald-500">
+        <div className="bg-white dark:bg-gray-800 rounded-card shadow-lg p-6 border-l-4 border-emerald-500">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Our Profit (6%)</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Our Earnings</p>
               <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
-                ₦{(analytics.totalRevenue * 0.06).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                ₦{(analytics.platformFees + analytics.serviceFees).toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </p>
             </div>
             <FiDollarSign className="text-4xl text-emerald-500" />
           </div>
-          <div className="flex items-center text-sm">
-            <span className="text-gray-500 dark:text-gray-400">
-              6% platform fee
-            </span>
+          <div className="text-sm text-gray-500 dark:text-gray-400 space-y-0.5">
+            <p>₦{analytics.platformFees.toLocaleString(undefined, { maximumFractionDigits: 2 })} Accezz fees (10%, 7% from ₦1m)</p>
+            <p>₦{analytics.serviceFees.toLocaleString()} service charges</p>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
+        <div className="bg-white dark:bg-gray-800 rounded-card shadow-lg p-6 border-l-4 border-blue-500">
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Events</p>
@@ -506,7 +522,7 @@ const AdminAnalytics = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border-l-4 border-purple-500">
+        <div className="bg-white dark:bg-gray-800 rounded-card shadow-lg p-6 border-l-4 border-purple-500">
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Users</p>
@@ -528,7 +544,7 @@ const AdminAnalytics = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border-l-4 border-yellow-500">
+        <div className="bg-white dark:bg-gray-800 rounded-card shadow-lg p-6 border-l-4 border-yellow-500">
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Tickets Sold</p>
@@ -553,14 +569,14 @@ const AdminAnalytics = () => {
 
       {/* Charts Row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-card shadow-lg p-6">
           <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Revenue Trend (Last 30 Days)</h3>
           <div className="h-64">
             {revenueChartData && <Line data={revenueChartData} options={chartOptions} />}
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-card shadow-lg p-6">
           <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Monthly Revenue (Last 12 Months)</h3>
           <div className="h-64">
             {monthlyRevenueChartData && <Bar data={monthlyRevenueChartData} options={chartOptions} />}
@@ -570,14 +586,14 @@ const AdminAnalytics = () => {
 
       {/* Charts Row 2 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-card shadow-lg p-6">
           <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">User Growth (Last 30 Days)</h3>
           <div className="h-64">
             {usersChartData && <Line data={usersChartData} options={chartOptions} />}
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-card shadow-lg p-6">
           <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Event Creation (Last 30 Days)</h3>
           <div className="h-64">
             {eventsChartData && <Line data={eventsChartData} options={chartOptions} />}
@@ -587,7 +603,7 @@ const AdminAnalytics = () => {
 
       {/* Top Events and Users */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-card shadow-lg p-6">
           <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Top Events by Revenue</h3>
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -617,7 +633,7 @@ const AdminAnalytics = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-card shadow-lg p-6">
           <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Top Users by Revenue</h3>
           <div className="overflow-x-auto">
             <table className="w-full">

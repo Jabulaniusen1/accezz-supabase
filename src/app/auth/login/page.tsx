@@ -93,7 +93,7 @@ function LoginContent() {
       {showToast && <Toast type={toastProps.type} message={toastProps.message} onClose={() => setShowToast(false)} />}
 
       {/* ── Left brand panel (md+) ── */}
-      <div className="hidden md:flex md:w-[45%] lg:w-[40%] bg-[#f54502] flex-col justify-between p-10">
+      <div className="hidden md:flex md:w-[45%] lg:w-[40%] bg-brand flex-col justify-between p-10">
         <div>
           <div className="w-28 h-12 relative">
             <Image src="/accezz logo c.png" alt="Accezz" fill className="object-contain object-left brightness-0 invert" />
@@ -180,7 +180,7 @@ function LoginContent() {
                     onChange={handleChange}
                     placeholder="you@example.com"
                     required
-                    className="w-full h-10 pl-9 pr-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#f54502]/40 focus:border-[#f54502] transition"
+                    className="w-full h-10 pl-9 pr-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition"
                   />
                 </div>
               </div>
@@ -191,7 +191,7 @@ function LoginContent() {
                   <label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     Password
                   </label>
-                  <Link href="/auth/forgot-password" className="text-xs text-[#f54502] hover:underline">
+                  <Link href="/auth/forgot-password" className="text-xs text-brand hover:underline">
                     Forgot password?
                   </Link>
                 </div>
@@ -204,7 +204,7 @@ function LoginContent() {
                     onChange={handleChange}
                     placeholder="••••••••"
                     required
-                    className="w-full h-10 pl-9 pr-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#f54502]/40 focus:border-[#f54502] transition"
+                    className="w-full h-10 pl-9 pr-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition"
                   />
                   <button
                     type="button"
@@ -219,7 +219,7 @@ function LoginContent() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-10 bg-[#f54502] hover:bg-[#d63a02] text-white text-sm font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full h-10 bg-brand hover:bg-brand-dark text-white text-sm font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
@@ -232,7 +232,7 @@ function LoginContent() {
 
             <p className="mt-5 text-center text-sm text-gray-500 dark:text-gray-400">
               Don&apos;t have an account?{' '}
-              <Link href="/auth/signup" className="text-[#f54502] font-medium hover:underline">
+              <Link href="/auth/signup" className="text-brand font-medium hover:underline">
                 Create one
               </Link>
             </p>

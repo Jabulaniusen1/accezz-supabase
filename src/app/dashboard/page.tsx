@@ -23,6 +23,7 @@ import ConfirmationModal from "@/components/ConfirmationModal";
 import Link from "next/link";
 import Logo from "@/components/ui/Logo";
 import { HugeiconsIcon } from "@hugeicons/react";
+import SectionHeader from "./components/SectionHeader";
 import {
   Calendar01Icon,
   Ticket01Icon,
@@ -81,7 +82,7 @@ function NavItem({ id, label, icon, activeTab, onClick }: NavItemProps) {
       onClick={() => onClick(id)}
       className={`w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-[15px] font-medium transition-all duration-150 ${
         isActive
-          ? "bg-[#f54502]/10 text-[#f54502]"
+          ? "bg-brand/10 text-brand"
           : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
       }`}
     >
@@ -311,7 +312,7 @@ const Dashboard = () => {
         </button>
         <button
           onClick={() => setShowLogoutModal(true)}
-          className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-[15px] font-medium text-[#f54502] hover:bg-[#f54502]/10 transition-all duration-150"
+          className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-[15px] font-medium text-brand hover:bg-brand/10 transition-all duration-150"
         >
           <HugeiconsIcon icon={Logout01Icon} size={22} strokeWidth={1.5} />
           Logout
@@ -338,11 +339,29 @@ const Dashboard = () => {
     [TAB.ANALYTICS]: "Analytics",
   };
 
+  const tabDescription: Partial<Record<TabId, string>> = {
+    [TAB.MY_TICKETS]: "Tickets you've bought or been sent.",
+    [TAB.SAVED_EVENTS]: "Events you've saved to come back to.",
+    [TAB.AFFILIATES]: "Share event links and earn a commission on every ticket sold.",
+    [TAB.WITHDRAWALS]: "Request payouts to your bank account.",
+    [TAB.NOTIFICATIONS]: "Ticket purchases, bookings and withdrawals.",
+    [TAB.EVENTS]: "Create, edit and track your events.",
+    [TAB.TICKETS_SOLD]: "Tickets for your events.",
+    [TAB.EARNINGS]: "Revenue and ticket sales across your events.",
+    [TAB.LOCATIONS]: "Event centres you manage. Keep details up to date so guests can find and book them.",
+    [TAB.BOOKINGS]: "Booking requests for your locations.",
+    [TAB.PROFILE]: "Your personal and business details.",
+    [TAB.SETTINGS]: "Payment and notification preferences.",
+  };
+
+  // Create / edit / analytics have their own header with a back button
+  const hasSectionHeader = activeTab !== TAB.CREATE_EVENT && activeTab !== TAB.EDIT_EVENT && activeTab !== TAB.ANALYTICS;
+
   const renderContent = () => {
     if (isLoading) {
       return (
         <div className="flex items-center justify-center h-64">
-          <div className="h-10 w-10 rounded-full border-4 border-[#f54502]/20 border-t-[#f54502] animate-spin" />
+          <div className="h-10 w-10 rounded-full border-4 border-brand/20 border-t-brand animate-spin" />
         </div>
       );
     }
@@ -356,6 +375,9 @@ const Dashboard = () => {
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.18 }}
         >
+          {hasSectionHeader && tabTitle[activeTab] && (
+            <SectionHeader title={tabTitle[activeTab]!} description={tabDescription[activeTab]} />
+          )}
           {activeTab === TAB.EVENTS && isCreator && (
             <EventList
               onCreateEvent={() => setActiveTab(TAB.CREATE_EVENT)}
@@ -417,23 +439,26 @@ const Dashboard = () => {
             <button
               className="md:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-700 transition-colors"
               onClick={() => setSidebarOpen(!sidebarOpen)}
+              aria-label={sidebarOpen ? "Close menu" : "Open menu"}
             >
               <BiMenuAltLeft size={24} />
             </button>
-            <h1 className="text-base font-semibold text-gray-900 dark:text-white truncate max-w-[180px] xs:max-w-none">
+            <h1 className={`text-base font-semibold text-gray-900 dark:text-white truncate max-w-[180px] xs:max-w-none ${hasSectionHeader ? 'md:hidden' : ''}`}>
               {tabTitle[activeTab]}
             </h1>
           </div>
           {userName && (
-            <div className="w-8 h-8 rounded-full bg-[#f54502]/10 border border-[#f54502]/20 flex items-center justify-center flex-shrink-0 cursor-default select-none">
-              <span className="text-[#f54502] text-sm font-bold leading-none">
+            <div className="w-8 h-8 rounded-full bg-brand/10 border border-brand/20 flex items-center justify-center flex-shrink-0 cursor-default select-none">
+              <span className="text-brand text-sm font-bold leading-none">
                 {userName.charAt(0).toUpperCase()}
               </span>
             </div>
           )}
         </header>
 
-        <main className="flex-1 p-5 md:p-7">{renderContent()}</main>
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">
+          <div className="mx-auto w-full max-w-6xl">{renderContent()}</div>
+        </main>
       </div>
 
       <ConfirmationModal

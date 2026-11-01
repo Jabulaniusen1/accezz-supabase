@@ -94,7 +94,7 @@ export default function VerifyOTP() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="relative w-full max-w-md p-4 sm:p-6 backdrop-blur-lg bg-white/10 rounded-[5px] shadow-2xl border border-white/20"
+        className="relative w-full max-w-md p-4 sm:p-6 backdrop-blur-lg bg-white/10 rounded-card shadow-2xl border border-white/20"
       >
         <div className="text-center space-y-3 sm:space-y-4">
           <h1 className="text-xl sm:text-2xl font-bold text-white">Verify Your Email</h1>

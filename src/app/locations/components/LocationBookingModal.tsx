@@ -8,7 +8,6 @@ import { Location } from '@/types/location';
 import Calendar from 'react-calendar';
 import { format } from 'date-fns';
 import { CalendarDays, Clock, ChevronDown } from '@/icon-adapters/lucide-react';
-import 'react-calendar/dist/Calendar.css';
 
 type LocationBookingModalProps = {
   isOpen: boolean;
@@ -281,7 +280,7 @@ export const LocationBookingModal: React.FC<LocationBookingModalProps> = ({ isOp
           exit={{ opacity: 0 }}
         >
           <motion.div
-            className="relative w-full max-w-xl rounded-2xl bg-white dark:bg-gray-900 p-4 lg:p-6 shadow-xl border border-gray-100 dark:border-gray-800"
+            className="relative w-full max-w-xl rounded-card bg-white dark:bg-gray-900 p-4 lg:p-6 shadow-xl border border-gray-100 dark:border-gray-800"
             initial={{ y: 40, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 20, opacity: 0 }}
@@ -308,7 +307,7 @@ export const LocationBookingModal: React.FC<LocationBookingModalProps> = ({ isOp
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 Tell us about your event and the venue manager will confirm availability.
               </p>
-              <p className="mt-2 inline-flex items-center rounded-full bg-[#f54502]/10 px-3 py-1 text-xs font-semibold text-[#f54502]">
+              <p className="mt-2 inline-flex items-center rounded-full bg-brand/10 px-3 py-1 text-xs font-semibold text-brand">
                 {priceLabel}
               </p>
               {location.eventTypes.length > 0 && (
@@ -326,7 +325,7 @@ export const LocationBookingModal: React.FC<LocationBookingModalProps> = ({ isOp
                     type="text"
                     value={formState.requesterName}
                     onChange={(event) => setFormState((prev) => ({ ...prev, requesterName: event.target.value }))}
-                    className="rounded-[5px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f54502]"
+                    className="rounded-[5px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                     placeholder="Jane Doe"
                   />
                 </div>
@@ -336,7 +335,7 @@ export const LocationBookingModal: React.FC<LocationBookingModalProps> = ({ isOp
                     type="email"
                     value={formState.requesterEmail}
                     onChange={(event) => setFormState((prev) => ({ ...prev, requesterEmail: event.target.value }))}
-                    className="rounded-[5px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f54502]"
+                    className="rounded-[5px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                     placeholder="you@example.com"
                   />
                 </div>
@@ -349,7 +348,7 @@ export const LocationBookingModal: React.FC<LocationBookingModalProps> = ({ isOp
                     type="tel"
                     value={formState.requesterPhone}
                     onChange={(event) => setFormState((prev) => ({ ...prev, requesterPhone: event.target.value }))}
-                    className="rounded-[5px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f54502]"
+                    className="rounded-[5px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                     placeholder="+234 801 234 5678"
                   />
                 </div>
@@ -358,7 +357,7 @@ export const LocationBookingModal: React.FC<LocationBookingModalProps> = ({ isOp
                   <select
                     value={formState.eventType}
                     onChange={(event) => setFormState((prev) => ({ ...prev, eventType: event.target.value }))}
-                    className="rounded-[5px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f54502]"
+                    className="rounded-[5px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                   >
                     {eventTypeOptions.map((option) => (
                       <option key={option} value={option}>
@@ -380,7 +379,7 @@ export const LocationBookingModal: React.FC<LocationBookingModalProps> = ({ isOp
                         setIsStartTimeOpen(false);
                         setIsEndTimeOpen(false);
                       }}
-                      className="flex items-center justify-between rounded-[5px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-left focus:outline-none focus:ring-2 focus:ring-[#f54502]"
+                      className="flex items-center justify-between rounded-[5px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-left focus:outline-none focus:ring-2 focus:ring-brand"
                     >
                       <span className={formState.eventDate ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400'}>
                         {formattedDateLabel}
@@ -391,6 +390,7 @@ export const LocationBookingModal: React.FC<LocationBookingModalProps> = ({ isOp
                       <div className="relative z-30">
                         <div className="absolute mt-2 w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 shadow-2xl">
                           <Calendar
+                            className="accezz-calendar"
                             value={calendarValue}
                             onChange={handleDateSelect}
                             minDate={new Date()}
@@ -410,7 +410,7 @@ export const LocationBookingModal: React.FC<LocationBookingModalProps> = ({ isOp
                           setIsEndTimeOpen(false);
                           setIsDatePickerOpen(false);
                         }}
-                        className="flex items-center justify-between rounded-[5px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f54502]"
+                        className="flex items-center justify-between rounded-[5px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                       >
                         <span className={formState.startTime ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400'}>
                           {getTimeLabel(formState.startTime, 'Start')}
@@ -429,7 +429,7 @@ export const LocationBookingModal: React.FC<LocationBookingModalProps> = ({ isOp
                               onClick={() => handleTimeSelect('startTime', option.value)}
                               className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm transition hover:bg-gray-100 dark:hover:bg-gray-800 ${
                                 option.value === formState.startTime
-                                  ? 'bg-gray-100 dark:bg-gray-800 text-[#f54502]'
+                                  ? 'bg-gray-100 dark:bg-gray-800 text-brand'
                                   : 'text-gray-700 dark:text-gray-200'
                               }`}
                             >
@@ -450,7 +450,7 @@ export const LocationBookingModal: React.FC<LocationBookingModalProps> = ({ isOp
                           setIsStartTimeOpen(false);
                           setIsDatePickerOpen(false);
                         }}
-                        className="flex items-center justify-between rounded-[5px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f54502]"
+                        className="flex items-center justify-between rounded-[5px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                       >
                         <span className={formState.endTime ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400'}>
                           {getTimeLabel(formState.endTime, 'End')}
@@ -467,7 +467,7 @@ export const LocationBookingModal: React.FC<LocationBookingModalProps> = ({ isOp
                             onClick={() => handleTimeSelect('endTime', '')}
                             className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm transition hover:bg-gray-100 dark:hover:bg-gray-800 ${
                               formState.endTime === ''
-                                ? 'bg-gray-100 dark:bg-gray-800 text-[#f54502]'
+                                ? 'bg-gray-100 dark:bg-gray-800 text-brand'
                                 : 'text-gray-700 dark:text-gray-200'
                             }`}
                           >
@@ -480,7 +480,7 @@ export const LocationBookingModal: React.FC<LocationBookingModalProps> = ({ isOp
                               onClick={() => handleTimeSelect('endTime', option.value)}
                               className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm transition hover:bg-gray-100 dark:hover:bg-gray-800 ${
                                 option.value === formState.endTime
-                                  ? 'bg-gray-100 dark:bg-gray-800 text-[#f54502]'
+                                  ? 'bg-gray-100 dark:bg-gray-800 text-brand'
                                   : 'text-gray-700 dark:text-gray-200'
                               }`}
                             >
@@ -501,7 +501,7 @@ export const LocationBookingModal: React.FC<LocationBookingModalProps> = ({ isOp
                   value={formState.notes}
                   onChange={(event) => setFormState((prev) => ({ ...prev, notes: event.target.value }))}
                   rows={3}
-                  className="rounded-[5px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f54502]"
+                  className="rounded-[5px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                   placeholder="Tell us more about your event, expected guests, or setup needs."
                 />
               </div>
@@ -521,7 +521,7 @@ export const LocationBookingModal: React.FC<LocationBookingModalProps> = ({ isOp
                 <button
                   type="submit"
                   disabled={mutation.isPending}
-                  className="inline-flex rounded-[5px] items-center px-5 py-2.5 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white text-sm font-semibold shadow-md disabled:opacity-60"
+                  className="inline-flex rounded-[5px] items-center px-5 py-2.5 bg-gradient-to-r from-brand to-brand-dark text-white text-sm font-semibold shadow-md disabled:opacity-60"
                 >
                   {mutation.isPending ? 'Submitting...' : 'Submit booking request'}
                 </button>

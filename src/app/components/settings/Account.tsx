@@ -311,17 +311,17 @@ const Account = () => {
   return (
     <div className="max-w-6xl py-6 space-y-8">
       <div className="mb-8">
-        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
           Payment Settings
-        </h1>
+        </h3>
         <p className="text-gray-600 dark:text-gray-400 text-sm lg:text-base">
           Manage your payment information and bank account details
         </p>
       </div>
 
       {/* Currency and Country Selectors */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+      <div className="bg-white dark:bg-gray-800 rounded-card shadow-lg p-6">
+        <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4">
           Payment Preferences
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -377,20 +377,20 @@ const Account = () => {
 
       {/* Account Card Display */}
       {hasExistingAccount && !showForm && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-card shadow-lg p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Current Account</h2>
+            <h2 className="text-base font-semibold text-gray-900 dark:text-white">Current Account</h2>
             <button
               onClick={() => setShowForm(true)}
               style={{ borderRadius: '5px' }}
-              className="px-4 py-2 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white rounded-lg hover:from-[#f54502]/90 hover:to-[#d63a02]/90 transition-all duration-200 transform hover:scale-105 text-sm font-medium"
+              className="px-4 py-2 bg-gradient-to-r from-brand to-brand-dark text-white rounded-lg hover:from-brand/90 hover:to-brand-dark/90 transition-all duration-200 transform hover:scale-105 text-sm font-medium"
             >
               Edit Account
             </button>
           </div>
           
           <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-[#f54502] to-[#d63a02] rounded-xl blur opacity-20 group-hover:opacity-30 transition duration-300"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-brand to-brand-dark rounded-xl blur opacity-20 group-hover:opacity-30 transition duration-300"></div>
             <div className="relative bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-6 text-white overflow-hidden">
               <div className="flex justify-between items-start mb-4">
                 <div>
@@ -423,13 +423,6 @@ const Account = () => {
                 </div>
               </div>
               
-              {/* Decorative Elements */}
-              <div className="absolute top-4 right-4 opacity-20">
-                <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                  <circle cx="20" cy="20" r="15" stroke="white" strokeWidth="2"/>
-                  <circle cx="20" cy="20" r="8" stroke="white" strokeWidth="1"/>
-                </svg>
-              </div>
             </div>
           </div>
         </div>
@@ -437,9 +430,9 @@ const Account = () => {
 
       {/* Account Form */}
       {(!hasExistingAccount || showForm) && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 lg:p-8">
+        <div className="bg-white dark:bg-gray-800 rounded-card shadow-lg p-6 lg:p-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            <h2 className="text-base font-semibold text-gray-900 dark:text-white">
               {hasExistingAccount ? 'Edit Account Details' : 'Add Bank Account'}
             </h2>
             {showForm && (
@@ -488,7 +481,7 @@ const Account = () => {
                     type="text"
                     value={accountData.account_number}
                     onChange={(e) => setAccountData(prev => ({ ...prev, account_number: e.target.value.replace(/\D/g, '') }))}
-                    className="flex-1 p-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-colors"
+                    className="flex-1 p-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand focus:border-brand transition-colors"
                     style={{ borderRadius: '5px' }} 
                     required
                     inputMode="numeric"
@@ -502,7 +495,7 @@ const Account = () => {
                     onClick={verifyAccount}
                     disabled={verifying || !accountData.account_number || !accountData.bank_code}
                     style={{ borderRadius: '5px' }}
-                    className="px-4 py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white hover:from-[#f54502]/90 hover:to-[#d63a02]/90 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200 text-sm font-medium whitespace-nowrap"
+                    className="px-4 py-3 bg-gradient-to-r from-brand to-brand-dark text-white hover:from-brand/90 hover:to-brand-dark/90 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200 text-sm font-medium whitespace-nowrap"
                   >
                     {verifying ? 'Verifying...' : 'Verify'}
                   </button>
@@ -519,7 +512,7 @@ const Account = () => {
                 value={accountData.account_name}
                 onChange={(e) => setAccountData(prev => ({ ...prev, account_name: e.target.value }))}
                 style={{ borderRadius: '5px' }}
-                className="w-full p-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-colors"
+                className="w-full p-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand focus:border-brand transition-colors"
                 required
                 placeholder="Account name will appear here after verification"
                 readOnly={!accountData.account_name}
@@ -531,7 +524,7 @@ const Account = () => {
                 type="submit"
                 disabled={loading || !accountData.account_name}
                 style={{ borderRadius: '5px' }} 
-                className="px-8 py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white hover:from-[#f54502]/90 hover:to-[#d63a02]/90 disabled:bg-gray-400 disabled:cursor-not-allowed transform hover:scale-105 transition-all duration-200 font-medium"
+                className="px-8 py-3 bg-gradient-to-r from-brand to-brand-dark text-white hover:from-brand/90 hover:to-brand-dark/90 disabled:bg-gray-400 disabled:cursor-not-allowed transform hover:scale-105 transition-all duration-200 font-medium"
               >
                 {loading ? 'Updating...' : hasExistingAccount ? 'Update Account' : 'Add Account'}
               </button>

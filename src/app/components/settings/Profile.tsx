@@ -153,7 +153,7 @@ const Profile = () => {
 
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+    <div>
       {showToast && (
         <Toast
           type={toastProps.type}
@@ -162,21 +162,11 @@ const Profile = () => {
         />
       )}
       
-      {/* Header Section */}
-      <div className="mb-8">
-        <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">
-          Profile Settings
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400 text-sm lg:text-base">
-          Manage your personal information and account details
-        </p>
-      </div>
-
       <form onSubmit={handleSubmit}>
         {/* Personal Information Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 lg:p-8 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-card shadow-sm p-6 lg:p-8 mb-6">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-            <FiUser className="w-5 h-5 text-[#f54502]" />
+            <FiUser className="w-5 h-5 text-brand" />
             Personal Information
           </h2>
           <div className="space-y-6">
@@ -192,7 +182,7 @@ const Profile = () => {
                   name="fullName"
                   value={userData?.fullName}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-all duration-200"
+                  className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-brand focus:border-brand transition-all duration-200"
                   style={{ borderRadius: '5px' }}
                   placeholder="Enter your full name"
                   required
@@ -213,7 +203,7 @@ const Profile = () => {
                   name="businessName"
                   value={userData?.businessName}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-all duration-200"
+                  className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-brand focus:border-brand transition-all duration-200"
                   style={{ borderRadius: '5px' }}
                   placeholder="Enter your business name"
                 />
@@ -259,7 +249,7 @@ const Profile = () => {
                   name="phone"
                   value={userData?.phone}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-all duration-200"
+                  className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-brand focus:border-brand transition-all duration-200"
                   style={{ borderRadius: '5px' }}
                   placeholder="Enter your phone number"
                 />
@@ -272,9 +262,9 @@ const Profile = () => {
         </div>
 
         {/* Business Details Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 lg:p-8 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-card shadow-sm p-6 lg:p-8 mb-6">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-            <Building2 className="w-5 h-5 text-[#f54502]" />
+            <Building2 className="w-5 h-5 text-brand" />
             Business Details
           </h2>
           <div className="space-y-6">
@@ -290,7 +280,7 @@ const Profile = () => {
                   name="companyWebsite"
                   value={userData?.companyWebsite}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-all duration-200"
+                  className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-brand focus:border-brand transition-all duration-200"
                   style={{ borderRadius: '5px' }}
                   placeholder="https://example.com"
                 />
@@ -310,7 +300,7 @@ const Profile = () => {
                   name="address"
                   value={userData?.address}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-all duration-200"
+                  className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-brand focus:border-brand transition-all duration-200"
                   style={{ borderRadius: '5px' }}
                   placeholder="Enter your address"
                 />
@@ -323,7 +313,7 @@ const Profile = () => {
         </div>
 
         {/* Submit Button Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 lg:p-8">
+        <div className="bg-white dark:bg-gray-800 rounded-card shadow-sm p-6 lg:p-8">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-sm text-gray-600 dark:text-gray-400">
               <p>Make sure all information is correct before saving.</p>
@@ -331,7 +321,7 @@ const Profile = () => {
             <button
               type="submit"
               disabled={loading}
-              className="flex items-center gap-2 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white font-semibold py-3 px-8 rounded-lg shadow-sm hover:from-[#f54502]/90 hover:to-[#d63a02]/90 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="flex items-center gap-2 bg-gradient-to-r from-brand to-brand-dark text-white font-semibold py-3 px-8 rounded-lg shadow-sm hover:from-brand/90 hover:to-brand-dark/90 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               style={{ borderRadius: '5px' }}
             >
               <FiSave className="w-5 h-5" />

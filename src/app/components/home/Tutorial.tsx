@@ -15,67 +15,65 @@ import Link from 'next/link';
 
 const steps = [
   {
-    number: '01',
     Icon: FaUserPlus,
-    title: 'Create Your Account',
-    description:
-      'Sign up in seconds — no credit card needed. Get instant access to your event dashboard.',
+    title: 'Create your account',
+    description: 'Sign up in seconds, no credit card needed, and get straight into your event dashboard.',
   },
   {
-    number: '02',
     Icon: FaPlusCircle,
-    title: 'Build Your Event',
-    description:
-      'Set up your event page, configure ticket tiers, pricing, and capacity all in one place.',
+    title: 'Build your event',
+    description: 'Set up your event page, ticket types, prices and capacity, all in one place.',
   },
   {
-    number: '03',
     Icon: FaChartLine,
-    title: 'Sell & Track',
-    description:
-      'Share your link and watch sales roll in. Monitor revenue and attendees in real-time.',
+    title: 'Sell and track',
+    description: 'Share your link and watch sales come in. Follow revenue and attendees in real time.',
   },
   {
-    number: '04',
     Icon: FaQrcode,
-    title: 'Validate at the Door',
-    description:
-      'Scan QR codes for instant, secure entry. Fast check-in means no queues at your venue.',
+    title: 'Check guests in',
+    description: 'Scan QR codes at the door for fast, secure entry and no queues at your venue.',
   },
 ];
 
 const features = [
   {
     Icon: FaTicketAlt,
-    title: 'Multiple Ticket Types',
-    text: 'VIP, early bird, general — full control over your ticket tiers.',
+    title: 'Multiple ticket types',
+    text: 'VIP, early bird, general: full control over your ticket tiers.',
   },
   {
     Icon: FaLock,
-    title: 'Secure Payments',
-    text: 'Paystack-powered payments. Fast, reliable, and fully encrypted.',
+    title: 'Secure payments',
+    text: 'Payments by Paystack. Fast, reliable and fully encrypted.',
   },
   {
     Icon: FaChartLine,
-    title: 'Live Analytics',
-    text: 'Real-time dashboards for sales, revenue, and attendee data.',
+    title: 'Live analytics',
+    text: 'Real-time dashboards for sales, revenue and attendees.',
   },
   {
     Icon: FaQrcode,
-    title: 'QR Validation',
-    text: 'Instant, contactless ticket scanning at your event entrance.',
+    title: 'QR check-in',
+    text: 'Instant, contactless ticket scanning at your entrance.',
   },
   {
     Icon: FaMobileAlt,
-    title: 'Mobile Optimised',
-    text: 'Run your entire event from your phone — buy, scan, and manage.',
+    title: 'Works on your phone',
+    text: 'Create, sell and scan, all from your phone.',
   },
   {
     Icon: FaLayerGroup,
-    title: 'Free to Start',
-    text: 'No setup fees. Create your first event today, completely free.',
+    title: 'Free to start',
+    text: 'No setup fees. Create your first event today for free.',
   },
 ];
+
+const fadeUp = (isInView: boolean, delay = 0) => ({
+  initial: { opacity: 0, y: 16 },
+  animate: isInView ? { opacity: 1, y: 0 } : {},
+  transition: { duration: 0.45, delay },
+});
 
 const Tutorial = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -84,132 +82,80 @@ const Tutorial = () => {
   return (
     <section
       ref={containerRef}
-      className="relative py-20 md:py-32 bg-gray-950 overflow-hidden"
       id="tutorial"
+      className="border-t border-gray-100 bg-white py-16 dark:border-gray-800 dark:bg-gray-900 sm:py-20"
     >
-      {/* Background glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(245,69,2,0.18),transparent_65%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_80%,rgba(245,69,2,0.08),transparent_50%)]" />
-
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-        {/* ── Header ── */}
+      <div className="page-container">
+        {/* Header */}
         <motion.div
-          className="text-center mb-20"
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
+          {...fadeUp(isInView)}
+          className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between"
         >
-          <span className="inline-block px-4 py-1.5 mb-6 text-sm font-semibold tracking-widest uppercase rounded-full border border-[#f54502]/40 text-[#f54502] bg-[#f54502]/10">
-            How It Works
-          </span>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-            Get Started in{' '}
-            <span className="bg-gradient-to-r from-[#f54502] to-[#ff8c69] bg-clip-text text-transparent">
-              4 Simple Steps
-            </span>
-          </h2>
-          <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
-            From account creation to door-scanning — launch your first event in
-            minutes.
-          </p>
-        </motion.div>
-
-        {/* ── Timeline Steps ── */}
-        <div className="relative mb-24">
-
-          {/* Horizontal connector line (desktop only) */}
-          <div className="hidden lg:block absolute top-[52px] left-0 right-0 mx-auto w-[75%] h-px bg-gradient-to-r from-transparent via-[#f54502]/50 to-transparent" />
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {steps.map((step, index) => (
-              <motion.div
-                key={index}
-                className="flex flex-col items-center text-center"
-                initial={{ opacity: 0, y: 40 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.55, delay: index * 0.12 }}
-              >
-                {/* Circle + number */}
-                <div className="relative mb-6">
-                  {/* Outer ring */}
-                  <div className="w-[104px] h-[104px] rounded-full border-2 border-[#f54502]/30 flex items-center justify-center bg-gray-900">
-                    {/* Inner filled circle */}
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#f54502] to-[#d63a02] flex items-center justify-center shadow-lg shadow-[#f54502]/30">
-                      <step.Icon className="w-8 h-8 text-white" />
-                    </div>
-                  </div>
-                  {/* Step number badge */}
-                  <span className="absolute -top-2 -right-2 w-7 h-7 bg-gray-800 border border-[#f54502]/60 rounded-full flex items-center justify-center text-[11px] font-bold text-[#f54502]">
-                    {step.number}
-                  </span>
-                </div>
-
-                {/* Content */}
-                <h3 className="text-lg font-bold text-white mb-2">{step.title}</h3>
-                <p className="text-sm text-gray-400 leading-relaxed max-w-[220px]">
-                  {step.description}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Feature Cards ── */}
-        <motion.div
-          className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-sm p-8 md:p-12"
-          initial={{ opacity: 0, y: 40 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.5 }}
-        >
-          <div className="text-center mb-12">
-            <h3 className="text-3xl md:text-4xl font-bold text-white mb-3">
-              Everything You Need to Succeed
-            </h3>
-            <p className="text-gray-400 text-lg max-w-xl mx-auto">
-              Powerful tools that make event management genuinely effortless.
+          <div className="max-w-2xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-brand">How it works</p>
+            <h2 className="mt-3 text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl lg:text-4xl">
+              Get started in 4 simple steps
+            </h2>
+            <p className="mt-3 text-base text-gray-600 dark:text-gray-400 sm:text-lg">
+              From sign-up to scanning tickets at the door, launch your first event in minutes.
             </p>
           </div>
+          <Link
+            href="/create-event"
+            className="inline-flex items-center justify-center gap-2 self-start rounded-xl bg-brand px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-dark lg:self-auto"
+          >
+            <FaPlusCircle className="h-4 w-4" />
+            Create your first event
+          </Link>
+        </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-12">
-            {features.map((feature, index) => (
-              <motion.div
-                key={index}
-                className="group flex items-start gap-4 p-5 rounded-2xl border border-white/5 bg-white/5 hover:bg-[#f54502]/10 hover:border-[#f54502]/30 transition-all duration-300"
-                initial={{ opacity: 0, y: 20 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.4, delay: 0.6 + index * 0.08 }}
-              >
-                <div className="flex-shrink-0 w-11 h-11 rounded-xl bg-[#f54502]/15 text-[#f54502] flex items-center justify-center group-hover:bg-[#f54502] group-hover:text-white transition-all duration-300">
-                  <feature.Icon className="w-5 h-5" />
-                </div>
+        {/* Steps */}
+        <ol className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {steps.map((step, index) => (
+            <motion.li
+              key={step.title}
+              {...fadeUp(isInView, 0.08 * (index + 1))}
+              className="rounded-card border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+            >
+              <div className="flex items-center justify-between">
+                <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#fff0e7] text-brand dark:bg-brand/15">
+                  <step.Icon className="h-5 w-5" />
+                </span>
+                <span className="text-sm font-semibold text-gray-300 dark:text-gray-600">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+              </div>
+              <h3 className="mt-5 text-base font-semibold text-gray-900 dark:text-white sm:text-lg">{step.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-400">{step.description}</p>
+            </motion.li>
+          ))}
+        </ol>
+
+        {/* Features */}
+        <motion.div
+          {...fadeUp(isInView, 0.4)}
+          className="mt-12 rounded-card border border-[#ffd9c9] bg-[#fff4ee] p-6 dark:border-brand/30 dark:bg-brand/10 sm:p-10"
+        >
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white sm:text-2xl">
+            Everything you need to run your event
+          </h3>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 sm:text-base">
+            Simple tools that take care of tickets, payments and entry.
+          </p>
+
+          <div className="mt-8 grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
+            {features.map((feature) => (
+              <div key={feature.title} className="flex items-start gap-4">
+                <span className="inline-flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-white text-brand shadow-sm dark:bg-gray-900">
+                  <feature.Icon className="h-5 w-5" />
+                </span>
                 <div>
-                  <h4 className="font-semibold text-white mb-1 text-sm">
-                    {feature.title}
-                  </h4>
-                  <p className="text-xs text-gray-400 leading-relaxed">
-                    {feature.text}
-                  </p>
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white sm:text-base">{feature.title}</h4>
+                  <p className="mt-1 text-sm leading-relaxed text-gray-600 dark:text-gray-400">{feature.text}</p>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
-
-          {/* CTA */}
-          <motion.div
-            className="text-center"
-            initial={{ opacity: 0 }}
-            animate={isInView ? { opacity: 1 } : {}}
-            transition={{ duration: 0.6, delay: 1 }}
-          >
-            <Link
-              href="/create-event"
-              className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white font-semibold rounded-xl shadow-lg shadow-[#f54502]/30 hover:shadow-[#f54502]/50 hover:from-[#d63a02] hover:to-[#b52e00] transform hover:-translate-y-0.5 transition-all duration-200"
-            >
-              <FaPlusCircle className="w-5 h-5" />
-              Create Your First Event — It&apos;s Free
-            </Link>
-          </motion.div>
         </motion.div>
       </div>
     </section>

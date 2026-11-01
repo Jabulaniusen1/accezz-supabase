@@ -19,7 +19,7 @@ const ContactPage = () => {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.6, delay: 0.3 }}
-                    className="bg-white/10 backdrop-blur-md rounded-lg p-8 max-w-lg w-full shadow-lg z-10"
+                    className="bg-white/10 backdrop-blur-md rounded-card p-8 max-w-lg w-full shadow-lg z-10"
                 >
                     <h1 className="text-white text-4xl font-bold text-center">Contact Us</h1>
                     <p className="text-white text-sm text-center mt-2">We&apos;d love to hear from you! Fill out the form below or book a call.</p>
@@ -47,7 +47,7 @@ const ContactPage = () => {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.6, delay: 0.6 }}
-                    className="mt-12 bg-white/10 backdrop-blur-md rounded-lg p-6 max-w-lg text-center shadow-lg z-10"
+                    className="mt-12 bg-white/10 backdrop-blur-md rounded-card p-6 max-w-lg text-center shadow-lg z-10"
                 >
                     <h2 className="text-white text-2xl font-bold">Book a Call</h2>
                     <p className="text-white text-sm mt-2">Need a direct conversation? Click below to schedule a call.</p>
