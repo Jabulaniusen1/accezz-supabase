@@ -43,11 +43,12 @@ export async function fetchEventBySlug(slug: string): Promise<Event | null> {
       return null;
     }
 
-    // Fetch ticket types for the event
+    // Fetch ticket types for the event, cheapest first (same price: oldest first)
     const { data: ticketTypes, error: ticketTypesError } = await supabase
       .from('ticket_types')
       .select('*')
       .eq('event_id', event.id)
+      .order('price', { ascending: true })
       .order('created_at', { ascending: true });
 
     if (ticketTypesError) {
