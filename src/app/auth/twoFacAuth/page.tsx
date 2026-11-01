@@ -10,14 +10,14 @@ import Link from 'next/link';
  */
 const TwoFacAuth = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
-    <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 text-center space-y-4">
+    <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-card shadow-lg p-6 text-center space-y-4">
       <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Two-factor authentication</h1>
       <p className="text-gray-600 dark:text-gray-300">
         Two-factor authentication isn&apos;t available yet. We&apos;ll let you know when you can turn it on.
       </p>
       <Link
         href="/dashboard"
-        className="inline-block py-3 px-6 rounded-lg bg-[#f54502] hover:bg-[#d63a02] text-white font-semibold"
+        className="inline-block py-3 px-6 rounded-lg bg-brand hover:bg-brand-dark text-white font-semibold"
       >
         Back to dashboard
       </Link>

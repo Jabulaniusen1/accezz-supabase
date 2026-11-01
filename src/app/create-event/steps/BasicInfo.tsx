@@ -138,7 +138,7 @@ function CategoryPicker({
     <div>
       <h3 className="text-base font-bold text-gray-900 dark:text-white mb-1">Event Category</h3>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-        <span className="text-[#f54502] mr-1">*</span>
+        <span className="text-brand mr-1">*</span>
         What&apos;s this event about? Pick the one category that best describes it.
       </p>
 
@@ -160,8 +160,8 @@ function CategoryPicker({
                   onClick={() => onSelect(pill.value)}
                   className={`px-4 py-1.5 rounded-full border text-sm transition-all duration-150 ${
                     isActive
-                      ? 'border-[#f54502] bg-[#f54502] text-white font-medium'
-                      : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:border-[#f54502] hover:text-[#f54502]'
+                      ? 'border-brand bg-brand text-white font-medium'
+                      : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:border-brand hover:text-brand'
                   }`}
                 >
                   {pill.label}
@@ -174,7 +174,7 @@ function CategoryPicker({
             <button
               type="button"
               onClick={() => setShowAll(v => !v)}
-              className="mt-3 text-sm text-[#f54502] hover:underline"
+              className="mt-3 text-sm text-brand hover:underline"
             >
               {showAll ? 'see less' : 'see more'}
             </button>
@@ -187,7 +187,7 @@ function CategoryPicker({
                 value={customValue}
                 onChange={e => onCustomChange(e.target.value)}
                 placeholder="Enter your category"
-                className="w-full px-4 py-2.5 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                className="w-full px-4 py-2.5 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-brand focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
               />
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 We&apos;ll attach this category to your event only.
@@ -1046,8 +1046,8 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
         <div
           className={`relative border-2 border-dashed rounded-[5px] p-4 sm:p-6 text-center cursor-pointer transition-all duration-200 ${
             isDragging
-              ? "border-[#f54502] bg-[#f54502]/10 dark:bg-[#f54502]/20"
-              : "border-gray-300 dark:border-gray-600 hover:border-[#f54502] dark:hover:border-[#f54502]"
+              ? "border-brand bg-brand/10 dark:bg-brand/20"
+              : "border-gray-300 dark:border-gray-600 hover:border-brand dark:hover:border-brand"
           }`}
           onDragOver={(e) => {
             e.preventDefault();
@@ -1099,7 +1099,7 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                     updateFormData({ image: null });
                     if (fileInputRef.current) fileInputRef.current.value = '';
                   }}
-                  className="absolute top-2 right-2 p-1.5 sm:p-2 bg-[#f54502] text-white rounded-[5px] hover:bg-[#d63a02] transition-colors duration-200"
+                  className="absolute top-2 right-2 p-1.5 sm:p-2 bg-brand text-white rounded-[5px] hover:bg-brand-dark transition-colors duration-200"
                 >
                   <FaTrash size={12} />
                 </button>
@@ -1141,7 +1141,7 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
               type="text"
               value={formData.title}
               onChange={(e) => updateFormData({ title: e.target.value })}
-              className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-brand focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
               placeholder="e.g., Tech Conference 2025"
               required
             />
@@ -1152,7 +1152,7 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
               Host
             </label>
             <div className="w-full px-4 py-3 rounded-[5px] border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 flex items-start space-x-3">
-              <div className="mt-1 text-[#f54502]">
+              <div className="mt-1 text-brand">
                 <FaIdCard />
               </div>
               <div>
@@ -1175,7 +1175,7 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
             value={formData.description}
             onChange={(e) => updateFormData({ description: e.target.value })}
             rows={4}
-            className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
+            className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-brand focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
             placeholder="Tell attendees what your event is about..."
             required
           />
@@ -1232,7 +1232,7 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
               <span className="relative inline-flex items-center h-6 w-11 rounded-full transition-colors duration-200 ease-in-out bg-gray-300 dark:bg-gray-600">
                 <span
                   className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-200 ease-in-out ${
-                    showEndTime ? 'translate-x-5 bg-[#f54502]' : 'translate-x-1'
+                    showEndTime ? 'translate-x-5 bg-brand' : 'translate-x-1'
                   }`}
                 />
               </span>
@@ -1293,7 +1293,7 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
               }}
               className="sr-only peer" 
             />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#f54502]/30 dark:peer-focus:ring-[#f54502]/50 rounded-[5px] peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-[5px] after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#f54502]"></div>
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand/30 dark:peer-focus:ring-brand/50 rounded-[5px] peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-[5px] after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-brand"></div>
             <span className="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">
               Virtual Event
             </span>
@@ -1320,8 +1320,8 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                   disabled={isDisabled}
                   className={`px-3 py-2 rounded-[5px] border text-xs sm:text-sm transition ${
                     isActive
-                      ? 'bg-[#f54502] text-white border-[#f54502] shadow-sm'
-                      : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:border-[#f54502] dark:hover:border-[#f54502]'
+                      ? 'bg-brand text-white border-brand shadow-sm'
+                      : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:border-brand dark:hover:border-brand'
                   } ${isDisabled ? 'opacity-60 cursor-not-allowed' : ''}`}
                 >
                   {option.label}
@@ -1358,7 +1358,7 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                     type="text"
                     value={formData.venue}
                     onChange={(e) => updateFormData({ venue: e.target.value })}
-                    className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-brand focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                     placeholder="e.g., Convention Center"
                     required={!isUndisclosed}
                   />
@@ -1374,8 +1374,8 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                       onClick={() => handleLocationModeChange('platform')}
                       className={`px-4 py-2 rounded-[5px] border transition text-sm sm:text-base ${
                         locationMode === 'platform'
-                          ? 'bg-[#f54502] text-white border-[#f54502]'
-                          : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:border-[#f54502] dark:hover:border-[#f54502]'
+                          ? 'bg-brand text-white border-brand'
+                          : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:border-brand dark:hover:border-brand'
                       }`}
                     >
                       Use platform venues
@@ -1385,8 +1385,8 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                       onClick={() => handleLocationModeChange('custom')}
                       className={`px-4 py-2 rounded-[5px] border transition text-sm sm:text-base ${
                         locationMode === 'custom'
-                          ? 'bg-[#f54502] text-white border-[#f54502]'
-                          : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:border-[#f54502] dark:hover:border-[#f54502]'
+                          ? 'bg-brand text-white border-brand'
+                          : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:border-brand dark:hover:border-brand'
                       }`}
                     >
                       Add my own location
@@ -1410,13 +1410,13 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                       disabled={locationsLoading || platformLocationOptions.length === 0}
                     />
                     {selectedPlatformLocationDetails && (
-                      <div className="rounded-[5px] border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-4 text-sm text-gray-700 dark:text-gray-300 space-y-1">
+                      <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-4 text-sm text-gray-700 dark:text-gray-300 space-y-1">
                         <p className="font-semibold text-gray-900 dark:text-white">
                           {selectedPlatformLocationDetails.name}
                         </p>
                         {selectedPlatformLocationDetails.address && (
                           <p className="flex items-center gap-2 text-xs sm:text-sm">
-                            <FaMapMarkerAlt className="text-[#f54502]" />
+                            <FaMapMarkerAlt className="text-brand" />
                             {selectedPlatformLocationDetails.address}
                           </p>
                         )}
@@ -1437,7 +1437,7 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                       <div>
                         <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
-                          <FaGlobe className="text-[#f54502]" />
+                          <FaGlobe className="text-brand" />
                           Country{!isUndisclosed ? ' *' : ''}
                         </label>
                         <SearchableSelect
@@ -1473,7 +1473,7 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                           type="text"
                           value={formData.city || ''}
                           onChange={(e) => handleCityChange(e.target.value)}
-                          className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
+                          className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-brand focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                           placeholder={
                             formData.country ? 'Enter city manually' : 'Select a country first'
                           }
@@ -1494,13 +1494,13 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                         Address{!isUndisclosed ? ' *' : ''}
                       </label>
                       <div className="relative">
-                        <FaMapMarkerAlt className="absolute left-3 top-1/2 -translate-y-1/2 text-[#f54502]" />
+                        <FaMapMarkerAlt className="absolute left-3 top-1/2 -translate-y-1/2 text-brand" />
                         <input
                           ref={addressInputRef}
                           type="text"
                           value={formData.address || ''}
                           onChange={(e) => handleAddressChange(e.target.value)}
-                          className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
+                          className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-brand focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                           placeholder="Start typing to find your address"
                           required={!isUndisclosed}
                         />
@@ -1516,7 +1516,7 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                 )}
               </>
             ) : (
-              <div className="rounded-[5px] border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/40 p-4 text-sm text-gray-600 dark:text-gray-300">
+              <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/40 p-4 text-sm text-gray-600 dark:text-gray-300">
                 You can launch ticket sales without revealing the venue. Update the location from your dashboard when everything is set.
               </div>
             )}
@@ -1526,13 +1526,13 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             transition={{ duration: 0.3 }}
-            className="bg-[#f54502]/10 dark:bg-[#f54502]/20 rounded-[5px] p-4 sm:p-6 border border-[#f54502]/20 dark:border-[#f54502]/30"
+            className="bg-brand/10 dark:bg-brand/20 rounded-[5px] p-4 sm:p-6 border border-brand/20 dark:border-brand/30"
           >
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-2 sm:gap-0">
-                  <h3 className="text-base sm:text-lg font-semibold text-[#f54502] dark:text-[#f54502] flex items-center">
+                  <h3 className="text-base sm:text-lg font-semibold text-brand dark:text-brand flex items-center">
                     <RiEarthLine className="mr-2" /> Virtual Event Setup
                   </h3>
-                  <span className="px-2 sm:px-3 py-1 bg-[#f54502]/20 dark:bg-[#f54502]/30 text-[#f54502] dark:text-[#f54502] text-xs font-medium rounded-[5px]">
+                  <span className="px-2 sm:px-3 py-1 bg-brand/20 dark:bg-brand/30 text-brand dark:text-brand text-xs font-medium rounded-[5px]">
                     Online Event
                   </span>
                 </div>
@@ -1569,16 +1569,16 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                                 : 'Virtual Event'
                       });
                     }}
-                    className={`p-3 sm:p-4 rounded-[5px] border-2 transition-all duration-200 flex flex-col items-center dark:text-white text-gray-900
+                    className={`p-3 sm:p-4 rounded-2xl border-2 transition-all duration-200 flex flex-col items-center dark:text-white text-gray-900
                       ${formData.virtualEventDetails?.platform === platform
-                      ? 'border-[#f54502] bg-[#f54502]/10 dark:bg-[#f54502]/20 shadow-md'
-                      : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-[#f54502]/5 dark:hover:bg-[#f54502]/10 hover:border-[#f54502] dark:hover:border-[#f54502]'
+                      ? 'border-brand bg-brand/10 dark:bg-brand/20 shadow-md'
+                      : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-brand/5 dark:hover:bg-brand/10 hover:border-brand dark:hover:border-brand'
                       }`}
                   >
-                      {platform === 'google-meet' && <SiGooglemeet className="text-[#f54502] text-xl sm:text-2xl mb-2" />}
-                      {platform === 'zoom' && <BiLogoZoom className="text-[#f54502] text-xl sm:text-2xl mb-2" />}
-                      {platform === 'meets' && <BsMicrosoftTeams className="text-[#f54502] text-xl sm:text-2xl mb-2" />}
-                      {platform === 'custom' && <FaLink className="text-[#f54502] text-xl sm:text-2xl mb-2" />}
+                      {platform === 'google-meet' && <SiGooglemeet className="text-brand text-xl sm:text-2xl mb-2" />}
+                      {platform === 'zoom' && <BiLogoZoom className="text-brand text-xl sm:text-2xl mb-2" />}
+                      {platform === 'meets' && <BsMicrosoftTeams className="text-brand text-xl sm:text-2xl mb-2" />}
+                      {platform === 'custom' && <FaLink className="text-brand text-xl sm:text-2xl mb-2" />}
                       <span className="capitalize font-medium text-xs sm:text-sm text-center">
                         {platform === 'google-meet'
                           ? 'Google Meet'
@@ -1595,10 +1595,10 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                 {/* Google Meet  */}
                 {formData.virtualEventDetails?.platform === 'google-meet' && (
                   <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
-                  <div className="bg-[#f54502]/10 dark:bg-[#f54502]/20 p-3 sm:p-4 rounded-[5px] border border-[#f54502]/20 dark:border-[#f54502]/30">
+                  <div className="bg-brand/10 dark:bg-brand/20 p-3 sm:p-4 rounded-[5px] border border-brand/20 dark:border-brand/30">
                     <div className="flex items-start">
-                      <FaInfoCircle className="text-[#f54502] mt-1 mr-2 flex-shrink-0 text-sm sm:text-base" />
-                    <p className="text-xs sm:text-sm text-[#f54502] dark:text-[#f54502]">
+                      <FaInfoCircle className="text-brand mt-1 mr-2 flex-shrink-0 text-sm sm:text-base" />
+                    <p className="text-xs sm:text-sm text-brand dark:text-brand">
                       Please paste your Google Meet link below. Make sure the link is accessible to attendees.
                     </p>
                     </div>
@@ -1617,7 +1617,7 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                       }
                     })}
                     className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600
-                        focus:ring-2 focus:ring-[#f54502] focus:border-transparent
+                        focus:ring-2 focus:ring-brand focus:border-transparent
                         bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                     placeholder="https://meet.google.com/xxx-xxxx-xxx"
                     required
@@ -1629,10 +1629,10 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                 {/* Meets Section */}
                 {formData.virtualEventDetails?.platform === 'meets' && (
                   <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
-                    <div className="bg-[#f54502]/10 dark:bg-[#f54502]/20 p-3 sm:p-4 rounded-[5px] border border-[#f54502]/20 dark:border-[#f54502]/30">
+                    <div className="bg-brand/10 dark:bg-brand/20 p-3 sm:p-4 rounded-[5px] border border-brand/20 dark:border-brand/30">
                       <div className="flex items-start">
-                        <FaInfoCircle className="text-[#f54502] mt-1 mr-2 flex-shrink-0 text-sm sm:text-base" />
-                        <p className="text-xs sm:text-sm text-[#f54502] dark:text-[#f54502]">
+                        <FaInfoCircle className="text-brand mt-1 mr-2 flex-shrink-0 text-sm sm:text-base" />
+                        <p className="text-xs sm:text-sm text-brand dark:text-brand">
                           Share the Meets session link attendees should use after purchasing their tickets.
                         </p>
                       </div>
@@ -1651,7 +1651,7 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                           }
                         })}
                         className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600
-                                focus:ring-2 focus:ring-[#f54502] focus:border-transparent
+                                focus:ring-2 focus:ring-brand focus:border-transparent
                                 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                         placeholder="https://meets.your-platform.com/example"
                         required
@@ -1677,7 +1677,7 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                           }
                         })}
                         className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600
-                                focus:ring-2 focus:ring-[#f54502] focus:border-transparent
+                                focus:ring-2 focus:ring-brand focus:border-transparent
                                 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                         placeholder="123 456 7890"
                         required
@@ -1703,16 +1703,16 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                           }
                         })}
                         className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600
-                                focus:ring-2 focus:ring-[#f54502] focus:border-transparent
+                                focus:ring-2 focus:ring-brand focus:border-transparent
                                 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                         placeholder="https://your-platform.com/meeting-id"
                         required
                       />
                     </div>
-                    <div className="bg-[#f54502]/10 dark:bg-[#f54502]/20 p-3 sm:p-4 rounded-[5px] border border-[#f54502]/20 dark:border-[#f54502]/30">
+                    <div className="bg-brand/10 dark:bg-brand/20 p-3 sm:p-4 rounded-[5px] border border-brand/20 dark:border-brand/30">
                       <div className="flex items-start">
-                        <FaExclamationTriangle className="text-[#f54502] mt-1 mr-2 flex-shrink-0 text-sm sm:text-base" />
-                        <p className="text-xs sm:text-sm text-[#f54502] dark:text-[#f54502]">
+                        <FaExclamationTriangle className="text-brand mt-1 mr-2 flex-shrink-0 text-sm sm:text-base" />
+                        <p className="text-xs sm:text-sm text-brand dark:text-brand">
                           For custom platforms, you&apos;re responsible for creating the meeting and managing access.
                           Ensure the URL is correct and accessible to attendees.
                         </p>
@@ -1729,7 +1729,7 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
       <div className="flex justify-end mt-6 sm:mt-8">
         <button
           onClick={() => validateForm() && onNext()}
-          className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white rounded-[5px] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 transform hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl w-full sm:w-auto text-sm sm:text-base"
+          className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-brand to-brand-dark text-white rounded-[5px] hover:from-brand/90 hover:to-brand-dark/90 transform hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl w-full sm:w-auto text-sm sm:text-base"
         >
           Continue to Ticket Setup
         </button>

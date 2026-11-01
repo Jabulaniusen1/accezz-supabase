@@ -51,7 +51,7 @@ function PasswordReset() {
       }}
     >
       <ToastContainer />
-      <div className="max-w-md w-full bg-white rounded-[5px] shadow-lg p-4 sm:p-8 space-y-4 sm:space-y-6"
+      <div className="max-w-md w-full bg-white rounded-card shadow-lg p-4 sm:p-8 space-y-4 sm:space-y-6"
         style={{
             boxShadow: '3px -2px 3px 4px rgba(1,1,1,.2)'
         }}

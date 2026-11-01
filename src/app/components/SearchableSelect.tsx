@@ -82,7 +82,7 @@ export default function SearchableSelect({
       {/* Selected Value Display */}
       <div className="relative group">
         {icon && (
-          <div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f54502] transition-colors z-10 pointer-events-none">
+          <div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-brand transition-colors z-10 pointer-events-none">
             {icon}
           </div>
         )}
@@ -90,7 +90,7 @@ export default function SearchableSelect({
           type="button"
           onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={disabled}
-          className={`w-full ${icon ? 'pl-9 sm:pl-12' : 'pl-3 sm:pl-4'} pr-8 sm:pr-10 py-2 sm:py-3 border border-gray-200 rounded-[5px] focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-transparent text-sm sm:text-base text-gray-900 bg-white/50 text-left flex items-center justify-between ${
+          className={`w-full ${icon ? 'pl-9 sm:pl-12' : 'pl-3 sm:pl-4'} pr-8 sm:pr-10 py-2 sm:py-3 border border-gray-200 rounded-[5px] focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent text-sm sm:text-base text-gray-900 bg-white/50 text-left flex items-center justify-between ${
             disabled
               ? "cursor-not-allowed opacity-50"
               : "cursor-pointer hover:border-gray-300"
@@ -120,7 +120,7 @@ export default function SearchableSelect({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search..."
-                className="w-full pl-8 pr-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-[#f54502] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full pl-8 pr-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-brand bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 onClick={(e) => e.stopPropagation()}
               />
             </div>
@@ -140,7 +140,7 @@ export default function SearchableSelect({
                   onClick={() => handleSelect(option.value)}
                   className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
                     value === option.value
-                      ? "bg-[#f54502]/10 text-[#f54502] font-medium"
+                      ? "bg-brand/10 text-brand font-medium"
                       : "text-gray-900 dark:text-gray-200"
                   }`}
                 >

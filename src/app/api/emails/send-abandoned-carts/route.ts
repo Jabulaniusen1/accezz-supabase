@@ -35,6 +35,7 @@ export async function POST(req: NextRequest) {
         buyer_email,
         buyer_full_name,
         total_amount,
+        amount_due,
         currency,
         meta,
         created_at,
@@ -194,7 +195,8 @@ export async function POST(req: NextRequest) {
             venue,
             ticketType: ticketTypeName,
             quantity,
-            totalAmount: order.total_amount,
+            // What the buyer will pay, fees included
+            totalAmount: order.amount_due ?? order.total_amount,
             currency: order.currency || 'NGN',
             orderId: order.id,
             eventSlug: event.slug,

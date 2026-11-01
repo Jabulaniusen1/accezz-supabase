@@ -40,7 +40,7 @@ const sections = [
   {
     title: "5. Service Fees",
     body: [
-      "Accezz charges organisers a 6% fee on paid tickets. When a refund is issued before payouts, fees are automatically reversed. Refunds processed after the organiser receives payouts will deduct the refundable amount from future balances.",
+      "Accezz charges organisers 10% of each event's paid ticket sales, reduced to 7% once that event's sales reach ₦1,000,000. Buyers pay a ₦100 service charge per order and the payment processing fee. When a refund is issued before payouts, the Accezz fee on the refunded tickets is automatically reversed. Refunds processed after the organiser receives payouts will deduct the refundable amount from future balances.",
     ],
   },
   {
@@ -83,7 +83,7 @@ const RefundPolicyPage = () => {
       <div className="bg-white py-16 sm:py-20">
         <div className="mx-auto max-w-4xl px-4 sm:px-6">
           <header className="text-center">
-            <p className="text-sm font-medium uppercase tracking-[0.2em] text-[#f54502]">
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-brand">
               Refund Policy
             </p>
             <h1 className="mt-4 text-3xl font-semibold text-gray-900 sm:text-4xl">
@@ -96,7 +96,7 @@ const RefundPolicyPage = () => {
 
           <div className="mt-12 space-y-10">
             {sections.map((section) => (
-              <section key={section.title} className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+              <section key={section.title} className="rounded-card border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
                 <h2 className="text-xl font-semibold text-gray-900">{section.title}</h2>
 
                 {section.body &&
@@ -110,7 +110,7 @@ const RefundPolicyPage = () => {
                   <ul className="mt-5 space-y-3 text-sm text-gray-600 sm:text-base">
                     {section.items.map((item, index) => (
                       <li key={index} className="flex gap-3 leading-relaxed">
-                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#f54502]" />
+                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
                         <span>{item}</span>
                       </li>
                     ))}

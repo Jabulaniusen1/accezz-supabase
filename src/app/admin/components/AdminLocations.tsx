@@ -147,11 +147,11 @@ export default function AdminLocations() {
           {locations.map(loc => (
             <div
               key={loc.id}
-              className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 flex items-start gap-4"
+              className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-card p-5 flex items-start gap-4"
             >
               {/* Icon */}
               <div className="flex-shrink-0 w-10 h-10 bg-orange-50 dark:bg-orange-900/20 rounded-lg flex items-center justify-center">
-                <FiMapPin size={18} className="text-[#f54502]" />
+                <FiMapPin size={18} className="text-brand" />
               </div>
 
               {/* Details */}

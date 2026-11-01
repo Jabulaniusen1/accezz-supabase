@@ -292,7 +292,7 @@ export default function FinalDetails({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <FaInstagram className="text-[#f54502]" />
+                <FaInstagram className="text-brand" />
               </div>
               <input
                 type="url"
@@ -305,14 +305,14 @@ export default function FinalDetails({
                     },
                   })
                 }
-                className="w-full pl-8 sm:pl-10 pr-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
+                className="w-full pl-8 sm:pl-10 pr-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-brand focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                 placeholder="https://instagram.com/yourpage"
               />
             </div>
 
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <FaFacebookF className="text-[#f54502]" />
+                <FaFacebookF className="text-brand" />
               </div>
               <input
                 type="url"
@@ -325,14 +325,14 @@ export default function FinalDetails({
                     },
                   })
                 }
-                className="w-full pl-8 sm:pl-10 pr-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
+                className="w-full pl-8 sm:pl-10 pr-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-brand focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                 placeholder="https://facebook.com/yourpage"
               />
             </div>
 
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <FaXTwitter className="text-[#f54502]" />
+                <FaXTwitter className="text-brand" />
               </div>
               <input
                 type="url"
@@ -345,7 +345,7 @@ export default function FinalDetails({
                     },
                   })
                 }
-                className="w-full pl-8 sm:pl-10 pr-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
+                className="w-full pl-8 sm:pl-10 pr-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-brand focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                 placeholder="https://twitter.com/yourpage"
               />
             </div>
@@ -365,7 +365,7 @@ export default function FinalDetails({
               type="button"
               onClick={() => setAffiliateEnabled(v => !v)}
               className={`relative inline-flex h-6 w-11 items-center rounded-full flex-shrink-0 transition-colors ${
-                affiliateEnabled ? 'bg-[#f54502]' : 'bg-gray-200 dark:bg-gray-600'
+                affiliateEnabled ? 'bg-brand' : 'bg-gray-200 dark:bg-gray-600'
               }`}
             >
               <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -375,13 +375,13 @@ export default function FinalDetails({
           </div>
 
           {affiliateEnabled && (
-            <div className="grid grid-cols-2 gap-3 pl-4 border-l-2 border-[#f54502]/30">
+            <div className="grid grid-cols-2 gap-3 pl-4 border-l-2 border-brand/30">
               <div>
                 <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Commission type</label>
                 <select
                   value={commissionType}
                   onChange={e => setCommissionType(e.target.value as 'percentage' | 'fixed')}
-                  className="w-full h-9 px-2 text-sm rounded-[5px] border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f54502]"
+                  className="w-full h-9 px-2 text-sm rounded-[5px] border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand"
                 >
                   <option value="percentage">Percentage (%)</option>
                   <option value="fixed">Fixed amount (₦)</option>
@@ -396,7 +396,7 @@ export default function FinalDetails({
                   min={0}
                   value={commissionValue}
                   onChange={e => setCommissionValue(Number(e.target.value))}
-                  className="w-full h-9 px-3 text-sm rounded-[5px] border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f54502]"
+                  className="w-full h-9 px-3 text-sm rounded-[5px] border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand"
                 />
               </div>
             </div>
@@ -415,7 +415,7 @@ export default function FinalDetails({
           <button
             type="submit"
             disabled={isLoading}
-            className={`px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white rounded-[5px] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 transform transition-all duration-200 shadow-lg hover:shadow-xl relative overflow-hidden text-sm sm:text-base w-full sm:w-auto ${
+            className={`px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-brand to-brand-dark text-white rounded-[5px] hover:from-brand/90 hover:to-brand-dark/90 transform transition-all duration-200 shadow-lg hover:shadow-xl relative overflow-hidden text-sm sm:text-base w-full sm:w-auto ${
               isLoading ? "opacity-75 cursor-not-allowed" : "hover:scale-[1.02]"
             }`}
           >
@@ -423,7 +423,7 @@ export default function FinalDetails({
               {isLoading ? "Creating Event..." : "Create Event"}
             </span>
             {isLoading && (
-              <span className="absolute inset-0 bg-gradient-to-r from-[#f54502]/80 to-[#d63a02]/80 opacity-70"></span>
+              <span className="absolute inset-0 bg-gradient-to-r from-brand/80 to-brand-dark/80 opacity-70"></span>
             )}
           </button>
         </div>

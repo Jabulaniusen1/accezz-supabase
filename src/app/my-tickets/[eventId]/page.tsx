@@ -93,7 +93,7 @@ function TransferModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-card shadow-2xl w-full max-w-md p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold text-gray-900 dark:text-white">Transfer Ticket</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
@@ -117,7 +117,7 @@ function TransferModal({
           value={email}
           onChange={e => { setEmail(e.target.value); setError(null); }}
           onKeyDown={e => e.key === 'Enter' && handleTransfer()}
-          className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f54502] focus:border-transparent mb-3"
+          className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand focus:border-transparent mb-3"
         />
 
         {error && <p className="text-sm text-red-500 mb-3">{error}</p>}
@@ -132,7 +132,7 @@ function TransferModal({
           <button
             onClick={handleTransfer}
             disabled={loading}
-            className="flex-1 py-2.5 rounded-lg bg-[#f54502] hover:bg-[#d63a02] text-white text-sm font-medium transition disabled:opacity-50 flex items-center justify-center gap-2"
+            className="flex-1 py-2.5 rounded-lg bg-brand hover:bg-brand-dark text-white text-sm font-medium transition disabled:opacity-50 flex items-center justify-center gap-2"
           >
             <FiSend size={14} />
             {loading ? 'Transferring…' : 'Transfer'}
@@ -218,9 +218,9 @@ function AffiliateLinkCard({ eventId, eventSlug }: { eventId: string; eventSlug:
   if (loading || !available) return null;
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 mb-6">
+    <div className="bg-white dark:bg-gray-800 rounded-card border border-gray-200 dark:border-gray-700 p-5 mb-6">
       <div className="flex items-center gap-2 mb-3">
-        <Link2 className="w-4 h-4 text-[#f54502]" />
+        <Link2 className="w-4 h-4 text-brand" />
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Affiliate Link</h3>
       </div>
 
@@ -239,7 +239,7 @@ function AffiliateLinkCard({ eventId, eventSlug }: { eventId: string; eventSlug:
             </div>
             <button
               onClick={handleCopy}
-              className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:text-[#f54502] hover:border-[#f54502]/40 transition flex-shrink-0"
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:text-brand hover:border-brand/40 transition flex-shrink-0"
             >
               {copied ? <FiCheck className="text-green-500" /> : <FiCopy />}
               {copied ? 'Copied!' : 'Copy'}
@@ -254,7 +254,7 @@ function AffiliateLinkCard({ eventId, eventSlug }: { eventId: string; eventSlug:
           <button
             onClick={handleJoin}
             disabled={joining}
-            className="px-4 py-2 bg-[#f54502] hover:bg-[#d63a02] text-white text-xs font-medium rounded-lg transition disabled:opacity-50"
+            className="px-4 py-2 bg-brand hover:bg-brand-dark text-white text-xs font-medium rounded-lg transition disabled:opacity-50"
           >
             {joining ? 'Getting link…' : 'Get my affiliate link'}
           </button>
@@ -390,7 +390,7 @@ export default function EventTicketsPage() {
       <div className="flex flex-col items-center justify-center min-h-[60vh] p-6">
         <BsTicketPerforated className="w-16 h-16 text-gray-400 mb-4" />
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{error}</h3>
-        <button onClick={() => router.push('/dashboard')} className="mt-4 px-6 py-3 bg-[#f54502] text-white rounded-xl hover:bg-[#d63a02] transition flex items-center gap-2">
+        <button onClick={() => router.push('/dashboard')} className="mt-4 px-6 py-3 bg-brand text-white rounded-xl hover:bg-brand-dark transition flex items-center gap-2">
           <BsArrowLeft className="w-4 h-4" /> Back to My Tickets
         </button>
       </div>
@@ -431,7 +431,7 @@ export default function EventTicketsPage() {
 
       {/* Event Info */}
       {event && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-2">
+        <div className="bg-white dark:bg-gray-800 rounded-card shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-2">
           <div className="flex flex-col md:flex-row">
             {event.image_url && (
               <div className="relative w-full md:w-48 h-48 md:h-auto flex-shrink-0">
@@ -479,7 +479,7 @@ export default function EventTicketsPage() {
                   {/* Info */}
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="flex items-center justify-center w-10 h-10 rounded-[5px] bg-[#f54502]/10 text-[#f54502]">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-[5px] bg-brand/10 text-brand">
                         <BsTicketPerforated className="w-5 h-5" />
                       </div>
                       <div>
@@ -526,14 +526,14 @@ export default function EventTicketsPage() {
                   <div className="flex flex-col gap-2 min-w-[140px]">
                     <button
                       onClick={() => router.push(`/invoice/${ticket.order_id}`)}
-                      className="px-4 py-2 bg-[#f54502] text-white rounded-[5px] hover:bg-[#d63a02] transition flex items-center gap-2 justify-center text-sm font-medium"
+                      className="px-4 py-2 bg-brand text-white rounded-[5px] hover:bg-brand-dark transition flex items-center gap-2 justify-center text-sm font-medium"
                     >
                       <BsQrCode className="w-4 h-4" /> View Ticket
                     </button>
                     {ticket.validation_status === 'valid' && !ticket.is_scanned && (
                       <button
                         onClick={() => setTransferTicket(ticket)}
-                        className="px-4 py-2 border border-[#f54502] text-[#f54502] rounded-[5px] hover:bg-[#f54502]/5 transition flex items-center gap-2 justify-center text-sm font-medium"
+                        className="px-4 py-2 border border-brand text-brand rounded-[5px] hover:bg-brand/5 transition flex items-center gap-2 justify-center text-sm font-medium"
                       >
                         <FiSend className="w-4 h-4" /> Transfer
                       </button>

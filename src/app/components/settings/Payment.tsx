@@ -86,7 +86,7 @@ const Payment = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-6 bg-white shadow-lg rounded-lg dark:bg-gray-800 dark:text-gray-200">
+    <div className="max-w-5xl mx-auto p-6 bg-white shadow-lg rounded-card dark:bg-gray-800 dark:text-gray-200">
       <h2 className="text-2xl font-bold mb-6 text-blue-600">Payment Methods</h2>
 
       <div className="mb-6">

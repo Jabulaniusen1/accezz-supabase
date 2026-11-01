@@ -255,14 +255,14 @@ const AdminTickets: React.FC = () => {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-card shadow-lg p-6">
           <Skeleton height="32px" width="200px" className="mb-4" />
           <div className="flex gap-4">
             <Skeleton height="40px" className="flex-1" />
             <Skeleton height="40px" width="200px" />
           </div>
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 space-y-3">
+        <div className="bg-white dark:bg-gray-800 rounded-card shadow-lg p-6 space-y-3">
           {[...Array(6)].map((_, i) => (
             <Skeleton key={i} height="48px" />
           ))}
@@ -301,7 +301,7 @@ const AdminTickets: React.FC = () => {
                 <select
                   value={generateForm.eventId}
                   onChange={e => setGenerateForm(f => ({ ...f, eventId: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f54502] focus:border-transparent"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand focus:border-transparent"
                 >
                   <option value="">Select an event…</option>
                   {events.map(ev => <option key={ev.id} value={ev.id}>{ev.title}</option>)}
@@ -314,7 +314,7 @@ const AdminTickets: React.FC = () => {
                   value={generateForm.ticketTypeId}
                   onChange={e => setGenerateForm(f => ({ ...f, ticketTypeId: e.target.value }))}
                   disabled={!generateForm.eventId}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f54502] focus:border-transparent disabled:opacity-50"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand focus:border-transparent disabled:opacity-50"
                 >
                   <option value="">Select ticket type…</option>
                   {ticketTypeOptions.map(tt => (
@@ -330,7 +330,7 @@ const AdminTickets: React.FC = () => {
                   value={generateForm.attendeeName}
                   onChange={e => setGenerateForm(f => ({ ...f, attendeeName: e.target.value }))}
                   placeholder="Full name"
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f54502] focus:border-transparent"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand focus:border-transparent"
                 />
               </div>
 
@@ -341,7 +341,7 @@ const AdminTickets: React.FC = () => {
                   value={generateForm.attendeeEmail}
                   onChange={e => setGenerateForm(f => ({ ...f, attendeeEmail: e.target.value }))}
                   placeholder="email@example.com"
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f54502] focus:border-transparent"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand focus:border-transparent"
                 />
               </div>
 
@@ -350,7 +350,7 @@ const AdminTickets: React.FC = () => {
                 <select
                   value={generateForm.gender}
                   onChange={e => setGenerateForm(f => ({ ...f, gender: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f54502] focus:border-transparent"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand focus:border-transparent"
                 >
                   <option value="">Prefer not to say</option>
                   <option value="male">Male</option>
@@ -363,7 +363,7 @@ const AdminTickets: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setGenerateForm(f => ({ ...f, sendEmail: !f.sendEmail }))}
-                  className={`relative inline-flex h-5 w-9 items-center rounded-full flex-shrink-0 transition-colors ${generateForm.sendEmail ? 'bg-[#f54502]' : 'bg-gray-200 dark:bg-gray-600'}`}
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full flex-shrink-0 transition-colors ${generateForm.sendEmail ? 'bg-brand' : 'bg-gray-200 dark:bg-gray-600'}`}
                 >
                   <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${generateForm.sendEmail ? 'translate-x-4' : 'translate-x-0.5'}`} />
                 </button>
@@ -381,7 +381,7 @@ const AdminTickets: React.FC = () => {
               <button
                 onClick={handleGenerate}
                 disabled={generating}
-                className="flex-1 py-2.5 rounded-lg bg-[#f54502] hover:bg-[#d63a02] text-white text-sm font-semibold transition disabled:opacity-60 flex items-center justify-center gap-2"
+                className="flex-1 py-2.5 rounded-lg bg-brand hover:bg-brand-dark text-white text-sm font-semibold transition disabled:opacity-60 flex items-center justify-center gap-2"
               >
                 {generating ? (
                   <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Generating…</>
@@ -393,12 +393,12 @@ const AdminTickets: React.FC = () => {
       )}
 
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-card shadow-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Tickets Sold</h2>
           <button
             onClick={() => setShowGenerateModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#f54502] hover:bg-[#d63a02] text-white text-sm font-semibold transition"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand hover:bg-brand-dark text-white text-sm font-semibold transition"
           >
             <FiPlus size={15} /> Generate Ticket
           </button>
@@ -413,7 +413,7 @@ const AdminTickets: React.FC = () => {
               placeholder="Search by ticket code, attendee name, or email…"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f54502] focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand focus:border-transparent"
             />
           </div>
 
@@ -423,7 +423,7 @@ const AdminTickets: React.FC = () => {
             <select
               value={selectedEventId}
               onChange={e => setSelectedEventId(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f54502] focus:border-transparent appearance-none"
+              className="w-full pl-9 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand focus:border-transparent appearance-none"
             >
               <option value="all">All Events</option>
               {events.map(ev => (
@@ -453,7 +453,7 @@ const AdminTickets: React.FC = () => {
       )}
 
       {/* Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-card shadow-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-gray-700">
@@ -527,7 +527,7 @@ const AdminTickets: React.FC = () => {
                       <Link
                         href={`/invoice/${ticket.order_id}`}
                         target="_blank"
-                        className="inline-flex items-center gap-1 text-[#f54502] hover:text-[#d63a02] text-sm font-medium transition-colors"
+                        className="inline-flex items-center gap-1 text-brand hover:text-brand-dark text-sm font-medium transition-colors"
                         title="View Invoice"
                       >
                         Invoice <FiExternalLink size={13} />

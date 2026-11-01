@@ -13,7 +13,12 @@ interface Order {
   buyer_full_name: string | null;
   buyer_email: string;
   buyer_phone: string | null;
+  /** Tickets only */
   total_amount: number;
+  service_fee?: number;
+  processing_fee?: number;
+  /** What the buyer paid: tickets + service charge + processing fee */
+  amount_due?: number;
   currency: string | null;
   status: string;
   payment_reference: string | null;
@@ -198,6 +203,9 @@ const InvoiceContent = () => {
     return `${currencySymbol}${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
+  // Orders from before fees existed have no amount_due
+  const amountPaid = order ? Number(order.amount_due ?? order.total_amount) : 0;
+
   const downloadPDF = async () => {
     if (!order || !event || tickets.length === 0) return;
 
@@ -325,8 +333,19 @@ const InvoiceContent = () => {
       }
 
       // Total
+      doc.setFontSize(10);
+      doc.text(`Tickets: ${formatCurrency(order.total_amount, order.currency)}`, margin, yPos);
+      yPos += 5;
+      if (Number(order.service_fee) > 0) {
+        doc.text(`Service charge: ${formatCurrency(Number(order.service_fee), order.currency)}`, margin, yPos);
+        yPos += 5;
+      }
+      if (Number(order.processing_fee) > 0) {
+        doc.text(`Payment processing fee: ${formatCurrency(Number(order.processing_fee), order.currency)}`, margin, yPos);
+        yPos += 5;
+      }
       doc.setFontSize(12);
-      doc.text(`Total: ${formatCurrency(order.total_amount, order.currency)}`, margin, yPos);
+      doc.text(`Total: ${formatCurrency(amountPaid, order.currency)}`, margin, yPos);
       yPos += 5;
       doc.text(`Status: ${order.status.toUpperCase()}`, margin, yPos);
       yPos += 10;
@@ -355,7 +374,7 @@ const InvoiceContent = () => {
           <p className="text-red-600 mb-4">{error || 'Invoice not found'}</p>
           <button
             onClick={() => router.back()}
-            className="px-4 py-2 bg-[#f54502] text-white rounded-lg hover:bg-[#d63a02] transition"
+            className="px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand-dark transition"
           >
             Go Back
           </button>
@@ -372,7 +391,7 @@ const InvoiceContent = () => {
     <div className="min-h-screen bg-gray-50 py-6 px-4 sm:py-8 sm:px-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
+        <div className="bg-white rounded-card shadow-sm p-4 sm:p-6 mb-6">
           <div className="flex justify-between items-start mb-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Invoice</h1>
@@ -405,7 +424,7 @@ const InvoiceContent = () => {
         </div>
 
         {/* Event Details */}
-        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
+        <div className="bg-white rounded-card shadow-sm p-4 sm:p-6 mb-6">
           <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">Event Details</h2>
           {event.image_url && (
             <div className="mb-4 rounded-lg overflow-hidden">
@@ -456,7 +475,7 @@ const InvoiceContent = () => {
         </div>
 
         {/* Customer Details */}
-        {/* <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        {/* <div className="bg-white rounded-card shadow-sm p-6 mb-6">
           <h2 className="text-xl font-bold text-gray-900 mb-4">Customer Details</h2>
           <div className="space-y-3">
             {order.buyer_full_name && (
@@ -488,7 +507,7 @@ const InvoiceContent = () => {
         </div> */}
 
         {/* Tickets */}
-        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
+        <div className="bg-white rounded-card shadow-sm p-4 sm:p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg sm:text-xl font-bold text-gray-900">Tickets</h2>
             <span className="text-sm sm:text-base text-gray-600">{tickets.length} ticket{tickets.length !== 1 ? 's' : ''}</span>
@@ -516,7 +535,7 @@ const InvoiceContent = () => {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <Ticket className="w-4 h-4 sm:w-5 sm:h-5 text-[#f54502]" />
+                      <Ticket className="w-4 h-4 sm:w-5 sm:h-5 text-brand" />
                       <h3 className="font-semibold text-sm sm:text-base text-gray-900">
                         Ticket {index + 1} - {order.meta?.ticketTypeName || 'General Admission'}
                       </h3>
@@ -534,7 +553,7 @@ const InvoiceContent = () => {
                       )}
                       <div>
                         <span className="text-gray-500">Ticket Code: </span>
-                        <span className="font-mono font-medium text-[#f54502]">{ticket.ticket_code}</span>
+                        <span className="font-mono font-medium text-brand">{ticket.ticket_code}</span>
                       </div>
                       <div>
                         <span className="text-gray-500">Price: </span>
@@ -564,21 +583,33 @@ const InvoiceContent = () => {
         </div>
 
         {/* Summary */}
-        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+        <div className="bg-white rounded-card shadow-sm p-4 sm:p-6">
           <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">Summary</h2>
           <div className="space-y-2">
-            <div className="flex justify-between text-gray-600">
-              <span>Subtotal</span>
-              <span>{formatCurrency(order.total_amount, order.currency)}</span>
-            </div>
             <div className="flex justify-between text-gray-600">
               <span>Total Tickets</span>
               <span>{tickets.length}</span>
             </div>
+            <div className="flex justify-between text-gray-600">
+              <span>Subtotal</span>
+              <span>{formatCurrency(order.total_amount, order.currency)}</span>
+            </div>
+            {Number(order.service_fee) > 0 && (
+              <div className="flex justify-between text-gray-600">
+                <span>Service charge</span>
+                <span>{formatCurrency(Number(order.service_fee), order.currency)}</span>
+              </div>
+            )}
+            {Number(order.processing_fee) > 0 && (
+              <div className="flex justify-between text-gray-600">
+                <span>Payment processing fee</span>
+                <span>{formatCurrency(Number(order.processing_fee), order.currency)}</span>
+              </div>
+            )}
             <div className="border-t pt-2 mt-2">
               <div className="flex justify-between text-lg font-bold text-gray-900">
                 <span>Total</span>
-                <span className="text-[#f54502]">{formatCurrency(order.total_amount, order.currency)}</span>
+                <span className="text-brand">{formatCurrency(amountPaid, order.currency)}</span>
               </div>
             </div>
           </div>
@@ -587,7 +618,7 @@ const InvoiceContent = () => {
         {/* Powered by Accezz */}
         <div className="text-center mt-6 mb-4">
           <p className="text-sm text-gray-500">
-            Powered by <span className="font-semibold text-[#f54502]">Accezz</span>
+            Powered by <span className="font-semibold text-brand">Accezz</span>
           </p>
         </div>
       </div>

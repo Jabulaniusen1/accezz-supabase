@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
 
     const { data: order } = await supabaseAdmin
       .from('orders')
-      .select('id, status, total_amount, currency, buyer_email, meta')
+      .select('id, status, amount_due, currency, buyer_email, meta')
       .eq('id', orderId)
       .maybeSingle();
 
@@ -34,7 +34,8 @@ export async function POST(req: NextRequest) {
     if (order.status !== 'pending') {
       return NextResponse.json({ error: 'This order has already been processed' }, { status: 409 });
     }
-    const amount = Number(order.total_amount);
+    // Tickets plus the service charge and Paystack fee
+    const amount = Number(order.amount_due);
     if (!(amount > 0)) {
       return NextResponse.json({ error: 'This order does not need payment' }, { status: 400 });
     }

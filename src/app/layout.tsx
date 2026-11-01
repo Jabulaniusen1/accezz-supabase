@@ -1,10 +1,16 @@
 import type { Metadata } from 'next';
+import { Urbanist } from 'next/font/google';
 import './globals.css';
 import QueryProvider from '@/providers/QueryProvider';
 import Script from 'next/script';
 import { Analytics } from "@vercel/analytics/next"
 import WhatsAppFloatingButton from '@/components/WhatsAppFloatingButton';
-import { TicketPurchaseProvider } from '@/contexts/TicketPurchaseContext';
+
+const urbanist = Urbanist({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-urbanist',
+});
 
 export const metadata: Metadata = {
   title: {
@@ -108,7 +114,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={urbanist.variable}>
       <head>
         {/* Google Tag Manager */}
         <Script id="google-tag-manager" strategy="afterInteractive">
@@ -153,10 +159,8 @@ export default function RootLayout({
         
         <Analytics />
         <QueryProvider>
-          <TicketPurchaseProvider>
-            {children}
-            <WhatsAppFloatingButton />
-          </TicketPurchaseProvider>
+          {children}
+          <WhatsAppFloatingButton />
         </QueryProvider>
       </body>
     </html>

@@ -49,6 +49,10 @@ export const saveTicketPurchaseState = (state: {
   gender?: string;
   totalPrice?: number;
   orderId?: string;
+  /** Server pricing of orderId, and the choices it was created for */
+  orderCharges?: { subtotal: number; serviceFee: number; processingFee: number; total: number };
+  orderSignature?: string;
+  useSameDetails?: boolean;
   additionalTicketHolders?: Array<{ name: string; email: string; phone?: string; gender?: string }>;
 }) => {
   try {

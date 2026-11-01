@@ -1,6 +1,6 @@
 'use client';
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Megaphone, Zap } from '@/icon-adapters/lucide-react';
 import { type Event, type Ticket } from '@/types/event';
@@ -8,13 +8,11 @@ import Toast from '../../../components/ui/Toast';
 import Header from '@/app/components/layout/Header';
 import Footer from '@/app/components/layout/Footer';
 import { fetchEventBySlug } from '@/utils/eventUtils';
-import { getTicketPurchaseState } from '@/utils/localStorage';
 import { supabase } from '@/utils/supabaseClient';
 import { EventPageSkeleton } from './components/EventPageSkeleton';
 
 const EventHeroSection = React.lazy(() => import('./components/EventHeroSection').then(module => ({ default: module.EventHeroSection })));
 const EventTicketsSection = React.lazy(() => import('./components/TicketCard').then(module => ({ default: module.EventTicketsSection })));
-const TicketTypeForm = React.lazy(() => import('../../components/TicketTypeForm'));
 const OtherEventsYouMayLike = React.lazy(() => import('@/app/components/home/OtherEventsYouMayLike'));
 
 type ToastType = {
@@ -50,10 +48,10 @@ function PromotionBanner({ eventId }: { eventId: string }) {
       : `₦${settings.commission_value.toLocaleString()}`;
 
   return (
-    <div className="mx-auto lg:px-32 px-4 sm:px-6 py-4">
-      <div className="flex items-center gap-4 bg-gradient-to-r from-[#fff5f2] to-[#fff9f7] dark:from-[#2a1208] dark:to-[#1f0d05] border border-[#f54502]/20 rounded-xl px-5 py-4">
-        <div className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-xl bg-[#f54502]/10">
-          <Megaphone className="w-5 h-5 text-[#f54502]" />
+    <div className="page-container py-4">
+      <div className="flex items-center gap-4 bg-gradient-to-r from-[#fff5f2] to-[#fff9f7] dark:from-[#2a1208] dark:to-[#1f0d05] border border-brand/20 rounded-xl px-5 py-4">
+        <div className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-xl bg-brand/10">
+          <Megaphone className="w-5 h-5 text-brand" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-gray-900 dark:text-white">
@@ -65,7 +63,7 @@ function PromotionBanner({ eventId }: { eventId: string }) {
         </div>
         <Link
           href="/dashboard"
-          className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 bg-[#f54502] hover:bg-[#d63a02] text-white text-xs font-semibold rounded-lg transition"
+          className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 bg-brand hover:bg-brand-dark text-white text-xs font-semibold rounded-lg transition"
         >
           <Zap className="w-3.5 h-3.5" />
           Get link
@@ -80,25 +78,11 @@ const EventDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [toast, setToast] = useState<ToastType>(null);
-  const [showTicketForm, setShowTicketForm] = useState(false);
-  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [event, setEvent] = useState<Event | null>(null);
 
-  const selectedTicketOption = useMemo(() => {
-    if (!selectedTicket) return undefined;
-
-    return {
-      id: selectedTicket.id,
-      name: selectedTicket.name,
-      price: selectedTicket.price,
-      quantity: selectedTicket.quantity,
-      sold: selectedTicket.sold,
-      details: selectedTicket.details || ''
-    };
-  }, [selectedTicket]);
-  
   // Refs and routing
   const ticketsSectionRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
   const eventSlug = params?.id;
@@ -118,16 +102,10 @@ const EventDetail = () => {
     }).catch(() => {});
   }, [searchParams]);
 
-  // Memoized handlers
+  // Buying happens on the checkout page, with the chosen ticket preselected
   const handleGetTicket = useCallback((ticket: Ticket) => {
-    setSelectedTicket(ticket);
-    setShowTicketForm(true);
-  }, []);
-
-  const closeTicketForm = useCallback(() => {
-    setShowTicketForm(false);
-    setSelectedTicket(null);
-  }, []);
+    router.push(`/${eventSlug}/checkout?ticket=${encodeURIComponent(ticket.id)}`);
+  }, [router, eventSlug]);
 
 
 
@@ -192,17 +170,6 @@ const EventDetail = () => {
     };
   }, [eventSlug, showToast]);
 
-  // Restore modal state on mount if saved
-  useEffect(() => {
-    try {
-      const savedState = getTicketPurchaseState();
-      if (savedState && savedState.eventSlug === eventSlug && savedState.showTicketForm) {
-        setShowTicketForm(true);
-      }
-    } catch (error) {
-      console.error('Error restoring modal state:', error);
-    }
-  }, [eventSlug]);
 
   if (loading) {
     return (
@@ -246,13 +213,13 @@ const EventDetail = () => {
         <React.Suspense fallback={<EventPageSkeleton />}>
           {/* Breadcrumb Navigation */}
           <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-            <div className="mx-auto lg:px-32 px-4 sm:px-6 py-4">
+            <div className="page-container py-4">
               <nav className="flex items-center space-x-2 text-sm">
-                <Link href="/" className="text-gray-500 hover:text-[#f54502] transition-colors">Home</Link>
+                <Link href="/" className="text-gray-500 hover:text-brand transition-colors">Home</Link>
                 <span className="text-gray-400">/</span>
-                <Link href="/#events" className="text-gray-500 hover:text-[#f54502] transition-colors">Events</Link>
+                <Link href="/#events" className="text-gray-500 hover:text-brand transition-colors">Events</Link>
                 <span className="text-gray-400">/</span>
-                <span className="text-[#f54502] font-medium truncate">{event.title}</span>
+                <span className="text-brand font-medium truncate">{event.title}</span>
               </nav>
             </div>
           </div>
@@ -276,26 +243,6 @@ const EventDetail = () => {
         </React.Suspense>
 
 
-        {/* Ticket Form Modal */}
-        {showTicketForm && (
-          <React.Suspense fallback={null}>
-            <TicketTypeForm
-              closeForm={closeTicketForm}
-              tickets={event?.ticketType.map(ticket => ({
-                id: ticket.id,
-                name: ticket.name,
-                price: ticket.price,
-                quantity: ticket.quantity,
-                sold: ticket.sold,
-                details: ticket.details || ''
-              })) || []}
-              eventSlug={eventSlug as string}
-              setToast={showToast}
-              isOpen={showTicketForm}
-              initialTicket={selectedTicketOption}
-            />
-          </React.Suspense>
-        )}
       </div>
 
       <Footer />

@@ -73,7 +73,7 @@ export default function VirtualEventPlatform({ event }: VirtualEventPlatformProp
         <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-8 p-6 md:p-10">
           {/* QR Code Section */}
           <div className="flex flex-col items-center justify-center w-full md:w-auto">
-            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md p-4 border border-gray-100 dark:border-gray-800 transition-all hover:scale-105 duration-200">
+            <div className="bg-white dark:bg-gray-900 rounded-card shadow-md p-4 border border-gray-100 dark:border-gray-800 transition-all hover:scale-105 duration-200">
               <Image
                 src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(platform.link)}&format=png&qzone=2&color=6366F1`}
                 alt="QR Code"

@@ -516,7 +516,7 @@ export default function EventForm({ eventId, onClose, onSuccess }: EventFormProp
             </div>
 
             {!isUndisclosed && myLocations && myLocations.length > 0 && (
-              <div className="rounded border border-dashed border-gray-300 dark:border-gray-600 p-3 text-sm bg-gray-50 dark:bg-gray-900/40">
+              <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-600 p-3 text-sm bg-gray-50 dark:bg-gray-900/40">
                 <label className="block text-sm font-semibold mb-2">Link to saved location (optional)</label>
                 <select
                   value={selectedLocationId ?? ''}
@@ -538,7 +538,7 @@ export default function EventForm({ eventId, onClose, onSuccess }: EventFormProp
                     <button
                       type="button"
                       onClick={applySelectedLocationDetails}
-                      className="mt-2 inline-flex items-center px-3 py-1 rounded-full bg-[#f54502]/10 text-[#f54502] hover:bg-[#f54502]/20"
+                      className="mt-2 inline-flex items-center px-3 py-1 rounded-full bg-brand/10 text-brand hover:bg-brand/20"
                     >
                       Use this address in event location
                     </button>
@@ -582,7 +582,7 @@ export default function EventForm({ eventId, onClose, onSuccess }: EventFormProp
                             }
                           }}
                           placeholder="Type an event type and press Enter"
-                          className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#f54502]"
+                          className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand"
                         />
                         {filteredEventTypeSuggestions.length > 0 && eventTypeInput.trim() && (
                           <div className="absolute z-40 mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg"> 

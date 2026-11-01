@@ -247,7 +247,7 @@ const SuccessContent = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center max-w-md px-6 space-y-4">
-          <div className="animate-pulse rounded-full h-12 w-12 bg-[#f54502]/20 mx-auto"></div>
+          <div className="animate-pulse rounded-full h-12 w-12 bg-brand/20 mx-auto"></div>
           <h1 className="text-xl font-semibold text-gray-900">Your payment is still being confirmed</h1>
           <p className="text-gray-700">
             Your bank hasn&apos;t confirmed the payment yet. This can take a few minutes for bank transfers and USSD.
@@ -255,7 +255,7 @@ const SuccessContent = () => {
           </p>
           <a
             href={`/invoice/${pendingOrderId}`}
-            className="inline-block py-3 px-6 rounded-xl bg-[#f54502] hover:bg-[#d63a02] text-white font-semibold"
+            className="inline-block py-3 px-6 rounded-xl bg-brand hover:bg-brand-dark text-white font-semibold"
           >
             View order status
           </a>
@@ -268,7 +268,7 @@ const SuccessContent = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center max-w-sm px-6">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#f54502] mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand mx-auto"></div>
           <p className="mt-4 text-gray-700">{statusMessage}</p>
           <p className="mt-2 text-sm text-gray-500">Please wait. You do not need to refresh this page.</p>
         </div>
@@ -300,7 +300,7 @@ const SuccessContent = () => {
       )}
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#f54502] mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand mx-auto"></div>
           <p className="mt-4 text-gray-600">Redirecting to invoice...</p>
         </div>
       </div>

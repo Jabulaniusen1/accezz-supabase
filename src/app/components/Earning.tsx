@@ -11,6 +11,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { Event as AppEvent, Ticket as AppTicket } from '@/types/event';
 // Withdrawals moved to its own tab
 import { fetchAllRows } from '@/utils/fetchAllRows';
+import { platformFee, platformFeeRate } from '@/utils/fees';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -275,6 +276,12 @@ const Earnings = () => {
     return events.reduce((sum, e) => sum + (e.id ? (eventAggregates[e.id]?.revenue || 0) : 0), 0);
   }, [events, eventAggregates]);
 
+  // Accezz fee: 10% of each event's ticket sales, 7% once the event reaches ₦1m
+  const totalFees = useMemo(() => {
+    if (!events || !eventAggregates) return 0;
+    return events.reduce((sum, e) => sum + (e.id ? platformFee(eventAggregates[e.id]?.revenue || 0) : 0), 0);
+  }, [events, eventAggregates]);
+
   // Process chart data with memoization
   const chartData = useMemo(() => {
     const monthlyRevenue = new Array(12).fill(0);
@@ -357,7 +364,7 @@ const Earnings = () => {
           </p>
           <button
             onClick={() => router.push('/create-event')}
-            className="px-6 py-3 bg-[#f54502] hover:bg-[#f54502]/90 text-white rounded-lg transition-colors duration-200 font-medium"
+            className="px-6 py-3 bg-brand hover:bg-brand/90 text-white rounded-lg transition-colors duration-200 font-medium"
           >
             Create Your First Event
           </button>
@@ -375,14 +382,6 @@ const Earnings = () => {
         </div>
       )}
 
-      {/* Header Section */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Earnings Dashboard</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-2">
-          Track your revenue and ticket sales performance
-        </p>
-      </div>
-
       {/* Loading State */}
       {isLoading ? (
         <div className="space-y-8">
@@ -398,10 +397,10 @@ const Earnings = () => {
           {/* Earnings Overview */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {/* Total Earnings Card */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border-l-4 border-[#f54502]">
+            <div className="bg-white dark:bg-gray-800 rounded-card shadow-md p-6 border-l-4 border-brand">
               <div className="flex items-center space-x-4">
-                <div className="p-3 rounded-full bg-[#f54502]/10 dark:bg-[#f54502]/20">
-                  <FaMoneyBillWave className="text-[#f54502] dark:text-[#f54502] text-2xl" />
+                <div className="p-3 rounded-full bg-brand/10 dark:bg-brand/20">
+                  <FaMoneyBillWave className="text-brand dark:text-brand text-2xl" />
                 </div>
                 <div>
                   <h3 className="text-gray-500 dark:text-gray-400 text-sm font-medium">Total Revenue</h3>
@@ -410,11 +409,14 @@ const Earnings = () => {
                   </p>
                 </div>
               </div>
-              {/* Removed platform fee description */}
+              <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                You earn <span className="font-semibold text-gray-800 dark:text-white">{formatCurrency(totalEarnings - totalFees)}</span> after
+                the Accezz fee of {formatCurrency(totalFees)}
+              </p>
             </div>
 
             {/* Events Count Card */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border-l-4 border-green-500">
+            <div className="bg-white dark:bg-gray-800 rounded-card shadow-md p-6 border-l-4 border-green-500">
               <div className="flex items-center space-x-4">
                 <div className="p-3 rounded-full bg-green-100 dark:bg-green-900/30">
                   <FaChartLine className="text-green-600 dark:text-green-400 text-2xl" />
@@ -432,10 +434,10 @@ const Earnings = () => {
             </div>
 
             {/* Average Earnings Card */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border-l-4 border-[#f54502]">
+            <div className="bg-white dark:bg-gray-800 rounded-card shadow-md p-6 border-l-4 border-brand">
               <div className="flex items-center space-x-4">
-                <div className="p-3 rounded-full bg-[#f54502]/10 dark:bg-[#f54502]/20">
-                  <FaChartBar className="text-[#f54502] dark:text-[#f54502] text-2xl" />
+                <div className="p-3 rounded-full bg-brand/10 dark:bg-brand/20">
+                  <FaChartBar className="text-brand dark:text-brand text-2xl" />
                 </div>
                 <div>
                   <h3 className="text-gray-500 dark:text-gray-400 text-sm font-medium">Avg. per Event</h3>
@@ -451,13 +453,13 @@ const Earnings = () => {
           {/* Charts Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {/* Revenue Chart */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-card shadow-md p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
                   Monthly Revenue
                 </h3>
-                <div className="p-2 rounded-full bg-[#f54502]/10 dark:bg-[#f54502]/20">
-                  <FaChartBar className="text-[#f54502] dark:text-[#f54502]" />
+                <div className="p-2 rounded-full bg-brand/10 dark:bg-brand/20">
+                  <FaChartBar className="text-brand dark:text-brand" />
                 </div>
               </div>
               <div className="h-64">
@@ -488,7 +490,7 @@ const Earnings = () => {
             </div>
 
             {/* Attendees Chart */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-card shadow-md p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
                   Monthly Attendees
@@ -514,7 +516,7 @@ const Earnings = () => {
           </div>
 
           {/* Ticket Sales Breakdown */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-8">
+          <div className="bg-white dark:bg-gray-800 rounded-card shadow-md overflow-hidden mb-8">
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
                 Event Earnings Breakdown
@@ -538,6 +540,12 @@ const Earnings = () => {
                       Revenue
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Accezz Fee
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      You Earn
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Tickets Sold
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
@@ -549,6 +557,7 @@ const Earnings = () => {
                   {events?.map((event, index) => {
                     if (!event.id) return null;
                     const eventRevenue = eventAggregates?.[event.id]?.revenue || 0;
+                    const eventFee = platformFee(eventRevenue);
                     const ticketsSold = eventAggregates?.[event.id]?.sold || 0;
                     const eventDate = event.createdAt ? new Date(event.createdAt).toLocaleDateString() : "N/A";
 
@@ -573,11 +582,20 @@ const Earnings = () => {
                             {formatCurrency(eventRevenue)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            {formatCurrency(eventFee)}
+                            {eventRevenue > 0 && (
+                              <span className="ml-1 text-xs">({Math.round(platformFeeRate(eventRevenue) * 100)}%)</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                            {formatCurrency(eventRevenue - eventFee)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                             {ticketsSold}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <button
-                              className="text-[#f54502] dark:text-[#f54502] hover:text-[#f54502]/80 dark:hover:text-[#f54502]/80"
+                              className="text-brand dark:text-brand hover:text-brand/80 dark:hover:text-brand/80"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 toggleExpandRow(index);
@@ -589,8 +607,8 @@ const Earnings = () => {
                         </tr>
                         {expandedRows.includes(index) && (
                           <tr className="bg-gray-50 dark:bg-gray-700">
-                            <td colSpan={5} className="px-6 py-4">
-                              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4">
+                            <td colSpan={7} className="px-6 py-4">
+                              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-4">
                                 <h4 className="text-md font-medium mb-3 text-gray-800 dark:text-white">
                                   Ticket Sales Breakdown
                                 </h4>
@@ -651,7 +669,7 @@ const Earnings = () => {
           </div>
 
           {/* Ticket Distribution Pie Chart */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-8">
+          <div className="bg-white dark:bg-gray-800 rounded-card shadow-md p-6 mb-8">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
@@ -661,8 +679,8 @@ const Earnings = () => {
                   Visual breakdown of ticket sales by type
                 </p>
               </div>
-              <div className="p-2 rounded-full bg-[#f54502]/10 dark:bg-[#f54502]/20">
-                <FaChartPie className="text-[#f54502] dark:text-[#f54502]" />
+              <div className="p-2 rounded-full bg-brand/10 dark:bg-brand/20">
+                <FaChartPie className="text-brand dark:text-brand" />
               </div>
             </div>
 

@@ -63,7 +63,7 @@ Please confirm availability and provide payment instructions. Thank you! 🙏`;
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-2xl max-w-md w-full mx-2 sm:mx-4 overflow-hidden max-h-[95vh] overflow-y-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-card shadow-2xl max-w-md w-full mx-2 sm:mx-4 overflow-hidden max-h-[95vh] overflow-y-auto">
         {/* Header */}
         <div className="bg-gradient-to-r from-green-500 to-green-600 p-4 sm:p-6 text-white">
           <div className="flex items-center justify-between">
@@ -196,7 +196,7 @@ Please confirm availability and provide payment instructions. Thank you! 🙏`;
           <div>
             <button
               onClick={handleWebsitePurchase}
-              className="w-full bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 text-white font-semibold py-2 px-4 rounded transition-all duration-300 text-sm"
+              className="w-full bg-gradient-to-r from-brand to-brand-dark hover:from-brand/90 hover:to-brand-dark/90 text-white font-semibold py-2 px-4 rounded transition-all duration-300 text-sm"
             >
               Buy on Website
             </button>

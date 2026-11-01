@@ -10,7 +10,7 @@ export const FormContainer: React.FC<FormContainerProps> = ({
   className = '' 
 }) => {
   return (
-    <div className={`bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-xl p-6 sm:p-8 animate-slideUp ${className}`}>
+    <div className={`bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-card shadow-xl p-6 sm:p-8 animate-slideUp ${className}`}>
       {children}
     </div>
   );

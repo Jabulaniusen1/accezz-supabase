@@ -21,7 +21,7 @@ const PaymentFailedModal = ({ onClose, onTryAgain }: PaymentFailedModalProps) =>
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
-          className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-8 relative"
+          className="bg-white dark:bg-gray-800 rounded-card shadow-2xl max-w-md w-full p-8 relative"
         >
           {/* Close button */}
           <button
@@ -71,7 +71,7 @@ const PaymentFailedModal = ({ onClose, onTryAgain }: PaymentFailedModalProps) =>
           <div className="space-y-3">
             <button
               onClick={handleContactSupport}
-              className="w-full bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white font-medium py-3 px-6 rounded-lg hover:from-[#f54502]/90 hover:to-[#d63a02]/90 transition-all duration-200 hover:shadow-lg"
+              className="w-full bg-gradient-to-r from-brand to-brand-dark text-white font-medium py-3 px-6 rounded-lg hover:from-brand/90 hover:to-brand-dark/90 transition-all duration-200 hover:shadow-lg"
             >
               Contact Support
             </button>
@@ -90,7 +90,7 @@ const PaymentFailedModal = ({ onClose, onTryAgain }: PaymentFailedModalProps) =>
           <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
             <p className="text-xs text-center text-gray-500 dark:text-gray-400">
               Need immediate help? Email us at{' '}
-              <a href="mailto:accezzlive@gmail.com" className="text-[#f54502] hover:underline">
+              <a href="mailto:accezzlive@gmail.com" className="text-brand hover:underline">
                 accezzlive@gmail.com
               </a>
             </p>

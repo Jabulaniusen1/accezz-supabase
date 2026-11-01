@@ -125,7 +125,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
         className={`
           w-full p-3 border border-gray-300 dark:border-gray-600 
           bg-white dark:bg-gray-700 text-gray-900 dark:text-white 
-          focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] 
+          focus:ring-2 focus:ring-brand focus:border-brand 
           transition-colors disabled:opacity-50 disabled:cursor-not-allowed
           flex items-center justify-between text-left
         `}
@@ -162,7 +162,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
               }}
               onKeyDown={handleKeyDown}
               placeholder={searchPlaceholder}
-              className="w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] outline-none"
+              className="w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand focus:border-brand outline-none"
               style={{ borderRadius: '5px' }}
             />
           </div>
@@ -183,7 +183,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                   className={`
                     w-full text-left px-3 py-2 text-sm transition-colors
                     ${value === option.value
-                      ? 'bg-[#f54502] text-white'
+                      ? 'bg-brand text-white'
                       : highlightedIndex === index
                       ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
                       : 'text-gray-900 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'

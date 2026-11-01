@@ -36,7 +36,7 @@ const ConfirmationModal = ({
           initial={{ scale: 0.95 }}
           animate={{ scale: 1 }}
           exit={{ scale: 0.95 }}
-          className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl rounded-xl"
+          className="bg-white dark:bg-gray-800 rounded-card p-6 max-w-md w-full mx-4 shadow-xl "
         >
           <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
             {itemName}

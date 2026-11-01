@@ -197,7 +197,7 @@ const AdminEvents = () => {
     return (
       <div className="space-y-6">
         {/* Header Skeleton */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-card shadow-lg p-6">
           <Skeleton height="32px" width="200px" className="mb-4" />
           <div className="flex flex-col sm:flex-row gap-4">
             <Skeleton height="40px" className="flex-1" />
@@ -224,7 +224,7 @@ const AdminEvents = () => {
       )}
 
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-card shadow-lg p-6">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Events Management</h2>
         
         {/* Search */}
@@ -235,7 +235,7 @@ const AdminEvents = () => {
             placeholder="Search events by title, creator email, or name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f54502] focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand focus:border-transparent"
           />
         </div>
 
@@ -245,7 +245,7 @@ const AdminEvents = () => {
       </div>
 
       {/* Events Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-card shadow-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-gray-700">
@@ -321,7 +321,7 @@ const AdminEvents = () => {
                           setSelectedEvent({ id: event.id, title: event.title });
                           setTicketTypesModalOpen(true);
                         }}
-                        className="text-[#f54502] hover:text-[#d63a02] dark:text-[#f54502] dark:hover:text-[#d63a02] transition-colors"
+                        className="text-brand hover:text-brand-dark dark:text-brand dark:hover:text-brand-dark transition-colors"
                         title="View Ticket Types & Revenue"
                       >
                         <FiBarChart2 />

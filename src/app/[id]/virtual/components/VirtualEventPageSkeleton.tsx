@@ -7,7 +7,7 @@ export const VirtualEventPageSkeleton = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Breadcrumb Skeleton */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="mx-auto px-4 sm:px-6 lg:px-32 py-4">
+        <div className="page-container py-4">
           <div className="flex items-center space-x-2">
             <Skeleton height="16px" width="60px" />
             <Skeleton height="16px" width="16px" className="rounded-full" />
@@ -20,7 +20,7 @@ export const VirtualEventPageSkeleton = () => {
 
       {/* Hero Section Skeleton */}
       <div className="bg-white dark:bg-gray-800 py-12">
-        <div className="mx-auto px-4 sm:px-6 lg:px-32">
+        <div className="page-container">
           <div className="flex flex-col lg:flex-row gap-6 sm:gap-8">
             {/* Text Content Skeleton */}
             <div className="w-full lg:flex-1 space-y-6">
@@ -57,7 +57,7 @@ export const VirtualEventPageSkeleton = () => {
 
       {/* Event Details Section Skeleton */}
       <div className="bg-white dark:bg-gray-900 py-10">
-        <div className="mx-auto px-4 sm:px-6 lg:px-32">
+        <div className="page-container">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
             <div className="lg:col-span-2 space-y-6">
               <Skeleton height="32px" width="200px" />
@@ -68,7 +68,7 @@ export const VirtualEventPageSkeleton = () => {
               </div>
             </div>
             <div className="space-y-6">
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 space-y-4">
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-card p-6 space-y-4">
                 <Skeleton height="24px" width="150px" />
                 <Skeleton height="48px" width="100%" />
                 <Skeleton height="48px" width="100%" />
@@ -80,7 +80,7 @@ export const VirtualEventPageSkeleton = () => {
 
       {/* Tickets Section Skeleton */}
       <div className="bg-gray-50 dark:bg-gray-900 py-12">
-        <div className="mx-auto px-4 sm:px-6 lg:px-32">
+        <div className="page-container">
           <div className="mb-8">
             <Skeleton height="36px" width="300px" className="mb-2" />
             <Skeleton height="20px" width="200px" />
@@ -88,7 +88,7 @@ export const VirtualEventPageSkeleton = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+              <div key={i} className="bg-white dark:bg-gray-800 rounded-card p-6 shadow-lg border border-gray-200 dark:border-gray-700">
                 <div className="space-y-4">
                   <Skeleton height="24px" width="70%" />
                   <Skeleton height="32px" width="50%" />

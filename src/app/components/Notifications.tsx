@@ -140,7 +140,7 @@ const Notifications = () => {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
         <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand"></div>
           <p className="text-gray-500 mt-4">Loading notifications...</p>
         </div>
       </div>
@@ -148,8 +148,8 @@ const Notifications = () => {
   }
 
   return (
-    <div className="min-h-screen w-full mx-auto px-3 py-6 lg:px-6 lg:py-8 lg:max-w-6xl">
-      <div className="rounded-3xl bg-white/60 dark:bg-gray-900/60 shadow-xl border border-gray-100/80 dark:border-gray-800/60 backdrop-blur-sm overflow-hidden">
+    <div className="w-full">
+      <div className="rounded-card bg-white/60 dark:bg-gray-900/60 shadow-xl border border-gray-100/80 dark:border-gray-800/60 backdrop-blur-sm overflow-hidden">
         {showToast && (
           <Toast
             type={toastProps.type}
@@ -158,20 +158,10 @@ const Notifications = () => {
           />
         )}
 
-        <div className="px-4 py-5 sm:px-8 sm:py-7 border-b border-gray-200/80 dark:border-gray-800/80">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <p className="text-xs uppercase tracking-[0.4em] text-orange-500/80 font-semibold">
-                Inbox
-              </p>
-              <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-white">
-                Notifications
-              </h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                Stay on top of ticket purchases, bookings, and withdrawals.
-              </p>
-            </div>
-            <span className="inline-flex items-center self-start sm:self-auto rounded-full bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300 px-3 py-1 text-xs font-medium border border-blue-100/70 dark:border-blue-800/60">
+        <div className="px-4 py-4 sm:px-6 border-b border-gray-200/80 dark:border-gray-800/80">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-semibold text-gray-900 dark:text-white">Inbox</p>
+            <span className="inline-flex items-center rounded-full bg-brand/10 text-brand px-3 py-1 text-xs font-medium border border-brand/20">
               {notifications.length} {notifications.length === 1 ? 'message' : 'messages'}
             </span>
           </div>
@@ -179,8 +169,8 @@ const Notifications = () => {
 
         {notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center px-6 py-20 text-center">
-            <div className="w-16 h-16 bg-blue-50 dark:bg-gray-800 rounded-2xl flex items-center justify-center mb-5 shadow-inner">
-              <IoMailUnreadOutline className="w-8 h-8 text-blue-500 dark:text-blue-300" />
+            <div className="w-16 h-16 bg-brand/10 dark:bg-gray-800 rounded-2xl flex items-center justify-center mb-5 shadow-inner">
+              <IoMailUnreadOutline className="w-8 h-8 text-brand" />
             </div>
             <p className="text-gray-700 dark:text-gray-300 text-lg font-medium">
               You&apos;re all caught up
@@ -204,12 +194,12 @@ const Notifications = () => {
                 ? 'bg-gray-50/60 dark:bg-gray-900/40' 
                 : 'bg-white dark:bg-gray-900/80'}`}
           >
-            <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-transparent via-transparent to-blue-50/40 dark:to-blue-900/10"></div>
+            <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-transparent via-transparent to-brand/5 dark:to-brand/10"></div>
             <div className="flex flex-col sm:flex-row sm:items-start gap-5 relative">
               <span className={`flex-shrink-0 inline-flex h-10 w-10 items-center justify-center rounded-2xl text-sm font-semibold shadow-sm border
                 ${notification.isRead 
                   ? 'bg-green-50 text-green-600 border-green-100 dark:bg-green-900/30 dark:text-green-300 dark:border-green-900' 
-                  : 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-900'}`}>
+                  : 'bg-brand/10 text-brand border-brand/20 dark:bg-brand/20 dark:border-brand/30'}`}>
                 {notification.title.split(' ').map(word => word.charAt(0)).join('').slice(0,2).toUpperCase()}
               </span>
 
@@ -218,7 +208,7 @@ const Notifications = () => {
                   <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
             {notification.title}
             {!notification.isRead && (
-              <span className="ml-2 text-xs font-medium uppercase tracking-wide text-blue-500 dark:text-blue-300">
+              <span className="ml-2 text-xs font-medium uppercase tracking-wide text-brand">
                 New
               </span>
             )}
@@ -236,7 +226,7 @@ const Notifications = () => {
                   {!notification.isRead && (
                     <button
                       onClick={() => markAsRead(notification.id)}
-                      className="inline-flex items-center gap-2 rounded-full bg-blue-600 text-white px-4 py-2 text-xs sm:text-sm font-medium shadow-sm hover:bg-blue-500 transition-colors"
+                      className="inline-flex items-center gap-2 rounded-full bg-brand text-white px-4 py-2 text-xs sm:text-sm font-medium shadow-sm hover:bg-brand-dark transition-colors"
                     >
                       <IoMailUnreadOutline className="w-4 h-4" />
                       Mark as read

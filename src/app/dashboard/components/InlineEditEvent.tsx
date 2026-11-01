@@ -260,7 +260,7 @@ export default function InlineEditEvent({ eventId, onBack }: Props) {
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-gray-100 dark:border-gray-800"
+              className="bg-white dark:bg-gray-900 rounded-card p-6 max-w-sm w-full shadow-2xl border border-gray-100 dark:border-gray-800"
             >
               <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4">
                 <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -280,7 +280,7 @@ export default function InlineEditEvent({ eventId, onBack }: Props) {
                 </button>
                 <button
                   onClick={onBack}
-                  className="flex-1 py-2.5 rounded-lg bg-[#f54502] hover:bg-[#d63a02] text-white text-sm font-medium transition"
+                  className="flex-1 py-2.5 rounded-lg bg-brand hover:bg-brand-dark text-white text-sm font-medium transition"
                 >
                   Back to Events
                 </button>
@@ -358,7 +358,7 @@ export default function InlineEditEvent({ eventId, onBack }: Props) {
                   type="button"
                   onClick={() => setAffiliateEnabled(v => !v)}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full flex-shrink-0 transition-colors ${
-                    affiliateEnabled ? 'bg-[#f54502]' : 'bg-gray-200 dark:bg-gray-600'
+                    affiliateEnabled ? 'bg-brand' : 'bg-gray-200 dark:bg-gray-600'
                   }`}
                 >
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -373,7 +373,7 @@ export default function InlineEditEvent({ eventId, onBack }: Props) {
                     <select
                       value={commissionType}
                       onChange={e => setCommissionType(e.target.value as 'percentage' | 'fixed')}
-                      className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f54502] focus:border-transparent"
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand focus:border-transparent"
                     >
                       <option value="percentage">Percentage (%)</option>
                       <option value="fixed">Fixed amount</option>
@@ -389,7 +389,7 @@ export default function InlineEditEvent({ eventId, onBack }: Props) {
                       max={commissionType === 'percentage' ? 100 : undefined}
                       value={commissionValue}
                       onChange={e => setCommissionValue(Number(e.target.value))}
-                      className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f54502] focus:border-transparent"
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand focus:border-transparent"
                       placeholder={commissionType === 'percentage' ? 'e.g. 10' : 'e.g. 500'}
                     />
                   </div>
@@ -419,7 +419,7 @@ export default function InlineEditEvent({ eventId, onBack }: Props) {
                 type="submit"
                 form="inline-edit-event-form"
                 disabled={isLoading}
-                className="px-6 py-2.5 rounded-lg bg-[#f54502] hover:bg-[#d63a02] text-white text-sm font-semibold transition disabled:opacity-60 flex items-center gap-2"
+                className="px-6 py-2.5 rounded-lg bg-brand hover:bg-brand-dark text-white text-sm font-semibold transition disabled:opacity-60 flex items-center gap-2"
               >
                 {isLoading ? (
                   <>

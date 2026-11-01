@@ -282,7 +282,7 @@ export default function CreateEventPage() {
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => router.push('/dashboard')}
-                className="flex items-center space-x-1 text-gray-600 dark:text-gray-300 hover:text-[#f54502] dark:hover:text-[#f54502] transition-colors duration-200 p-2 rounded-[5px] hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="flex items-center space-x-1 text-gray-600 dark:text-gray-300 hover:text-brand dark:hover:text-brand transition-colors duration-200 p-2 rounded-[5px] hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <BiArrowBack className="text-lg" />
                 <span className="hidden sm:inline">Back</span>
@@ -306,7 +306,7 @@ export default function CreateEventPage() {
             <div className="flex items-center justify-between relative">
               <div className="absolute top-1/2 left-0 right-0 h-1 bg-gray-200 dark:bg-gray-700 -translate-y-1/2 z-0" />
               <div 
-                className="absolute top-1/2 left-0 h-1 bg-gradient-to-r from-[#f54502] to-[#d63a02] -translate-y-1/2 z-10 transition-all duration-500"
+                className="absolute top-1/2 left-0 h-1 bg-gradient-to-r from-brand to-brand-dark -translate-y-1/2 z-10 transition-all duration-500"
                 style={{ width: `${((step - 1) / (STEPS.length - 1)) * 100}%` }}
               />
               
@@ -318,9 +318,9 @@ export default function CreateEventPage() {
                   >
                     <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-[5px] flex items-center justify-center transition-all duration-300 text-sm sm:text-base
                       ${step === stepItem.number 
-                        ? 'bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white shadow-lg ring-4 ring-[#f54502]/20 dark:ring-[#f54502]/20 transform scale-110'
+                        ? 'bg-gradient-to-r from-brand to-brand-dark text-white shadow-lg ring-4 ring-brand/20 dark:ring-brand/20 transform scale-110'
                         : step > stepItem.number
-                        ? 'bg-[#f54502] text-white shadow-md'
+                        ? 'bg-brand text-white shadow-md'
                         : 'bg-white dark:bg-gray-700 text-gray-400 border-2 border-gray-300 dark:border-gray-600'}`}
                     >
                       {step > stepItem.number ? (

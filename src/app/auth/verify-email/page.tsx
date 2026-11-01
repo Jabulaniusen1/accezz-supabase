@@ -28,7 +28,7 @@ function VerifyEmail() {
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Animated Background Shapes */}
-        <div className="absolute top-20 left-10 w-32 h-32 bg-[#f54502]/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-20 left-10 w-32 h-32 bg-brand/10 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute top-40 right-20 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }}></div>
         <div className="absolute bottom-20 left-1/4 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
         <div className="absolute bottom-40 right-10 w-28 h-28 bg-orange-500/10 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '3s' }}></div>
@@ -43,7 +43,7 @@ function VerifyEmail() {
         <div className="w-full max-w-md">
           {/* Header Section */}
           <div className="text-center mb-4 sm:mb-8">
-            <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-[#f54502] rounded-[5px] mb-3 sm:mb-4 shadow-lg">
+            <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-brand rounded-[5px] mb-3 sm:mb-4 shadow-lg">
               <FaEnvelope className="w-5 h-5 sm:w-8 sm:h-8 text-white" />
             </div>
             <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-1 sm:mb-2">Check Your Email</h1>
@@ -55,13 +55,13 @@ function VerifyEmail() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="bg-white/80 backdrop-blur-xl rounded-[5px] sm:rounded-3xl shadow-2xl border border-white/20 p-4 sm:p-8 animate-fadeIn text-center"
+            className="bg-white/80 backdrop-blur-xl rounded-card shadow-2xl border border-white/20 p-4 sm:p-8 animate-fadeIn text-center"
           >
             <div className="space-y-4 sm:space-y-6">
-              <div className="p-3 sm:p-4 bg-gradient-to-r from-[#f54502]/10 to-[#f54502]/5 border border-[#f54502]/20 rounded-[5px]">
+              <div className="p-3 sm:p-4 bg-gradient-to-r from-brand/10 to-brand/5 border border-brand/20 rounded-[5px]">
                 <p className="text-gray-700 text-xs sm:text-sm">
                   We&apos;ve sent a verification link to{' '}
-                  <span className="font-semibold text-[#f54502]">{email}</span>.
+                  <span className="font-semibold text-brand">{email}</span>.
                   Please click the link in the email to verify your account.
                 </p>
               </div>
@@ -71,7 +71,7 @@ function VerifyEmail() {
                   Didn&apos;t receive the email? Check your spam folder or{' '}
                   <button 
                     onClick={resendOtp}
-                    className="text-[#f54502] underline hover:text-[#f54502]/80 font-medium"
+                    className="text-brand underline hover:text-brand/80 font-medium"
                   >
                     resend verification
                   </button>
@@ -79,7 +79,7 @@ function VerifyEmail() {
 
                 <Link
                   href="/auth/login"
-                  className="inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 text-white rounded-[5px] font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl text-sm sm:text-base"
+                  className="inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-brand to-brand-dark hover:from-brand/90 hover:to-brand-dark/90 text-white rounded-[5px] font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl text-sm sm:text-base"
                 >
                   Go to Login <FaArrowRight />
                 </Link>

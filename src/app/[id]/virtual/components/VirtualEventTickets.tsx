@@ -66,14 +66,14 @@ export default function VirtualEventTickets({
         </div>
       )}
 
-      <div className="py-10 px-2 sm:px-6 bg-gradient-to-br from-[#f54502]/5 via-[#f54502]/10 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 min-h-[80vh]">
-        <h2 className="text-3xl sm:text-4xl font-extrabold text-center mb-12 text-transparent bg-clip-text bg-gradient-to-r from-[#f54502] via-[#f54502] to-[#f54502] tracking-tight flex items-center justify-center gap-3">
-          <FaTicketAlt className="inline-block text-[#f54502] text-3xl" />
+      <div className="py-10 px-2 sm:px-6 bg-gradient-to-br from-brand/5 via-brand/10 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 min-h-[80vh]">
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-center mb-12 text-transparent bg-clip-text bg-gradient-to-r from-brand via-brand to-brand tracking-tight flex items-center justify-center gap-3">
+          <FaTicketAlt className="inline-block text-brand text-3xl" />
           VIRTUAL ACCESS PASSES
         </h2>
         <div className="flex flex-wrap gap-8 justify-center">
           {event.ticketType.map((ticket, index) => {
-            const remaining = parseInt(ticket.quantity);
+            const remaining = Math.max(0, (parseInt(ticket.quantity) || 0) - (parseInt(ticket.sold) || 0));
             const soldOut = remaining <= 0;
             return (
               <motion.div
@@ -94,9 +94,9 @@ export default function VirtualEventTickets({
                 }}
               >
                 {/* Ticket stub left */}
-                <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-8 h-16 bg-gradient-to-b from-[#f54502] to-[#d63a02] rounded-l-3xl shadow-lg z-10 border-4 border-white dark:border-gray-900"></div>
+                <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-8 h-16 bg-gradient-to-b from-brand to-brand-dark rounded-l-3xl shadow-lg z-10 border-4 border-white dark:border-gray-900"></div>
                 {/* Ticket stub right */}
-                <div className="absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-16 bg-gradient-to-b from-[#f54502] to-[#d63a02] rounded-r-3xl shadow-lg z-10 border-4 border-white dark:border-gray-900"></div>
+                <div className="absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-16 bg-gradient-to-b from-brand to-brand-dark rounded-r-3xl shadow-lg z-10 border-4 border-white dark:border-gray-900"></div>
                 {/* Perforation */}
                 <div className="absolute left-8 right-8 top-1/2 -translate-y-1/2 border-t-2 border-dashed border-gray-200 dark:border-gray-700"></div>
                 {/* Sold out overlay */}
@@ -119,11 +119,11 @@ export default function VirtualEventTickets({
                 {/* Main ticket content */}
                 <div className="flex-1 flex flex-col justify-between px-8 pt-8 pb-6">
                   <div>
-                    <h3 className="text-2xl font-bold bg-gradient-to-r from-[#f54502] to-[#d63a02] bg-clip-text text-transparent mb-2">
+                    <h3 className="text-2xl font-bold bg-gradient-to-r from-brand to-brand-dark bg-clip-text text-transparent mb-2">
                       {ticket.name}
                     </h3>
                     <div className="flex items-center gap-2 mb-4">
-                      <span className="text-3xl font-extrabold text-[#f54502] dark:text-[#f54502]">
+                      <span className="text-3xl font-extrabold text-brand dark:text-brand">
                         {formatPrice(Number(ticket.price), event.currency || '₦')}
                       </span>
                       {Number(ticket.price) === 0 && (
@@ -196,7 +196,7 @@ export default function VirtualEventTickets({
           })}
         </div>
         <div className="max-w-xl mx-auto mt-14">
-          <div className="flex items-center gap-3 bg-gradient-to-r from-[#f54502]/10 to-[#f54502]/20 dark:from-gray-800 dark:to-gray-700 p-5 rounded-2xl border border-gray-200 dark:border-gray-600 shadow">
+          <div className="flex items-center gap-3 bg-gradient-to-r from-brand/10 to-brand/20 dark:from-gray-800 dark:to-gray-700 p-5 rounded-2xl border border-gray-200 dark:border-gray-600 shadow">
             <FaLock className="text-gray-500 dark:text-gray-400 text-xl" />
             <span className="text-sm text-gray-700 dark:text-gray-200">
               Secure checkout process. Your virtual access details will be emailed immediately after purchase.

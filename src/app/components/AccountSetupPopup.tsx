@@ -356,11 +356,11 @@ const AccountSetupPopup = ({
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-2 sm:p-4 backdrop-blur-sm">
-      <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-lg w-full max-w-md max-h-[95vh] overflow-y-auto border border-gray-200 dark:border-gray-600" style={{ borderRadius: '5px' }}>
+      <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-card shadow-lg w-full max-w-md max-h-[95vh] overflow-y-auto border border-gray-200 dark:border-gray-600">
         {/* Header with close button */}
         <div className="flex justify-between items-start gap-3 mb-4">
           <div className="flex-1">
-            <h2 className="text-lg font-bold bg-gradient-to-r from-[#f54502] to-[#d63a02] bg-clip-text text-transparent">
+            <h2 className="text-lg font-bold bg-gradient-to-r from-brand to-brand-dark bg-clip-text text-transparent">
               Set Up Your Bank Account
             </h2>
             <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">
@@ -442,7 +442,7 @@ const AccountSetupPopup = ({
                   type="text"
                   value={accountData.account_number}
                   onChange={handleAccountNumberChange}
-                  className="flex-1 p-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502] transition-all duration-200 text-sm"
+                  className="flex-1 p-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition-all duration-200 text-sm"
                   style={{ borderRadius: '5px' }}
                   required
                   maxLength={10}
@@ -508,7 +508,7 @@ const AccountSetupPopup = ({
                 loading
                   ? 'bg-blue-500'
                   : accountVerified
-                    ? 'bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90'
+                    ? 'bg-gradient-to-r from-brand to-brand-dark hover:from-brand/90 hover:to-brand-dark/90'
                     : 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
               }`}
               style={{ borderRadius: '5px' }}

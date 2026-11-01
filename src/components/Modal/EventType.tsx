@@ -33,7 +33,7 @@ const EventTypeModal = ({ isOpen, onClose, onSelectType }: EventTypeModalProps) 
         </Transition.Child>
 
         <div className="fixed inset-0 flex items-center justify-center p-2 sm:p-4">
-          <Dialog.Panel className="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-4 sm:p-6 md:p-8 text-left align-middle shadow-lg transition-all">
+          <Dialog.Panel className="relative w-full max-w-md transform overflow-hidden rounded-card bg-white dark:bg-gray-800 p-4 sm:p-6 md:p-8 text-left align-middle shadow-lg transition-all">
         <button
           onClick={onClose}
           className="absolute top-2 right-2 sm:top-4 sm:right-4 p-1.5 sm:p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
@@ -51,9 +51,9 @@ const EventTypeModal = ({ isOpen, onClose, onSelectType }: EventTypeModalProps) 
           <button
             onClick={() => handleSelection(true)}
             disabled={loading !== null}
-            className="w-full px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white rounded-lg 
+            className="w-full px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base bg-gradient-to-r from-brand to-brand-dark text-white rounded-lg 
               hover:bg-opacity-90 hover:backdrop-blur-md transition-all hover:shadow-lg 
-              hover:shadow-[#f54502]/50 hover:bg-gradient-to-r from-[#f54502] to-[#d63a02] disabled:opacity-50"
+              hover:shadow-brand/50 hover:bg-gradient-to-r from-brand to-brand-dark disabled:opacity-50"
               style={{ borderRadius: '5px' }}
           >
             {loading === 'paid' ? (

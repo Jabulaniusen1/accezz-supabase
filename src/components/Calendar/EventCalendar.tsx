@@ -1,220 +1,223 @@
 "use client";
 
-import React, { useState } from 'react';
-import { FaCalendarAlt, FaExternalLinkAlt, FaTimes } from '@/icon-adapters/react-icons/fa';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import { Calendar } from 'react-calendar';
-import { useRouter } from 'next/navigation';
-import 'react-calendar/dist/Calendar.css';
+import { FaCalendarAlt } from '@/icon-adapters/react-icons/fa';
+import { ChevronLeft, ChevronRight, Clock, MapPin, X } from '@/icon-adapters/lucide-react';
 import { useAllEvents } from '@/hooks/useEvents';
-import { formatEventDate } from '@/utils/formatDateTime';
+import { formatEventTime } from '@/utils/formatDateTime';
+import ImageWithFallback from '@/components/ui/ImageWithFallback';
 
 interface CalendarEvent {
   id: string;
   slug: string;
   title: string;
-  date: string;
+  start: Date;
   time: string;
-  venue?: string;
-  location?: string;
-  description: string;
+  place: string;
+  image: string | null;
 }
 
+const MAX_DOTS = 3;
+
+/** Local calendar day, so events land on the day the viewer sees */
+const dayKey = (date: Date) => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+const monthKey = (date: Date) => `${date.getFullYear()}-${date.getMonth()}`;
+const startOfToday = () => {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+};
+
 const EventCalendar = () => {
-  const router = useRouter();
   const { data: allEvents, isLoading } = useAllEvents();
-  const [showCalendar, setShowCalendar] = useState(false);
-  const [selectedEvents, setSelectedEvents] = useState<CalendarEvent[]>([]);
-  const [showModal, setShowModal] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [activeMonth, setActiveMonth] = useState(() => new Date());
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Map events to the format needed by the calendar
-  const events: CalendarEvent[] = (allEvents || []).map(event => ({
-    id: event.id || '',
-    slug: event.slug || event.id || '',
-    title: event.title,
-    date: event.date || event.startTime || '',
-    time: event.time || '',
-    venue: event.venue || event.location || '',
-    location: event.location || event.venue || '',
-    description: event.description || ''
-  }));
+  const events = useMemo<CalendarEvent[]>(() =>
+    (allEvents || [])
+      .map((event) => ({
+        id: event.id || '',
+        slug: event.slug || event.id || '',
+        title: event.title,
+        start: new Date(event.date || event.startTime || ''),
+        time: event.time || '',
+        place: event.isVirtual ? 'Online event' : event.venue || event.location || '',
+        image: typeof event.image === 'string' ? event.image : null,
+      }))
+      .filter((event) => !Number.isNaN(event.start.getTime()))
+      .sort((a, b) => a.start.getTime() - b.start.getTime()),
+  [allEvents]);
 
-  const hasEvents = (date: Date) => {
-    return events.some(event => {
-      const eventDate = new Date(event.date);
-      return (
-        eventDate.getDate() === date.getDate() &&
-        eventDate.getMonth() === date.getMonth() &&
-        eventDate.getFullYear() === date.getFullYear()
-      );
+  const eventsByDay = useMemo(() => {
+    const map = new Map<string, CalendarEvent[]>();
+    events.forEach((event) => {
+      const key = dayKey(event.start);
+      map.set(key, [...(map.get(key) || []), event]);
     });
-  };
+    return map;
+  }, [events]);
 
-  // Function to get events for a specific date
-  const getEventsForDate = (date: Date) => {
-    return events.filter(event => {
-      const eventDate = new Date(event.date);
-      return (
-        eventDate.getDate() === date.getDate() &&
-        eventDate.getMonth() === date.getMonth() &&
-        eventDate.getFullYear() === date.getFullYear()
-      );
-    });
-  };
+  // Close on Escape or a click outside the calendar
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    const onClick = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('mousedown', onClick);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('mousedown', onClick);
+    };
+  }, [open]);
 
-  const handleDayClick = (value: Date) => {
-    const dateEvents = getEventsForDate(value);
-    if (dateEvents.length > 0) {
-      setSelectedEvents(dateEvents);
-      setShowModal(true);
-    }
-  };
-
-  const EventModal = () => {
-    return (
-      <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4">
-        <div className="bg-white dark:bg-gray-800 rounded-[5px] shadow-xl p-4 sm:p-6 max-w-md w-full max-h-[80vh] overflow-y-auto border border-gray-200 dark:border-gray-700">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-              Events on {selectedEvents[0]?.date ? formatEventDate(selectedEvents[0].date) : ''}
-            </h3>
-            <button
-              onClick={() => setShowModal(false)}
-              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors p-1 rounded-[5px] hover:bg-gray-100 dark:hover:bg-gray-700"
-            >
-              <FaTimes className="w-5 h-5" />
-            </button>
-          </div>
-  
-          <div className="space-y-4">
-            {selectedEvents.map((event) => (
-              <div 
-                key={event.id}
-                className="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-0 last:pb-0"
-              >
-                <h4 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                  {event.title}
-                </h4>
-                <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-                  <p className="flex items-center gap-2">
-                    <span className="text-[#f54502]">🕒</span>
-                    <span>{formatEventDate(event.date)} {event.time && `at ${event.time}`}</span>
-                  </p>
-                  {(event.venue || event.location) && (
-                    <p className="flex items-center gap-2">
-                      <span className="text-[#f54502]">📍</span>
-                      <span>{event.venue || event.location}</span>
-                    </p>
-                  )}
-                  {event.description && (
-                    <p className="line-clamp-3 text-gray-500 dark:text-gray-400 mt-2">{event.description}</p>
-                  )}
-                </div>
-                <button
-                  onClick={() => {
-                    router.push(`/${event.slug}`);
-                    setShowModal(false);
-                  }}
-                  className="mt-4 flex items-center text-[#f54502] hover:text-[#d63a02] font-medium transition-colors text-sm sm:text-base"
-                >
-                  View Details 
-                  <FaExternalLinkAlt className="ml-2 text-sm" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  };
-  
+  const today = startOfToday();
+  const monthEvents = events.filter((event) => monthKey(event.start) === monthKey(activeMonth));
+  const listedEvents = selectedDate ? eventsByDay.get(dayKey(selectedDate)) || [] : monthEvents;
+  const listTitle = selectedDate
+    ? selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+    : `${activeMonth.toLocaleDateString('en-US', { month: 'long' })} events${monthEvents.length ? ` (${monthEvents.length})` : ''}`;
 
   return (
-    <>
-      <style jsx global>{`
-        .react-calendar {
-          @apply bg-white dark:bg-gray-800 border-none shadow-sm;
-          border-radius: 5px;
-        }
-        .react-calendar__navigation button {
-          @apply text-gray-700 dark:text-gray-300;
-          border-radius: 5px;
-          min-width: 44px;
-        }
-        .react-calendar__navigation button:enabled:hover,
-        .react-calendar__navigation button:enabled:focus {
-          @apply bg-[#f54502]/10 dark:bg-[#f54502]/20;
-        }
-        .react-calendar__tile {
-          @apply text-gray-900 dark:text-gray-200;
-          border-radius: 5px;
-        }
-        .react-calendar__tile:enabled:hover {
-          @apply bg-[#f54502]/10 dark:bg-[#f54502]/20;
-        }
-        .react-calendar__tile--active {
-          @apply bg-[#f54502] text-white;
-        }
-        .react-calendar__tile--now {
-          @apply bg-[#f54502]/20 dark:bg-[#f54502]/30;
-        }
-        .has-events {
-          @apply relative;
-        }
-        .has-events::after {
-          content: '';
-          position: absolute;
-          bottom: 2px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 4px;
-          height: 4px;
-          background-color: #f54502;
-          border-radius: 50%;
-        }
-      `}</style>
-      <div className="fixed right-4 top-24 z-50 text-black dark:text-white">
-        {/* Calendar Icon Button */}
-        <button
-          onClick={() => setShowCalendar(!showCalendar)}
-          className="bg-[#f54502] hover:bg-[#d63a02] text-white p-3 rounded-[5px] shadow-lg transform transition-all duration-200 hover:scale-105 flex items-center justify-center"
-          aria-label="Toggle Calendar"
-        >
-          <FaCalendarAlt className="text-lg sm:text-xl" />
-        </button>
+    <div ref={containerRef} className="fixed bottom-[100px] right-6 z-50">
+      {/* Stacked above the WhatsApp button (bottom-6 right-6, 60px) */}
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="bg-brand hover:bg-brand-dark text-white h-[60px] w-[60px] rounded-full shadow-lg transition-all duration-200 hover:scale-105 flex items-center justify-center"
+        aria-label={open ? 'Close event calendar' : 'Open event calendar'}
+        aria-expanded={open}
+      >
+        <FaCalendarAlt className="text-lg sm:text-xl" />
+      </button>
 
-        {/* Calendar Popup */}
-        {showCalendar && (
-          <div className="absolute right-0 mt-2 bg-white dark:bg-gray-800 rounded-[5px] shadow-xl p-3 sm:p-4 border border-gray-200 dark:border-gray-700">
+      {open && (
+        <div
+          role="dialog"
+          aria-label="Event calendar"
+          className="absolute right-0 bottom-full mb-3 w-[min(22rem,calc(100vw-3rem))] max-h-[calc(100dvh-190px)] overflow-y-auto overscroll-contain rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-2xl animate-fade-in"
+        >
+          {/* Header */}
+          <div className="flex items-start justify-between gap-3 px-4 pt-4">
+            <div>
+              <p className="text-base font-bold text-gray-900 dark:text-white">Event calendar</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Dates with a dot have events</p>
+            </div>
+            <button
+              onClick={() => setOpen(false)}
+              className="-mr-1 rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-200 transition-colors"
+              aria-label="Close event calendar"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+
+          {/* Calendar */}
+          <div className="relative px-3 pt-2">
             <Calendar
-              tileClassName={({ date }) => 
-                hasEvents(date) ? 'has-events font-semibold' : ''
-              }
-              tileContent={({ date }) => {
-                const dateEvents = getEventsForDate(date);
-                return dateEvents.length > 0 ? (
-                  <div className="relative">
-                    <span className="absolute -top-1 -right-1 bg-[#f54502] text-white rounded-[5px] w-5 h-5 text-xs flex items-center justify-center font-bold">
-                      {dateEvents.length}
-                    </span>
-                  </div>
-                ) : null;
+              className="accezz-calendar"
+              value={selectedDate}
+              onClickDay={(date) => setSelectedDate((current) => (current && dayKey(current) === dayKey(date) ? null : date))}
+              onActiveStartDateChange={({ activeStartDate, view }) => {
+                if (activeStartDate && view === 'month') {
+                  setActiveMonth(activeStartDate);
+                  setSelectedDate(null);
+                }
               }}
-              onClickDay={handleDayClick}
+              minDetail="year"
+              // Only upcoming events are loaded, so earlier months would always be empty
+              minDate={today}
+              showFixedNumberOfWeeks
+              prev2Label={null}
+              next2Label={null}
+              prevLabel={<ChevronLeft className="h-4 w-4" />}
+              nextLabel={<ChevronRight className="h-4 w-4" />}
+              tileClassName={({ date, view }) => {
+                if (view !== 'month') return null;
+                const classes = [];
+                if (eventsByDay.has(dayKey(date))) classes.push('has-events');
+                if (date < today) classes.push('is-past');
+                return classes;
+              }}
+              tileContent={({ date, view }) => {
+                if (view !== 'month') return null;
+                const count = eventsByDay.get(dayKey(date))?.length || 0;
+                return (
+                  <span className="cal-dots" aria-hidden={count === 0}>
+                    {Array.from({ length: Math.min(count, MAX_DOTS) }, (_, i) => <span key={i} className="cal-dot" />)}
+                    {count > 0 && <span className="sr-only">{count} event{count > 1 ? 's' : ''}</span>}
+                  </span>
+                );
+              }}
             />
-            
+
             {isLoading && (
-              <div className="absolute inset-0 bg-white/80 dark:bg-gray-800/80 flex items-center justify-center rounded-[5px]">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#f54502]"></div>
+              <div className="absolute inset-0 flex items-center justify-center bg-white/70 dark:bg-gray-900/70">
+                <div className="h-7 w-7 animate-spin rounded-full border-2 border-brand/30 border-t-brand" />
               </div>
             )}
           </div>
-        )}
 
-        {/* Event Details Modal */}
-        {showModal && <EventModal />}
-      </div>
-    </>
+          {/* Events for the selected day, or the month. Fixed height: the popup
+              grows upwards, so a changing height would move the grid under the cursor. */}
+          <div className="flex h-56 flex-col border-t border-gray-100 dark:border-gray-800 px-4 pt-3">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <p className="text-sm font-semibold text-gray-900 dark:text-white">{listTitle}</p>
+              {selectedDate && (
+                <button
+                  onClick={() => setSelectedDate(null)}
+                  className="text-xs font-medium text-brand hover:text-brand-dark"
+                >
+                  Show month
+                </button>
+              )}
+            </div>
+
+            {listedEvents.length === 0 ? (
+              <p className="flex flex-1 items-center justify-center pb-6 text-sm text-gray-500 dark:text-gray-400">
+                {selectedDate ? 'No events on this day.' : 'No events this month.'}
+              </p>
+            ) : (
+              <ul className="-mx-1 flex-1 space-y-1 overflow-y-auto overscroll-contain px-1 pb-3">
+                {listedEvents.map((event) => (
+                  <li key={event.id}>
+                    <Link
+                      href={`/${event.slug}`}
+                      onClick={() => setOpen(false)}
+                      className="-mx-2 flex items-center gap-3 rounded-xl p-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                    >
+                      <div className="relative h-11 w-11 flex-shrink-0 overflow-hidden rounded-lg">
+                        <ImageWithFallback src={event.image} alt={event.title} fill sizes="44px" className="object-cover" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-gray-900 dark:text-white">{event.title}</p>
+                        <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-gray-500 dark:text-gray-400">
+                          <Clock className="h-3 w-3 flex-shrink-0" />
+                          {!selectedDate && `${event.start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · `}
+                          {formatEventTime(event.time) || 'Time TBA'}
+                          {event.place && (
+                            <>
+                              <MapPin className="ml-1 h-3 w-3 flex-shrink-0" />
+                              <span className="truncate">{event.place}</span>
+                            </>
+                          )}
+                        </p>
+                      </div>
+                      <ChevronRight className="h-4 w-4 flex-shrink-0 text-gray-300 dark:text-gray-600" />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 
-export default EventCalendar; 
+export default EventCalendar;

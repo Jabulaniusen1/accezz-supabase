@@ -75,16 +75,10 @@ export const LocationManager: React.FC = () => {
   return (
     <div className="grid gap-4">
       {toast && <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Your Locations</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Create and manage event centers. Keep details updated so guests can discover and book seamlessly.
-          </p>
-        </div>
+      <div className="flex justify-end">
         <button
           onClick={openCreateModal}
-          className="inline-flex items-center px-5 py-2.5 rounded-full bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white text-sm font-semibold shadow-lg hover:shadow-xl transition"
+          className="inline-flex items-center px-5 py-2.5 rounded-full bg-gradient-to-r from-brand to-brand-dark text-white text-sm font-semibold shadow-lg hover:shadow-xl transition"
         >
           + Add new location
         </button>
@@ -105,7 +99,7 @@ export const LocationManager: React.FC = () => {
 
       {!isLoading && !isError && locations.length === 0 && (
         <div className="rounded-3xl border border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-6 py-16 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#f54502]/10 text-[#f54502]">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand/10 text-brand">
             <MapPin className="h-6 w-6" />
           </div>
           <h2 className="mt-6 text-xl font-semibold text-gray-900 dark:text-white">No locations yet</h2>
@@ -114,7 +108,7 @@ export const LocationManager: React.FC = () => {
           </p>
           <button
             onClick={openCreateModal}
-            className="mt-6 inline-flex items-center px-4 py-2 rounded-full border border-[#f54502] text-[#f54502] text-sm font-semibold hover:bg-[#f54502]/10"
+            className="mt-6 inline-flex items-center px-4 py-2 rounded-full border border-brand text-brand text-sm font-semibold hover:bg-brand/10"
           >
             Add a location
           </button>
@@ -129,7 +123,7 @@ export const LocationManager: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.25 }}
-              className="relative overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm"
+              className="relative overflow-hidden rounded-card border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm"
             >
               <div className="relative h-48 w-full overflow-hidden">
                 <Image
@@ -155,7 +149,7 @@ export const LocationManager: React.FC = () => {
                   </div>
                   <button
                     onClick={() => openEditModal(location)}
-                    className="text-xs font-semibold text-[#f54502] hover:text-[#d63a02]"
+                    className="text-xs font-semibold text-brand hover:text-brand-dark"
                   >
                     Edit
                   </button>
@@ -175,7 +169,7 @@ export const LocationManager: React.FC = () => {
                 </div>
 
                 <div className="flex items-center justify-between pt-2">
-                <span className="text-sm font-semibold text-[#f54502]">
+                <span className="text-sm font-semibold text-brand">
                   {location.bookingPrice?.trim()
                     ? location.bookingPrice.trim().startsWith('₦')
                       ? location.bookingPrice.trim()

@@ -231,21 +231,16 @@ export default function CustomerTickets() {
         />
       )}
 
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          My tickets
-        </h1>
-        {totalTickets > 0 && (
-          <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
-            You have {totalTickets} {totalTickets === 1 ? "ticket" : "tickets"}, for {totalEvents} {totalEvents === 1 ? "event" : "events"}
-          </p>
-        )}
-      </div>
+      {/* Section title comes from the dashboard's SectionHeader */}
+      {totalTickets > 0 && (
+        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          {totalTickets} {totalTickets === 1 ? "ticket" : "tickets"} for {totalEvents} {totalEvents === 1 ? "event" : "events"}
+        </p>
+      )}
 
       {/* Tickets List */}
       {tickets.length === 0 ? (
-        <div className="flex flex-col items-center justify-center min-h-[60vh] p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
+        <div className="flex flex-col items-center justify-center min-h-[60vh] p-6 bg-white dark:bg-gray-800 rounded-card shadow-sm">
           <BsTicketPerforated className="w-16 h-16 text-gray-400 mb-4" />
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
             No tickets yet
@@ -255,7 +250,7 @@ export default function CustomerTickets() {
           </p>
           <button
             onClick={() => router.push("/events")}
-            className="px-6 py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            className="px-6 py-3 bg-gradient-to-r from-brand to-brand-dark text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
           >
             Browse Events
           </button>

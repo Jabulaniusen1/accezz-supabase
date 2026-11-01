@@ -1,7 +1,6 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
 import { FaMapMarkerAlt, FaCalendarAlt, FaTimes, FaBookmark, FaRegBookmark } from '@/icon-adapters/react-icons/fa';
-import Image from 'next/image';
 import { useAllEvents } from '@/hooks/useEvents';
 import { useSavedEvents } from '@/hooks/useSavedEvents';
 import { formatPrice } from '@/utils/formatPrice';
@@ -10,6 +9,7 @@ import Toast from '@/components/ui/Toast';
 import type { Event as AppEvent, Ticket as AppTicket } from '@/types/event';
 import Link from 'next/link';
 import { toLocalDateInput, todayLocalDateInput } from '@/utils/dateInputs';
+import ImageWithFallback from '@/components/ui/ImageWithFallback';
 
 const ENDED_BUFFER_MS = 24 * 60 * 60 * 1000; // 24 hours after start
 
@@ -158,6 +158,7 @@ const AllEvents = () => {
     if (!scrollContainer || !scrollContent) return;
 
     let scrollPosition = 0;
+    let rafId = 0;
     const scrollSpeed = 0.5; 
     const scrollDirection = 1; 
     
@@ -180,16 +181,17 @@ const AllEvents = () => {
         }
       }
       
-      requestAnimationFrame(autoScroll);
+      rafId = requestAnimationFrame(autoScroll);
     };
 
-    // Start auto-scroll after a short delay
+    // Start auto-scroll after a short delay (only scrolls when the cards overflow)
     const timeoutId = setTimeout(() => {
-      requestAnimationFrame(autoScroll);
+      rafId = requestAnimationFrame(autoScroll);
     }, 1000);
 
     return () => {
       clearTimeout(timeoutId);
+      cancelAnimationFrame(rafId);
     };
   }, [currentEvents]);
 
@@ -235,18 +237,18 @@ const AllEvents = () => {
           display: none;
         }
       `}</style>
-      <section className="min-h-screen bg-white dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8" id="events">
+      <section className="min-h-screen bg-white dark:bg-gray-900 py-12" id="events">
         {toast && <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />}
       
       {/* Find an event in section */}
-      <div className="max-w-7xl mx-auto mb-12">
+      <div className="page-container mb-12">
         <div className="flex items-center gap-4 mb-6">
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Find an event in:</h2>
           <div className="relative">
             <select 
               value={filters.location || 'Nigeria'}
               onChange={(e) => setFilters({ ...filters, location: e.target.value })}
-              className="appearance-none bg-white border-2 border-gray-300 px-4 py-2 pr-8 text-gray-900 font-medium focus:outline-none focus:border-[#f54502] hover:border-gray-400 "
+              className="appearance-none bg-white border-2 border-gray-300 px-4 py-2 pr-8 text-gray-900 font-medium focus:outline-none focus:border-brand hover:border-gray-400 "
               style={{
                 borderRadius: '10px'
               }}
@@ -280,17 +282,17 @@ const AllEvents = () => {
               return (
               <div
                 key={event.id || index}
-                className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer min-w-[220px] max-w-[220px] sm:min-w-[300px] sm:max-w-[300px] ${
+                className={`bg-white dark:bg-gray-800 rounded-card shadow-lg border-2 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer w-[220px] flex-shrink-0 sm:w-[300px] ${
                   ended
                     ? 'border-gray-200 dark:border-gray-700 opacity-75'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-[#f54502]/50'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-brand/50'
                 }`}
                 onClick={() => event.slug && handleViewDetails(event.slug)}
               >
                 {/* Event Image with Overlay */}
                 <div className="relative h-[280px] sm:h-[450px] w-full">
-                  <Image
-                    src={typeof event.image === 'string' ? event.image : '/placeholder.jpg'}
+                  <ImageWithFallback
+                src={typeof event.image === 'string' ? event.image : null}
                     alt={event.title}
                     fill
                     className={`object-cover${ended ? ' grayscale-[30%]' : ''}`}
@@ -304,7 +306,7 @@ const AllEvents = () => {
                           Event has ended
                         </span>
                       ) : (
-                        <span className="bg-[#f54502] text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 rounded-full">
+                        <span className="bg-brand text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 rounded-full">
                           FEATURED EVENT
                         </span>
                       )}
@@ -315,7 +317,7 @@ const AllEvents = () => {
                       title={event.id && savedIds.has(event.id) ? 'Remove bookmark' : 'Save event'}
                     >
                       {event.id && savedIds.has(event.id)
-                        ? <FaBookmark className="text-[#f54502]" size={14} />
+                        ? <FaBookmark className="text-brand" size={14} />
                         : <FaRegBookmark className="text-white" size={14} />}
                     </button>
                     
@@ -340,7 +342,7 @@ const AllEvents = () => {
       </div>
 
       {/* Header section */}
-      <div className="max-w-7xl mx-auto mb-8">
+      <div className="page-container mb-8">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div>
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">All Events</h1>
@@ -352,7 +354,7 @@ const AllEvents = () => {
               onClick={openLocationModal}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors border-2 ${
                 filters.location 
-                  ? 'bg-[#f54502] text-white border-[#f54502]' 
+                  ? 'bg-brand text-white border-brand' 
                   : 'bg-white text-black border-gray-300 hover:bg-gray-50 hover:border-gray-400'
               }`}
               style={{
@@ -361,7 +363,7 @@ const AllEvents = () => {
             >
               {filters.location || 'Location'}
               {getActiveFilterCount() > 0 && filters.location && (
-                <span className="bg-white text-[#f54502] rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+                <span className="bg-white text-brand rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
                   {getActiveFilterCount()}
                 </span>
               )}
@@ -373,7 +375,7 @@ const AllEvents = () => {
               onClick={openPriceModal}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors border-2 ${
                 filters.minPrice || filters.maxPrice
-                  ? 'bg-[#f54502] text-white border-[#f54502]' 
+                  ? 'bg-brand text-white border-brand' 
                   : 'bg-white text-black border-gray-300 hover:bg-gray-50 hover:border-gray-400'
               }`}
               style={{
@@ -382,7 +384,7 @@ const AllEvents = () => {
             >
               Price
               {getActiveFilterCount() > 0 && (filters.minPrice || filters.maxPrice) && (
-                <span className="bg-white text-[#f54502] rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+                <span className="bg-white text-brand rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
                   {getActiveFilterCount()}
                 </span>
               )}
@@ -394,7 +396,7 @@ const AllEvents = () => {
               onClick={openDateModal}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors border-2 ${
                 filters.startDate || filters.endDate
-                  ? 'bg-[#f54502] text-white border-[#f54502]' 
+                  ? 'bg-brand text-white border-brand' 
                   : 'bg-white text-black border-gray-300 hover:bg-gray-50 hover:border-gray-400'
               }`}
               style={{
@@ -403,7 +405,7 @@ const AllEvents = () => {
             >
               Date
               {getActiveFilterCount() > 0 && (filters.startDate || filters.endDate) && (
-                <span className="bg-white text-[#f54502] rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+                <span className="bg-white text-brand rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
                   {getActiveFilterCount()}
                 </span>
               )}
@@ -428,11 +430,11 @@ const AllEvents = () => {
 
 
       {/* Events grid */}
-      <div className="max-w-7xl mx-auto">
+      <div className="page-container">
         {isLoading ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {[...Array(6)].map((_, index) => (
-              <div key={index} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 animate-pulse">
+              <div key={index} className="bg-white dark:bg-gray-800 rounded-card shadow-sm border border-gray-200 dark:border-gray-700 p-6 animate-pulse">
                 <div className="flex gap-4">
                   <div className="flex-1 space-y-3">
                     <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
@@ -452,19 +454,18 @@ const AllEvents = () => {
               return (
               <div
                 key={event.id}
-                className={`bg-white dark:bg-gray-800 border-2 p-5 transition-all duration-200 cursor-pointer overflow-hidden ${
+                className={`rounded-card bg-white dark:bg-gray-800 border-2 p-5 transition-all duration-200 cursor-pointer overflow-hidden ${
                   ended
                     ? 'border-gray-200 dark:border-gray-700 opacity-80'
-                    : 'border-gray-200 dark:border-gray-700 hover:shadow-md hover:border-[#f54502]/50'
+                    : 'border-gray-200 dark:border-gray-700 hover:shadow-md hover:border-brand/50'
                 }`}
                 onClick={() => event.slug && handleViewDetails(event.slug)}
-                style={{ borderRadius: '10px' }}
               >
                 <div className="flex gap-4 h-full min-w-0">
                   <div className="flex-1 flex flex-col justify-between min-w-0">
                     <div>
                       <div className="flex items-start gap-2 mb-3">
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-white hover:text-[#f54502] transition-colors line-clamp-2 min-w-0 flex-1">{event.title}</h3>
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white hover:text-brand transition-colors line-clamp-2 min-w-0 flex-1">{event.title}</h3>
                         {ended && (
                           <span className="flex-shrink-0 text-[10px] font-medium text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-600 px-2 py-0.5 rounded-full whitespace-nowrap mt-1">
                             Event has ended
@@ -492,7 +493,7 @@ const AllEvents = () => {
                     </div>
                     
                     <div className="flex items-center justify-between">
-                      <div className="text-[#f54502] font-semibold text-lg">
+                      <div className="text-brand font-semibold text-lg">
                         {(() => {
                           const prices = (event.ticketType || [])
                             .map(ticket => parseFloat(ticket.price ?? '0'))
@@ -505,24 +506,23 @@ const AllEvents = () => {
                       </div>
                       <button
                         onClick={(e) => { e.stopPropagation(); if (event.id) toggleSaved(event.id); }}
-                        className="p-2 rounded-full hover:bg-[#f54502]/10 transition-colors"
+                        className="p-2 rounded-full hover:bg-brand/10 transition-colors"
                         title={event.id && savedIds.has(event.id) ? 'Remove bookmark' : 'Save event'}
                       >
                         {event.id && savedIds.has(event.id)
-                          ? <FaBookmark className="text-[#f54502]" size={15} />
-                          : <FaRegBookmark className="text-gray-400 hover:text-[#f54502]" size={15} />}
+                          ? <FaBookmark className="text-brand" size={15} />
+                          : <FaRegBookmark className="text-gray-400 hover:text-brand" size={15} />}
                       </button>
                     </div>
                   </div>
                   
                   <div className="flex-shrink-0 w-36 h-36 object-cover">
-                    <Image
-                      src={typeof event.image === 'string' ? event.image : '/placeholder.jpg'}
+                    <ImageWithFallback
+                src={typeof event.image === 'string' ? event.image : null}
                       alt={event.title}
                       width={96}
                       height={96}
-                      className={`w-full h-full object-cover${ended ? ' grayscale-[20%]' : ''}`}
-                      style={{ borderRadius: '5px' }}
+                      className={`w-full h-full rounded-2xl object-cover${ended ? ' grayscale-[20%]' : ''}`}
                     />
                   </div>
                 </div>
@@ -545,10 +545,10 @@ const AllEvents = () => {
           </div>
         )}
       </div>
-      <div className="max-w-7xl mx-auto mt-8 flex justify-center">
+      <div className="page-container mt-8 flex justify-center">
         <Link
           href="/events"
-          className="inline-flex items-center gap-2 rounded-full border-2 border-[#f54502] px-5 py-2 text-sm font-semibold text-[#f54502] transition hover:bg-[#f54502] hover:text-white"
+          className="inline-flex items-center gap-2 rounded-full border-2 border-brand px-5 py-2 text-sm font-semibold text-brand transition hover:bg-brand hover:text-white"
         >
           View all events
         </Link>
@@ -579,7 +579,7 @@ const AllEvents = () => {
                       onClick={() => setTempFilters({ ...tempFilters, location: country === 'All Countries' ? '' : country })}
                       className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                         tempFilters.location === country || (country === 'All Countries' && !tempFilters.location)
-                          ? 'border-[#f54502] bg-[#f54502]'
+                          ? 'border-brand bg-brand'
                           : 'border-gray-300'
                       }`}
                       style={{
@@ -606,7 +606,7 @@ const AllEvents = () => {
                 </button>
                 <button
                   onClick={applyLocationFilter}
-                  className="flex-1 py-2 px-4 bg-[#f54502] text-white rounded-lg font-medium"
+                  className="flex-1 py-2 px-4 bg-brand text-white rounded-lg font-medium"
                   style={{
                     borderRadius: '10px'
                   }}
@@ -659,7 +659,7 @@ const AllEvents = () => {
                     value={tempFilters.minPrice}
                     onChange={(e) => setTempFilters({ ...tempFilters, minPrice: e.target.value })}
                     placeholder="0"
-                    className="w-full px-3 py-2 border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502]"
+                    className="w-full px-3 py-2 border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
                     style={{
                       borderRadius: '10px'
                     }}
@@ -672,7 +672,7 @@ const AllEvents = () => {
                     value={tempFilters.maxPrice}
                     onChange={(e) => setTempFilters({ ...tempFilters, maxPrice: e.target.value })}
                     placeholder="100000"
-                    className="w-full px-3 py-2 border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502]"
+                    className="w-full px-3 py-2 border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
                     style={{
                       borderRadius: '10px'
                     }}
@@ -692,7 +692,7 @@ const AllEvents = () => {
                 </button>
                 <button
                   onClick={applyPriceFilter}
-                  className="flex-1 py-2 px-4 bg-[#f54502] text-white rounded-lg font-medium"
+                  className="flex-1 py-2 px-4 bg-brand text-white rounded-lg font-medium"
                   style={{
                     borderRadius: '10px'
                   }}
@@ -781,7 +781,7 @@ const AllEvents = () => {
                         type="date"
                         value={tempFilters.startDate}
                         onChange={(e) => setTempFilters({ ...tempFilters, startDate: e.target.value })}
-                        className="w-full pl-10 pr-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502]"
+                        className="w-full pl-10 pr-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
                         style={{
                           borderRadius: '10px'
                         }}
@@ -799,7 +799,7 @@ const AllEvents = () => {
                         type="date"
                         value={tempFilters.endDate}
                         onChange={(e) => setTempFilters({ ...tempFilters, endDate: e.target.value })}
-                        className="w-full pl-10 pr-3 py-2 border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#f54502] focus:border-[#f54502]"
+                        className="w-full pl-10 pr-3 py-2 border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
                         style={{
                           borderRadius: '10px'
                         }}
@@ -821,7 +821,7 @@ const AllEvents = () => {
                 </button>
                 <button
                   onClick={applyDateFilter}
-                  className="flex-1 py-2 px-4 bg-[#f54502] text-white rounded-lg font-medium"
+                  className="flex-1 py-2 px-4 bg-brand text-white rounded-lg font-medium"
                   style={{
                     borderRadius: '10px'
                   }}

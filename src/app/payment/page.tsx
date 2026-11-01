@@ -120,7 +120,7 @@ function PaymentContent() {
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
-          <button onClick={() => router.back()} className="px-4 py-2 bg-[#f54502] text-white rounded-xl">Go Back</button>
+          <button onClick={() => router.back()} className="px-4 py-2 bg-brand text-white rounded-xl">Go Back</button>
         </div>
       </div>
     );

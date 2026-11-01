@@ -15,7 +15,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   borderColor = 'border-yellow-500'
 }) => (
   <motion.div 
-    className={`p-6 rounded-xl shadow-sm border-l-4 ${borderColor} bg-white dark:bg-gray-800`}
+    className={`p-6 rounded-card shadow-sm border-l-4 ${borderColor} bg-white dark:bg-gray-800`}
     whileHover={{ y: -5, transition: { duration: 0.2 } }}
   >
     <div className="flex justify-between items-center mb-4">

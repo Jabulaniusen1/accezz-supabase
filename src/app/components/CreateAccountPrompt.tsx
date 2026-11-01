@@ -78,11 +78,11 @@ export default function CreateAccountPrompt({
 
   return (
     <div className="fixed bottom-4 right-4 z-[100]">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 w-[320px] p-4 animate-fadeIn">
+      <div className="bg-white dark:bg-gray-800 rounded-card shadow-xl border border-gray-200 dark:border-gray-700 w-[320px] p-4 animate-fadeIn">
         <div className="flex items-start gap-3">
           <div className="mt-0.5">
-            <div className="w-9 h-9 bg-[#f54502]/10 rounded-full flex items-center justify-center">
-              <BsCheckCircle className="w-5 h-5 text-[#f54502]" />
+            <div className="w-9 h-9 bg-brand/10 rounded-full flex items-center justify-center">
+              <BsCheckCircle className="w-5 h-5 text-brand" />
             </div>
           </div>
           <div className="flex-1 min-w-0">
@@ -105,7 +105,7 @@ export default function CreateAccountPrompt({
             <div className="mt-3 flex flex-col gap-2">
               <button
                 onClick={handleCreateAccount}
-                className="w-full px-3 py-2 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white rounded-md text-sm font-medium hover:from-[#f54502]/90 hover:to-[#d63a02]/90 transition-colors flex items-center justify-center gap-2"
+                className="w-full px-3 py-2 bg-gradient-to-r from-brand to-brand-dark text-white rounded-md text-sm font-medium hover:from-brand/90 hover:to-brand-dark/90 transition-colors flex items-center justify-center gap-2"
               >
                 <BsPersonPlus className="w-4 h-4" />
                 Create account
@@ -113,7 +113,7 @@ export default function CreateAccountPrompt({
               <div className="flex items-center justify-between">
                 <button
                   onClick={handleSignIn}
-                  className="text-xs text-[#f54502] hover:underline font-medium"
+                  className="text-xs text-brand hover:underline font-medium"
                 >
                   Sign in instead
                 </button>

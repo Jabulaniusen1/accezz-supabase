@@ -147,8 +147,8 @@ export default function TicketDetails({
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 200 }}
         >
-          <MdDescription className="mr-2 sm:mr-3 text-[#f54502]" size={20} />
-          <span className="bg-gradient-to-r from-[#f54502] to-[#d63a02] bg-clip-text text-transparent">
+          <MdDescription className="mr-2 sm:mr-3 text-brand" size={20} />
+          <span className="bg-gradient-to-r from-brand to-brand-dark bg-clip-text text-transparent">
             Enhance Your Tickets
           </span>
         </motion.h2>
@@ -164,10 +164,10 @@ export default function TicketDetails({
             initial={{ opacity: 0, y: -20, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ type: "spring", stiffness: 300 }}
-            className="relative bg-white dark:bg-gray-800 rounded-[5px] p-4 sm:p-6 border-2 border-gray-100 dark:border-gray-700 shadow-lg hover:shadow-xl transition-shadow duration-300"
+            className="relative bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 border-2 border-gray-100 dark:border-gray-700 shadow-lg hover:shadow-xl transition-shadow duration-300"
             whileHover={{ y: -3 }}
           >
-            <div className="absolute -top-3 -left-3 bg-[#f54502] text-white px-2 sm:px-3 py-1 rounded-[5px] text-xs font-bold shadow-md">
+            <div className="absolute -top-3 -left-3 bg-brand text-white px-2 sm:px-3 py-1 rounded-[5px] text-xs font-bold shadow-md">
               {ticket.name || `Ticket ${ticketIndex + 1}`}
             </div>
             
@@ -176,7 +176,7 @@ export default function TicketDetails({
               className={`w-full flex items-center justify-between text-left ${expandedTicket === ticketIndex ? 'pb-4' : ''}`}
             >
               <div className="flex items-center space-x-4">
-                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-[5px] flex items-center justify-center text-xs sm:text-sm ${expandedTicket === ticketIndex ? 'bg-[#f54502]/10 dark:bg-[#f54502]/20 text-[#f54502] dark:text-[#f54502]' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}>
+                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-[5px] flex items-center justify-center text-xs sm:text-sm ${expandedTicket === ticketIndex ? 'bg-brand/10 dark:bg-brand/20 text-brand dark:text-brand' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}>
                   {ticketIndex + 1}
                 </div>
                 <div>
@@ -222,7 +222,7 @@ export default function TicketDetails({
                             className="flex items-start space-x-3 group"
                           >
                             <div className="flex-1 flex items-center space-x-2">
-                              <span className="text-[#f54502] mt-1.5">•</span>
+                              <span className="text-brand mt-1.5">•</span>
                               <input
                                 type="text"
                                 value={feature}
@@ -251,7 +251,7 @@ export default function TicketDetails({
                           type="text"
                           value={newFeatureText}
                           onChange={(e) => setNewFeatureText(e.target.value)}
-                          className="flex-1 px-3 py-2 rounded-[5px] border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
+                          className="flex-1 px-3 py-2 rounded-[5px] border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-brand focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                           placeholder="Add a new feature..."
                           onKeyDown={(e) => e.key === 'Enter' && handleAddFeature(ticketIndex)}
                         />
@@ -259,7 +259,7 @@ export default function TicketDetails({
                           onClick={() => handleAddFeature(ticketIndex)}
                           disabled={!newFeatureText.trim()}
                           className={`px-3 sm:px-4 py-2 rounded-[5px] flex items-center text-sm sm:text-base ${newFeatureText.trim() 
-                            ? 'bg-[#f54502] text-white hover:bg-[#d63a02]' 
+                            ? 'bg-brand text-white hover:bg-brand-dark' 
                             : 'bg-gray-100 dark:bg-gray-700 text-gray-400 cursor-not-allowed'}`}
                         >
                           <FaPlus />
@@ -287,7 +287,7 @@ export default function TicketDetails({
                           disabled={(ticket.attendees?.length || 0) >= parseInt(ticket.quantity)}
                           className={`flex items-center space-x-2 px-3 py-2 rounded-[5px] text-xs sm:text-sm ${(ticket.attendees?.length || 0) >= parseInt(ticket.quantity) 
                             ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed' 
-                            : 'bg-[#f54502] text-white hover:bg-[#d63a02]'}`}
+                            : 'bg-brand text-white hover:bg-brand-dark'}`}
                         >
                           <FaUserPlus size={12} />
                           <span>Add Attendee</span>
@@ -309,7 +309,7 @@ export default function TicketDetails({
                                   type="text"
                                   value={attendee.name}
                                   onChange={(e) => handleAttendeeChange(ticketIndex, attendeeIndex, 'name', e.target.value)}
-                                  className="w-full px-3 py-2 rounded-[5px] border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
+                                  className="w-full px-3 py-2 rounded-[5px] border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-brand focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                                   placeholder="Full Name"
                                   required
                                 />
@@ -319,7 +319,7 @@ export default function TicketDetails({
                                   type="email"
                                   value={attendee.email}
                                   onChange={(e) => handleAttendeeChange(ticketIndex, attendeeIndex, 'email', e.target.value)}
-                                  className="w-full px-3 py-2 rounded-[5px] border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
+                                  className="w-full px-3 py-2 rounded-[5px] border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-brand focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                                   placeholder="Email Address"
                                   required
                                 />
@@ -369,8 +369,8 @@ export default function TicketDetails({
             whileHover={{ scale: 1.05, boxShadow: "0 5px 20px rgba(245, 69, 2, 0.4)" }}
             whileTap={{ scale: 0.98 }}
             onClick={() => validateDetails() && onNext()}
-            className="px-4 sm:px-6 md:px-8 py-2 sm:py-3 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white
-                     rounded-[5px] hover:from-[#f54502]/90 hover:to-[#d63a02]/90
+            className="px-4 sm:px-6 md:px-8 py-2 sm:py-3 bg-gradient-to-r from-brand to-brand-dark text-white
+                     rounded-[5px] hover:from-brand/90 hover:to-brand-dark/90
                      transition-all duration-300 shadow-lg hover:shadow-xl
                      flex items-center justify-center text-sm sm:text-base w-full sm:w-auto"
           >

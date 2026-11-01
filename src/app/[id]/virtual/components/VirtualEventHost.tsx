@@ -16,7 +16,7 @@ export default function VirtualEventHost({ event }: VirtualEventHostProps) {
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700"
+      className="bg-white dark:bg-gray-800 rounded-card shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700"
     >
       <div className="relative bg-gradient-to-r from-indigo-500 to-green-200 p-3">
         <div className="absolute inset-0 bg-[url('/pattern/overcast.svg')] opacity-20" />

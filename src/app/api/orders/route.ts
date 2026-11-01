@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin, fulfilOrder } from '@/utils/processOrder';
 import { getOptionalUser } from '@/utils/apiAuth';
 import { inngest } from '@/utils/inngest';
+import { calculateOrderCharges } from '@/utils/fees';
 
 // Free orders issue tickets and send emails in this request
 export const maxDuration = 60;
@@ -24,7 +25,8 @@ function cleanGender(value: unknown): string | null {
 
 /**
  * Create an order. The server looks up the ticket type, checks availability
- * and computes the price; nothing about the amount is taken from the browser.
+ * and computes the price and buyer fees; nothing about the amount is taken
+ * from the browser.
  * Free orders are fulfilled immediately.
  */
 export async function POST(req: NextRequest) {
@@ -101,12 +103,13 @@ export async function POST(req: NextRequest) {
     }
 
     const unitPrice = Number(ticketType.price) || 0;
-    const totalAmount = Math.round(unitPrice * quantity * 100) / 100;
+    const charges = calculateOrderCharges(unitPrice * quantity);
+    const subtotal = charges.subtotal;
     const buyer = await getOptionalUser(req);
 
     // Only keep an affiliate code that is valid for this event and not the buyer's own
     let validAffiliateCode: string | null = null;
-    if (affiliateCode && totalAmount > 0) {
+    if (affiliateCode && subtotal > 0) {
       const { data: affiliate } = await supabaseAdmin
         .from('affiliates')
         .select('user_id')
@@ -127,7 +130,10 @@ export async function POST(req: NextRequest) {
         buyer_email: email,
         buyer_phone: phone || null,
         currency: 'NGN',
-        total_amount: totalAmount,
+        // total_amount is the ticket subtotal; amount_due adds the buyer fees
+        total_amount: subtotal,
+        service_fee: charges.serviceFee,
+        processing_fee: charges.processingFee,
         status: 'pending',
         meta: {
           ticketTypeId: ticketType.id,
@@ -148,7 +154,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Could not create your order. Please try again.' }, { status: 500 });
     }
 
-    if (totalAmount === 0) {
+    if (subtotal === 0) {
       const result = await fulfilOrder(order.id, { provider: 'free' });
       if (result.status === 'sold_out') {
         return NextResponse.json({ error: 'Sorry, these tickets just sold out' }, { status: 409 });
@@ -156,7 +162,7 @@ export async function POST(req: NextRequest) {
       if (result.status !== 'fulfilled' && result.status !== 'already_fulfilled') {
         return NextResponse.json({ error: 'Could not issue your free ticket. Please try again.' }, { status: 500 });
       }
-      return NextResponse.json({ orderId: order.id, totalAmount: 0, currency: 'NGN', free: true });
+      return NextResponse.json({ orderId: order.id, ...charges, currency: 'NGN', free: true });
     }
 
     try {
@@ -166,7 +172,7 @@ export async function POST(req: NextRequest) {
       console.error('[api/orders] Failed to schedule abandoned-cart email:', inngestError);
     }
 
-    return NextResponse.json({ orderId: order.id, totalAmount, currency: 'NGN', free: false });
+    return NextResponse.json({ orderId: order.id, ...charges, currency: 'NGN', free: false });
   } catch (err) {
     console.error('[api/orders] Unexpected error:', err);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });

@@ -78,7 +78,7 @@ const AdminDashboard = () => {
         {/* Main Content Skeleton */}
         <main className="flex-1 md:ml-64 p-6">
           <div className="space-y-6">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-card shadow-lg p-6">
               <Skeleton height="32px" width="200px" className="mb-2" />
               <Skeleton height="20px" width="300px" />
             </div>
@@ -136,7 +136,7 @@ const AdminDashboard = () => {
               <button
                 className={`w-full flex items-center space-x-3 px-4 py-3 transition-all duration-200 ${
                   activeTab === 'analytics'
-                    ? 'bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm'
+                    ? 'bg-brand/10 text-brand dark:bg-brand/20 dark:text-brand shadow-sm'
                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                 }`}
                 style={{ borderRadius: '5px' }}
@@ -149,7 +149,7 @@ const AdminDashboard = () => {
               <button
                 className={`w-full flex items-center space-x-3 px-4 py-3 transition-all duration-200 ${
                   activeTab === 'users'
-                    ? 'bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm'
+                    ? 'bg-brand/10 text-brand dark:bg-brand/20 dark:text-brand shadow-sm'
                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                 }`}
                 style={{ borderRadius: '5px' }}
@@ -162,7 +162,7 @@ const AdminDashboard = () => {
               <button
                 className={`w-full flex items-center space-x-3 px-4 py-3 transition-all duration-200 ${
                   activeTab === 'events'
-                    ? 'bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm'
+                    ? 'bg-brand/10 text-brand dark:bg-brand/20 dark:text-brand shadow-sm'
                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                 }`}
                 style={{ borderRadius: '5px' }}
@@ -175,7 +175,7 @@ const AdminDashboard = () => {
               <button
                 className={`w-full flex items-center space-x-3 px-4 py-3 transition-all duration-200 ${
                   activeTab === 'withdrawals'
-                    ? 'bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm'
+                    ? 'bg-brand/10 text-brand dark:bg-brand/20 dark:text-brand shadow-sm'
                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                 }`}
                 style={{ borderRadius: '5px' }}
@@ -188,7 +188,7 @@ const AdminDashboard = () => {
               <button
                 className={`w-full flex items-center space-x-3 px-4 py-3 transition-all duration-200 ${
                   activeTab === 'tickets'
-                    ? 'bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm'
+                    ? 'bg-brand/10 text-brand dark:bg-brand/20 dark:text-brand shadow-sm'
                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                 }`}
                 style={{ borderRadius: '5px' }}
@@ -201,7 +201,7 @@ const AdminDashboard = () => {
               <button
                 className={`w-full flex items-center space-x-3 px-4 py-3 transition-all duration-200 ${
                   activeTab === 'locations'
-                    ? 'bg-[#f54502]/10 text-[#f54502] dark:bg-[#f54502]/20 dark:text-[#f54502] shadow-sm'
+                    ? 'bg-brand/10 text-brand dark:bg-brand/20 dark:text-brand shadow-sm'
                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                 }`}
                 style={{ borderRadius: '5px' }}

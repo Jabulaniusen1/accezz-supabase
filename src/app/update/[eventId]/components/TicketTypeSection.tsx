@@ -79,14 +79,14 @@ export default function TicketTypesSection({
       transition={{ delay: 0.5 }}
     >
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4 sm:mb-6">
-        <h2 className="text-xl sm:text-2xl font-semibold text-[#f54502] dark:text-[#f54502] flex items-center">
-          <RiTicketLine className="mr-2 text-[#f54502]" />
+        <h2 className="text-xl sm:text-2xl font-semibold text-brand dark:text-brand flex items-center">
+          <RiTicketLine className="mr-2 text-brand" />
           Ticket Types
         </h2>
         <motion.button
           type="button"
           onClick={handleAddTicketType}
-          className="px-4 sm:px-6 py-2 sm:py-2.5 bg-[#f54502] hover:bg-[#d63a02] text-white rounded-[5px] 
+          className="px-4 sm:px-6 py-2 sm:py-2.5 bg-brand hover:bg-brand-dark text-white rounded-[5px] 
                shadow-lg transition-all duration-200 text-sm sm:text-base w-full sm:w-auto"
           whileHover={{
             scale: 1.05,

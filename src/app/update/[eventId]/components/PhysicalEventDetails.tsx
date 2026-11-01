@@ -396,12 +396,12 @@ export default function PhysicalEventDetails({
 
   return (
     <motion.div
-      className="bg-[#f54502]/10 dark:bg-[#f54502]/20 p-4 sm:p-6 rounded-[5px] shadow-xl border border-[#f54502]/20 dark:border-[#f54502]/30"
+      className="bg-brand/10 dark:bg-brand/20 p-4 sm:p-6 rounded-[5px] shadow-xl border border-brand/20 dark:border-brand/30"
       initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.4, delay: 0.2 }}
     >
-      <h3 className="text-lg sm:text-xl font-semibold text-[#f54502] dark:text-[#f54502] mb-4 sm:mb-6 flex items-center">
+      <h3 className="text-lg sm:text-xl font-semibold text-brand dark:text-brand mb-4 sm:mb-6 flex items-center">
         <FaMapMarkerAlt className="mr-2 text-sm sm:text-base" />
         Physical Event Location
       </h3>
@@ -425,8 +425,8 @@ export default function PhysicalEventDetails({
                   onClick={() => handleVisibilitySelect(option.value)}
                   className={`px-3 py-2 rounded-[5px] border text-xs sm:text-sm transition ${
                     isActive
-                      ? "bg-[#f54502] text-white border-[#f54502] shadow-sm"
-                      : "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:border-[#f54502] dark:hover:border-[#f54502]"
+                      ? "bg-brand text-white border-brand shadow-sm"
+                      : "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:border-brand dark:hover:border-brand"
                   }`}
                 >
                   {option.label}
@@ -456,7 +456,7 @@ export default function PhysicalEventDetails({
             type="text"
             value={formData.venue || ""}
             onChange={(e) => updateForm({ venue: e.target.value })}
-            className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#f54502] focus:border-transparent transition-all duration-200 text-sm sm:text-base"
+            className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-brand focus:border-transparent transition-all duration-200 text-sm sm:text-base"
             placeholder="e.g., Madison Square Garden"
                 required={!isUndisclosed}
           />
@@ -472,8 +472,8 @@ export default function PhysicalEventDetails({
               onClick={() => handleLocationModeChange("platform")}
               className={`px-4 py-2 rounded-[5px] border transition text-sm sm:text-base ${
                 locationMode === "platform"
-                  ? "bg-[#f54502] text-white border-[#f54502]"
-                  : "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:border-[#f54502] dark:hover:border-[#f54502]"
+                  ? "bg-brand text-white border-brand"
+                  : "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:border-brand dark:hover:border-brand"
               }`}
             >
               Use platform venues
@@ -483,8 +483,8 @@ export default function PhysicalEventDetails({
               onClick={() => handleLocationModeChange("custom")}
               className={`px-4 py-2 rounded-[5px] border transition text-sm sm:text-base ${
                 locationMode === "custom"
-                  ? "bg-[#f54502] text-white border-[#f54502]"
-                  : "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:border-[#f54502] dark:hover:border-[#f54502]"
+                  ? "bg-brand text-white border-brand"
+                  : "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:border-brand dark:hover:border-brand"
               }`}
             >
               Add my own location
@@ -508,13 +508,13 @@ export default function PhysicalEventDetails({
               disabled={locationsLoading || platformLocationOptions.length === 0}
             />
             {selectedPlatformLocationDetails && (
-              <div className="rounded-[5px] border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-4 text-sm text-gray-700 dark:text-gray-300 space-y-1">
+              <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-4 text-sm text-gray-700 dark:text-gray-300 space-y-1">
                 <p className="font-semibold text-gray-900 dark:text-white">
                   {selectedPlatformLocationDetails.name}
                 </p>
                 {selectedPlatformLocationDetails.address && (
                   <p className="flex items-center gap-2 text-xs sm:text-sm">
-                    <FaMapMarkerAlt className="text-[#f54502]" />
+                    <FaMapMarkerAlt className="text-brand" />
                     {selectedPlatformLocationDetails.address}
                   </p>
                 )}
@@ -535,7 +535,7 @@ export default function PhysicalEventDetails({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               <div>
                 <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
-                  <FaGlobe className="text-[#f54502]" />
+                  <FaGlobe className="text-brand" />
                   Country{!isUndisclosed ? " *" : ""}
                 </label>
                 <SearchableSelect
@@ -571,7 +571,7 @@ export default function PhysicalEventDetails({
                       type="text"
                       value={formData.city || ""}
                       onChange={(e) => handleCityChange(e.target.value)}
-                      className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#f54502] focus:border-transparent transition-all duration-200 text-sm sm:text-base"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-brand focus:border-transparent transition-all duration-200 text-sm sm:text-base"
                       placeholder={
                         formData?.country ? "Enter city manually" : "Select a country first"
                       }
@@ -593,13 +593,13 @@ export default function PhysicalEventDetails({
                 Address{!isUndisclosed ? " *" : ""}
               </label>
               <div className="relative">
-                <FaMapMarkerAlt className="absolute left-3 top-1/2 -translate-y-1/2 text-[#f54502]" />
+                <FaMapMarkerAlt className="absolute left-3 top-1/2 -translate-y-1/2 text-brand" />
                 <input
                   ref={addressInputRef}
                   type="text"
                   value={formData.address || ""}
                   onChange={(e) => handleAddressChange(e.target.value)}
-                  className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
+                  className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-brand focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                   placeholder="Start typing to find your address"
                   required={!isUndisclosed}
                 />
@@ -615,7 +615,7 @@ export default function PhysicalEventDetails({
         )}
           </>
         ) : (
-          <div className="rounded-[5px] border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/40 p-4 text-sm text-gray-600 dark:text-gray-300">
+          <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/40 p-4 text-sm text-gray-600 dark:text-gray-300">
             You can publish and sell tickets while you finalize the venue. Update the precise location anytime from this page.
           </div>
         )}

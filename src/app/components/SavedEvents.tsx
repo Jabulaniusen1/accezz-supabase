@@ -1,11 +1,11 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { FaMapMarkerAlt, FaCalendarAlt, FaBookmark } from '@/icon-adapters/react-icons/fa';
-import Image from 'next/image';
 import { useSavedEvents } from '@/hooks/useSavedEvents';
 import { supabase } from '@/utils/supabaseClient';
 import { formatPrice } from '@/utils/formatPrice';
 import { formatEventDate } from '@/utils/formatDateTime';
+import ImageWithFallback from '@/components/ui/ImageWithFallback';
 
 interface SavedEventData {
   id: string;
@@ -87,7 +87,7 @@ const SavedEvents = () => {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 animate-pulse">
+          <div key={i} className="bg-white dark:bg-gray-800 rounded-card border border-gray-200 dark:border-gray-700 p-6 animate-pulse">
             <div className="flex gap-4">
               <div className="flex-1 space-y-3">
                 <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
@@ -119,14 +119,13 @@ const SavedEvents = () => {
       {events.map((event) => (
         <div
           key={event.id}
-          className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 p-5 hover:shadow-md transition-all duration-200 hover:border-[#f54502]/50 overflow-hidden cursor-pointer"
-          style={{ borderRadius: '10px' }}
+          className="rounded-card bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 p-5 hover:shadow-md transition-all duration-200 hover:border-brand/50 overflow-hidden cursor-pointer"
           onClick={() => event.slug && handleViewDetails(event.slug as string)}
         >
           <div className="flex gap-4 h-full min-w-0">
             <div className="flex-1 flex flex-col justify-between min-w-0">
               <div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3 hover:text-[#f54502] transition-colors line-clamp-2">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3 hover:text-brand transition-colors line-clamp-2">
                   {event.title}
                 </h3>
                 <div className="space-y-2 mb-4">
@@ -147,7 +146,7 @@ const SavedEvents = () => {
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <div className="text-[#f54502] font-semibold text-lg">
+                <div className="text-brand font-semibold text-lg">
                   {(() => {
                     const prices = (event.ticketType || [])
                       .map((t: { price: string }) => parseFloat(t.price ?? '0'))
@@ -158,21 +157,20 @@ const SavedEvents = () => {
                 </div>
                 <button
                   onClick={(e) => { e.stopPropagation(); toggle(event.id); }}
-                  className="p-2 rounded-full hover:bg-[#f54502]/10 transition-colors"
+                  className="p-2 rounded-full hover:bg-brand/10 transition-colors"
                   title="Remove from saved"
                 >
-                  <FaBookmark className="text-[#f54502]" size={16} />
+                  <FaBookmark className="text-brand" size={16} />
                 </button>
               </div>
             </div>
             <div className="flex-shrink-0 w-36 h-36">
-              <Image
-                src={typeof event.image === 'string' ? event.image : '/placeholder.jpg'}
+              <ImageWithFallback
+                src={typeof event.image === 'string' ? event.image : null}
                 alt={event.title}
                 width={144}
                 height={144}
-                className="w-full h-full object-cover"
-                style={{ borderRadius: '5px' }}
+                className="w-full h-full rounded-2xl object-cover"
               />
             </div>
           </div>

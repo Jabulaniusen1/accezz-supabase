@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import type { OrderCharges } from './fees';
 
 /**
  * Browser helpers for checkout. Orders are priced, created and fulfilled on
@@ -19,9 +20,8 @@ export interface CreateOrderParams {
   affiliateCode?: string | null;
 }
 
-export interface CreateOrderResult {
+export interface CreateOrderResult extends OrderCharges {
   orderId: string;
-  totalAmount: number;
   currency: string;
   /** Free orders are fulfilled immediately; tickets already exist. */
   free: boolean;

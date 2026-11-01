@@ -1,12 +1,12 @@
 'use client';
 import React from 'react';
-import Image from 'next/image';
 import { FaCalendarAlt, FaMapMarkerAlt } from '@/icon-adapters/react-icons/fa';
 import { useLatestEvents } from '@/hooks/useEvents';
 import { CardSkeleton } from '@/components/ui/Skeleton';
 import { formatPrice } from '@/utils/formatPrice';
 import { formatEventDate } from '@/utils/formatDateTime';
 import { type Event } from '@/types/event';
+import ImageWithFallback from '@/components/ui/ImageWithFallback';
 
 interface TicketType {
   name: string;
@@ -24,8 +24,8 @@ const OtherEventsYouMayLike = () => {
   };
 
   if (isLoading) return (
-    <div className="py-16 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="py-16">
+      <div className="page-container grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {[...Array(6)].map((_, i) => <CardSkeleton key={i} />)}
       </div>
     </div>
@@ -36,12 +36,12 @@ const OtherEventsYouMayLike = () => {
   const displayEvents = events.slice(0, 6);
 
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
-      <div className="max-w-7xl mx-auto">
+    <section className="py-16 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+      <div className="page-container">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="inline-block mb-4">
-            <span className="text-[#f54502] font-semibold text-sm uppercase tracking-wider">Discover More</span>
+            <span className="text-brand font-semibold text-sm uppercase tracking-wider">Discover More</span>
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">
             Other Events You May Like
@@ -60,13 +60,13 @@ const OtherEventsYouMayLike = () => {
             return (
               <div 
                 key={event.id || index} 
-                className="group bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer border border-gray-100 dark:border-gray-700 hover:border-[#f54502]/30 transform hover:-translate-y-2"
+                className="group bg-white dark:bg-gray-800 rounded-card overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer border border-gray-100 dark:border-gray-700 hover:border-brand/30 transform hover:-translate-y-2"
                 onClick={() => event.slug && handleViewDetails(event.slug)}
               >
                 {/* Image Container */}
                 <div className="relative h-48 sm:h-56 overflow-hidden bg-gray-200 dark:bg-gray-700">
-                  <Image
-                    src={typeof event.image === 'string' ? event.image : '/placeholder.jpg'}
+                  <ImageWithFallback
+                src={typeof event.image === 'string' ? event.image : null}
                     alt={event.title}
                     width={400}
                     height={300}
@@ -80,7 +80,7 @@ const OtherEventsYouMayLike = () => {
                     <div className={`px-4 py-2 rounded-full backdrop-blur-sm font-bold text-sm ${
                       isFree 
                         ? 'bg-green-500/90 text-white' 
-                        : 'bg-[#f54502]/90 text-white'
+                        : 'bg-brand/90 text-white'
                     }`}>
                       {isFree ? 'FREE' : formatPrice(minPrice, '₦')}
                     </div>
@@ -89,7 +89,7 @@ const OtherEventsYouMayLike = () => {
 
                 {/* Content */}
                 <div className="p-6">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 line-clamp-2 group-hover:text-[#f54502] transition-colors">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 line-clamp-2 group-hover:text-brand transition-colors">
                     {event.title}
                   </h3>
                   
@@ -97,12 +97,12 @@ const OtherEventsYouMayLike = () => {
                   <div className="space-y-3 mb-6">
                     <div className="flex items-center gap-3">
                       <div className="flex-shrink-0 mt-1">
-                        <div className="p-2 bg-[#f54502]/10 dark:bg-[#f54502]/20"
+                        <div className="p-2 bg-brand/10 dark:bg-brand/20"
                         style={{
                           borderRadius: '5px'
                         }}
                         >
-                          <FaCalendarAlt className="w-4 h-4 text-[#f54502]" />
+                          <FaCalendarAlt className="w-4 h-4 text-brand" />
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
@@ -114,12 +114,12 @@ const OtherEventsYouMayLike = () => {
                     
                     <div className="flex items-center gap-3">
                       <div className="flex-shrink-0 mt-1">
-                        <div className="p-2 bg-[#f54502]/10 dark:bg-[#f54502]/20"
+                        <div className="p-2 bg-brand/10 dark:bg-brand/20"
                         style={{
                           borderRadius: '5px'
                         }}
                         >
-                          <FaMapMarkerAlt className="w-4 h-4 text-[#f54502]" />
+                          <FaMapMarkerAlt className="w-4 h-4 text-brand" />
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
@@ -137,11 +137,11 @@ const OtherEventsYouMayLike = () => {
                   {/* CTA Button */}
                   <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-semibold text-[#f54502] group-hover:underline">
+                      <span className="text-sm font-semibold text-brand group-hover:underline">
                         View Details
                       </span>
                       <svg 
-                        className="w-5 h-5 text-[#f54502] transform group-hover:translate-x-1 transition-transform" 
+                        className="w-5 h-5 text-brand transform group-hover:translate-x-1 transition-transform" 
                         fill="none" 
                         stroke="currentColor" 
                         viewBox="0 0 24 24"

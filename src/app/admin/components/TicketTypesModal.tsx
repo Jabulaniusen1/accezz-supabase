@@ -97,7 +97,7 @@ const TicketTypesModal: React.FC<TicketTypesModalProps> = ({
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden"
+            className="relative bg-white dark:bg-gray-800 rounded-card shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden"
           >
             {/* Header */}
             <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
@@ -141,7 +141,7 @@ const TicketTypesModal: React.FC<TicketTypesModalProps> = ({
                 <>
                   {/* Summary Cards */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <div className="bg-gradient-to-br from-[#f54502] to-[#d63a02] rounded-lg p-6 text-white">
+                    <div className="bg-gradient-to-br from-brand to-brand-dark rounded-lg p-6 text-white">
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm opacity-90 mb-1">Total Revenue</p>
@@ -222,13 +222,13 @@ const TicketTypesModal: React.FC<TicketTypesModalProps> = ({
                                     </div>
                                     <div className="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-1">
                                       <div
-                                        className="bg-[#f54502] h-2 rounded-full transition-all"
+                                        className="bg-brand h-2 rounded-full transition-all"
                                         style={{ width: `${Math.min(soldPercentage, 100)}%` }}
                                       />
                                     </div>
                                   </div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-[#f54502] dark:text-[#f54502]">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-brand dark:text-brand">
                                   ₦{tt.revenue.toLocaleString()}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">

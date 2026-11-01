@@ -16,7 +16,7 @@ const FormActions = ({ isLoading, onCancel }: FormActionsProps) => {
       <button
         type="submit"
         disabled={isLoading}
-        className={`px-4 sm:px-6 py-2 rounded-[5px] bg-[#f54502] text-white hover:bg-[#d63a02] transition-colors text-sm sm:text-base w-full sm:w-auto
+        className={`px-4 sm:px-6 py-2 rounded-[5px] bg-brand text-white hover:bg-brand-dark transition-colors text-sm sm:text-base w-full sm:w-auto
           ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
         `}
       >

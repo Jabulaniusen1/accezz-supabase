@@ -1,6 +1,5 @@
 'use client';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import Image from 'next/image';
 import { supabase } from '@/utils/supabaseClient';
 import { useRouter } from 'next/navigation';
 import { Toast } from './Toast';
@@ -9,6 +8,7 @@ import { formatPrice } from '@/utils/formatPrice';
 import { TableSkeleton } from '@/components/ui/Skeleton';
 import { ChartAreaIcon, PencilIcon, Share2, TrashIcon, MoreVertical } from '@/icon-adapters/lucide-react';
 import { FaCalendarAlt } from '@/icon-adapters/react-icons/fa';
+import ImageWithFallback from '@/components/ui/ImageWithFallback';
 // Removed REST API usage; using Supabase instead
 
 interface Event {
@@ -177,7 +177,7 @@ const EventList: React.FC<{
           slug: (e.slug as string) || e.id as string,
           title: e.title as string,
           description: e.description as string,
-          image: (e.image_url as string) || '/images/placeholder.png',
+          image: (e.image_url as string) || '',
           startTime,
           endTime: (e.end_time as string) || null,
           date: startTime,
@@ -300,7 +300,7 @@ const EventList: React.FC<{
               onClick={() => setActiveTab(tab.id)}
               className={`flex-shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition-all duration-150 ${
                 activeTab === tab.id
-                  ? 'border-[#f54502] text-[#f54502]'
+                  ? 'border-brand text-brand'
                   : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
               }`}
             >
@@ -318,7 +318,7 @@ const EventList: React.FC<{
           </button>
           <button
             onClick={() => onCreateEvent?.()}
-            className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-2 bg-[#f54502] hover:bg-[#d63a02] active:bg-[#c03200] text-white text-sm font-semibold rounded-lg transition-all duration-200 whitespace-nowrap"
+            className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-2 bg-brand hover:bg-brand-dark active:bg-[#c03200] text-white text-sm font-semibold rounded-lg transition-all duration-200 whitespace-nowrap"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 5v14M5 12h14" />
@@ -353,7 +353,7 @@ const EventList: React.FC<{
           </p>
           <button
             onClick={() => onCreateEvent?.()}
-            className="flex items-center gap-2 px-6 py-3 bg-[#f54502] hover:bg-[#d63a02] text-white text-sm font-semibold rounded-xl shadow-sm transition-all duration-200"
+            className="flex items-center gap-2 px-6 py-3 bg-brand hover:bg-brand-dark text-white text-sm font-semibold rounded-xl shadow-sm transition-all duration-200"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 5v14M5 12h14" />
@@ -433,11 +433,11 @@ const EventCard: React.FC<{
     <motion.div
       whileHover={{ y: -5 }}
       transition={{ type: "spring", stiffness: 400, damping: 10 }}
-      className="relative bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 dark:border-gray-700 flex flex-col "
+      className="relative bg-white dark:bg-gray-800 rounded-card overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 dark:border-gray-700 flex flex-col "
     >
       {/* Image with gradient overlay */}
       <div className="relative h-48 w-full overflow-hidden">
-        <Image
+        <ImageWithFallback
           src={event.image}
           alt={event.title}
           width={400}
@@ -515,7 +515,7 @@ const EventCard: React.FC<{
           <button
             onClick={onAnalytics}
             style={{ borderRadius: '5px' }}
-            className="flex-1 flex items-center justify-center px-3 py-2 bg-gradient-to-r from-[#f54502] to-[#d63a02] hover:from-[#f54502]/90 hover:to-[#d63a02]/90 text-white text-sm transition-colors duration-200"
+            className="flex-1 flex items-center justify-center px-3 py-2 bg-gradient-to-r from-brand to-brand-dark hover:from-brand/90 hover:to-brand-dark/90 text-white text-sm transition-colors duration-200"
           >
             <ChartAreaIcon className="h-4 w-4 mr-2" />
             <span>Analytics</span>

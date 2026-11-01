@@ -301,7 +301,7 @@ export default function EventBasicDetails({
 
   return (
     <motion.div
-      className="space-y-4 sm:space-y-6 bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-[5px] shadow-md border border-gray-100 dark:border-gray-700"
+      className="space-y-4 sm:space-y-6 bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-card shadow-md border border-gray-100 dark:border-gray-700"
       initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
@@ -322,7 +322,7 @@ export default function EventBasicDetails({
             type="text"
             value={formData.title || ""}
             onChange={(e) => updateForm({ title: e.target.value })}
-            className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-[#f54502] focus:border-transparent transition-all duration-200 text-sm sm:text-base"
+            className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-brand focus:border-transparent transition-all duration-200 text-sm sm:text-base"
             placeholder="Enter event title..."
             required
           />
@@ -336,7 +336,7 @@ export default function EventBasicDetails({
             value={formData.description || ""}
             onChange={(e) => updateForm({ description: e.target.value })}
             rows={4}
-            className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-[#f54502] focus:border-transparent transition-all duration-200 text-sm sm:text-base"
+            className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-brand focus:border-transparent transition-all duration-200 text-sm sm:text-base"
             placeholder="Describe your event in detail..."
             required
           />
@@ -347,7 +347,7 @@ export default function EventBasicDetails({
             Host
           </label>
           <div className="w-full px-4 py-3 rounded-[5px] border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 flex items-start space-x-3">
-            <div className="mt-1 text-[#f54502]">
+            <div className="mt-1 text-brand">
               <FaIdCard />
             </div>
             <div>
@@ -363,7 +363,7 @@ export default function EventBasicDetails({
 
         <div className="space-y-2">
           <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-            <FaTags className="text-[#f54502]" />
+            <FaTags className="text-brand" />
             Category
           </label>
           <SearchableSelect
@@ -380,7 +380,7 @@ export default function EventBasicDetails({
                 type="text"
                 value={customCategoryInput}
                 onChange={(e) => handleCustomCategoryChange(e.target.value)}
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#f54502] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-[5px] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-brand focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                 placeholder="Enter your category"
               />
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -436,7 +436,7 @@ export default function EventBasicDetails({
               <span className="relative inline-flex items-center h-6 w-11 rounded-full transition-colors duration-200 ease-in-out bg-gray-300 dark:bg-gray-600">
                 <span
                   className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-200 ease-in-out ${
-                    showEndTime ? "translate-x-5 bg-[#f54502]" : "translate-x-1"
+                    showEndTime ? "translate-x-5 bg-brand" : "translate-x-1"
                   }`}
                 />
               </span>

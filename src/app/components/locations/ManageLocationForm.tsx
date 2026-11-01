@@ -999,7 +999,7 @@ export const ManageLocationForm: React.FC<ManageLocationFormProps> = ({ isOpen, 
               type="text"
               value={formState.name}
               onChange={(event) => setFormState((prev) => ({ ...prev, name: event.target.value }))}
-              className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f54502]"
+              className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               placeholder="Wildflower Event Center"
             />
           </div>
@@ -1021,7 +1021,7 @@ export const ManageLocationForm: React.FC<ManageLocationFormProps> = ({ isOpen, 
                   setCustomCountry(value);
                   setFormState((prev) => ({ ...prev, country: value }));
                 }}
-                className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f54502]"
+                className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                 placeholder="Type country"
               />
             )}
@@ -1045,7 +1045,7 @@ export const ManageLocationForm: React.FC<ManageLocationFormProps> = ({ isOpen, 
                   setCustomCity(value);
                   setFormState((prev) => ({ ...prev, city: value }));
                 }}
-                className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f54502]"
+                className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                 placeholder="Type city"
               />
             )}
@@ -1061,7 +1061,7 @@ export const ManageLocationForm: React.FC<ManageLocationFormProps> = ({ isOpen, 
               onBlur={handleAddressBlur}
               autoComplete="off"
               spellCheck={false}
-              className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f54502]"
+              className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               placeholder="123 Venue Avenue"
             />
           </div>
@@ -1072,7 +1072,7 @@ export const ManageLocationForm: React.FC<ManageLocationFormProps> = ({ isOpen, 
               type="number"
               value={formState.capacity}
               onChange={(event) => setFormState((prev) => ({ ...prev, capacity: event.target.value }))}
-              className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f54502]"
+              className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               placeholder="500"
             />
           </div>
@@ -1082,7 +1082,7 @@ export const ManageLocationForm: React.FC<ManageLocationFormProps> = ({ isOpen, 
               type="text"
               value={formState.bookingPrice}
               onChange={(event) => setFormState((prev) => ({ ...prev, bookingPrice: event.target.value }))}
-              className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f54502]"
+              className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               placeholder="e.g. ₦250,000 or Contact for price"
             />
             <p className="text-xs text-gray-500 dark:text-gray-400">Leave blank to show “Contact for price”.</p>
@@ -1096,7 +1096,7 @@ export const ManageLocationForm: React.FC<ManageLocationFormProps> = ({ isOpen, 
               value={formState.description}
               onChange={(event) => setFormState((prev) => ({ ...prev, description: event.target.value }))}
               rows={6}
-              className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f54502]"
+              className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               placeholder="Describe the venue, available setups, and what makes it special."
             />
           </div>
@@ -1145,7 +1145,7 @@ export const ManageLocationForm: React.FC<ManageLocationFormProps> = ({ isOpen, 
                 }
               }}
               placeholder="Type an event type and press Enter"
-              className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f54502]"
+              className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
             {filteredEventTypeSuggestions.length > 0 && eventTypeInput.trim() && (
               <div className="absolute z-40 mt-1 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg">
@@ -1171,13 +1171,13 @@ export const ManageLocationForm: React.FC<ManageLocationFormProps> = ({ isOpen, 
             {formState.amenities.map((amenity) => (
               <span
                 key={amenity}
-                className="inline-flex items-center space-x-2 rounded-full bg-[#f54502]/10 px-3 py-1 text-xs font-semibold text-[#f54502]"
+                className="inline-flex items-center space-x-2 rounded-full bg-brand/10 px-3 py-1 text-xs font-semibold text-brand"
               >
                 <span>{amenity}</span>
                 <button
                   type="button"
                   onClick={() => removeAmenity(amenity)}
-                  className="text-[#f54502] hover:text-[#d63a02]"
+                  className="text-brand hover:text-brand-dark"
                   aria-label={`Remove ${amenity}`}
                 >
                   ×
@@ -1203,7 +1203,7 @@ export const ManageLocationForm: React.FC<ManageLocationFormProps> = ({ isOpen, 
                 }
               }}
               placeholder="Type an amenity and press Enter"
-              className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f54502]"
+              className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
             {filteredAmenitySuggestions.length > 0 && amenityInput.trim() && (
               <div className="absolute z-40 mt-1 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg">
@@ -1236,7 +1236,7 @@ export const ManageLocationForm: React.FC<ManageLocationFormProps> = ({ isOpen, 
               type="email"
               value={formState.contactEmail}
               onChange={(event) => setFormState((prev) => ({ ...prev, contactEmail: event.target.value }))}
-              className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f54502]"
+              className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               placeholder="bookings@yourvenue.com"
             />
           </div>
@@ -1246,7 +1246,7 @@ export const ManageLocationForm: React.FC<ManageLocationFormProps> = ({ isOpen, 
               type="tel"
               value={formState.contactPhone}
               onChange={(event) => setFormState((prev) => ({ ...prev, contactPhone: event.target.value }))}
-              className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f54502]"
+              className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               placeholder="+234 801 234 5678"
             />
           </div>
@@ -1266,7 +1266,7 @@ export const ManageLocationForm: React.FC<ManageLocationFormProps> = ({ isOpen, 
                     socialLinks: { ...prev.socialLinks, facebook: event.target.value },
                   }))
                 }
-                className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f54502]"
+                className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                 placeholder="https://facebook.com/yourvenue"
               />
             </div>
@@ -1281,7 +1281,7 @@ export const ManageLocationForm: React.FC<ManageLocationFormProps> = ({ isOpen, 
                     socialLinks: { ...prev.socialLinks, instagram: event.target.value },
                   }))
                 }
-                className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f54502]"
+                className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                 placeholder="https://instagram.com/yourvenue"
               />
             </div>
@@ -1296,7 +1296,7 @@ export const ManageLocationForm: React.FC<ManageLocationFormProps> = ({ isOpen, 
                     socialLinks: { ...prev.socialLinks, tiktok: event.target.value },
                   }))
                 }
-                className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f54502]"
+                className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                 placeholder="https://tiktok.com/@yourvenue"
               />
             </div>
@@ -1311,7 +1311,7 @@ export const ManageLocationForm: React.FC<ManageLocationFormProps> = ({ isOpen, 
                     socialLinks: { ...prev.socialLinks, x: event.target.value },
                   }))
                 }
-                className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f54502]"
+                className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                 placeholder="https://twitter.com/yourvenue"
               />
             </div>
@@ -1351,7 +1351,7 @@ export const ManageLocationForm: React.FC<ManageLocationFormProps> = ({ isOpen, 
           exit={{ opacity: 0 }}
         >
           <motion.div
-            className="relative w-full max-w-3xl rounded-3xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-2xl overflow-hidden"
+            className="relative w-full max-w-3xl rounded-card bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-2xl overflow-hidden"
             initial={{ y: 60, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 40, opacity: 0 }}
@@ -1384,7 +1384,7 @@ export const ManageLocationForm: React.FC<ManageLocationFormProps> = ({ isOpen, 
                   onClick={() => setStep('details')}
                   className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition ${
                     step === 'details'
-                      ? 'bg-[#f54502] text-white shadow'
+                      ? 'bg-brand text-white shadow'
                       : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300'
                   }`}
                 >
@@ -1402,7 +1402,7 @@ export const ManageLocationForm: React.FC<ManageLocationFormProps> = ({ isOpen, 
                   }}
                   className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition ${
                     step === 'media'
-                      ? 'bg-[#f54502] text-white shadow'
+                      ? 'bg-brand text-white shadow'
                       : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300'
                   }`}
                 >
@@ -1437,7 +1437,7 @@ export const ManageLocationForm: React.FC<ManageLocationFormProps> = ({ isOpen, 
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="inline-flex items-center px-6 py-2.5 rounded-full bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white text-sm font-semibold shadow disabled:opacity-70"
+                  className="inline-flex items-center px-6 py-2.5 rounded-full bg-gradient-to-r from-brand to-brand-dark text-white text-sm font-semibold shadow disabled:opacity-70"
                 >
                   {step === 'details'
                     ? 'Next: Media & contact'

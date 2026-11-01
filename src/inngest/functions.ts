@@ -29,7 +29,7 @@ export const sendAbandonedCartEmail = inngest.createFunction(
     const orderStatus = await step.run('check-order-status', async () => {
       const { data: order, error } = await supabaseAdmin
         .from('orders')
-        .select('id, status, buyer_email, buyer_full_name, total_amount, currency, meta, event_id, events(id, title, slug, start_time, end_time, venue, location, address, city, country, is_virtual, virtual_details)')
+        .select('id, status, buyer_email, buyer_full_name, total_amount, amount_due, currency, meta, event_id, events(id, title, slug, start_time, end_time, venue, location, address, city, country, is_virtual, virtual_details)')
         .eq('id', orderId)
         .single();
 
@@ -165,7 +165,8 @@ export const sendAbandonedCartEmail = inngest.createFunction(
           venue,
           ticketType: ticketTypeName,
           quantity,
-          totalAmount: orderStatus.total_amount,
+          // What the buyer will pay, fees included
+          totalAmount: orderStatus.amount_due ?? orderStatus.total_amount,
           currency: orderStatus.currency || 'NGN',
           orderId: orderStatus.id,
           eventSlug: eventData.slug,

@@ -54,7 +54,7 @@ export default function VirtualEventShare({ event }: VirtualEventShareProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.4 }}
-      className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700"
+      className="bg-white dark:bg-gray-800 rounded-card shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700"
     >
       {/* SHARE HEADER WITH ANIMATED ICONS */}
       <div className="relative bg-gradient-to-r from-teal-500 to-blue-600 p-6 overflow-hidden">

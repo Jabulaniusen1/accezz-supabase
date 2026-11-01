@@ -102,7 +102,7 @@ const Notifications = () => {
       {sections.map((section) => (
         <div
           key={section.title}
-          className="w-full max-w-lg bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6 mb-8"
+          className="w-full max-w-lg bg-white dark:bg-gray-800 shadow-lg rounded-card p-6 mb-8"
         >
           <h2 className="text-lg font-semibold mb-4 dark:text-white">{section.title}</h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{section.description}</p>
@@ -121,7 +121,7 @@ const Notifications = () => {
                     className="sr-only peer"
                   />
                   <div
-                    className={`w-12 h-6 bg-gray-400 peer-focus:ring-2 peer-focus:ring-[#f54502]/50 rounded-full peer-checked:bg-gradient-to-r peer-checked:from-[#f54502] peer-checked:to-[#d63a02] transition-all duration-300`}
+                    className={`w-12 h-6 bg-gray-400 peer-focus:ring-2 peer-focus:ring-brand/50 rounded-full peer-checked:bg-gradient-to-r peer-checked:from-brand peer-checked:to-brand-dark transition-all duration-300`}
                   ></div>
                   <div
                     className={`absolute w-5 h-5 bg-white rounded-full shadow-lg transform transition-transform duration-300 translate-x-0 peer-checked:translate-x-6`}
@@ -135,7 +135,7 @@ const Notifications = () => {
 
       <button
         onClick={saveSettings}
-        className="w-full bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white py-3 px-6 rounded-lg hover:from-[#f54502]/90 hover:to-[#d63a02]/90 focus:ring-2 focus:ring-[#f54502]/50 focus:outline-none transition-all duration-200 transform hover:scale-105"
+        className="w-full bg-gradient-to-r from-brand to-brand-dark text-white py-3 px-6 rounded-lg hover:from-brand/90 hover:to-brand-dark/90 focus:ring-2 focus:ring-brand/50 focus:outline-none transition-all duration-200 transform hover:scale-105"
       >
         Save Notification Settings
       </button>

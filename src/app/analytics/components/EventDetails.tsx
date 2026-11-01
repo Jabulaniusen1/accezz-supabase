@@ -36,7 +36,7 @@ export const EventDetails: React.FC<EventDetailsProps> = ({
     : 'Time not set';
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
+    <div className="bg-white dark:bg-gray-900 rounded-card shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
       <div className="lg:p-6 p-5">
         <div className="flex items-start justify-between">
           <div>

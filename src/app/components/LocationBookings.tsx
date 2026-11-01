@@ -47,13 +47,7 @@ export const LocationBookings: React.FC = () => {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Location bookings</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Review booking requests from visitors and confirm availability.
-          </p>
-        </div>
+      <div className="flex">
         <div className="flex items-center space-x-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-full px-3 py-1.5">
           {(['all', 'pending', 'accepted', 'declined'] as Array<LocationBookingStatus | 'all'>).map((status) => (
             <button
@@ -61,7 +55,7 @@ export const LocationBookings: React.FC = () => {
               onClick={() => setStatusFilter(status)}
               className={`px-3 py-1 rounded-full text-xs font-semibold transition ${
                 statusFilter === status
-                  ? 'bg-[#f54502] text-white'
+                  ? 'bg-brand text-white'
                   : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
               }`}
             >
@@ -110,7 +104,7 @@ export const LocationBookings: React.FC = () => {
           {filteredBookings.map((booking) => (
             <div
               key={booking.id}
-              className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
+              className="rounded-card border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
             >
               <div className="space-y-1">
                 <div className="flex items-center space-x-2">
@@ -171,7 +165,7 @@ export const LocationBookings: React.FC = () => {
                   <button
                     onClick={() => handleStatusChange(booking.id, 'accepted')}
                     disabled={isPending}
-                    className="px-4 py-2 rounded-full bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white text-sm font-semibold shadow disabled:opacity-60"
+                    className="px-4 py-2 rounded-full bg-gradient-to-r from-brand to-brand-dark text-white text-sm font-semibold shadow disabled:opacity-60"
                   >
                     Accept booking
                   </button>

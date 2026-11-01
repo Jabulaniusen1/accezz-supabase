@@ -35,7 +35,7 @@ const AboutPage = () => {
         <div className="relative bg-gray-950 pt-28 pb-24 overflow-hidden">
           {/* Background glows */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_-10%,rgba(245,69,2,0.25),transparent_60%)]" />
-          <div className="absolute top-1/2 left-1/4 w-72 h-72 bg-[#f54502] rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob" />
+          <div className="absolute top-1/2 left-1/4 w-72 h-72 bg-brand rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob" />
           <div className="absolute top-1/3 right-1/4 w-72 h-72 bg-orange-400 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-2000" />
 
           <motion.div
@@ -44,12 +44,12 @@ const AboutPage = () => {
             transition={{ duration: 0.8 }}
             className="relative max-w-4xl mx-auto px-4 text-center"
           >
-            <span className="inline-block px-4 py-1.5 mb-6 text-sm font-semibold tracking-widest uppercase rounded-full border border-[#f54502]/40 text-[#f54502] bg-[#f54502]/10">
+            <span className="inline-block px-4 py-1.5 mb-6 text-sm font-semibold tracking-widest uppercase rounded-full border border-brand/40 text-brand bg-brand/10">
               About Us
             </span>
             <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
               Welcome to{' '}
-              <span className="bg-gradient-to-r from-[#f54502] to-[#ff8c69] bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-brand to-[#ff8c69] bg-clip-text text-transparent">
                 Accezz
               </span>
             </h1>
@@ -62,7 +62,7 @@ const AboutPage = () => {
         </div>
 
         {/* ── Main Content ── */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 space-y-24">
+        <div className="page-container py-20 space-y-24">
 
           {/* Row 1: For Event Organizers */}
           <motion.div
@@ -73,7 +73,7 @@ const AboutPage = () => {
             className="flex flex-col md:flex-row items-center gap-12"
           >
             <div className="order-2 md:order-1 w-full md:w-3/5">
-              <span className="inline-block px-3 py-1 mb-4 text-xs font-bold tracking-widest uppercase rounded-full bg-[#f54502]/10 text-[#f54502]">
+              <span className="inline-block px-3 py-1 mb-4 text-xs font-bold tracking-widest uppercase rounded-full bg-brand/10 text-brand">
                 Organisers
               </span>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-5">
@@ -100,7 +100,7 @@ const AboutPage = () => {
                 fill
                 className="object-cover transition-transform duration-500 hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-tr from-[#f54502]/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-tr from-brand/20 to-transparent" />
             </div>
           </motion.div>
 
@@ -119,10 +119,10 @@ const AboutPage = () => {
                 fill
                 className="object-cover transition-transform duration-500 hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-tl from-[#f54502]/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-tl from-brand/20 to-transparent" />
             </div>
             <div className="w-full md:w-3/5">
-              <span className="inline-block px-3 py-1 mb-4 text-xs font-bold tracking-widest uppercase rounded-full bg-[#f54502]/10 text-[#f54502]">
+              <span className="inline-block px-3 py-1 mb-4 text-xs font-bold tracking-widest uppercase rounded-full bg-brand/10 text-brand">
                 Attendees
               </span>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-5">
@@ -150,7 +150,7 @@ const AboutPage = () => {
             transition={{ duration: 0.7 }}
           >
             <div className="text-center mb-14">
-              <span className="inline-block px-4 py-1.5 mb-4 text-sm font-semibold tracking-widest uppercase rounded-full border border-[#f54502]/40 text-[#f54502] bg-[#f54502]/10">
+              <span className="inline-block px-4 py-1.5 mb-4 text-sm font-semibold tracking-widest uppercase rounded-full border border-brand/40 text-brand bg-brand/10">
                 Why Accezz?
               </span>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
@@ -166,9 +166,9 @@ const AboutPage = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.55, delay: index * 0.15 }}
-                  className="group flex flex-col items-center text-center p-8 rounded-2xl border border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-white/5 hover:border-[#f54502]/40 hover:bg-[#f54502]/5 dark:hover:bg-[#f54502]/10 transition-all duration-300"
+                  className="group flex flex-col items-center text-center p-8 rounded-card border border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-white/5 hover:border-brand/40 hover:bg-brand/5 dark:hover:bg-brand/10 transition-all duration-300"
                 >
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#f54502] to-[#d63a02] flex items-center justify-center mb-6 shadow-lg shadow-[#f54502]/25 group-hover:scale-110 transition-transform duration-300">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center mb-6 shadow-lg shadow-brand/25 group-hover:scale-110 transition-transform duration-300">
                     <feature.Icon className="w-7 h-7 text-white" />
                   </div>
                   <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3">
@@ -190,7 +190,7 @@ const AboutPage = () => {
             transition={{ duration: 0.7 }}
           >
             <div className="text-center mb-14">
-              <span className="inline-block px-4 py-1.5 mb-4 text-sm font-semibold tracking-widest uppercase rounded-full border border-[#f54502]/40 text-[#f54502] bg-[#f54502]/10">
+              <span className="inline-block px-4 py-1.5 mb-4 text-sm font-semibold tracking-widest uppercase rounded-full border border-brand/40 text-brand bg-brand/10">
                 The People Behind It
               </span>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
@@ -214,11 +214,11 @@ const AboutPage = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.55, delay: index * 0.15 }}
-                  className="group flex flex-col items-center text-center p-8 rounded-2xl border border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-white/5 hover:border-[#f54502]/40 hover:shadow-xl hover:shadow-[#f54502]/5 transition-all duration-300"
+                  className="group flex flex-col items-center text-center p-8 rounded-card border border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-white/5 hover:border-brand/40 hover:shadow-xl hover:shadow-brand/5 transition-all duration-300"
                 >
                   {/* Avatar placeholder */}
                   <div className="relative mb-6">
-                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#f54502] to-[#d63a02] flex items-center justify-center shadow-lg shadow-[#f54502]/30 group-hover:scale-105 transition-transform duration-300">
+                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center shadow-lg shadow-brand/30 group-hover:scale-105 transition-transform duration-300">
                       <span className="text-white text-2xl font-bold tracking-wide">
                         {person.initials}
                       </span>
@@ -230,18 +230,18 @@ const AboutPage = () => {
                   <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
                     {person.name}
                   </h3>
-                  <p className="text-sm font-medium text-[#f54502] mb-5">{person.role}</p>
+                  <p className="text-sm font-medium text-brand mb-5">{person.role}</p>
 
                   {/* Social links — placeholders */}
                   <div className="flex items-center gap-3">
                     <button
-                      className="w-9 h-9 rounded-full border border-gray-200 dark:border-white/10 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:border-[#f54502] hover:text-[#f54502] transition-all duration-200"
+                      className="w-9 h-9 rounded-full border border-gray-200 dark:border-white/10 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:border-brand hover:text-brand transition-all duration-200"
                       aria-label={`${person.name} on LinkedIn`}
                     >
                       <FaLinkedinIn className="w-4 h-4" />
                     </button>
                     <button
-                      className="w-9 h-9 rounded-full border border-gray-200 dark:border-white/10 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:border-[#f54502] hover:text-[#f54502] transition-all duration-200"
+                      className="w-9 h-9 rounded-full border border-gray-200 dark:border-white/10 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:border-brand hover:text-brand transition-all duration-200"
                       aria-label={`${person.name} on Twitter`}
                     >
                       <FaTwitter className="w-4 h-4" />
@@ -273,7 +273,7 @@ const AboutPage = () => {
                 </p>
                 <Link
                   href="/auth/signup"
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#f54502] to-[#d63a02] text-white font-semibold rounded-xl shadow-lg shadow-[#f54502]/30 hover:shadow-[#f54502]/50 hover:from-[#d63a02] hover:to-[#b52e00] transform hover:-translate-y-0.5 transition-all duration-200"
+                  className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-brand to-brand-dark text-white font-semibold rounded-xl shadow-lg shadow-brand/30 hover:shadow-brand/50 hover:from-brand-dark hover:to-[#b52e00] transform hover:-translate-y-0.5 transition-all duration-200"
                 >
                   Get Started Free
                 </Link>

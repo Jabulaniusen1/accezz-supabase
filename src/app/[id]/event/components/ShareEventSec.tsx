@@ -55,10 +55,10 @@ export const ShareEventSection: React.FC<ShareEventSectionProps> = ({ eventSlug,
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white dark:bg-gray-800 rounded-xl md:rounded-2xl shadow-lg md:shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700"
+                className="bg-white dark:bg-gray-800 rounded-card shadow-lg md:shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700"
             >
                 {/* Header */}
-                <div className="relative bg-gradient-to-r from-[#f54502] to-[#d63a02] p-4 md:p-6">
+                <div className="relative bg-gradient-to-r from-brand to-brand-dark p-4 md:p-6">
                     <div className="absolute inset-0 bg-[url('/pattern/overcast.svg')] opacity-20" />
                     <h2 className="text-lg md:text-2xl font-bold text-white relative z-10 flex items-center">
                         <FaShareAlt className="mr-2 md:mr-3 text-sm md:text-base" />

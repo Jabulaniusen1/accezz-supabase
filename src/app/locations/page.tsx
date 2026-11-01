@@ -71,12 +71,12 @@ export default function LocationsPage() {
     <>
       <Header />
       <main className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+        <section className="page-container py-12 sm:py-16">
         <header className="max-w-3xl space-y-3">
-          <span className="inline-flex items-center rounded-full bg-[#f54502]/10 text-[#f54502] px-3 py-1 text-xs font-semibold">
+          <span className="inline-flex items-center rounded-full bg-brand/10 text-brand px-3 py-1 text-xs font-semibold">
             Discover event-ready venues
           </span>
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-3xl sm:text-4xl font-bold text-balance text-gray-900 dark:text-white">
             Find the perfect event centre, wherever you are
           </h1>
           <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
@@ -147,7 +147,7 @@ export default function LocationsPage() {
                   setSelectedCountry(null);
                   setSelectedCity(null);
                 }}
-                className="mt-6 inline-flex items-center px-4 py-2 rounded-full border border-[#f54502] text-[#f54502] text-sm font-semibold hover:bg-[#f54502]/10"
+                className="mt-6 inline-flex items-center px-4 py-2 rounded-full border border-brand text-brand text-sm font-semibold hover:bg-brand/10"
               >
                 Reset filters
               </button>

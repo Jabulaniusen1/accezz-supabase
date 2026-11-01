@@ -49,7 +49,7 @@ const SocialChannelsCTA = ({ telegramUrl, whatsappUrl, discordUrl, variant = 'su
       transition={{ delay: 1.2 }}
       className={`
         ${isSuccess ? 'bg-white/10 backdrop-blur-lg' : 'bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900'} 
-        rounded-2xl p-6 max-w-2xl mx-auto border
+        rounded-card p-6 max-w-2xl mx-auto border
         ${isSuccess ? 'border-white/20' : 'border-gray-200 dark:border-gray-700'}
         shadow-lg overflow-hidden relative
       `}
