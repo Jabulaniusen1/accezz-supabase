@@ -6,10 +6,9 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/utils/supabaseClient';
 import { notifyWithdrawalRequest } from '@/utils/notificationClient';
 import AccountSetupPopup from './AccountSetupPopup';
-import type { WithdrawalRequest, WithdrawalSource } from '@/types/withdrawal';
+import type { WithdrawalRequest } from '@/types/withdrawal';
 import { Toast } from './Toast';
 
-type EventRow = { id: string; created_at: string };
 const AFFILIATE_WITHDRAWAL_FEE_NGN = 100;
 const PAYOUT_CURRENCY = 'NGN';
 
@@ -92,83 +91,28 @@ const Withdrawals: React.FC = () => {
     }
   };
 
-  // Load user's events
-  const { data: events } = useQuery<EventRow[]>({
-    queryKey: ['userEventsForWithdrawals'],
+  // Balance is computed in the database from paid orders, affiliate
+  // commissions and earlier withdrawals (see get_withdrawable_balance)
+  const { data: balance, refetch: refetchBalance } = useQuery<{ available: number } | null>({
+    queryKey: ['withdrawableBalance'],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         toast('error', 'Please log in to view withdrawals');
         router.push('/auth/login');
-        return [];
+        return null;
       }
-      const { data: evs, error: evErr } = await supabase
-        .from('events')
-        .select('id, created_at')
-        .eq('user_id', session.user.id)
-        .order('created_at', { ascending: false });
-      if (evErr) throw evErr;
-      return (evs || []) as EventRow[];
+      const { data, error } = await supabase.rpc('get_withdrawable_balance');
+      if (error) throw error;
+      const result = data as { available?: number | string } | null;
+      return { available: Number(result?.available || 0) };
     },
-    staleTime: 1000 * 60 * 5,
-  });
-
-  // Compute total revenue from ticket_types.sold × price (same method as Earning.tsx)
-  const { data: totalEarnings } = useQuery<number>({
-    queryKey: ['withdrawalsTotalEarnings', (events || []).map(e => e.id)],
-    enabled: !!events && events.length > 0,
-    queryFn: async () => {
-      const eventIds = (events || []).map(e => e.id);
-      if (!eventIds.length) return 0;
-      const { data: ticketTypes } = await supabase
-        .from('ticket_types')
-        .select('price, sold')
-        .in('event_id', eventIds);
-      return (ticketTypes || []).reduce((sum, tt) => {
-        const price = Number(tt.price || 0);
-        const sold = Number(tt.sold || 0);
-        return sum + (Number.isFinite(price) && Number.isFinite(sold) ? price * sold : 0);
-      }, 0);
-    },
-    staleTime: 60_000
+    staleTime: 60_000,
   });
 
   useEffect(() => {
     loadWalletContext();
   }, [loadWalletContext]);
-
-  // Affiliate commissions earned by this user (as an affiliate)
-  const { data: affiliateEarnings } = useQuery<number>({
-    queryKey: ['affiliateEarnings', userType],
-    enabled: userType !== 'creator',
-    queryFn: async () => {
-      if (userType === 'creator') return 0;
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return 0;
-      const { data } = await supabase
-        .from('affiliate_commissions')
-        .select('amount')
-        .eq('user_id', session.user.id);
-      return (data || []).reduce((sum, row) => sum + Number(row.amount || 0), 0);
-    },
-    staleTime: 60_000,
-  });
-
-  // Total affiliate commissions owed on this organizer's events (deducted from creator balance)
-  const { data: affiliateCommissionsOwed } = useQuery<number>({
-    queryKey: ['affiliateCommissionsOwed', (events || []).map(e => e.id)],
-    enabled: userType === 'creator' && !!events && events.length > 0,
-    queryFn: async () => {
-      const eventIds = (events || []).map(e => e.id);
-      if (!eventIds.length) return 0;
-      const { data } = await supabase
-        .from('affiliate_commissions')
-        .select('amount')
-        .in('event_id', eventIds);
-      return (data || []).reduce((sum, row) => sum + Number(row.amount || 0), 0);
-    },
-    staleTime: 60_000,
-  });
 
   const pendingTotal = useMemo(() => {
     const pendingStatuses = new Set(['pending', 'processing']);
@@ -184,16 +128,6 @@ const Withdrawals: React.FC = () => {
   //     .reduce((sum, w) => sum + Number(w.amount || 0), 0);
   // }, [myWithdrawals]);
 
-  // Total withdrawn amount (all withdrawals that have been processed or are pending)
-  // This includes both approved/completed/paid AND pending/processing withdrawals
-  const totalWithdrawn = useMemo(() => {
-    // Include all withdrawals except rejected ones (as they don't actually deduct balance)
-    const excludedStatuses = new Set(['rejected']);
-    return myWithdrawals
-      .filter(w => !excludedStatuses.has((w.status || '').toLowerCase()))
-      .reduce((sum, w) => sum + Number(w.amount || 0), 0);
-  }, [myWithdrawals]);
-
   // Block new requests if there is any unapproved (pending/processing) request
   const hasPendingRequest = useMemo(() => {
     const pendingStatuses = new Set(['pending', 'processing']);
@@ -202,16 +136,7 @@ const Withdrawals: React.FC = () => {
 
   const isCreator = userType === 'creator';
 
-  // Available balance is role-based:
-  // - creators: event earnings minus affiliate commissions owed, minus withdrawals
-  // - affiliates: their earned commissions minus withdrawals
-  const availableBalance = useMemo(() => {
-    if (isCreator) {
-      const creatorNet = (totalEarnings || 0) - (affiliateCommissionsOwed || 0);
-      return Math.max(0, creatorNet - totalWithdrawn);
-    }
-    return Math.max(0, (affiliateEarnings || 0) - totalWithdrawn);
-  }, [affiliateCommissionsOwed, affiliateEarnings, isCreator, totalEarnings, totalWithdrawn]);
+  const availableBalance = balance?.available ?? 0;
 
   const isAffiliateSource = !isCreator;
   const maxRequestable = availableBalance;
@@ -249,22 +174,10 @@ const Withdrawals: React.FC = () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
-      const source: WithdrawalSource = isAffiliateSource ? 'affiliate' : 'event';
-      const feeAmount = isAffiliateSource ? AFFILIATE_WITHDRAWAL_FEE_NGN : 0;
-      const netAmount = amountNum - feeAmount;
-      const { data: inserted, error } = await supabase
-        .from('withdrawal_requests')
-        .insert({
-          user_id: session.user.id,
-          amount: amountNum,
-          currency: payoutCurrency,
-          source,
-          fee_amount: feeAmount,
-          net_amount: netAmount,
-        })
-        .select('id')
-        .single();
-      if (error) throw error;
+      // Amount, fee, currency and source are checked and set by the database
+      const { data: withdrawalId, error } = await supabase.rpc('request_withdrawal', { p_amount: amountNum });
+      if (error) throw new Error(error.message);
+      const inserted = { id: withdrawalId as string | null };
       if (inserted?.id) {
         await notifyWithdrawalRequest(inserted.id);
       }
@@ -272,14 +185,14 @@ const Withdrawals: React.FC = () => {
       setRawAmount(null);
       setDisplayAmount('');
       setShowSuccessModal(true);
-      await loadWalletContext();
+      await Promise.all([loadWalletContext(), refetchBalance()]);
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Failed to submit withdrawal';
       toast('error', message);
     } finally {
       setSubmitting(false);
     }
-  }, [formatCurrency, hasBankDetails, hasPendingRequest, isAffiliateSource, loadWalletContext, maxRequestable, payoutCurrency, rawAmount, toast]);
+  }, [formatCurrency, hasBankDetails, hasPendingRequest, isAffiliateSource, loadWalletContext, maxRequestable, rawAmount, refetchBalance, toast]);
 
   const setQuickAmount = (ratio: number | 'all') => {
     const base = maxRequestable || 0;

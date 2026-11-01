@@ -29,7 +29,7 @@ interface Ticket {
     total_amount: number;
     currency: string;
     created_at: string;
-  };
+  } | null;
   events: {
     id: string;
     title: string;
@@ -95,7 +95,7 @@ export default function CustomerTickets() {
           id, ticket_code, qr_code_url, attendee_name, attendee_email,
           price, currency, validation_status, is_scanned, created_at,
           owner_user_id, order_id, event_id, ticket_type_id,
-          orders!inner(id, buyer_email, buyer_full_name, total_amount, currency, created_at),
+          orders(id, buyer_email, buyer_full_name, total_amount, currency, created_at),
           events!inner(id, title, image_url, start_time, end_time, venue, city, country, slug),
           ticket_types!inner(name)
         `;

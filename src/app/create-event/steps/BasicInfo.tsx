@@ -15,6 +15,7 @@ import SearchableSelect from '@/components/ui/SearchableSelect';
 import { supabase } from '@/utils/supabaseClient';
 import { useCountryCityOptions } from '@/hooks/useCountryCityOptions';
 import { optimizeImage, validateImageFile, formatFileSize } from '@/utils/imageOptimization';
+import { toLocalDateInput, toLocalTimeInput, todayLocalDateInput } from '@/utils/dateInputs';
 
 type EventCategory = {
   id: string;
@@ -37,14 +38,14 @@ const toDateInputValue = (iso?: string | null): string => {
   if (!iso) return '';
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return '';
-  return date.toISOString().slice(0, 10);
+  return toLocalDateInput(date);
 };
 
 const toTimeInputValue = (iso?: string | null): string => {
   if (!iso) return '';
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return '';
-  return date.toISOString().slice(11, 16);
+  return toLocalTimeInput(date);
 };
 
 const combineDateAndTime = (date: string, time: string): string => {
@@ -1199,7 +1200,7 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                 type="date"
                 value={startDateValue}
                 onChange={handleStartDateChange}
-                minDate={new Date().toISOString().split('T')[0]}
+                minDate={todayLocalDateInput()}
               />
             </div>
             <div className="space-y-2 sm:space-y-3">
@@ -1253,7 +1254,7 @@ const BasicInfo = ({ formData, updateFormData, onNext, setToast }: BasicInfoProp
                   type="date"
                   value={endDateValue}
                   onChange={handleEndDateChange}
-                  minDate={startDateValue || new Date().toISOString().split('T')[0]}
+                  minDate={startDateValue || todayLocalDateInput()}
                 />
               </div>
               <div className="space-y-2 sm:space-y-3">

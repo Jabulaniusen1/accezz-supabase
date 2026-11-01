@@ -45,6 +45,33 @@ export async function sendEmail({ to, subject, html, text, attachments }: SendEm
 
 const LOGO_URL = 'https://kckdkipdodkfszakqwui.supabase.co/storage/v1/object/public/logo/accezz%20logo.png';
 
+/** Escape text for safe interpolation into email HTML (content and attributes). */
+export function escapeHtml(value: unknown): string {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/** Escape every string in a template's input (recursively through arrays and objects). */
+function escapeData<T>(data: T): T {
+  if (typeof data === 'string') return escapeHtml(data) as T;
+  if (Array.isArray(data)) return data.map((item) => escapeData(item)) as T;
+  if (data && typeof data === 'object' && !(data instanceof Date)) {
+    return Object.fromEntries(
+      Object.entries(data as Record<string, unknown>).map(([key, value]) => [key, escapeData(value)])
+    ) as T;
+  }
+  return data;
+}
+
+/** Only web and mail links may be used as button targets (no javascript: etc.). */
+function safeHref(href: string): string {
+  return /^(https?:\/\/|mailto:)/i.test(href.trim()) ? href : '#';
+}
+
 function emailShell(title: string, body: string): string {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -123,7 +150,7 @@ function ctaButton(label: string, href: string): string {
   return `<table role="presentation" cellspacing="0" cellpadding="0" width="100%" style="margin:0 0 28px;">
   <tr>
     <td align="center">
-      <a href="${href}" style="display:inline-block;padding:13px 32px;background:#f54502;color:#ffffff;text-decoration:none;border-radius:6px;font-size:15px;font-weight:600;">${label}</a>
+      <a href="${safeHref(href)}" style="display:inline-block;padding:13px 32px;background:#f54502;color:#ffffff;text-decoration:none;border-radius:6px;font-size:15px;font-weight:600;">${label}</a>
     </td>
   </tr>
 </table>`;
@@ -134,6 +161,7 @@ function ctaButton(label: string, href: string): string {
 // ---------------------------------------------------------------------------
 
 export function generateWelcomeEmailHTML(fullName: string): string {
+  fullName = escapeHtml(fullName);
   const firstName = fullName?.split(' ')[0] || 'there';
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://accezzlive.com';
   const features = [
@@ -186,6 +214,7 @@ export function generateTicketEmailHTML(data: {
   virtualPlatform?: string;
   virtualMeetingId?: string;
 }): string {
+  data = escapeData(data);
   const firstName = data.fullName?.split(' ')[0] || 'there';
   const isVirtual = Boolean(data.isVirtual);
 
@@ -272,6 +301,7 @@ export function generateAbandonedCartEmailHTML(data: {
   orderId: string;
   eventSlug: string;
 }): string {
+  data = escapeData(data);
   const firstName = data.fullName?.split(' ')[0] || 'there';
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://accezzlive.com';
   const completePurchaseUrl = `${baseUrl}/${data.eventSlug}?orderId=${data.orderId}`;
@@ -314,6 +344,7 @@ export function generateEventReminderEmailHTML(data: {
   virtualPlatform?: string;
   hoursUntilEvent: number;
 }): string {
+  data = escapeData(data);
   const firstName = data.fullName?.split(' ')[0] || 'there';
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://accezzlive.com';
   const isVirtual = Boolean(data.isVirtual);
@@ -361,6 +392,7 @@ export function generateEventPublishedEmailHTML(data: {
   affiliateSettingsUrl: string;
   blogUrl: string;
 }): string {
+  data = escapeData(data);
   const firstName = data.fullName?.split(' ')[0] || 'there';
 
   const step = (iconName: string, title: string, body: string, btn?: { label: string; href: string }) => `
@@ -448,6 +480,7 @@ export function generateEventEndedReportEmailHTML(data: {
   analyticsUrl: string;
   createEventUrl: string;
 }): string {
+  data = escapeData(data);
   const firstName = data.fullName?.split(' ')[0] || 'there';
   const money = (n: number) => `${data.currency} ${n.toLocaleString()}`;
 

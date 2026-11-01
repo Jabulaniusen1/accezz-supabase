@@ -24,6 +24,8 @@ interface Ticket {
   is_scanned: boolean;
   created_at: string;
   owner_user_id: string | null;
+  order_id: string;
+  // Null for transfer recipients, who can't read the buyer's order
   orders: {
     id: string;
     buyer_email: string;
@@ -31,7 +33,7 @@ interface Ticket {
     total_amount: number;
     currency: string;
     created_at: string;
-  };
+  } | null;
   events: {
     id: string;
     title: string;
@@ -305,7 +307,7 @@ export default function EventTicketsPage() {
         id, ticket_code, qr_code_url, attendee_name, attendee_email,
         price, currency, validation_status, is_scanned, created_at, owner_user_id,
         order_id, event_id, ticket_type_id,
-        orders!inner(id, buyer_email, buyer_full_name, total_amount, currency, created_at),
+        orders(id, buyer_email, buyer_full_name, total_amount, currency, created_at),
         events!inner(id, title, image_url, start_time, end_time, venue, city, country, slug),
         ticket_types!inner(name)
       `;
@@ -523,7 +525,7 @@ export default function EventTicketsPage() {
                   {/* Actions */}
                   <div className="flex flex-col gap-2 min-w-[140px]">
                     <button
-                      onClick={() => router.push(`/invoice/${ticket.orders.id}`)}
+                      onClick={() => router.push(`/invoice/${ticket.order_id}`)}
                       className="px-4 py-2 bg-[#f54502] text-white rounded-[5px] hover:bg-[#d63a02] transition flex items-center gap-2 justify-center text-sm font-medium"
                     >
                       <BsQrCode className="w-4 h-4" /> View Ticket

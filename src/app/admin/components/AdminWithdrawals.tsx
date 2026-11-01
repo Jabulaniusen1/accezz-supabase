@@ -12,6 +12,8 @@ type Row = WithdrawalRequest & {
   account_number?: string | null;
   bank_name?: string | null;
   bank_code?: string | null;
+  /** Server-computed balance left after all non-rejected requests; negative = not covered */
+  remaining_balance?: number | null;
 };
 
 const AdminWithdrawals: React.FC = () => {
@@ -65,6 +67,15 @@ const AdminWithdrawals: React.FC = () => {
         }
       }
 
+      // Server-computed balance for users with pending requests
+      const pendingUserIds = Array.from(new Set((withdrawals || []).filter(w => w.status === 'pending').map(w => w.user_id)));
+      const balanceEntries = await Promise.all(pendingUserIds.map(async (userId) => {
+        const { data } = await supabase.rpc('get_withdrawable_balance', { p_user_id: userId });
+        const raw = (data as { raw_available?: number | string } | null)?.raw_available;
+        return [userId, raw === undefined ? null : Number(raw)] as const;
+      }));
+      const balanceMap = new Map<string, number | null>(balanceEntries);
+
       const withProfile: Row[] = (withdrawals || []).map(w => ({
         ...w,
         user_email: emailMap.get(w.user_id) ?? null,
@@ -73,6 +84,7 @@ const AdminWithdrawals: React.FC = () => {
         account_number: profileMap.get(w.user_id)?.account_number ?? null,
         bank_name: profileMap.get(w.user_id)?.bank_name ?? null,
         bank_code: profileMap.get(w.user_id)?.bank_code ?? null,
+        remaining_balance: balanceMap.get(w.user_id) ?? null,
       }));
 
       setRows(withProfile);
@@ -150,16 +162,17 @@ const AdminWithdrawals: React.FC = () => {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Currency</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Bank</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Account</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Balance check</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
               <th className="px-6 py-3" />
             </tr>
           </thead>
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {loading && (
-              <tr><td colSpan={11} className="px-6 py-6 text-center text-gray-500 dark:text-gray-400">Loading...</td></tr>
+              <tr><td colSpan={12} className="px-6 py-6 text-center text-gray-500 dark:text-gray-400">Loading...</td></tr>
             )}
             {!loading && visible.length === 0 && (
-              <tr><td colSpan={11} className="px-6 py-6 text-center text-gray-500 dark:text-gray-400">No requests</td></tr>
+              <tr><td colSpan={12} className="px-6 py-6 text-center text-gray-500 dark:text-gray-400">No requests</td></tr>
             )}
             {visible.map(r => (
               <tr key={r.id}>
@@ -177,6 +190,17 @@ const AdminWithdrawals: React.FC = () => {
                 <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{r.currency}</td>
                 <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{r.bank_name || '-'}</td>
                 <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{r.account_name ? `${r.account_name} • ${r.account_number}` : '-'}</td>
+                <td className="px-6 py-4 text-sm">
+                  {r.status !== 'pending' || r.remaining_balance === null || r.remaining_balance === undefined ? (
+                    <span className="text-gray-400">-</span>
+                  ) : r.remaining_balance >= 0 ? (
+                    <span className="text-green-700 dark:text-green-400">Covered</span>
+                  ) : (
+                    <span className="text-red-600 dark:text-red-400 font-medium">
+                      Exceeds balance by {Math.abs(r.remaining_balance).toLocaleString()}
+                    </span>
+                  )}
+                </td>
                 <td className="px-6 py-4 text-sm">
                   <span className={`px-2 py-1 rounded text-white ${r.status === 'approved' ? 'bg-green-600' : r.status === 'rejected' ? 'bg-red-600' : 'bg-yellow-600'}`}>{r.status}</span>
                 </td>

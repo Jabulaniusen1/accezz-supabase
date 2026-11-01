@@ -1,6 +1,7 @@
 import { inngest } from '@/utils/inngest';
 import { createClient } from '@supabase/supabase-js';
 import { sendEmail, generateEventReminderEmailHTML, generateEventEndedReportEmailHTML } from '@/utils/emailUtils';
+import { withVirtualAccess } from '@/utils/virtualAccess';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || '',
@@ -9,7 +10,7 @@ const supabaseAdmin = createClient(
 );
 
 /**
- * Inngest function to send abandoned cart email 20 seconds after order creation
+ * Inngest function to send abandoned cart email 30 minutes after order creation
  */
 export const sendAbandonedCartEmail = inngest.createFunction(
   {
@@ -20,8 +21,9 @@ export const sendAbandonedCartEmail = inngest.createFunction(
   async ({ event, step }) => {
     const { orderId } = event.data;
 
-    // Wait 20 seconds before checking if order is still pending
-    await step.sleep('wait-20-seconds', '20s');
+    // Orders are created at "Review & Pay", before checkout, so give buyers
+    // time to finish paying before treating the cart as abandoned
+    await step.sleep('wait-30-minutes', '30m');
 
     // Check if order is still pending (not paid)
     const orderStatus = await step.run('check-order-status', async () => {
@@ -230,6 +232,14 @@ export const sendEventReminderEmails = inngest.createFunction(
         .single();
 
       if (error || !order) throw new Error(`Order not found: ${orderId}`);
+
+      // Meeting links live in event_virtual_access (not readable from events)
+      const ev = (Array.isArray(order.events) ? order.events[0] : order.events) as
+        | { is_virtual?: boolean; virtual_details?: Record<string, unknown> | null }
+        | null;
+      if (ev?.is_virtual) {
+        ev.virtual_details = await withVirtualAccess(supabaseAdmin, order.event_id, ev.virtual_details);
+      }
       return order;
     });
 

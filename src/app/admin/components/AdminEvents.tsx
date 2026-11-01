@@ -170,7 +170,8 @@ const AdminEvents = () => {
       fetchEvents();
     } catch (error) {
       console.error('Error deleting event:', error);
-      setToast({ type: 'error', message: 'Failed to delete event' });
+      // e.g. "This event has sold tickets, so it cannot be deleted..."
+      setToast({ type: 'error', message: (error as { message?: string } | null)?.message || 'Failed to delete event' });
     }
   };
 

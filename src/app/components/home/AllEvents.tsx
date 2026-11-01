@@ -9,6 +9,7 @@ import { formatEventDate } from '@/utils/formatDateTime';
 import Toast from '@/components/ui/Toast';
 import type { Event as AppEvent, Ticket as AppTicket } from '@/types/event';
 import Link from 'next/link';
+import { toLocalDateInput, todayLocalDateInput } from '@/utils/dateInputs';
 
 const ENDED_BUFFER_MS = 24 * 60 * 60 * 1000; // 24 hours after start
 
@@ -725,7 +726,7 @@ const AllEvents = () => {
                 <div className="flex gap-3 mb-4">
                   <button
                     onClick={() => {
-                      const today = new Date().toISOString().split('T')[0];
+                      const today = todayLocalDateInput();
                       setTempFilters({ ...tempFilters, startDate: today, endDate: today });
                     }}
                     className="flex-1 py-2 px-4 border-2 border-gray-300 text-sm font-medium hover:bg-gray-50 hover:border-gray-400"
@@ -739,7 +740,7 @@ const AllEvents = () => {
                     onClick={() => {
                       const tomorrow = new Date();
                       tomorrow.setDate(tomorrow.getDate() + 1);
-                      const tomorrowStr = tomorrow.toISOString().split('T')[0];
+                      const tomorrowStr = toLocalDateInput(tomorrow);
                       setTempFilters({ ...tempFilters, startDate: tomorrowStr, endDate: tomorrowStr });
                     }}
                     className="flex-1 py-2 px-4 border-2 border-gray-300 text-sm font-medium hover:bg-gray-50 hover:border-gray-400"
@@ -758,8 +759,8 @@ const AllEvents = () => {
                       nextWeekend.setDate(weekend.getDate() + 1);
                       setTempFilters({ 
                         ...tempFilters, 
-                        startDate: weekend.toISOString().split('T')[0], 
-                        endDate: nextWeekend.toISOString().split('T')[0] 
+                        startDate: toLocalDateInput(weekend), 
+                        endDate: toLocalDateInput(nextWeekend) 
                       });
                     }}
                     className="flex-1 py-2 px-4 border-2 border-gray-300 text-sm font-medium hover:bg-gray-50 hover:border-gray-400"

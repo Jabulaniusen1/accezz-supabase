@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendEmail, generateTicketEmailHTML } from '@/utils/emailUtils';
 import { generateReceiptPDF } from '@/utils/receiptPDF';
-import { supabase } from '@/utils/supabaseClient';
+// Service role: orders/tickets are not readable with the anon key (RLS)
+import { supabaseAdmin as supabase } from '@/utils/processOrder';
 import { requireInternalSecret } from '@/utils/apiAuth';
 
 /**
@@ -161,7 +162,8 @@ export async function POST(req: NextRequest) {
     );
   } catch (error: unknown) {
     console.error('Error sending ticket email:', error);
-    const message = error instanceof Error ? error.message : 'Failed to send ticket email';
+    console.error('[emails/ticket]', error);
+    const message = 'Failed to send ticket email';
     return NextResponse.json(
       { error: message },
       { status: 500 }

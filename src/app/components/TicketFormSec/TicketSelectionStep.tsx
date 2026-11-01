@@ -2,6 +2,8 @@ import React from 'react';
 import { formatPrice } from '../../../utils/formatPrice';
 import { FaTicketAlt } from '@/icon-adapters/react-icons/fa';
 
+const MAX_TICKETS_PER_ORDER = 20;
+
 const parsePriceValue = (value: string | number | null | undefined): number => {
   if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
   if (typeof value === 'string') {
@@ -41,6 +43,8 @@ const TicketSelectionStep = ({
   const remaining = selectedTicket
     ? Math.max(0, parseInt(selectedTicket.quantity) - parseInt(selectedTicket.sold))
     : 0;
+  // Same limit as the server (/api/orders)
+  const maxPerOrder = Math.min(remaining, MAX_TICKETS_PER_ORDER);
 
   return (
     <div className="space-y-5">
@@ -140,10 +144,10 @@ const TicketSelectionStep = ({
               </span>
               <button
                 type="button"
-                onClick={() => handleQuantityChange(Math.min(remaining, quantity + 1))}
-                disabled={quantity >= remaining}
+                onClick={() => handleQuantityChange(Math.min(maxPerOrder, quantity + 1))}
+                disabled={quantity >= maxPerOrder}
                 className={`w-9 h-9 rounded-lg border flex items-center justify-center text-lg font-medium transition-colors
-                  ${quantity >= remaining
+                  ${quantity >= maxPerOrder
                     ? 'border-gray-200 dark:border-gray-700 text-gray-300 dark:text-gray-600 cursor-not-allowed'
                     : 'border-[#f54502]/60 text-[#f54502] hover:bg-[#f54502]/10 dark:hover:bg-[#f54502]/20'
                   }`}

@@ -53,4 +53,24 @@ export default withPWA({
   dest: 'public',
   register: true,
   disable: process.env.NODE_ENV === 'development',
+  // API and Supabase data/auth responses hold personal data and live ticket
+  // state, so they must never be served from the service worker cache.
+  // "apis" replaces the default rule of that name; "supabase-api" runs before
+  // the default cross-origin rule, which still caches public images and fonts.
+  extendDefaultRuntimeCaching: true,
+  workboxOptions: {
+    runtimeCaching: [
+      {
+        urlPattern: ({ sameOrigin, url }) => sameOrigin && url.pathname.startsWith('/api/'),
+        handler: 'NetworkOnly',
+        options: { cacheName: 'apis' },
+      },
+      {
+        urlPattern: ({ url }) =>
+          url.hostname.endsWith('.supabase.co') && !url.pathname.startsWith('/storage/v1/object/public/'),
+        handler: 'NetworkOnly',
+        options: { cacheName: 'supabase-api' },
+      },
+    ],
+  },
 })(nextConfig);

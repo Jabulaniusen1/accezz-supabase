@@ -41,7 +41,10 @@ export async function GET(req: NextRequest) {
   else if (status === 'approved') query = query.eq('is_active', true);
 
   const { data, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error('[admin/locations]', error);
+    return NextResponse.json({ error: 'Database error' }, { status: 500 });
+  }
   return NextResponse.json({ locations: data });
 }
 
@@ -59,7 +62,10 @@ export async function PATCH(req: NextRequest) {
     .update({ is_active: true })
     .eq('id', locationId);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error('[admin/locations]', error);
+    return NextResponse.json({ error: 'Database error' }, { status: 500 });
+  }
   return NextResponse.json({ ok: true });
 }
 
@@ -77,6 +83,9 @@ export async function DELETE(req: NextRequest) {
     .delete()
     .eq('id', locationId);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error('[admin/locations]', error);
+    return NextResponse.json({ error: 'Database error' }, { status: 500 });
+  }
   return NextResponse.json({ ok: true });
 }

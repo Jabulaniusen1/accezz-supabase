@@ -11,6 +11,7 @@ import { Filters } from './components/Filters';
 import { AttendeesTable } from './components/AttendeesTable';
 import { EmailMarketing } from './components/EmailMarketing';
 import { Ticket as TicketIcon, CircleDollarSign, ScanLine, Users } from '@/icon-adapters/lucide-react';
+import { fetchAllRows } from '@/utils/fetchAllRows';
 
 // ─── Stat card ────────────────────────────────────────────────────────────────
 const StatCard = ({
@@ -53,18 +54,38 @@ const EventAnalyticsContent = () => {
   const [emailTitle, setEmailTitle] = useState('');
   const [emailContent, setEmailContent] = useState('');
   const [activeTab, setActiveTab] = useState<'attendees' | 'email'>('attendees');
+  const [accessError, setAccessError] = useState<string | null>(null);
 
   // ── Fetch event ──────────────────────────────────────────────────────────────
   const fetchEvent = useCallback(async () => {
     if (!eventId) return;
     try {
       setLoading(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setAccessError('Please sign in to view event analytics.');
+        return;
+      }
+
       const { data: ev, error: evErr } = await supabase
         .from('events')
-        .select('id, slug, title, description, image_url, start_time, end_time, location, address, city')
+        .select('id, user_id, slug, title, description, image_url, start_time, end_time, location, address, city')
         .eq('id', eventId)
         .single();
       if (evErr) throw evErr;
+
+      // Attendee data is protected by RLS too; this just shows a clear message
+      if (ev.user_id !== session.user.id) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('user_id', session.user.id)
+          .maybeSingle();
+        if (!profile?.is_admin) {
+          setAccessError('You can only view analytics for your own events.');
+          return;
+        }
+      }
 
       const { data: types, error: ttErr } = await supabase
         .from('ticket_types')
@@ -101,13 +122,15 @@ const EventAnalyticsContent = () => {
     if (!eventId) return;
     try {
       setLoading(true);
-      const { data: tix, error: tErr } = await supabase
+      if (!eventId) return;
+      const tix = await fetchAllRows((from, to) => supabase
         .from('tickets')
         .select(
           'id, order_id, ticket_type_id, attendee_name, attendee_email, price, currency, created_at, is_scanned, validation_status, qr_code_url'
         )
-        .eq('event_id', eventId);
-      if (tErr) throw tErr;
+        .eq('event_id', eventId)
+        .order('id')
+        .range(from, to));
 
       const typeIds = Array.from(new Set((tix || []).map((t) => t.ticket_type_id)));
       const { data: typeRows } = await supabase
@@ -140,11 +163,13 @@ const EventAnalyticsContent = () => {
         });
       }
 
-      const orderIds = Array.from(new Set((tix || []).map((t) => t.order_id)));
-      const { data: orders } = await supabase
+      // By event rather than by a (possibly huge) list of order ids
+      const orders = await fetchAllRows((from, to) => supabase
         .from('orders')
         .select('id, status, payment_reference, currency')
-        .in('id', orderIds.length ? orderIds : ['00000000-0000-0000-0000-000000000000']);
+        .eq('event_id', eventId)
+        .order('id')
+        .range(from, to));
       type OrderRow = { id: string; status: string; payment_reference?: string | null; currency?: string | null };
       const orderMap = new Map<string, OrderRow>(
         (orders || []).map((o) => [o.id as string, o as OrderRow])
@@ -190,37 +215,10 @@ const EventAnalyticsContent = () => {
       setToast({ type: 'error', message: 'Subject and message cannot be empty.' });
       return;
     }
-    const recipients = Array.from(
-      new Set(
-        filteredTickets
-          .flatMap((t) => [t.email, ...t.attendees.map((a) => a.email)])
-          .filter(Boolean)
-      )
-    ) as string[];
-    if (!recipients.length) {
-      setToast({ type: 'error', message: 'No valid email recipients found.' });
-      return;
-    }
-    try {
-      setLoading(true);
-      const res = await fetch('/api/send-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: emailTitle, content: emailContent, recipients }),
-      });
-      if (!res.ok) throw new Error();
-      setToast({ type: 'success', message: `Sent to ${recipients.length} recipients.` });
-      setEmailTitle('');
-      setEmailContent('');
-    } catch {
-      setToast({
-        type: 'error',
-        message: 'Upgrade to premium before sending emails to attendees.',
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [emailTitle, emailContent, filteredTickets]);
+    // Emailing attendees needs a premium plan, which doesn't exist yet;
+    // there is no sending endpoint behind this form.
+    setToast({ type: 'error', message: 'Upgrade to premium before sending emails to attendees.' });
+  }, [emailTitle, emailContent]);
 
   // ── Share handler ─────────────────────────────────────────────────────────────
   const handleShare = useCallback(() => {
@@ -284,6 +282,11 @@ const EventAnalyticsContent = () => {
       maximumFractionDigits: 0,
     }).format(n);
 
+  if (accessError) return (
+    <div className="flex items-center justify-center h-screen text-sm text-gray-500 dark:text-gray-400">
+      {accessError}
+    </div>
+  );
   if (loading && !event) return <PageSkeleton />;
   if (!event) return (
     <div className="flex items-center justify-center h-screen text-sm text-gray-500 dark:text-gray-400">

@@ -121,7 +121,8 @@ const EventList: React.FC<{
   }, []);
 
   const handleError = useCallback((error: unknown, defaultMessage: string) => {
-    const message = error instanceof Error ? error.message : defaultMessage;
+    // Supabase errors are plain objects with a message, not Error instances
+    const message = (error as { message?: string } | null)?.message || defaultMessage;
     showToastMessage('error', message);
   }, [showToastMessage]);
 

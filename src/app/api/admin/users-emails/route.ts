@@ -1,151 +1,65 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
+import type { User } from '@supabase/supabase-js';
+import { supabaseAdmin } from '@/utils/processOrder';
+import { requireAuth } from '@/utils/apiAuth';
 
-// This route requires admin authentication
-// It uses service role to access auth.users table
+const PAGE_SIZE = 1000;
+const MAX_IDS = 5000;
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-
+/** Admin only: emails and display names for a list of user ids. */
 export async function POST(request: NextRequest) {
+  const auth = await requireAuth(request);
+  if ('error' in auth) return auth.error;
+
+  const { data: profile } = await supabaseAdmin
+    .from('profiles')
+    .select('is_admin')
+    .eq('user_id', auth.userId)
+    .maybeSingle();
+  if (!profile?.is_admin) {
+    return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 });
+  }
+
   try {
-    // Check for required environment variables
-    if (!supabaseUrl || !supabaseServiceKey) {
-      console.error('Missing Supabase configuration:', {
-        hasUrl: !!supabaseUrl,
-        hasServiceKey: !!supabaseServiceKey,
-      });
-      return NextResponse.json({ 
-        error: 'Server configuration error',
-        details: 'Missing SUPABASE_SERVICE_ROLE_KEY environment variable'
-      }, { status: 500 });
-    }
-
-    // Get session from cookies or Authorization header
-    const cookieStore = await cookies();
-    const authHeader = request.headers.get('authorization');
-    
-    let accessToken: string | null = null;
-    
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      accessToken = authHeader.replace('Bearer ', '');
-    } else {
-      // Try to get from cookies - Supabase stores tokens with different cookie names
-      const possibleCookies = ['sb-access-token', 'supabase-auth-token'];
-      for (const cookieName of possibleCookies) {
-        const cookie = cookieStore.get(cookieName);
-        if (cookie) {
-          accessToken = cookie.value;
-          break;
-        }
-      }
-    }
-
-    if (!accessToken) {
-      return NextResponse.json({ error: 'Unauthorized - No access token provided' }, { status: 401 });
-    }
-
-    // Create admin client to verify user is admin
-    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    });
-
-    // Verify user from token
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(accessToken);
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Check if user is admin
-    const { data: profile, error: profileError } = await supabaseAdmin
-      .from('profiles')
-      .select('is_admin')
-      .eq('user_id', user.id)
-      .single();
-
-    if (profileError || !profile?.is_admin) {
-      return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 });
-    }
-
-    // Get request body
-    const { user_ids } = await request.json();
-
+    const { user_ids } = await request.json().catch(() => ({ user_ids: [] }));
     if (!Array.isArray(user_ids) || user_ids.length === 0) {
       return NextResponse.json({ emails: [], names: [] });
     }
+    const wanted = new Set<string>(user_ids.slice(0, MAX_IDS).map(String));
 
-    // Fetch names from profiles table (more reliable than user_metadata)
-    const { data: profiles, error: profilesError } = await supabaseAdmin
+    const { data: profiles } = await supabaseAdmin
       .from('profiles')
       .select('user_id, full_name')
-      .in('user_id', user_ids);
+      .in('user_id', Array.from(wanted));
+    const profileNames = new Map<string, string>();
+    (profiles || []).forEach((p: { user_id: string; full_name: string | null }) => {
+      if (p.full_name) profileNames.set(p.user_id, p.full_name);
+    });
 
-    const profileMap = new Map<string, string>();
-    if (profiles && !profilesError) {
-      profiles.forEach((profile: { user_id: string; full_name: string | null }) => {
-        if (profile.full_name) {
-          profileMap.set(profile.user_id, profile.full_name);
-        }
-      });
+    // Page through auth users until every requested id is found
+    const found = new Map<string, User>();
+    for (let page = 1; found.size < wanted.size; page++) {
+      const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: PAGE_SIZE });
+      if (error) {
+        console.error('[admin/users-emails] listUsers failed:', error);
+        return NextResponse.json({ error: 'Failed to fetch user emails' }, { status: 500 });
+      }
+      data.users.forEach((u) => { if (wanted.has(u.id)) found.set(u.id, u); });
+      if (data.users.length < PAGE_SIZE) break;
     }
 
-    // Use service role to access auth.users for emails
     const emails: [string, string][] = [];
     const names: [string, string][] = [];
-
-    try {
-      const { data: authUsers, error: usersError } = await supabaseAdmin.auth.admin.listUsers({
-        page: 1,
-        perPage: 1000,
-      });
-
-      if (usersError) {
-        console.error('Error fetching users from auth:', usersError);
-        // Fallback: try to get emails individually if listUsers fails
-        for (const userId of user_ids) {
-          try {
-            const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(userId);
-            if (!userError && user?.email) {
-              emails.push([userId, user.email]);
-            }
-          } catch (err) {
-            console.error(`Error fetching user ${userId}:`, err);
-          }
-        }
-      } else {
-        // Map user IDs to emails and names
-        user_ids.forEach((userId: string) => {
-          const authUser = authUsers.users.find(u => u.id === userId);
-          if (authUser) {
-            emails.push([userId, authUser.email || 'N/A']);
-          }
-          
-          // Prefer profile name over user_metadata
-          const profileName = profileMap.get(userId);
-          if (profileName) {
-            names.push([userId, profileName]);
-          } else if (authUser?.user_metadata?.full_name) {
-            names.push([userId, authUser.user_metadata.full_name]);
-          }
-        });
-      }
-    } catch (authError) {
-      console.error('Error accessing auth.users:', authError);
-      return NextResponse.json({ 
-        error: 'Failed to fetch user emails', 
-        details: authError instanceof Error ? authError.message : 'Unknown error'
-      }, { status: 500 });
-    }
+    wanted.forEach((userId) => {
+      const authUser = found.get(userId);
+      if (authUser) emails.push([userId, authUser.email || 'N/A']);
+      const name = profileNames.get(userId) || (authUser?.user_metadata?.full_name as string | undefined);
+      if (name) names.push([userId, name]);
+    });
 
     return NextResponse.json({ emails, names });
   } catch (error) {
-    console.error('Error in users-emails API:', error);
+    console.error('[admin/users-emails] Unexpected error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
-

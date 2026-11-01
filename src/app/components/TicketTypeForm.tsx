@@ -4,7 +4,7 @@ import OrderInformationStep from './TicketFormSec/OrderInformationStep';
 import PaymentStep from './TicketFormSec/PaymentStep';
 import CreateAccountPrompt from './CreateAccountPrompt';
 import { fetchEventBySlug, isEventPast } from '@/utils/eventUtils';
-import { createOrder, createFreeTickets } from '@/utils/paymentUtils';
+import { createOrder, startPaystackCheckout } from '@/utils/paymentUtils';
 import { saveTicketPurchaseState, getTicketPurchaseState, clearTicketPurchaseState } from '@/utils/localStorage';
 import { supabase } from '@/utils/supabaseClient';
 import { getSession } from '@/utils/supabaseAuth';
@@ -314,8 +314,13 @@ const TicketTypeForm = ({
       // Create order for paid tickets
       try {
         setIsLoading(true);
-        const { orderId: createdOrderId } = await createOrder({
+        // Affiliate ref (set when the event page was opened via an affiliate link)
+        let affiliateCode: string | null = null;
+        try { affiliateCode = localStorage.getItem('affiliateRef'); } catch { /* ignore */ }
+
+        const { orderId: createdOrderId, free } = await createOrder({
           eventId,
+          ticketTypeId: selectedTicket.id,
           ticketTypeName: selectedTicket.name,
           quantity: allAttendees.length,
           email,
@@ -323,8 +328,14 @@ const TicketTypeForm = ({
           fullName,
           gender,
           attendees: allAttendees.length > 1 ? allAttendees.slice(1) : null,
-          currency: 'NGN',
+          affiliateCode,
         });
+
+        // The server prices the order; if the ticket became free, it is already issued
+        if (free) {
+          await finishCompletedOrder(createdOrderId);
+          return;
+        }
 
         setOrderId(createdOrderId);
 
@@ -343,6 +354,27 @@ const TicketTypeForm = ({
     }
   };
 
+  // Every ticket after the first: a copy of the buyer, or the holders entered
+  const buildAdditionalAttendees = () => {
+    if (quantity <= 1) return null;
+    return useSameDetails
+      ? Array.from({ length: quantity - 1 }, () => ({ name: fullName, email, gender: gender || undefined }))
+      : additionalTicketHolders.slice(0, quantity - 1).map(h => ({ name: h.name, email: h.email, gender: h.gender || undefined }));
+  };
+
+  // Tickets already exist (free order): account prompt for guests, else the invoice
+  const finishCompletedOrder = async (completedOrderId: string) => {
+    clearTicketPurchaseState();
+    const session = await getSession();
+    if (!session) {
+      setPurchaseOrderId(completedOrderId);
+      setShowAccountPrompt(true);
+      setIsLoading(false);
+      return;
+    }
+    window.location.href = `/invoice/${completedOrderId}`;
+  };
+
   const handlePurchase = async () => {
     setIsLoading(true);
 
@@ -358,29 +390,24 @@ const TicketTypeForm = ({
       return;
     }
 
-    const allAttendees = [{ name: fullName, email, gender: gender || undefined }];
-    if (additionalTicketHolders.length > 0)
-      allAttendees.push(...additionalTicketHolders.map(h => ({ name: h.name, email: h.email, gender: h.gender || undefined })));
-    const attendees = allAttendees.length > 1 ? allAttendees.slice(1) : null;
+    const attendees = buildAdditionalAttendees();
     const ticketPrice = parsePriceValue(selectedTicket.price);
 
     try {
       // ── Free tickets ──
       if (ticketPrice === 0) {
         try {
-          const { orderId: createdOrderId } = await createFreeTickets({
-            eventId, ticketTypeName: selectedTicket.name, quantity, email,
-            phone: phoneNumber, fullName, gender, attendees, currency: 'NGN',
+          const { orderId: createdOrderId, free } = await createOrder({
+            eventId, ticketTypeId: selectedTicket.id, ticketTypeName: selectedTicket.name, quantity, email,
+            phone: phoneNumber, fullName, gender, attendees,
           });
-          clearTicketPurchaseState();
-          const session = await getSession();
-          if (!session) {
-            setPurchaseOrderId(createdOrderId);
-            setShowAccountPrompt(true);
-            setIsLoading(false);
+          if (!free) {
+            // The ticket is no longer free: the server created a normal order to pay for
+            clearTicketPurchaseState();
+            window.location.href = await startPaystackCheckout(createdOrderId);
             return;
           }
-          window.location.href = `/invoice/${createdOrderId}`;
+          await finishCompletedOrder(createdOrderId);
           return;
         } catch (error: unknown) {
           setIsLoading(false);
@@ -396,23 +423,8 @@ const TicketTypeForm = ({
         return;
       }
 
-      // Include affiliate ref if present so paid conversions can be attributed.
-      // Clicks are tracked on event page load, but commission needs this on order meta.
-      let affiliateCode: string | null = null;
-      try { affiliateCode = localStorage.getItem('affiliateRef'); } catch { /* ignore */ }
-
-      const res = await fetch('/api/paystack/initialize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          orderId, amount: totalPrice, email, currency: 'NGN',
-          callbackUrl: `${window.location.origin}/success?orderId=${orderId}`,
-          affiliateCode: affiliateCode || undefined,
-        }),
-      });
-
-      const data = await res.json() as { authorization_url?: string; reference?: string; error?: string };
-      if (!res.ok || !data?.authorization_url) throw new Error(data?.error || 'Failed to initialize payment');
+      // Amount, currency and email come from the server-side order
+      const authorizationUrl = await startPaystackCheckout(orderId);
 
       clearTicketPurchaseState();
       try { localStorage.removeItem('pendingPayment'); } catch { /* ignore */ }
@@ -420,7 +432,7 @@ const TicketTypeForm = ({
       // Redirect to Paystack hosted checkout — simplest and most reliable approach.
       // Paystack fires a webhook (charge.success) which marks the order paid and
       // creates tickets server-side. The callback_url brings the user to /success.
-      window.location.href = data.authorization_url;
+      window.location.href = authorizationUrl;
     } catch (error: unknown) {
       setIsLoading(false);
       setToast({ type: 'error', message: (error instanceof Error ? error.message : 'Error processing payment') });
@@ -437,17 +449,7 @@ const TicketTypeForm = ({
   const handleAccountPromptClose = () => {
     setShowAccountPrompt(false);
     if (purchaseOrderId) {
-      supabase
-        .from('tickets')
-        .select('id')
-        .eq('order_id', purchaseOrderId)
-        .limit(1)
-        .single()
-        .then(({ data: ticket, error }) => {
-          window.location.href = !error && ticket
-            ? `/success?ticketId=${ticket.id}`
-            : '/success';
-        });
+      window.location.href = `/invoice/${purchaseOrderId}`;
     }
   };
 
