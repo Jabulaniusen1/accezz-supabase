@@ -24,11 +24,6 @@ export const PLATFORM_FEE_RATE_REDUCED = 0.07;
  * Kept for reference; the merchant now bears this cost (deducted in
  * get_withdrawable_balance), so it is not added to the buyer's total.
  */
-const PAYSTACK_PERCENT = 1.5;
-const PAYSTACK_FLAT_KOBO = 100_00;
-const PAYSTACK_FLAT_WAIVED_BELOW_KOBO = 2_500_00;
-const PAYSTACK_CAP_KOBO = 2_000_00;
-
 export interface OrderCharges {
   /** Ticket price × quantity; this is what the organizer sells. */
   subtotal: number;
