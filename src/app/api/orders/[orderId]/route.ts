@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/utils/processOrder';
 import { getOptionalUser } from '@/utils/apiAuth';
 import { withVirtualAccess } from '@/utils/virtualAccess';
+import { refreshPendingCharges } from '@/utils/orderPricing';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -19,7 +20,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ orde
     return NextResponse.json({ error: 'Order not found' }, { status: 404 });
   }
 
-  const { data: order } = await supabaseAdmin
+  const { data: storedOrder } = await supabaseAdmin
     .from('orders')
     .select(`
       id, buyer_user_id, buyer_full_name, buyer_email, buyer_phone, total_amount, service_fee,
@@ -33,9 +34,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ orde
     .eq('id', orderId)
     .maybeSingle();
 
-  if (!order) {
+  if (!storedOrder) {
     return NextResponse.json({ error: 'Order not found' }, { status: 404 });
   }
+  // A buyer resuming an order placed under older pricing sees today's fees,
+  // the same amount /api/paystack/initialize will charge
+  const order = await refreshPendingCharges(supabaseAdmin, storedOrder);
 
   const viewer = await getOptionalUser(req);
 
@@ -79,7 +83,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ orde
       buyer_full_name: isRecipientView ? (viewer?.user_metadata?.full_name ?? null) : order.buyer_full_name,
       buyer_email: isRecipientView ? (viewer?.email ?? '') : order.buyer_email,
       buyer_phone: isRecipientView ? null : order.buyer_phone,
-      // total_amount = tickets; amount_due = tickets + service charge + processing fee.
+      // total_amount = tickets; amount_due = tickets + buyer fees (service_fee is
+      // only non-zero on orders paid before the service charge was removed).
       // A transfer recipient only sees the value of their own tickets.
       total_amount: isRecipientView
         ? visibleTickets.reduce((sum, t) => sum + (Number(t.price) || 0), 0)

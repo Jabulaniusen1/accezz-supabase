@@ -40,7 +40,7 @@ const sections = [
   {
     title: "5. Service Fees",
     body: [
-      "Accezz charges organisers 10% of each event's paid ticket sales, reduced to 7% once that event's sales reach ₦1,000,000. Buyers pay a ₦100 service charge per order and the payment processing fee. When a refund is issued before payouts, the Accezz fee on the refunded tickets is automatically reversed. Refunds processed after the organiser receives payouts will deduct the refundable amount from future balances.",
+      "Accezz charges organisers 10% of each event's paid ticket sales, reduced to 7% once that event's sales reach ₦1,000,000. Buyers pay the payment processing fee. When a refund is issued before payouts, the Accezz fee on the refunded tickets is automatically reversed. Refunds processed after the organiser receives payouts will deduct the refundable amount from future balances.",
     ],
   },
   {

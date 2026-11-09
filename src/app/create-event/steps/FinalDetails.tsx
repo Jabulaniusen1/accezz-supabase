@@ -1,5 +1,5 @@
 'use client';
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { 
   FaInstagram, 
@@ -26,6 +26,9 @@ export default function FinalDetails({
 }: FinalDetailsProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  // Set synchronously, so a double-click can't start a second submit before
+  // React re-renders the disabled button
+  const submittingRef = useRef(false);
 
   // Affiliate settings
   const [affiliateEnabled, setAffiliateEnabled] = useState(false);
@@ -34,8 +37,11 @@ export default function FinalDetails({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setIsLoading(true);
-    
+    let succeeded = false;
+
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -244,6 +250,7 @@ export default function FinalDetails({
           }),
         }).catch(err => console.error('[event-published email]', err));
 
+        succeeded = true;
         setToast({ type: "success", message: "Event created successfully!", onClose: () => setToast(null) });
         router.push('/dashboard');
       } catch (error) {
@@ -259,7 +266,12 @@ export default function FinalDetails({
       const message = error instanceof Error ? error.message : "Failed to create event";
       setToast({ type: "error", message, onClose: () => setToast(null) });
     } finally {
-      setIsLoading(false);
+      // After a successful create, keep the button disabled while the dashboard
+      // loads; re-enabling it here let organizers create the same event twice.
+      if (!succeeded) {
+        submittingRef.current = false;
+        setIsLoading(false);
+      }
     }
   };
   

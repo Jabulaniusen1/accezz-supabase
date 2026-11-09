@@ -20,7 +20,7 @@ const TermsAndConditionsPage = () => {
     },
     {
       title: "4. Ticket Sales & Payments",
-      content: "All ticket sales are final. Accezz charges organizers 10% of each event's paid ticket sales, reduced to 7% once that event's ticket sales reach ₦1,000,000; the fee is deducted from the organizer's payout. Buyers pay a ₦100 service charge per order and the payment processing fee. Organizers agree to:",
+      content: "All ticket sales are final. Accezz charges organizers 10% of each event's paid ticket sales, reduced to 7% once that event's ticket sales reach ₦1,000,000; the fee is deducted from the organizer's payout. Buyers pay the payment processing fee. Organizers agree to:",
       subpoints: [
         "Accurate event pricing disclosure",
         "Clear communication of event details",

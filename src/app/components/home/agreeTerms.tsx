@@ -35,7 +35,7 @@ const AgreeTerms: React.FC<AgreeTermsProps> = ({ onClose }) => {
     },
     {
       title: "4. Ticket Sales",
-      content: "Organizers receive ticket revenue minus the Accezz fee. Buyers pay a ₦100 service charge per order and the payment processing fee."
+      content: "Organizers receive ticket revenue minus the Accezz fee. Buyers pay the payment processing fee."
     },
     {
       title: "5. Final Sales",

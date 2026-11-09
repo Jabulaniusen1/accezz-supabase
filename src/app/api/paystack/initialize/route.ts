@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/utils/processOrder';
+import { refreshPendingCharges } from '@/utils/orderPricing';
 
 /**
  * Start a Paystack checkout for an existing pending order.
@@ -22,19 +23,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing orderId' }, { status: 400 });
     }
 
-    const { data: order } = await supabaseAdmin
+    const { data: storedOrder } = await supabaseAdmin
       .from('orders')
-      .select('id, status, amount_due, currency, buyer_email, meta')
+      .select('id, status, total_amount, service_fee, processing_fee, amount_due, currency, buyer_email, meta')
       .eq('id', orderId)
       .maybeSingle();
 
-    if (!order) {
+    if (!storedOrder) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
-    if (order.status !== 'pending') {
+    if (storedOrder.status !== 'pending') {
       return NextResponse.json({ error: 'This order has already been processed' }, { status: 409 });
     }
-    // Tickets plus the service charge and Paystack fee
+    // Orders placed under older pricing are charged today's fees
+    const order = await refreshPendingCharges(supabaseAdmin, storedOrder);
+    // Tickets plus the Paystack fee
     const amount = Number(order.amount_due);
     if (!(amount > 0)) {
       return NextResponse.json({ error: 'This order does not need payment' }, { status: 400 });

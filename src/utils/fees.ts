@@ -1,7 +1,7 @@
 /**
  * Accezz pricing rules (NGN).
  *
- * Buyers pay: ticket subtotal + service charge + Paystack processing fee.
+ * Buyers pay: ticket subtotal + Paystack processing fee.
  * Organizers pay: the Accezz fee on each event's ticket sales, taken out of
  * their payout (see get_withdrawable_balance / platform_fee_rate in SQL; keep
  * the two in sync).
@@ -9,9 +9,6 @@
  * The server prices orders with these; the browser uses them only to show the
  * same breakdown before checkout.
  */
-
-/** Flat service charge added to every paid order. Free orders stay free. */
-export const SERVICE_FEE = 100;
 
 /** Accezz fee on an event's ticket sales: 10%, or 7% once sales reach ₦1m. */
 export const PLATFORM_FEE_THRESHOLD = 1_000_000;
@@ -31,6 +28,10 @@ const PAYSTACK_CAP_KOBO = 2_000_00;
 export interface OrderCharges {
   /** Ticket price × quantity; this is what the organizer sells. */
   subtotal: number;
+  /**
+   * Always 0: the ₦100 service charge was removed on 2026-11-08. Kept because
+   * orders placed before then store one in orders.service_fee.
+   */
   serviceFee: number;
   processingFee: number;
   /** What the buyer pays. */
@@ -64,13 +65,12 @@ export function calculateOrderCharges(subtotal: number): OrderCharges {
   if (subtotalKobo === 0) {
     return { subtotal: 0, serviceFee: 0, processingFee: 0, total: 0 };
   }
-  const serviceFeeKobo = toKobo(SERVICE_FEE);
-  const processingFeeKobo = paystackFeeToPassOn(subtotalKobo + serviceFeeKobo);
+  const processingFeeKobo = paystackFeeToPassOn(subtotalKobo);
   return {
     subtotal: toNaira(subtotalKobo),
-    serviceFee: toNaira(serviceFeeKobo),
+    serviceFee: 0,
     processingFee: toNaira(processingFeeKobo),
-    total: toNaira(subtotalKobo + serviceFeeKobo + processingFeeKobo),
+    total: toNaira(subtotalKobo + processingFeeKobo),
   };
 }
 
